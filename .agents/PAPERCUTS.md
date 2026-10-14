@@ -37,6 +37,10 @@ data, or sensitive paths.
 
 ## Resolved
 
+- [x] `2026-10-14T15:52:05Z` - `jcode` - Domain filter browser helpers expected removed copy `Refine table results` instead of the visible `Refine results`, timing out before filter interactions. Resolved 2026-10-14: updated both helper locators to the current exact label; the focused keyword-filter browser case passes.
+
+- [x] `2026-10-14T15:43:10Z` - `jcode` - Fixture-backed domain and keyword navigation tests race the asynchronously mounted provider-setup dialog: a one-shot `isVisible()` check misses it, then Base UI hides page roles from accessibility assertions. Resolved 2026-10-14: register a Playwright locator handler for that exact setup dialog before navigation; focused domain and keyword browser cases pass without sleeps or provider mocks.
+
 - [x] `2026-09-17T18:50:14Z` — `codex` — Fumadocs MDX 11 compiles `.md?raw` imports into components, so shared prompt imports pass type checking but crash docs rendering with `trim is not a function`. Resolved 2026-09-17: the web Vite config leaves `?raw` imports to Vite; browser-check shared Markdown prompts when changing this integration.
 
 - [x] `2026-08-20T20:36:32Z` — `codex` — The preview Access check immediately classified a workers.dev 404 as public. Resolved 2026-09-05: 404s use the existing bounded retry loop; exhaustion fails without claiming the preview is protected or public.

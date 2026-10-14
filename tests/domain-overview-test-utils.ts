@@ -168,6 +168,7 @@ export async function attachJsonArtifact(
 }
 
 export async function openDomainOverview(page: Page, tab: DomainTab) {
+  await handleMissingProviderSetup(page);
   await page.addInitScript(() => {
     if (window.sessionStorage.getItem("domain-overview-e2e-cleared") === "1") {
       return;
@@ -200,18 +201,22 @@ export async function openDomainOverview(page: Page, tab: DomainTab) {
   await expect(
     page.getByRole("heading", { name: "Domain Overview" }),
   ).toBeVisible();
-  await dismissSetupModal(page);
   await expect(page.getByRole("button", { name: /Filters/ })).toBeVisible({
     timeout: 30_000,
   });
   await expectPageResponsive(page, "after opening Domain Overview");
 }
 
-async function dismissSetupModal(page: Page) {
-  const dismissButton = page.getByRole("button", { name: "Dismiss" });
-  if (await dismissButton.isVisible()) {
-    await dismissButton.click();
-  }
+export async function handleMissingProviderSetup(page: Page) {
+  const dialog = page.getByRole("dialog", {
+    name: "Set up DataForSEO research",
+    exact: true,
+  });
+  // Provider status resolves after navigation and may reopen on route changes.
+  // Handle the specific optional overlay during Playwright's action/assertion waits.
+  await page.addLocatorHandler(dialog, async () => {
+    await dialog.getByRole("button", { name: "Dismiss", exact: true }).click();
+  });
 }
 
 export async function waitForDomainRows(page: Page, label: string) {
@@ -238,13 +243,13 @@ export async function switchDomainTab(page: Page, tab: DomainTab) {
 
 export async function openFilters(page: Page) {
   await page.getByRole("button", { name: /Filters/ }).click();
-  await expect(page.getByText("Refine table results")).toBeVisible();
+  await expect(page.getByText("Refine results", { exact: true })).toBeVisible();
   await expectPageResponsive(page, "after opening filters");
 }
 
 export async function closeFilters(page: Page) {
   await page.getByRole("button", { name: /Filters/ }).click();
-  await expect(page.getByText("Refine table results")).toBeHidden();
+  await expect(page.getByText("Refine results", { exact: true })).toBeHidden();
   await expectPageResponsive(page, "after closing filters");
 }
 
