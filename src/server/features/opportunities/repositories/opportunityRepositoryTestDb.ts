@@ -13,7 +13,9 @@ const logger = {
   },
 };
 
-export function createOpportunityTestDatabase() {
+export function createOpportunityTestDatabase(
+  cleanupPrefix = "opportunity-test-",
+) {
   const pgUrl = process.env.OPPORTUNITY_TEST_PG_URL;
   if (pgUrl) {
     const url = new URL(pgUrl);
@@ -64,9 +66,10 @@ export function createOpportunityTestDatabase() {
         };
       },
       close: async () => {
-        await execute(
-          "DELETE FROM organization WHERE slug LIKE 'opportunity-test-%'",
-        );
+        await execute({
+          sql: "DELETE FROM organization WHERE slug LIKE ?",
+          args: [`${cleanupPrefix}%`],
+        });
         await connection.end();
       },
     };
