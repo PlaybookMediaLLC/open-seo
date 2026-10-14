@@ -1,19 +1,19 @@
 import {
-  Bookmark,
-  Bot,
-  Brain,
-  ChartLine,
-  ClipboardCheck,
-  FileText,
-  FlaskConical,
-  Globe,
-  LayoutDashboard,
-  Link2,
-  MessageSquare,
-  Search,
-  TrendingUp,
-  Target,
-} from "lucide-react";
+  IconBookmark as Bookmark,
+  IconRobot as Bot,
+  IconBrain as Brain,
+  IconChartLine as ChartLine,
+  IconClipboardCheck as ClipboardCheck,
+  IconFileText as FileText,
+  IconFlask as FlaskConical,
+  IconWorld as Globe,
+  IconLayoutDashboard as LayoutDashboard,
+  IconLink as Link2,
+  IconMessage as MessageSquare,
+  IconSearch as Search,
+  IconTrendingUp as TrendingUp,
+  IconTarget as Target,
+} from "@tabler/icons-react";
 import { linkOptions } from "@tanstack/react-router";
 import { GoogleGlyphMuted } from "@/client/features/gsc/GoogleGlyph";
 

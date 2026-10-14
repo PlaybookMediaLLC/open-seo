@@ -1,4 +1,4 @@
-import { Package } from "lucide-react";
+import { IconPackage as Package } from "@tabler/icons-react";
 import { CopyButton } from "@/client/components/CopyButton";
 
 export const AGENT_SETUP_DESCRIPTION =

@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 import { useLocation } from "@tanstack/react-router";
-import { Check, ExternalLink } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconExternalLink as ExternalLink,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   Dialog,

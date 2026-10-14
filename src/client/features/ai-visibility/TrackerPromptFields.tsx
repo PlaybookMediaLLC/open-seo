@@ -1,7 +1,11 @@
 import { useId } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Papa from "papaparse";
-import { Plus, Loader2, Sparkles } from "lucide-react";
+import {
+  IconPlus as Plus,
+  IconLoader2 as Loader2,
+  IconSparkles as Sparkles,
+} from "@tabler/icons-react";
 import { generateAiVisibilityPrompts } from "@/serverFunctions/ai-visibility";
 import { AiQueryError } from "./shared";
 import { toast } from "sonner";

@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { IconLoader2 as Loader2 } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import { DialogFooter } from "@/client/components/ui/dialog";
 import { aiMarketLabel, type AiCostEstimate } from "@/shared/ai-visibility";

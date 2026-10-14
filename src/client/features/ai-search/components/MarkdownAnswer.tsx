@@ -1,5 +1,8 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import {
+  IconChevronDown as ChevronDown,
+  IconChevronUp as ChevronUp,
+} from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { MARKDOWN_COMPONENTS } from "@/client/components/Markdown";

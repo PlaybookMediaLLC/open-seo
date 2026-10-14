@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Github } from "lucide-react";
+import { IconBrandGithub as Github } from "@tabler/icons-react";
 import { CardShell } from "@/client/components/CardShell";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { QueryError } from "@/client/components/QueryState";

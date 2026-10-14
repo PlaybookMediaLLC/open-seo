@@ -1,4 +1,10 @@
-import { Copy, FileDown, Sheet, Tags, Trash2 } from "lucide-react";
+import {
+  IconCopy as Copy,
+  IconFileDownload as FileDown,
+  IconTable as Sheet,
+  IconTags as Tags,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import {
   TableBulkActionBar,
   TableBulkActionButton,

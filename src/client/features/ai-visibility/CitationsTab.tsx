@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  IconArrowRight as ArrowRight,
+  IconChevronDown as ChevronDown,
+  IconChevronRight as ChevronRight,
+} from "@tabler/icons-react";
 import { SafeExternalLink } from "@/client/components/SafeExternalLink";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import { SkeletonTableRows } from "@/client/components/SkeletonPresets";

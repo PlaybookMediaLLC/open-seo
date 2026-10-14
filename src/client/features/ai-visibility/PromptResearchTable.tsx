@@ -4,7 +4,10 @@ import type {
   OnChangeFn,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  IconChevronDown as ChevronDown,
+  IconChevronRight as ChevronRight,
+} from "@tabler/icons-react";
 import { SafeExternalLink } from "@/client/components/SafeExternalLink";
 import {
   DataTable,

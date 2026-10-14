@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Target } from "lucide-react";
+import { IconTarget as Target } from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import {
   Table,

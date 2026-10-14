@@ -1,4 +1,4 @@
-import { AlertTriangle } from "lucide-react";
+import { IconAlertTriangle as AlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import type { useRankRunPolling } from "./useRankRunPolling";

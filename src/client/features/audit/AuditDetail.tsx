@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { IconAlertCircle as AlertCircle } from "@tabler/icons-react";
 import { BackButton } from "@/client/components/PageHeader";
 import { useQuery } from "@tanstack/react-query";
 import { QueryError, QueryState } from "@/client/components/QueryState";

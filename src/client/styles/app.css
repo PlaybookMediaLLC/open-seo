@@ -208,6 +208,36 @@ select:not([data-slot]) {
   }
 }
 
+/* Icons: every @tabler/icons-react glyph renders <svg class="tabler-icon ...">.
+   Change the tokens below to restyle all icons at once. Size utilities on an
+   icon (size-4, size-5...) still win because they sit in the utilities layer.
+   Eigenn sizing: 14px in navigation, 20px on cards, 16px elsewhere. */
+:root {
+  --icon-size: 1rem;
+  --icon-stroke: 1.5;
+  --icon-nav: 14px;
+  --icon-card: 20px;
+}
+
+@layer base {
+  .tabler-icon {
+    width: var(--icon-size);
+    height: var(--icon-size);
+    stroke-width: var(--icon-stroke);
+    flex-shrink: 0;
+  }
+}
+
+@utility icon-nav {
+  width: var(--icon-nav);
+  height: var(--icon-nav);
+}
+
+@utility icon-card {
+  width: var(--icon-card);
+  height: var(--icon-card);
+}
+
 /* Row actions that appear on hover. Keyboard focus inside the row and touch
    screens (no hover) show them too. Put `group` on the row. */
 @utility reveal-on-hover {

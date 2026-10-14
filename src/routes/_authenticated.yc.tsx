@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowRight, Tag } from "lucide-react";
+import {
+  IconArrowRight as ArrowRight,
+  IconTag as Tag,
+} from "@tabler/icons-react";
 import { QueryError } from "@/client/components/QueryState";
 import { StatusScreen } from "@/client/components/StatusScreen";
 import { Button } from "@/client/components/ui/button";

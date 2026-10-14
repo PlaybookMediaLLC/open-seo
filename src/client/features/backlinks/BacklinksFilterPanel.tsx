@@ -1,5 +1,9 @@
 import { useId } from "react";
-import { Link, Link2, Unlink } from "lucide-react";
+import {
+  IconLink as Link,
+  IconLink as Link2,
+  IconUnlink as Unlink,
+} from "@tabler/icons-react";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import { DataTableFilterGroup } from "@/client/components/table/DataTableToolbar";
 import { Checkbox } from "@/client/components/ui/checkbox";

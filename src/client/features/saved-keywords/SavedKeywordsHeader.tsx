@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { IconRefresh as RefreshCw } from "@tabler/icons-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { ExportMenu } from "@/client/components/ExportMenu";
 import { PageHeader } from "@/client/components/PageHeader";

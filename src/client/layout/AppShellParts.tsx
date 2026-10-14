@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, ExternalLink } from "lucide-react";
+import {
+  IconAlertTriangle as AlertTriangle,
+  IconExternalLink as ExternalLink,
+} from "@tabler/icons-react";
 import { AppBanner } from "@/client/layout/AppBanner";
 import { dataforseoHelpLinkOptions } from "@/client/navigation/items";
 import { Button } from "@/client/components/ui/button";

@@ -1,6 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { FileDown, Plus, Sheet, Trash2 } from "lucide-react";
+import {
+  IconFileDownload as FileDown,
+  IconPlus as Plus,
+  IconTable as Sheet,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Button } from "@/client/components/ui/button";
 import { DataTable, useDataTable } from "@/client/components/table/DataTable";

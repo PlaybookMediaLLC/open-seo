@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { Clock, History, X, type LucideIcon } from "lucide-react";
+import {
+  IconClock as Clock,
+  IconHistory as History,
+  IconX as X,
+  type Icon as AppIcon,
+} from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/client/components/ui/card";
@@ -15,7 +20,7 @@ type Props<TItem extends { timestamp: number }> = {
   renderLink: (item: TItem, props: ClickableProps) => ReactNode;
   getTitle: (item: TItem) => ReactNode;
   getSubtitle: (item: TItem) => ReactNode;
-  emptyIcon: LucideIcon;
+  emptyIcon: AppIcon;
   emptyTitle: string;
   emptyDescription?: string;
 };

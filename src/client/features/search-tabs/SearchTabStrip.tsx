@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { QueryKey } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { IconX as X } from "@tabler/icons-react";
 import { Spinner } from "@/client/components/ui/spinner";
 import type { SearchTab } from "./types";
 import {

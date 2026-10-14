@@ -2,7 +2,12 @@ import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { identity, sortBy } from "remeda";
-import { Columns3, MessageSquare, SearchCheck, Sparkles } from "lucide-react";
+import {
+  IconLayoutColumns as Columns3,
+  IconMessage as MessageSquare,
+  IconZoomCheck as SearchCheck,
+  IconSparkles as Sparkles,
+} from "@tabler/icons-react";
 import { useHostedPlanGate } from "@/client/features/billing/HostedPlanGate";
 import { ResearchPageShell } from "@/client/features/ai-search/ResearchPageShell";
 import { PromptTrackingWithoutUpgradeButton } from "@/client/features/ai-visibility/shared";

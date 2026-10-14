@@ -1,6 +1,6 @@
 import { useId, useState, type ReactNode } from "react";
 import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
+import { IconLoader2 as Loader2, IconX as X } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   Dialog,

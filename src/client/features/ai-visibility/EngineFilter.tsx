@@ -1,5 +1,8 @@
 import { Menu } from "@base-ui/react/menu";
-import { Check, ChevronDown } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconChevronDown as ChevronDown,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,

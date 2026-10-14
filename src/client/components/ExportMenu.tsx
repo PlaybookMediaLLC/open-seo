@@ -1,14 +1,14 @@
 import { Fragment, type ReactNode } from "react";
 import {
-  ChevronDown,
-  Copy,
-  Download,
-  FileDown,
-  FileJson,
-  FileSpreadsheet,
-  List,
-  Sheet,
-} from "lucide-react";
+  IconChevronDown as ChevronDown,
+  IconCopy as Copy,
+  IconDownload as Download,
+  IconFileDownload as FileDown,
+  IconJson as FileJson,
+  IconFileSpreadsheet as FileSpreadsheet,
+  IconList as List,
+  IconTable as Sheet,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,

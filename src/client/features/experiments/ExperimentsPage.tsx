@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { FlaskConical } from "lucide-react";
+import { IconFlask as FlaskConical } from "@tabler/icons-react";
 import { PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";
 import { EmptyState } from "@/client/components/EmptyState";

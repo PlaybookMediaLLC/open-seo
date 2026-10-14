@@ -4,12 +4,12 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { LOCATIONS } from "@/client/features/keywords/locations";
 import {
-  AlertTriangle,
-  Archive,
-  Globe,
-  Plus,
-  ChevronRight,
-} from "lucide-react";
+  IconAlertTriangle as AlertTriangle,
+  IconArchive as Archive,
+  IconWorld as Globe,
+  IconPlus as Plus,
+  IconChevronRight as ChevronRight,
+} from "@tabler/icons-react";
 import {
   getRankTrackingConfigSummaries,
   updateRankTrackingConfig,

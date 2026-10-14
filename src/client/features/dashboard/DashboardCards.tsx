@@ -1,13 +1,16 @@
 import { GoogleSearchConsoleLogo } from "@/client/features/integrations/GoogleProductLogos";
 import { startAudit } from "@/serverFunctions/audit";
 import { QueryError } from "@/client/components/QueryState";
-import { LoaderCircle, ScanSearch } from "lucide-react";
+import {
+  IconLoader2 as LoaderCircle,
+  IconScanEye as ScanSearch,
+} from "@tabler/icons-react";
 import { CardShell } from "@/client/components/CardShell";
 import { Progress } from "@/client/components/ui/progress";
 import { Button } from "@/client/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { IconCheck as Check } from "@tabler/icons-react";
 import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
 import { SeverityBadge } from "@/client/features/audit/shared";
 import { AUDIT_ISSUE_TYPES } from "@/shared/audit-issues";

@@ -10,7 +10,7 @@ import {
   getRankPositionMatrix,
   estimateRankCheckCost,
 } from "@/serverFunctions/rank-tracking";
-import { AlertTriangle } from "lucide-react";
+import { IconAlertTriangle as AlertTriangle } from "@tabler/icons-react";
 import { QueryState } from "@/client/components/QueryState";
 import { SkeletonCard } from "@/client/components/SkeletonPresets";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";

@@ -1,5 +1,8 @@
 import { useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowUp, Square } from "lucide-react";
+import {
+  IconArrowUp as ArrowUp,
+  IconSquare as Square,
+} from "@tabler/icons-react";
 import {
   InputGroup,
   InputGroupAddon,

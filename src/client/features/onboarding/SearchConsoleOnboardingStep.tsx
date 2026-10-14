@@ -1,7 +1,7 @@
 import * as React from "react";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { IconCheck as Check } from "@tabler/icons-react";
 import { GoogleGlyph } from "@/client/features/gsc/GoogleGlyph";
 import { QueryError } from "@/client/components/QueryState";
 import { Spinner } from "@/client/components/Spinner";

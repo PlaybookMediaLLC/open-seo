@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CircleSlash } from "lucide-react";
+import { IconCircleOff as CircleSlash } from "@tabler/icons-react";
 import { sort } from "remeda";
 import type { RankPositionMatrixCell } from "@/serverFunctions/rank-tracking";
 import { EmptyState } from "@/client/components/EmptyState";

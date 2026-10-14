@@ -8,7 +8,7 @@ import {
 } from "@/client/components/ui/table";
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Link2 } from "lucide-react";
+import { IconLink as Link2 } from "@tabler/icons-react";
 import { CardShell } from "@/client/components/CardShell";
 import { QueryState } from "@/client/components/QueryState";
 import { getDashboardLinkActivity } from "@/serverFunctions/dashboard";

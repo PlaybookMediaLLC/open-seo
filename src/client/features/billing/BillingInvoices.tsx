@@ -1,5 +1,5 @@
 import { queryOptions, useMutation, useQuery } from "@tanstack/react-query";
-import { Download } from "lucide-react";
+import { IconDownload as Download } from "@tabler/icons-react";
 import { QueryError } from "@/client/components/QueryState";
 import { buttonVariants } from "@/client/components/ui/button";
 import {

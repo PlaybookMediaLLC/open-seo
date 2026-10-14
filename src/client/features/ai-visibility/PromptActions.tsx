@@ -1,4 +1,9 @@
-import { Archive, Pause, Pencil, Play } from "lucide-react";
+import {
+  IconArchive as Archive,
+  IconPlayerPause as Pause,
+  IconPencil as Pencil,
+  IconPlayerPlay as Play,
+} from "@tabler/icons-react";
 import { RowActionsMenu } from "@/client/components/RowActionsMenu";
 import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";
 

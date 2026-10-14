@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { IconSparkles as Sparkles } from "@tabler/icons-react";
 import { Badge } from "@/client/components/ui/badge";
 import { exportRows } from "@/client/lib/exportRows";
 import { captureClientEvent } from "@/client/lib/posthog";

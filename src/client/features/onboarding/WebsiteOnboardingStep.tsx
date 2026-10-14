@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { revalidateLogic } from "@tanstack/react-form";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import {
+  IconArrowRight as ArrowRight,
+  IconChevronDown as ChevronDown,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useAppForm } from "@/client/components/form/useAppForm";

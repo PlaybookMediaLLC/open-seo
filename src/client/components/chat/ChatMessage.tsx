@@ -1,12 +1,12 @@
 import { type UIMessage } from "ai";
 import { useState } from "react";
 import {
-  AlertTriangle,
-  Check,
-  ChevronRight,
-  Pencil,
-  Undo2,
-} from "lucide-react";
+  IconAlertTriangle as AlertTriangle,
+  IconCheck as Check,
+  IconChevronRight as ChevronRight,
+  IconPencil as Pencil,
+  IconArrowBackUp as Undo2,
+} from "@tabler/icons-react";
 import { CopyButton } from "@/client/components/CopyButton";
 import { Markdown } from "@/client/components/Markdown";
 import { Badge } from "@/client/components/ui/badge";

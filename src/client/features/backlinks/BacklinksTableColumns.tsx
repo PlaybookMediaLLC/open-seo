@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronRight } from "lucide-react";
+import { IconChevronRight as ChevronRight } from "@tabler/icons-react";
 import { SortableHeader } from "@/client/components/table/SortableHeader";
 import { HelpLabel } from "@/client/components/HelpLabel";
 import { SafeExternalLink } from "@/client/components/SafeExternalLink";

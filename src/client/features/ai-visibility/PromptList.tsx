@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Info, Plus } from "lucide-react";
+import { IconInfoCircle as Info, IconPlus as Plus } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { ExportMenu } from "@/client/components/ExportMenu";
 import { DataTableToolbar } from "@/client/components/table/DataTableToolbar";

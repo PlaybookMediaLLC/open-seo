@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
+import { IconArrowRight as ArrowRight } from "@tabler/icons-react";
 import { QueryError } from "@/client/components/QueryState";
 import { StatusScreen } from "@/client/components/StatusScreen";
 import {

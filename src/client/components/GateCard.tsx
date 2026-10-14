@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { LucideIcon } from "lucide-react";
+import type { Icon as AppIcon } from "@tabler/icons-react";
 import { cn } from "cn";
 import { Card, CardContent } from "@/client/components/ui/card";
 
@@ -24,7 +24,7 @@ export function GateCard({
   children,
   className,
 }: {
-  icon?: LucideIcon;
+  icon?: AppIcon;
   tone?: keyof typeof ICON_TONES;
   /** A label above the title, such as a "Paid plan" Badge. */
   badge?: ReactNode;
@@ -32,7 +32,7 @@ export function GateCard({
   description: ReactNode;
   actions: ReactNode;
   /** What the feature gives, in a grid below the actions. */
-  features?: { icon: LucideIcon; title: string; body: string }[];
+  features?: { icon: AppIcon; title: string; body: string }[];
   /** Status below the actions, such as an Alert. */
   children?: ReactNode;
   className?: string;

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { IconPlus as Plus } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { Button } from "@/client/components/ui/button";
 import { getAiVisibilitySources } from "@/serverFunctions/ai-visibility";

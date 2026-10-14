@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react";
+import { IconTrash as Trash2 } from "@tabler/icons-react";
 import { useId, useState } from "react";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";

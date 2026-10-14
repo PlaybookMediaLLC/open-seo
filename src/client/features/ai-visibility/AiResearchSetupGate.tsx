@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Sparkles } from "lucide-react";
+import { IconSparkles as Sparkles } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";

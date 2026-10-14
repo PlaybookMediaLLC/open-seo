@@ -1,4 +1,8 @@
-import { Pencil, Settings2, Tag as TagIcon } from "lucide-react";
+import {
+  IconPencil as Pencil,
+  IconAdjustments as Settings2,
+  IconTag as TagIcon,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { Button } from "@/client/components/ui/button";
 import {

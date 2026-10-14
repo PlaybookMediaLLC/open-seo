@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MessageSquare, Play, Plus, Settings2 } from "lucide-react";
+import {
+  IconMessage as MessageSquare,
+  IconPlayerPlay as Play,
+  IconPlus as Plus,
+  IconAdjustments as Settings2,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import { EmptyState } from "@/client/components/EmptyState";
 import { SkeletonPageContent } from "@/client/components/SkeletonPresets";

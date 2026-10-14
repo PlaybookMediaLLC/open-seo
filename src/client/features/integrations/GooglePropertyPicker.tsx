@@ -15,7 +15,12 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { Check, ChevronDown, Plus, Search } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconChevronDown as ChevronDown,
+  IconPlus as Plus,
+  IconSearch as Search,
+} from "@tabler/icons-react";
 
 export type GooglePickerSelection = { accountId: string; propertyId: string };
 type Property = {

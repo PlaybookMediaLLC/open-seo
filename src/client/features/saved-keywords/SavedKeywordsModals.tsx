@@ -1,4 +1,4 @@
-import { AlertCircle } from "lucide-react";
+import { IconAlertCircle as AlertCircle } from "@tabler/icons-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 

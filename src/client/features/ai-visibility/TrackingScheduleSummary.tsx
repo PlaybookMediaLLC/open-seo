@@ -1,4 +1,7 @@
-import { CalendarClock, Pause } from "lucide-react";
+import {
+  IconCalendarTime as CalendarClock,
+  IconPlayerPause as Pause,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import type { AiTracker } from "@/shared/ai-visibility";
 import { scheduleLabel } from "@/shared/rank-tracking";

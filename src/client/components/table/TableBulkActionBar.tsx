@@ -1,4 +1,4 @@
-import { Download, X } from "lucide-react";
+import { IconDownload as Download, IconX as X } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { Button } from "@/client/components/ui/button";
 import {

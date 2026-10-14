@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Check, Database, KeyRound, User } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconDatabase as Database,
+  IconKey as KeyRound,
+  IconUser as User,
+} from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import { captureClientEvent } from "@/client/lib/posthog";

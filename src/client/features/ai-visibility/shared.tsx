@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Link } from "@tanstack/react-router";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 as Loader2 } from "@tabler/icons-react";
 import { QueryError } from "@/client/components/QueryState";
 import { Spinner } from "@/client/components/Spinner";
 import { Badge } from "@/client/components/ui/badge";

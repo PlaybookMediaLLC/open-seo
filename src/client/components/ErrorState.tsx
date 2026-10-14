@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CircleAlert } from "lucide-react";
+import { IconAlertCircle as CircleAlert } from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import {
   Alert,

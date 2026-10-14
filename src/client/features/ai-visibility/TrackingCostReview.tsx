@@ -6,7 +6,7 @@ import {
   useQuery,
   type QueryClient,
 } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { IconLoader2 as Loader2 } from "@tabler/icons-react";
 import { FormDialog } from "@/client/components/FormDialog";
 import { Button } from "@/client/components/ui/button";
 import {

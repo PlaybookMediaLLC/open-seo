@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { Check, Copy } from "lucide-react";
+import { IconCheck as Check, IconCopy as Copy } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import { useCopy } from "@/client/hooks/useCopy";
 

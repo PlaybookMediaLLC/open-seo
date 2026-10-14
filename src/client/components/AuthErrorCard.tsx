@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { ShieldAlert } from "lucide-react";
+import { IconShieldExclamation as ShieldAlert } from "@tabler/icons-react";
 import {
   getErrorCode,
   getStandardErrorMessage,

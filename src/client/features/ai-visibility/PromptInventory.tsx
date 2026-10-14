@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { cn } from "cn";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import {
+  IconChevronDown as ChevronDown,
+  IconChevronRight as ChevronRight,
+} from "@tabler/icons-react";
 import {
   AI_ENGINE_LABELS,
   aiNoAnswerLabel,

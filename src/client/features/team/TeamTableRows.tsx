@@ -1,4 +1,8 @@
-import { Crown, Send, Trash2 } from "lucide-react";
+import {
+  IconCrown as Crown,
+  IconSend as Send,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { RowActionsMenu } from "@/client/components/RowActionsMenu";

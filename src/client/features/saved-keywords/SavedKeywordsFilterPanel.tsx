@@ -1,4 +1,8 @@
-import { Minus, Plus, X } from "lucide-react";
+import {
+  IconMinus as Minus,
+  IconPlus as Plus,
+  IconX as X,
+} from "@tabler/icons-react";
 import { useState, type KeyboardEvent } from "react";
 import {
   DataTableFilterGroup,

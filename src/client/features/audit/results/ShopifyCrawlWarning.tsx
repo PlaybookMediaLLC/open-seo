@@ -1,6 +1,9 @@
 import { useIsMutating, useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ShieldAlert, ShieldCheck } from "lucide-react";
+import {
+  IconShieldExclamation as ShieldAlert,
+  IconShieldCheck as ShieldCheck,
+} from "@tabler/icons-react";
 import {
   CrawlerAccessForm,
   crawlerCredentialsQueryKey,

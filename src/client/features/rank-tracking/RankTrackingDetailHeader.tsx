@@ -1,4 +1,9 @@
-import { Monitor, Plus, Settings, Smartphone } from "lucide-react";
+import {
+  IconDeviceDesktop as Monitor,
+  IconPlus as Plus,
+  IconSettings as Settings,
+  IconDeviceMobile as Smartphone,
+} from "@tabler/icons-react";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import { Button } from "@/client/components/ui/button";
 import {

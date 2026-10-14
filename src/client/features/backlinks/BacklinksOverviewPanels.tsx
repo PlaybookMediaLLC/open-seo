@@ -1,5 +1,5 @@
 import { MetricsTable } from "@/client/components/MetricsTable";
-import { Info } from "lucide-react";
+import { IconInfoCircle as Info } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Badge } from "@/client/components/ui/badge";
 import { RESEARCH_SCOPE_LABELS } from "@/shared/researchScope";

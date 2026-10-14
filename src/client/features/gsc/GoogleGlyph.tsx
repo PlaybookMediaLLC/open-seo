@@ -36,7 +36,7 @@ export function GoogleGlyph({
   );
 }
 
-/** Monochrome variant with a LucideIcon-compatible signature for nav slots. */
+/** Monochrome variant with a AppIcon-compatible signature for nav slots. */
 export function GoogleGlyphMuted({ className }: { className?: string }) {
   return <GoogleGlyph muted className={className} />;
 }

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Globe, Search } from "lucide-react";
+import { IconWorld as Globe, IconSearch as Search } from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { RecentSearches } from "@/client/components/RecentSearches";
 import { LOCATIONS } from "@/client/features/keywords/utils";

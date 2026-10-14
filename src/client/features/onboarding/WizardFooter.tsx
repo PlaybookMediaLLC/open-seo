@@ -1,5 +1,8 @@
 import type { ReactNode, Ref } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  IconArrowLeft as ArrowLeft,
+  IconArrowRight as ArrowRight,
+} from "@tabler/icons-react";
 import { cn } from "cn";
 import { Button } from "@/client/components/ui/button";
 

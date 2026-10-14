@@ -4,14 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, type ComponentType } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeftRight,
-  Check,
-  CircleHelp,
-  CreditCard,
-  LogOut,
-  Settings,
-  User,
-} from "lucide-react";
+  IconArrowsLeftRight as ArrowLeftRight,
+  IconCheck as Check,
+  IconHelpCircle as CircleHelp,
+  IconCreditCard as CreditCard,
+  IconLogout as LogOut,
+  IconSettings as Settings,
+  IconUser as User,
+} from "@tabler/icons-react";
 import { organizationContextQueryOptions } from "@/client/features/team/organizationQueries";
 import { switchOrganization } from "@/serverFunctions/organization";
 import { clearLastProjectId } from "@/client/lib/active-project";

@@ -1,4 +1,4 @@
-import { Info } from "lucide-react";
+import { IconInfoCircle as Info } from "@tabler/icons-react";
 import { EngineLabel } from "./EngineLabel";
 import { Checkbox } from "@/client/components/ui/checkbox";
 import {

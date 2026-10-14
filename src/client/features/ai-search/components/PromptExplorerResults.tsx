@@ -1,10 +1,10 @@
 import {
-  AlertCircle,
-  CheckCircle2,
-  ExternalLink,
-  Globe,
-  XCircle,
-} from "lucide-react";
+  IconAlertCircle as AlertCircle,
+  IconCircleCheck as CheckCircle2,
+  IconExternalLink as ExternalLink,
+  IconWorld as Globe,
+  IconCircleX as XCircle,
+} from "@tabler/icons-react";
 import { cn } from "cn";
 import { MarkdownAnswer } from "@/client/features/ai-search/components/MarkdownAnswer";
 import { getModelAccent } from "@/client/features/ai-search/platformLabels";

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { IconPlus as Plus } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";

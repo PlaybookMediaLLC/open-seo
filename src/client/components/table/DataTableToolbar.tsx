@@ -1,4 +1,7 @@
-import { RotateCcw, SlidersHorizontal } from "lucide-react";
+import {
+  IconRotateClockwise2 as RotateCcw,
+  IconAdjustmentsHorizontal as SlidersHorizontal,
+} from "@tabler/icons-react";
 import type { ComponentProps, ReactNode } from "react";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
