@@ -1,6 +1,10 @@
 import { and, asc, count, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  ga4DateInTimeZone,
+  shiftGa4Date,
+} from "@/server/features/ga4/services/Ga4Dates";
+import {
   growthExperiments,
   measurementRuns,
   measurementDays,
@@ -183,8 +187,10 @@ export async function hasOverlappingChanges(
     .from(growthExperiments)
     .where(experimentScope(projectId, experimentId));
   if (!experiment?.baselineStart || !experiment.observationEnd) return false;
-  const [overlap] = await db
-    .select({ id: growthExperiments.id })
+  // deployedAt is a UTC instant while windows are Pacific dates. Prefilter one
+  // day wider in SQL, then compare the exact Pacific deployment date.
+  const candidates = await db
+    .select({ deployedAt: growthExperiments.deployedAt })
     .from(growthExperiments)
     .where(
       and(
@@ -192,10 +198,15 @@ export async function hasOverlappingChanges(
         ne(growthExperiments.id, experimentId),
         eq(growthExperiments.targetUrl, experiment.targetUrl),
         isNotNull(growthExperiments.deployedAt),
-        sql`substr(${growthExperiments.deployedAt}, 1, 10) >= ${experiment.baselineStart}`,
-        sql`substr(${growthExperiments.deployedAt}, 1, 10) <= ${experiment.observationEnd}`,
+        sql`substr(${growthExperiments.deployedAt}, 1, 10) >= ${shiftGa4Date(experiment.baselineStart, -1)}`,
+        sql`substr(${growthExperiments.deployedAt}, 1, 10) <= ${shiftGa4Date(experiment.observationEnd, 1)}`,
       ),
     )
-    .limit(1);
-  return Boolean(overlap);
+    .limit(20);
+  return candidates.some(({ deployedAt }) => {
+    const day = ga4DateInTimeZone(new Date(deployedAt!), "America/Los_Angeles");
+    return (
+      day >= experiment.baselineStart! && day <= experiment.observationEnd!
+    );
+  });
 }
