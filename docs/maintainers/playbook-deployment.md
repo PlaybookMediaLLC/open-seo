@@ -13,11 +13,11 @@ This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://seo
 
 ## Current status
 
-The first deploy was run locally on October 14, 2026, with `pnpm alchemy deploy --stage playbook`. It created 22 resources. `https://seo.playbookmedia.io` redirects to the `solomon-ai.cloudflareaccess.com` login, the workers.dev URL returns 404, and D1 `open-seo-db-playbook` has all 59 migrations applied through `0058_blue_terror.sql`.
+Deploys run automatically from `main` through `deploy-playbook.yml`. The first CI deploy succeeded on October 14, 2026: the checks passed, Alchemy reconciled the stage, and the verify step saw the Cloudflare Access login at `https://seo.playbookmedia.io`. The workers.dev URL returns 404. D1 `open-seo-db-playbook` has all 59 migrations applied through `0058_blue_terror.sql`.
 
-The Alchemy state store is bootstrapped in the account. The `ENV_PLAYBOOK` and `CLOUDFLARE_ACCOUNT_ID` repository secrets and the `playbook` environment are set. `CLOUDFLARE_API_TOKEN` is still missing, because creating an API token requires the account's Global API Key or the dashboard. Until it is added, the CI deploy job fails at its first step and the live site keeps running the last local deploy.
+The repository secrets `CLOUDFLARE_API_TOKEN` (token `github-actions-playbook-openseo`), `CLOUDFLARE_ACCOUNT_ID` and `ENV_PLAYBOOK` are set, as is the `playbook` environment.
 
-`DATAFORSEO_API_KEY` currently holds a placeholder, so keyword, domain and backlink research will fail until a real key is placed in `ENV_PLAYBOOK`. Google OAuth is not configured yet.
+`DATAFORSEO_API_KEY` currently holds a placeholder, so keyword, domain and backlink research fail until a real key is placed in `ENV_PLAYBOOK`.
 
 ## System context
 
@@ -164,7 +164,7 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
 1. **Cloudflare state store:** run `pnpm alchemy login` once, then `pnpm alchemy cloudflare bootstrap`, against the account that owns `playbookmedia.io` (`de345701e5dc7e14d3c079da3e637448`, "Yoanyomba@solomon-ai.co's Account").
 2. **API token:** create an account API token with these permissions:
    - Account: Workers Scripts, Workers KV Storage, D1, Workers R2 Storage, Access (Apps and Policies) — all Edit.
-   - Account: Secrets Store Read, Account Settings Read.
+   - Account: Secrets Store **Write** (Alchemy reads its state-store token through an edge preview, which Read alone rejects), Account Settings Read, Workers Tail Read, Access: Organizations Read.
    - Zone `playbookmedia.io`: Zone Read, DNS Edit, Workers Routes Edit, SSL and Certificates Edit.
 3. **Repository secrets** (Settings, Secrets and variables, Actions):
    - `CLOUDFLARE_API_TOKEN`: the token from step 2.
