@@ -1,6 +1,20 @@
 # Organic Growth Platform: handoff to the next coding agent
 
-Updated October 14, 2026, approximately 12:42 PM America/New_York.
+Updated October 14, 2026, approximately 1:25 PM America/New_York.
+
+## Current status (supersedes the sections below)
+
+M0 through M3 are implemented, committed and locally verified with mocked providers. The M3 integration described as unfinished in sections 6 and 7 below is complete. See the "Milestone 3 delivery update" in `organic-growth-audit.md` for results, and `docs/EXPERIMENTS.md` for user guidance.
+
+M3 commits, oldest first: `165f4549` schema and fenced repository, `8fb838c9` services and real-SQL tests, `ae8d99ef` experiments UI and Track results, `f8a5a701` list shows latest completed assessment, followed by a documentation commit.
+
+The only remaining milestone work is **section 7F, live acceptance**. It needs user authorization for a real GSC property and selected repository. The user merges and deploys, and real observations take about 38 days after deployment. Do not claim live acceptance from the mocked or synthetic evidence. No PR, push, deployment or paid request has been made.
+
+The disposable Postgres 14 cluster (port 55483, data under `/Users/dyomba/.jcode/scratch/openseo-pg.IwbEYc`) has all migrations through `0036` applied and was stopped. Restart it as described in section 8 before running Postgres tests with `OPPORTUNITY_TEST_PG_URL`. Local D1 has migration `0058` applied. No `.env.local` remains. The existing Playwright suite requires a temporary `.env.local` containing `AUTH_MODE=local_noauth` (see the papercut).
+
+---
+
+## Historical handoff (M3 in progress)
 
 ## Copy-paste instruction
 

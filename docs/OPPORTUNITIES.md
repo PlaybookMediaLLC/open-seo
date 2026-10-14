@@ -2,7 +2,7 @@
 
 Opportunities turns your project's saved Search Console analysis into a review queue. It helps you decide which existing pages deserve investigation before preparing a website change.
 
-This release does not generate code patches, open pull requests, publish content or measure post-deployment outcomes. **Approving an opportunity only records approval to prepare a proposal. It does not authorize a website change.**
+**Approving an opportunity only records approval to prepare a proposal. It does not authorize a website change.** With an authorized GitHub connection, you can then prepare one supported static Next.js description change and separately approve its pull request. See [GitHub metadata proposals](GITHUB_PUBLISHING.md). After the pull request is merged and deployed, you can track Search Console results in [Experiments and results](EXPERIMENTS.md).
 
 ## Get started
 
@@ -49,7 +49,7 @@ Filter by opportunity type, status or minimum priority. Sort by priority or newe
 
 A repeated detection updates the existing opportunity instead of duplicating it. Historical evidence and decisions remain available. Each decision records its actor, note and evidence revision. If new evidence arrives, review that evidence before approving proposal preparation. Evidence older than 14 days, or belonging to a disconnected or changed property, cannot receive a new approval.
 
-A deferred opportunity is hidden from the default queue for seven days. Enable **Include deferred** to see it sooner. Approval records the approving user as the owner. Later execution states are reserved for a future publishing workflow and cannot be manually marked complete here.
+A deferred opportunity is hidden from the default queue for seven days. Enable **Include deferred** to see it sooner. Approval records the approving user as the owner. GitHub execution records In progress or Failed from actual attempts. Creating a pull request does not mark a change Implemented, and results cannot be manually marked complete here.
 
 ## Usage and failures
 
@@ -63,4 +63,4 @@ The workflow makes no paid DataForSEO or AI calls. It does not add a general bud
 
 Apply the database migrations for your configured backend before starting the updated application. Local D1 development uses `pnpm db:migrate:local`. Postgres uses `pnpm db:migrate:pg` with the deployment's existing database configuration. Use your established production migration and backup procedure for a deployed instance.
 
-No new provider secrets or background orchestration service are needed. Keep the existing Google OAuth configuration and application encryption secret. Never expose `AUTH_MODE=local_noauth` to an untrusted network.
+Detection needs no new provider secret or background orchestration service. Optional GitHub publishing requires a narrowly scoped fine-grained token and a configured application encryption secret, as described in its setup guide. Keep the existing Google OAuth configuration. Never expose `AUTH_MODE=local_noauth` to an untrusted network.

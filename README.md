@@ -28,6 +28,8 @@ Try OpenSEO for free on our website. If you want to support the project, a hoste
 ## Main SEO Workflows
 
 - [Opportunities](docs/OPPORTUNITIES.md): review evidence-backed Search Console opportunities before preparing changes.
+- [GitHub metadata proposals](docs/GITHUB_PUBLISHING.md): review a static Next.js description change and explicitly authorize its pull request. No auto-merge or deployment.
+- [Experiments and results](docs/EXPERIMENTS.md): confirm a merged change reached production and compare Search Console results before and after it.
 - Keyword research
 - Rank tracking
 - Competitor Insights
