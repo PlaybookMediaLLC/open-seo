@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { safeHttpUrl } from "@/shared/safe-url";
 import { useQuery } from "@tanstack/react-query";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";
@@ -44,9 +45,13 @@ export function ExperimentDetailPage({
   const execution = publishing.executions.find(
     (item) => item.id === experiment.executionId,
   );
-  const url = execution?.pullRequestUrl;
-  const safeLink =
-    url && /^https:\/\/github\.com\/[^/?#]+\/[^/?#]+\/pull\/\d+$/.test(url);
+  const pinned = execution?.pullRequestUrl;
+  // Use the shared URL sanitizer, then also require the pinned GitHub PR shape.
+  const url =
+    pinned &&
+    /^https:\/\/github\.com\/[^/?#]+\/[^/?#]+\/pull\/\d+$/.test(pinned)
+      ? safeHttpUrl(pinned)
+      : null;
   return (
     <div className="overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
       <div className="mx-auto max-w-7xl space-y-5">
@@ -96,7 +101,7 @@ export function ExperimentDetailPage({
             >
               View proposal and approval history
             </Button>
-            {safeLink && (
+            {url && (
               <Button
                 variant="outline"
                 nativeButton={false}

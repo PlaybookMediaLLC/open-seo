@@ -54,7 +54,8 @@ async function refresh(
         };
       if (
         detail.latestRun?.status === "completed" &&
-        Date.now() - Date.parse(detail.latestRun.startedAt) < 86_400_000
+        detail.latestRun.finishedAt &&
+        Date.now() - Date.parse(detail.latestRun.finishedAt) < 86_400_000
       )
         return {
           ok: true,

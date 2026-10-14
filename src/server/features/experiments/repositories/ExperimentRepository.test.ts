@@ -129,6 +129,19 @@ describe(`ExperimentRepository real ${database.isPostgres ? "Postgres" : "SQLite
     ).toBe("implemented");
   });
 
+  it("records deployment without overwriting a later human rejection", async () => {
+    const { input, experiment } = await registered(database);
+    expect(await merged(input, experiment)).toBe(true);
+    await client.execute({
+      sql: "UPDATE opportunities SET status = 'rejected' WHERE id = ?",
+      args: [experiment.opportunityId],
+    });
+    expect(await confirm(input, experiment)).toBe(true);
+    expect(
+      await status(database, "opportunities", experiment.opportunityId),
+    ).toBe("rejected");
+  });
+
   it("rejects deployment when the pull request check is stale", async () => {
     const { input, experiment } = await registered(database);
     expect(await merged(input, experiment)).toBe(true);

@@ -98,7 +98,14 @@ export async function confirmDeployment(
           status: "implemented",
           version: sql`${opportunities.version} + 1`,
         })
-        .where(and(eq(opportunities.projectId, input.projectId), accepted)),
+        .where(
+          and(
+            eq(opportunities.projectId, input.projectId),
+            // Never overwrite a later human decision such as rejection.
+            eq(opportunities.status, "in_progress"),
+            accepted,
+          ),
+        ),
     ];
   });
   return experimentAccepted(input.projectId, input.experimentId, eventId);

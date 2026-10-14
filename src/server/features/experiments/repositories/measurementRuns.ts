@@ -180,7 +180,6 @@ export async function failRun(
                 and(
                   experimentScope(input.projectId, input.experimentId),
                   isNotNull(growthExperiments.deployedAt),
-                  currentProperty(tx, input.projectId),
                 ),
               ),
           ),

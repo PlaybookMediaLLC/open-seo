@@ -1,4 +1,4 @@
-import { and, eq, exists, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, exists, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { runBatch } from "@/db/runBatch";
 import {
   growthExperiments,
@@ -143,6 +143,12 @@ export async function completeRun(input: {
         .where(
           and(
             eq(opportunities.projectId, run.projectId),
+            // Only advance the deployed lifecycle; keep later human decisions.
+            inArray(opportunities.status, [
+              "implemented",
+              "measuring",
+              "completed",
+            ]),
             accepted,
             exists(
               tx
