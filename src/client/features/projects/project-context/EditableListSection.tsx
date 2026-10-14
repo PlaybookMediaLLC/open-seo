@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { Pencil, Plus } from "lucide-react";
+import { IconPencil as Pencil, IconPlus as Plus } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import { EmptyState } from "@/client/components/EmptyState";
 import { InlineConfirm } from "@/client/components/InlineConfirm";

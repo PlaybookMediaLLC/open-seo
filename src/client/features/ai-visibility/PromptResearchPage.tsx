@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronRight, Telescope } from "lucide-react";
+import {
+  IconChevronRight as ChevronRight,
+  IconTelescope as Telescope,
+} from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
 import { SearchCard, SearchInput } from "@/client/components/SearchCard";

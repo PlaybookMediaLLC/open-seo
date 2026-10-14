@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { LoaderCircle, Plus } from "lucide-react";
+import {
+  IconLoader2 as LoaderCircle,
+  IconPlus as Plus,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   WebsiteCompetitorRow,

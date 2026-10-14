@@ -1,5 +1,5 @@
 import * as React from "react";
-import { X } from "lucide-react";
+import { IconX as X } from "@tabler/icons-react";
 import {
   Alert,
   AlertAction,

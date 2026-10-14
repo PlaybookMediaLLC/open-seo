@@ -1,6 +1,6 @@
 import type { FormEvent } from "react";
 import { cn } from "cn";
-import { Info } from "lucide-react";
+import { IconInfoCircle as Info } from "@tabler/icons-react";
 import {
   Tooltip,
   TooltipTrigger,

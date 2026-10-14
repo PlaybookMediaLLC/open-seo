@@ -1,11 +1,11 @@
 import {
-  Bot,
-  ClipboardCheck,
-  FolderPlus,
-  Globe,
-  Lightbulb,
-  Users,
-} from "lucide-react";
+  IconRobot as Bot,
+  IconClipboardCheck as ClipboardCheck,
+  IconFolderPlus as FolderPlus,
+  IconWorld as Globe,
+  IconBulb as Lightbulb,
+  IconUsers as Users,
+} from "@tabler/icons-react";
 import type { DashboardActivation } from "@/server/features/dashboard/services/DashboardService";
 import type { DashboardSetupStep } from "@/types/schemas/dashboard";
 

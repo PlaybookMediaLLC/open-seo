@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { IconSearch as Search } from "@tabler/icons-react";
 import { CardShell } from "@/client/components/CardShell";
 import { QueryState } from "@/client/components/QueryState";
 import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";

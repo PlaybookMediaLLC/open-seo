@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Link2, ListPlus, MessagesSquare } from "lucide-react";
+import {
+  IconLink as Link2,
+  IconPlaylistAdd as ListPlus,
+  IconMessages as MessagesSquare,
+} from "@tabler/icons-react";
 import { z } from "zod";
 import { PromptResearchPage } from "@/client/features/ai-visibility/PromptResearchPage";
 import { PromptTrackingWithoutUpgradeButton } from "@/client/features/ai-visibility/shared";

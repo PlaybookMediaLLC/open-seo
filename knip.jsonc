@@ -3,6 +3,8 @@
     // Alchemy deploy stack (run by the alchemy CLI, not imported by the app)
     "deploy/alchemy/alchemy.run.ts",
     "deploy/alchemy/alchemy.preview-access.run.ts",
+    // Autumn pricing config (pushed by the atmn CLI, not imported by the app)
+    "autumn.config.ts",
     // Site-audit aux worker entry (wrangler.audit.jsonc)
     "src/audit-worker.ts",
     // Detect Tanstack Start Routes

@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { Circle, CircleCheck, Loader2 } from "lucide-react";
+import {
+  IconCircle as Circle,
+  IconCircleCheck as CircleCheck,
+  IconLoader2 as Loader2,
+} from "@tabler/icons-react";
 
 // Research reports no progress, so steps advance on a timer sized to the
 // usual minute-long run. The last step stays in progress until it finishes.

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { IconDots as MoreHorizontal } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,

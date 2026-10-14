@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin } from "lucide-react";
+import { IconMapPin as MapPin } from "@tabler/icons-react";
 import { Badge } from "@/client/components/ui/badge";
 import {
   Combobox,

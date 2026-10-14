@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Info, TriangleAlert } from "lucide-react";
+import {
+  IconInfoCircle as Info,
+  IconAlertTriangle as TriangleAlert,
+} from "@tabler/icons-react";
 import { cn } from "cn";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import { Skeleton } from "@/client/components/ui/skeleton";

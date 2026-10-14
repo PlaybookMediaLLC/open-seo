@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { FileText, Trash2 } from "lucide-react";
+import {
+  IconFileText as FileText,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import { EmptyState } from "@/client/components/EmptyState";
 import { RowActionsMenu } from "@/client/components/RowActionsMenu";
 import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";

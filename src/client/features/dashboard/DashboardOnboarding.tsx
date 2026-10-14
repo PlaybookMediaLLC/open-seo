@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronRight, RotateCcw } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconChevronRight as ChevronRight,
+  IconRotateClockwise2 as RotateCcw,
+} from "@tabler/icons-react";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { setDashboardStepDismissed } from "@/serverFunctions/dashboard";

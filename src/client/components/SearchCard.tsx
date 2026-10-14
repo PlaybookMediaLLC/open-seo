@@ -1,5 +1,5 @@
 import type { ComponentProps, FormEvent, ReactNode } from "react";
-import { Search } from "lucide-react";
+import { IconSearch as Search } from "@tabler/icons-react";
 import { cn } from "cn";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";

@@ -1,6 +1,6 @@
 import { MetricsTable } from "@/client/components/MetricsTable";
 import { useMemo, type ReactNode } from "react";
-import { ShieldAlert } from "lucide-react";
+import { IconShieldExclamation as ShieldAlert } from "@tabler/icons-react";
 import {
   exportIssues,
   exportPages,

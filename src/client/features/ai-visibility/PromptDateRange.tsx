@@ -1,4 +1,4 @@
-import { CalendarDays } from "lucide-react";
+import { IconCalendar as CalendarDays } from "@tabler/icons-react";
 import { Input } from "@/client/components/ui/input";
 import {
   Select,

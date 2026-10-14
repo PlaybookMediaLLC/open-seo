@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Settings, User } from "lucide-react";
+import {
+  IconSettings as Settings,
+  IconUser as User,
+} from "@tabler/icons-react";
 import { ThemePreferenceDropdownItems } from "@/client/components/ThemePreferenceMenuItems";
 import { Button } from "@/client/components/ui/button";
 import {

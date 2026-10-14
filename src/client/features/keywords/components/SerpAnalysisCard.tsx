@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { ExternalLink, Globe } from "lucide-react";
+import {
+  IconExternalLink as ExternalLink,
+  IconWorld as Globe,
+} from "@tabler/icons-react";
 import { ErrorState } from "@/client/components/ErrorState";
 import { ExportMenu } from "@/client/components/ExportMenu";
 import { Button } from "@/client/components/ui/button";

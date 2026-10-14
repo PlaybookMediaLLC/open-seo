@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { Link2 } from "lucide-react";
+import { IconLink as Link2 } from "@tabler/icons-react";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import {
   BacklinksOverviewPanels,

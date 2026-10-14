@@ -6,7 +6,11 @@ import {
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Download, Save, Sheet } from "lucide-react";
+import {
+  IconDownload as Download,
+  IconDeviceFloppy as Save,
+  IconTable as Sheet,
+} from "@tabler/icons-react";
 import {
   TableBulkActionBar,
   TableBulkActionButton,

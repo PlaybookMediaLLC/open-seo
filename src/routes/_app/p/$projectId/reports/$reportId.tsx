@@ -2,15 +2,15 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ExternalLink,
-  FileDown,
-  Globe,
-  Lock,
-  Maximize2,
-  Minimize2,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+  IconExternalLink as ExternalLink,
+  IconFileDownload as FileDown,
+  IconWorld as Globe,
+  IconLock as Lock,
+  IconMaximize as Maximize2,
+  IconMinimize as Minimize2,
+  IconDots as MoreHorizontal,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import { z } from "zod";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";

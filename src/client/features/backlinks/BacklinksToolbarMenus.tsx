@@ -1,4 +1,9 @@
-import { ChevronDown, Gauge, Link2, MoreHorizontal } from "lucide-react";
+import {
+  IconChevronDown as ChevronDown,
+  IconGauge as Gauge,
+  IconLink as Link2,
+  IconDots as MoreHorizontal,
+} from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   DropdownMenu,

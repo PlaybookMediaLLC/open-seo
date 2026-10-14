@@ -1,6 +1,6 @@
 import { useMemo, type MutableRefObject } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { Star } from "lucide-react";
+import { IconStar as Star } from "@tabler/icons-react";
 import { makeSelectionColumn } from "@/client/components/table/DataTable";
 import { ScoreBadge } from "@/client/components/table/ScoreBadge";
 import { Badge } from "@/client/components/ui/badge";

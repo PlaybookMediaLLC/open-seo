@@ -1,7 +1,12 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { BarChart3, Quote, Sparkles, TrendingUp } from "lucide-react";
+import {
+  IconChartBar as BarChart3,
+  IconQuote as Quote,
+  IconSparkles as Sparkles,
+  IconTrendingUp as TrendingUp,
+} from "@tabler/icons-react";
 import { lookupBrand } from "@/serverFunctions/ai-search";
 import { useHostedPlanGate } from "@/client/features/billing/HostedPlanGate";
 import { ResearchPageShell } from "@/client/features/ai-search/ResearchPageShell";

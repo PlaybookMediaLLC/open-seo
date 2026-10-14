@@ -16,7 +16,10 @@ import {
   CardTitle,
 } from "@/client/components/ui/card";
 import { PageHeader } from "@/client/components/PageHeader";
-import { ArrowUpRight, ShieldAlert } from "lucide-react";
+import {
+  IconArrowUpRight as ArrowUpRight,
+  IconShieldExclamation as ShieldAlert,
+} from "@tabler/icons-react";
 import { getAuthMode } from "@/lib/auth-mode";
 import { captureClientEvent } from "@/client/lib/posthog";
 import {

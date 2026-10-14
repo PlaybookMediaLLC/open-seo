@@ -1,7 +1,7 @@
 import * as React from "react";
 import { InlineConfirm } from "@/client/components/InlineConfirm";
 import { useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { IconPencil as Pencil } from "@tabler/icons-react";
 import { QueryState } from "@/client/components/QueryState";
 import { getProjectContext } from "@/serverFunctions/projectContext";
 import {

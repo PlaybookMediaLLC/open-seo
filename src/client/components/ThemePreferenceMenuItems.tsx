@@ -1,5 +1,9 @@
 import type { ReactNode } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import {
+  IconDeviceDesktop as Monitor,
+  IconMoon as Moon,
+  IconSun as Sun,
+} from "@tabler/icons-react";
 import { SegmentedToggle } from "@/client/components/SegmentedToggle";
 import {
   DropdownMenuLabel,

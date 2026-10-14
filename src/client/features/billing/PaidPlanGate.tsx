@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import type { LucideIcon } from "lucide-react";
+import type { Icon as AppIcon } from "@tabler/icons-react";
 import { GateCard } from "@/client/components/GateCard";
 import { SkeletonCard } from "@/client/components/SkeletonPresets";
 import { Button } from "@/client/components/ui/button";
@@ -11,7 +11,7 @@ import { SUBSCRIBE_ROUTE } from "@/shared/billing";
 export type PaidPlanGateCopy = {
   feature: string;
   description: string;
-  features: { icon: LucideIcon; title: string; body: string }[];
+  features: { icon: AppIcon; title: string; body: string }[];
   /** A second action that keeps a free user moving, such as a free feature. */
   alternative?: ReactNode;
 };

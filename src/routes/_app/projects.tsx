@@ -2,7 +2,10 @@ import * as React from "react";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronRight, Plus } from "lucide-react";
+import {
+  IconChevronRight as ChevronRight,
+  IconPlus as Plus,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import {
   getArchivedProjects,

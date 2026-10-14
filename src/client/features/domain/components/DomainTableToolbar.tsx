@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertTriangle } from "lucide-react";
+import { IconAlertTriangle as AlertTriangle } from "@tabler/icons-react";
 import { ExportMenu } from "@/client/components/ExportMenu";
 import {
   DataTableFilterToggle,

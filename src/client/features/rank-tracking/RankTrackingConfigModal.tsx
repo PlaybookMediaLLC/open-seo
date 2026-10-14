@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
 import { useQuery } from "@tanstack/react-query";
 import { revalidateLogic, useStore } from "@tanstack/react-form";
-import { Info } from "lucide-react";
+import { IconInfoCircle as Info } from "@tabler/icons-react";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { CountryCombobox } from "@/client/components/CountryCombobox";
 import { Button } from "@/client/components/ui/button";

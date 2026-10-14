@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { Copy, Download, ExternalLink } from "lucide-react";
+import {
+  IconCopy as Copy,
+  IconDownload as Download,
+  IconExternalLink as ExternalLink,
+} from "@tabler/icons-react";
 import { reverse, sortBy } from "remeda";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";

@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { MoreHorizontal, Play, RefreshCw } from "lucide-react";
+import {
+  IconDots as MoreHorizontal,
+  IconPlayerPlay as Play,
+  IconRefresh as RefreshCw,
+} from "@tabler/icons-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { Button } from "@/client/components/ui/button";
 import {

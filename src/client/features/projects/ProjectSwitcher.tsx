@@ -3,7 +3,11 @@ import { projectsQueryOptions } from "@/client/features/projects/projectQueries"
 import { Link, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { findLast } from "remeda";
-import { FolderCog, Plus, Settings } from "lucide-react";
+import {
+  IconFolderCog as FolderCog,
+  IconPlus as Plus,
+  IconSettings as Settings,
+} from "@tabler/icons-react";
 import { setLastProjectId } from "@/client/lib/active-project";
 import { CreateProjectModal } from "@/client/features/projects/CreateProjectModal";
 import {

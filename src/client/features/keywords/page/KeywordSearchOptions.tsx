@@ -1,5 +1,5 @@
 import { useId, useState } from "react";
-import { SlidersHorizontal } from "lucide-react";
+import { IconAdjustmentsHorizontal as SlidersHorizontal } from "@tabler/icons-react";
 import { FormDialog } from "@/client/components/FormDialog";
 import { Button } from "@/client/components/ui/button";
 import {

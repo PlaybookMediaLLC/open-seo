@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AlertCircle,
-  CheckCircle,
-  FileWarning,
-  Info,
-  TriangleAlert,
-  type LucideIcon,
-} from "lucide-react";
+  IconAlertCircle as AlertCircle,
+  IconCircleCheck as CheckCircle,
+  IconFileAlert as FileWarning,
+  IconInfoCircle as Info,
+  IconAlertTriangle as TriangleAlert,
+  type Icon as AppIcon,
+} from "@tabler/icons-react";
 import { cn } from "cn";
 import { Badge } from "@/client/components/ui/badge";
 import { Spinner } from "@/client/components/ui/spinner";
@@ -122,7 +122,7 @@ export function LighthouseScoreBadge({ score }: { score: number | null }) {
 
 const SEVERITY_BADGE: Record<
   IssueSeverity,
-  { variant: "destructive" | "warning" | "info"; icon: LucideIcon }
+  { variant: "destructive" | "warning" | "info"; icon: AppIcon }
 > = {
   critical: { variant: "destructive", icon: FileWarning },
   warning: { variant: "warning", icon: TriangleAlert },

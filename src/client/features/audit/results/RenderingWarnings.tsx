@@ -1,4 +1,4 @@
-import { ShieldAlert } from "lucide-react";
+import { IconShieldExclamation as ShieldAlert } from "@tabler/icons-react";
 import {
   Alert,
   AlertDescription,

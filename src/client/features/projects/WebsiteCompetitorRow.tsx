@@ -1,4 +1,8 @@
-import { Check, Pencil, Trash2 } from "lucide-react";
+import {
+  IconCheck as Check,
+  IconPencil as Pencil,
+  IconTrash as Trash2,
+} from "@tabler/icons-react";
 import { DomainFavicon } from "@/client/features/ai-visibility/DomainFavicon";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";

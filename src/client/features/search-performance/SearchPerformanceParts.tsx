@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Copy, Loader2, Save } from "lucide-react";
+import {
+  IconCopy as Copy,
+  IconLoader2 as Loader2,
+  IconDeviceFloppy as Save,
+} from "@tabler/icons-react";
 import { toast } from "sonner";
 import {
   DataTable,

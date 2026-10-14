@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { Loader2, X } from "lucide-react";
+import { IconLoader2 as Loader2, IconX as X } from "@tabler/icons-react";
 import { Button } from "@/client/components/ui/button";
 import {
   Dialog,

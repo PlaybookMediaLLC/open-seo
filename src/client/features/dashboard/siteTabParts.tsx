@@ -1,5 +1,5 @@
 import { Popover } from "@base-ui/react/popover";
-import { Info } from "lucide-react";
+import { IconInfoCircle as Info } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";

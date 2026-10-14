@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import { Brain } from "lucide-react";
+import { IconBrain as Brain } from "@tabler/icons-react";
 import { QueryError } from "@/client/components/QueryState";
 import { StatusScreen } from "@/client/components/StatusScreen";
 import { Button } from "@/client/components/ui/button";

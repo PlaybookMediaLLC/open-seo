@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { List, Rows3 } from "lucide-react";
+import { IconList as List, IconLayoutRows as Rows3 } from "@tabler/icons-react";
 import type { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { BacklinksFilterPanel } from "./BacklinksFilterPanel";
 import { backlinksFilterConditionLimit } from "./backlinksFilterTypes";

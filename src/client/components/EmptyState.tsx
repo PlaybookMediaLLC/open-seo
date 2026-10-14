@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { CircleAlert, Inbox, SearchX, type LucideIcon } from "lucide-react";
+import {
+  IconAlertCircle as CircleAlert,
+  IconInbox as Inbox,
+  IconZoomCancel as SearchX,
+  type Icon as AppIcon,
+} from "@tabler/icons-react";
 import {
   Empty,
   EmptyContent,
@@ -9,7 +14,7 @@ import {
   EmptyTitle,
 } from "@/client/components/ui/empty";
 
-const KIND_ICONS: Record<EmptyStateKind, LucideIcon> = {
+const KIND_ICONS: Record<EmptyStateKind, AppIcon> = {
   "no-data": Inbox,
   filtered: SearchX,
   error: CircleAlert,
@@ -35,7 +40,7 @@ export function EmptyState({
 }: {
   kind?: EmptyStateKind;
   /** Pass `null` for a text-only empty state. */
-  icon?: LucideIcon | null;
+  icon?: AppIcon | null;
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
