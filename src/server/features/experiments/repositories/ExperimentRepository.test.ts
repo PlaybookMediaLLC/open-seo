@@ -144,7 +144,7 @@ describe(`ExperimentRepository real ${database.isPostgres ? "Postgres" : "SQLite
     expect(
       await repo.hasOverlappingChanges(input.projectId, experiment.id),
     ).toBe(false);
-    async function sibling(deployedAt: string) {
+    async function sibling(siblingDeployedAt: string) {
       const executionId = crypto.randomUUID();
       await client.execute({
         sql: "INSERT INTO proposal_executions SELECT ?, project_id, proposal_id, approval_id, status, phase, ?, started_at, finished_at, request_count, commit_sha, pull_request_number, pull_request_url, error, last_event_id FROM proposal_executions WHERE id = ?",
@@ -152,7 +152,12 @@ describe(`ExperimentRepository real ${database.isPostgres ? "Postgres" : "SQLite
       });
       await client.execute({
         sql: "INSERT INTO growth_experiments SELECT ?, project_id, opportunity_id, proposal_id, ?, site_url, target_url, created_by, created_at, pull_request_state, pull_request_checked_at, merged_at, merge_commit_sha, ?, deployment_confirmed_by, deployment_note, deployment_confirmed_at, other_changes, seasonal_risk, baseline_start, baseline_end, observation_start, observation_end, NULL, NULL FROM growth_experiments WHERE id = ?",
-        args: [crypto.randomUUID(), executionId, deployedAt, experiment.id],
+        args: [
+          crypto.randomUUID(),
+          executionId,
+          siblingDeployedAt,
+          experiment.id,
+        ],
       });
     }
     // 03:00 UTC on the baseline start is still the previous Pacific date.
