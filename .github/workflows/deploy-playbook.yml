@@ -1,0 +1,143 @@
+name: Deploy (Playbook Media)
+
+# Deploys the PlaybookMediaLLC fork to Cloudflare at https://seo.playbookmedia.io
+# through the same Alchemy stack as previews and self-host
+# (deploy/alchemy/alchemy.run.ts), using the dedicated stage "playbook".
+#
+# The stage owns its own resources, created on first deploy and adopted
+# afterwards: D1 `open-seo-db-playbook` (migrations from drizzle/sqlite applied
+# on every deploy), KV `open-seo-kv-playbook` and `open-seo-oauth-kv-playbook`,
+# R2 `open-seo-r2-playbook`, workers `open-seo-playbook` and
+# `open-seo-playbook-audit`, and stage-suffixed Workflows. See
+# docs/maintainers/playbook-deployment.md.
+#
+# Required repository secrets:
+#   CLOUDFLARE_API_TOKEN   Account token: Workers Scripts, KV, D1, R2, Workflows,
+#                          Workers Routes, Access (Apps and Policies) write;
+#                          Zone read + DNS write on playbookmedia.io; Secrets
+#                          Store read; Account Settings read.
+#   CLOUDFLARE_ACCOUNT_ID  Account that owns the playbookmedia.io zone.
+#   ENV_PLAYBOOK           Contents of .env.playbook (see
+#                          deploy/.env.playbook.example). Never commit it.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - docs/**
+      - .agents/**
+      - web/**
+      - tests/badseo/**
+  workflow_dispatch:
+
+# Never run two deploys of the same stage at once, and never cancel one
+# mid-flight: a half-applied D1 migration is worse than a queued deploy.
+concurrency:
+  group: deploy-playbook
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  STAGE: playbook
+  DEPLOY_URL: https://seo.playbookmedia.io
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+jobs:
+  checks:
+    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Type check, lint, Knip and format
+        run: pnpm exec tsc --noEmit && pnpm lint && pnpm exec knip && pnpm exec prettier --check .
+      - name: Unit and integration tests
+        run: pnpm test:ci
+
+  deploy:
+    needs: checks
+    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: playbook
+      url: https://seo.playbookmedia.io
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Require Cloudflare credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Set the CLOUDFLARE_API_TOKEN repository secret (see docs/maintainers/playbook-deployment.md)"
+            exit 1
+          fi
+
+      - name: Write .env.playbook
+        run: printf '%s' "$ENV_PLAYBOOK" > .env.playbook
+        env:
+          ENV_PLAYBOOK: ${{ secrets.ENV_PLAYBOOK }}
+
+      # Fail in seconds on a misconfigured secret instead of after the build.
+      - name: Validate deployment configuration
+        run: |
+          get() { grep "^$1=" .env.playbook | tail -1 | cut -d= -f2-; }
+          [ "$(get CUSTOM_DOMAIN)" = "seo.playbookmedia.io" ] || { echo "::error::ENV_PLAYBOOK must set CUSTOM_DOMAIN=seo.playbookmedia.io"; exit 1; }
+          [ "$(get DATABASE_PROVIDER)" = "d1" ] || { echo "::error::ENV_PLAYBOOK must set DATABASE_PROVIDER=d1"; exit 1; }
+          case "$(get AUTH_MODE)" in
+            cloudflare_access) [ -n "$(get ACCESS_ALLOWED_EMAILS)" ] || { echo "::error::cloudflare_access needs ACCESS_ALLOWED_EMAILS"; exit 1; } ;;
+            hosted) ;;
+            *) echo "::error::AUTH_MODE must be cloudflare_access or hosted (never local_noauth on a public hostname)"; exit 1 ;;
+          esac
+          secret=$(get BETTER_AUTH_SECRET)
+          [ ${#secret} -ge 32 ] || { echo "::error::BETTER_AUTH_SECRET must be a stable value of at least 32 characters"; exit 1; }
+          [ -n "$(get DATAFORSEO_API_KEY)" ] || { echo "::error::DATAFORSEO_API_KEY is required by the deploy stack"; exit 1; }
+
+      - name: Build and deploy stage
+        run: |
+          pnpm exec vite build --mode playbook
+          pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.playbook --stage "$STAGE" --yes
+
+      # Cloudflare Access must answer before the app does. A direct app
+      # response means the hostname is public, which this deployment forbids.
+      - name: Verify the deployment is reachable and protected
+        run: |
+          mode=$(grep '^AUTH_MODE=' .env.playbook | tail -1 | cut -d= -f2-)
+          for attempt in $(seq 1 12); do
+            response=$(curl -sS -o /dev/null -m 10 -w '%{http_code} %{redirect_url}' "$DEPLOY_URL/") || response=""
+            code="${response%% *}"
+            location="${response#* }"
+            if [ "$mode" = "cloudflare_access" ]; then
+              case "$location" in
+                https://*.cloudflareaccess.com/cdn-cgi/access/login*) echo "Protected by Cloudflare Access"; exit 0 ;;
+              esac
+              if [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 500 ] && [ "$code" != 404 ]; then
+                echo "::error::$DEPLOY_URL answered HTTP $code without a Cloudflare Access challenge"; exit 1
+              fi
+            elif [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+              echo "Reachable (HTTP $code)"; exit 0
+            fi
+            echo "attempt $attempt: not ready (${response:-no response})"
+            sleep 10
+          done
+          echo "::error::Could not verify $DEPLOY_URL after 12 attempts (DNS or certificate may still be provisioning). Re-run this job."
+          exit 1
+
+      - name: Remove env file
+        if: always()
+        run: rm -f .env.playbook
