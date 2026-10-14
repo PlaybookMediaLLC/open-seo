@@ -17,6 +17,7 @@ import {
 } from "@/client/features/auth/TurnstileWidget";
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
 import { useGoogleAuth } from "@/client/features/auth/useGoogleAuth";
+import { GOOGLE_ONLY_AUTH } from "@/lib/auth-mode";
 import { getFormError } from "@/client/lib/forms";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
@@ -157,18 +158,14 @@ function SignUpPage() {
               <p className="text-sm leading-relaxed text-muted-foreground">
                 By signing up, you agree to our{" "}
                 <a
-                  href="https://openseo.so/terms-and-conditions"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/terms"
                   className="text-foreground underline underline-offset-2 hover:text-foreground/80 transition-colors"
                 >
                   Terms
                 </a>{" "}
                 and{" "}
                 <a
-                  href="https://openseo.so/privacy"
-                  target="_blank"
-                  rel="noreferrer"
+                  href="/privacy"
                   className="text-foreground underline underline-offset-2 hover:text-foreground/80 transition-colors"
                 >
                   Privacy Policy
@@ -200,10 +197,14 @@ function SignUpPage() {
             onContinueWithGoogle={() => {
               void google.start();
             }}
-            onContinueWithEmail={() => {
-              setShowEmailForm(true);
-              google.clearError();
-            }}
+            onContinueWithEmail={
+              GOOGLE_ONLY_AUTH
+                ? undefined
+                : () => {
+                    setShowEmailForm(true);
+                    google.clearError();
+                  }
+            }
           />
           {google.error ? (
             <p className="text-sm text-destructive">{google.error}</p>

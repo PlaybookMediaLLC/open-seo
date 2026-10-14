@@ -47,6 +47,9 @@ function createAuth() {
     ? getHostedBaseUrl()
     : "http://localhost";
   const bypassEmail = Reflect.get(env, "BYPASS_EMAIL_VERIFICATION") === "true";
+  // Google-only deployments turn email/password off server-side, so the
+  // sign-in, sign-up and reset endpoints are rejected rather than just hidden.
+  const googleOnly = isGoogleOnlyAuth();
   const baseAuthConfig = createBaseAuthConfig(
     isHostedAuthMode(env.AUTH_MODE)
       ? {
@@ -162,6 +165,7 @@ function createAuth() {
     ...baseAuthConfig,
     emailAndPassword: {
       ...baseAuthConfig.emailAndPassword,
+      enabled: !googleOnly,
       requireEmailVerification: !bypassEmail,
       resetPasswordTokenExpiresIn: 60 * 60,
       revokeSessionsOnPasswordReset: true,
@@ -172,18 +176,19 @@ function createAuth() {
         });
       },
     },
-    emailVerification: bypassEmail
-      ? undefined
-      : {
-          sendOnSignUp: true,
-          autoSignInAfterVerification: true,
-          sendVerificationEmail: async ({ user, url }) => {
-            await sendHostedVerificationEmail({
-              email: user.email,
-              confirmationUrl: url,
-            });
+    emailVerification:
+      bypassEmail || googleOnly
+        ? undefined
+        : {
+            sendOnSignUp: true,
+            autoSignInAfterVerification: true,
+            sendVerificationEmail: async ({ user, url }) => {
+              await sendHostedVerificationEmail({
+                email: user.email,
+                confirmationUrl: url,
+              });
+            },
           },
-        },
     socialProviders: getSocialProviders(),
     // Where Google sign-in failures land (canceled consent screen, replayed
     // callback URLs). Without this the default /api/auth/error page 302s to
@@ -376,11 +381,18 @@ function hasHostedAuthEmailConfig() {
   });
 }
 
+function isGoogleOnlyAuth() {
+  return Reflect.get(env, "AUTH_GOOGLE_ONLY") === "true";
+}
+
 export function hasHostedAuthConfig() {
   try {
     getHostedBaseUrl();
     getHostedSecret();
     getGoogleSocialProviderConfig();
+    // Google-only sign-in needs neither the email-signup captcha nor the
+    // verification/reset email provider: Google verifies the address.
+    if (isGoogleOnlyAuth()) return true;
     return (
       hasHostedTurnstileConfig(env) &&
       (Reflect.get(env, "BYPASS_EMAIL_VERIFICATION") === "true" ||

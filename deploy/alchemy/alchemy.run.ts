@@ -273,6 +273,7 @@ const dataEnv = {
   // POLICY_AUD are stage-dependent and set in the stack body below.
   DATAFORSEO_API_KEY: Config.redacted("DATAFORSEO_API_KEY"),
   BYPASS_EMAIL_VERIFICATION: optionalVar("BYPASS_EMAIL_VERIFICATION"),
+  AUTH_GOOGLE_ONLY: optionalVar("AUTH_GOOGLE_ONLY"),
   BETTER_AUTH_SECRET: optionalSecret("BETTER_AUTH_SECRET"),
   CRAWLER_ACCESS_SECRET: optionalSecret("CRAWLER_ACCESS_SECRET"),
   GOOGLE_CLIENT_ID: optionalVar("GOOGLE_CLIENT_ID"),
