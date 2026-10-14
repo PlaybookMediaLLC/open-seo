@@ -101,7 +101,9 @@ jobs:
           [ "$(get DATABASE_PROVIDER)" = "d1" ] || { echo "::error::ENV_PLAYBOOK must set DATABASE_PROVIDER=d1"; exit 1; }
           case "$(get AUTH_MODE)" in
             cloudflare_access) [ -n "$(get ACCESS_ALLOWED_EMAILS)" ] || { echo "::error::cloudflare_access needs ACCESS_ALLOWED_EMAILS"; exit 1; } ;;
-            hosted) ;;
+            hosted)
+              id=$(get GOOGLE_CLIENT_ID); [ -n "$id" ] || { echo "::error::hosted mode needs GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET"; exit 1; }
+              [ "$(get AUTH_GOOGLE_ONLY)" = "true" ] || [ -n "$(get TURNSTILE_SECRET_KEY)" ] || { echo "::error::public email sign-up needs Turnstile; set AUTH_GOOGLE_ONLY=true or TURNSTILE_* keys"; exit 1; } ;;
             *) echo "::error::AUTH_MODE must be cloudflare_access or hosted (never local_noauth on a public hostname)"; exit 1 ;;
           esac
           secret=$(get BETTER_AUTH_SECRET)
@@ -113,13 +115,14 @@ jobs:
           pnpm exec vite build --mode playbook
           pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.playbook --stage "$STAGE" --yes
 
-      # Cloudflare Access must answer before the app does. A direct app
-      # response means the hostname is public, which this deployment forbids.
+      # cloudflare_access: Access must answer before the app does, or the
+      # hostname is public by mistake. hosted: the app is public by design, so
+      # the sign-in page must answer directly.
       - name: Verify the deployment is reachable and protected
         run: |
           mode=$(grep '^AUTH_MODE=' .env.playbook | tail -1 | cut -d= -f2-)
           for attempt in $(seq 1 12); do
-            response=$(curl -sS -o /dev/null -m 10 -w '%{http_code} %{redirect_url}' "$DEPLOY_URL/") || response=""
+            response=$(curl -sS -o /dev/null -m 10 -w '%{http_code} %{redirect_url}' "$DEPLOY_URL/sign-in") || response=""
             code="${response%% *}"
             location="${response#* }"
             if [ "$mode" = "cloudflare_access" ]; then
@@ -129,7 +132,7 @@ jobs:
               if [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 500 ] && [ "$code" != 404 ]; then
                 echo "::error::$DEPLOY_URL answered HTTP $code without a Cloudflare Access challenge"; exit 1
               fi
-            elif [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+            elif [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ] && curl -sS -m 10 "$DEPLOY_URL/privacy" | grep -q "team@playbookmedia.io"; then
               echo "Reachable (HTTP $code)"; exit 0
             fi
             echo "attempt $attempt: not ready (${response:-no response})"
