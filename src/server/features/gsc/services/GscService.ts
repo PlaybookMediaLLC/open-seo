@@ -202,6 +202,7 @@ async function disconnect(input: { projectId: string }): Promise<void> {
 /** Pass-through of GSC `searchAnalytics.query` for a project's connected property. */
 async function getPerformance(
   input: GscPerformanceInput,
+  options: { signal?: AbortSignal } = {},
 ): Promise<GscPerformanceResult> {
   const connection = await GscConnectionRepository.getByProjectId(
     input.projectId,
@@ -218,6 +219,7 @@ async function getPerformance(
   const client = createGscClient({
     userId: connection.connectedByUserId,
     gscAccountId: connection.gscAccountId ?? undefined,
+    signal: options.signal,
   });
   const rows = await client.querySearchAnalytics(connection.siteUrl, request);
   return {

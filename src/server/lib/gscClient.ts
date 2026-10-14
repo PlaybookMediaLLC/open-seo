@@ -83,6 +83,7 @@ function messageForStatus(status: number, body: string): string {
 export function createGscClient(opts: {
   userId: string;
   gscAccountId?: string;
+  signal?: AbortSignal;
 }) {
   async function getToken(): Promise<string> {
     try {
@@ -104,6 +105,7 @@ export function createGscClient(opts: {
     init?: { method?: string; body?: unknown },
   ): Promise<T> {
     const token = await getToken();
+    opts.signal?.throwIfAborted();
     const hasBody = init?.body !== undefined;
     const response = await fetch(url, {
       method: init?.method ?? "GET",
@@ -112,6 +114,7 @@ export function createGscClient(opts: {
         ...(hasBody ? { "Content-Type": "application/json" } : {}),
       },
       body: hasBody ? JSON.stringify(init?.body) : undefined,
+      signal: opts.signal,
     });
     if (!response.ok) {
       const body = await response.text().catch(() => "");
