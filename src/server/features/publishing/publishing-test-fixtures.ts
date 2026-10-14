@@ -92,6 +92,8 @@ export async function makePublishingFixture() {
     url: `https://github.com/${connection.owner}/${connection.repository}/pull/7`,
     state: "open",
     merged: false,
+    mergedAt: null,
+    mergeCommitSha: null,
     headSha: "b".repeat(40),
     body: `<!-- OpenSEO proposal:${proposal.id} change:${proposal.changeHash} -->`,
     baseRef: connection.baseBranch,

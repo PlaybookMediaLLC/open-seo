@@ -407,6 +407,13 @@
       "when": 1791994258912,
       "tag": "0057_youthful_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "6",
+      "when": 1791995818617,
+      "tag": "0058_blue_terror",
+      "breakpoints": true
     }
   ]
 }

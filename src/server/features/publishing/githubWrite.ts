@@ -13,6 +13,8 @@ export type GithubPullRequest = {
   url: string;
   state: "open" | "closed";
   merged: boolean;
+  mergedAt: string | null;
+  mergeCommitSha: string | null;
   headSha: string;
   body: string;
   baseRef: string;
@@ -44,7 +46,8 @@ export function createGithubWriter(
     html_url: z.string(),
     state: z.enum(["open", "closed"]),
     merged: z.boolean().optional(),
-    merged_at: z.string().nullable(),
+    merged_at: z.string().datetime({ offset: true }).nullable(),
+    merge_commit_sha: githubShaSchema.nullish(),
     body: z.string().nullable(),
     head: side,
     base: side,
@@ -52,6 +55,11 @@ export function createGithubWriter(
   function toPull(value: z.infer<typeof pullSchema>): GithubPullRequest {
     validateRepository(value.base.repo);
     validateRepository(value.head.repo);
+    if (value.merged === false && value.merged_at !== null)
+      throw new AppError(
+        "UPSTREAM_UNAVAILABLE",
+        "GitHub pull request merge state is inconsistent.",
+      );
     const url = URL.parse(value.html_url);
     const path = url?.pathname.split("/");
     if (
@@ -81,6 +89,8 @@ export function createGithubWriter(
       url: url.href,
       state: value.state,
       merged: value.merged ?? value.merged_at !== null,
+      mergedAt: value.merged_at,
+      mergeCommitSha: value.merge_commit_sha ?? null,
       headSha: value.head.sha,
       body: value.body ?? "",
       baseRef: value.base.ref,
