@@ -153,7 +153,7 @@ describe("gscClient", () => {
   });
 
   it("does not start a provider query when cancelled while refreshing the token", async () => {
-    let resolveToken: (token: string) => void = () => {};
+    let resolveToken!: (token: string) => void;
     mocks.getAccessToken.mockReturnValueOnce(
       new Promise<string>((resolve) => {
         resolveToken = resolve;
