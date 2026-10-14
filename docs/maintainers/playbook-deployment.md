@@ -8,18 +8,21 @@ This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://seo
 - **Runtime:** two Cloudflare Workers, deployed by the repository's existing Alchemy stack (`deploy/alchemy/alchemy.run.ts`) as stage `playbook`.
 - **Data:** a dedicated D1 database `open-seo-db-playbook`, plus stage-suffixed KV, R2, Workflows and Durable Objects. Nothing is shared with openseo.so, previews or any other stage.
 - **Hostname:** `seo.playbookmedia.io` is bound as a Worker custom domain on the `playbookmedia.io` zone. The workers.dev URL is disabled.
-- **Access:** `AUTH_MODE=cloudflare_access` is the default. A Cloudflare Access application covering only `seo.playbookmedia.io` lets through the emails in `ACCESS_ALLOWED_EMAILS`.
+- **Access:** public, `AUTH_MODE=hosted` with Google-only sign-in. Each user gets their own organization. Switching back to `cloudflare_access` re-creates an email-gated Access application.
 - **Deploys:** `.github/workflows/deploy-playbook.yml` runs on every push to `main` and on manual dispatch. It runs checks, builds, deploys, applies D1 migrations, then verifies the Access gate.
 
 ## Current status
 
-Deploys run automatically from `main` through `deploy-playbook.yml`. The first CI deploy succeeded on October 14, 2026: the checks passed, Alchemy reconciled the stage, and the verify step saw the Cloudflare Access login at `https://seo.playbookmedia.io`. The workers.dev URL returns 404. D1 `open-seo-db-playbook` has all 59 migrations applied through `0058_blue_terror.sql`.
+`https://seo.playbookmedia.io` is public. It runs `AUTH_MODE=hosted` with `AUTH_GOOGLE_ONLY=true`: anyone can sign up and sign in with Google, and the email/password sign-in, sign-up and reset endpoints are disabled server-side. `/privacy` and `/terms` are public Playbook Media LLC pages, with contact `team@playbookmedia.io`. Deploys run automatically from `main`. The verify step checks that the public privacy page is served.
 
-The repository secrets `CLOUDFLARE_API_TOKEN` (token `github-actions-playbook-openseo`), `CLOUDFLARE_ACCOUNT_ID` and `ENV_PLAYBOOK` are set, as is the `playbook` environment.
+Google OAuth uses a Web client in project `playbook-openseo-prod` (organization solomon-ai.co). The consent screen is External and In production, with the home, privacy and terms URLs and the authorized domain `playbookmedia.io`. The redirect URIs are `/api/auth/callback/google` (sign-in), `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback`. The client ID and secret live only in `ENV_PLAYBOOK`.
 
-Google OAuth uses a Web client in Google Cloud project `playbook-openseo-prod` (organization solomon-ai.co). Its consent screen is Internal, so only solomon-ai.co Google accounts can connect, and the Search Console, Analytics Admin and Analytics Data APIs are enabled. The client is registered with the `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback` redirect URIs on `seo.playbookmedia.io`. Its ID and secret live only in `ENV_PLAYBOOK`.
+Open items:
 
-`DATAFORSEO_API_KEY` currently holds a placeholder, so keyword, domain and backlink research fail until a real key is placed in `ENV_PLAYBOOK`.
+- **Google sensitive scopes:** Search Console (`webmasters.readonly`) and Analytics (`analytics.readonly`) are requested at connect time but not yet declared under Data Access. Users connecting them see Google's unverified-app warning, and the 100-user cap applies, until the scopes are declared and Google completes its sensitive-scope verification (days to weeks, with a demo video). Sign-in itself uses only basic profile scopes.
+- **Billing:** billing runs on Autumn backed by Playbook Media's Stripe account. `AUTUMN_SECRET_KEY` is not set yet, so credit-metered features (keyword, domain and backlink research, audits, AI visibility) fail until an Autumn account is connected to Stripe and the key is added to `ENV_PLAYBOOK`. Opportunities, publishing and experiments use free Search Console data.
+- **DataForSEO:** still a placeholder key.
+- **Turnstile:** a widget exists for `seo.playbookmedia.io`. Its keys are in `ENV_PLAYBOOK`, but Google-only mode does not use them.
 
 ## System context
 
