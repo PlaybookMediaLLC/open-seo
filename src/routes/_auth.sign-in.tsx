@@ -11,6 +11,7 @@ import {
   useAuthPageState,
 } from "@/client/features/auth/AuthPage";
 import { useGoogleAuth } from "@/client/features/auth/useGoogleAuth";
+import { GOOGLE_ONLY_AUTH } from "@/lib/auth-mode";
 import { getFormError } from "@/client/lib/forms";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
@@ -141,10 +142,14 @@ function SignInPage() {
             onContinueWithGoogle={() => {
               void google.start();
             }}
-            onContinueWithEmail={() => {
-              setShowEmailForm(true);
-              google.clearError();
-            }}
+            onContinueWithEmail={
+              GOOGLE_ONLY_AUTH
+                ? undefined
+                : () => {
+                    setShowEmailForm(true);
+                    google.clearError();
+                  }
+            }
           />
           {google.error ? (
             <p className="text-sm text-destructive">{google.error}</p>

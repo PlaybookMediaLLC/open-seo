@@ -42,6 +42,10 @@ export function isHostedClientAuthMode() {
   return isHostedAuthMode(import.meta.env.AUTH_MODE);
 }
 
+// Google-only deployments (AUTH_GOOGLE_ONLY=true at build and runtime) offer no
+// email/password sign-in. Mirrors the server flag in src/lib/auth.ts.
+export const GOOGLE_ONLY_AUTH = import.meta.env.AUTH_GOOGLE_ONLY === "true";
+
 export function isEmailVerificationBypassed() {
   // Local-dev escape hatch (BYPASS_EMAIL_VERIFICATION=true). The server skips
   // verification and never marks users emailVerified, so the client must treat

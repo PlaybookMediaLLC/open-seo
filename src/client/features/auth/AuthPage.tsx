@@ -45,7 +45,8 @@ export function AuthMethodChooser({
   isBusy?: boolean;
   disabled?: boolean;
   onContinueWithGoogle: () => void;
-  onContinueWithEmail: () => void;
+  /** Omitted on Google-only deployments, which offer no email sign-in. */
+  onContinueWithEmail?: () => void;
 }) {
   return (
     <div className="space-y-3">
@@ -60,15 +61,17 @@ export function AuthMethodChooser({
         {isBusy ? "Opening Google..." : googleLabel}
       </Button>
 
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full bg-card font-semibold dark:border-border dark:bg-card"
-        onClick={onContinueWithEmail}
-        disabled={disabled || isBusy}
-      >
-        {emailLabel}
-      </Button>
+      {onContinueWithEmail ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full bg-card font-semibold dark:border-border dark:bg-card"
+          onClick={onContinueWithEmail}
+          disabled={disabled || isBusy}
+        >
+          {emailLabel}
+        </Button>
+      ) : null}
     </div>
   );
 }
