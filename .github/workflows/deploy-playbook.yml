@@ -132,7 +132,7 @@ jobs:
               if [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 500 ] && [ "$code" != 404 ]; then
                 echo "::error::$DEPLOY_URL answered HTTP $code without a Cloudflare Access challenge"; exit 1
               fi
-            elif [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ] && curl -sS -m 10 "$DEPLOY_URL/privacy" | grep -aq "team@playbookmedia.io"; then
+            elif [ -n "$code" ] && [ "$code" -ge 200 ] && [ "$code" -lt 400 ] && curl -sS -m 10 "$DEPLOY_URL/privacy" | grep -aq "Privacy Policy · Playbook Media SEO"; then
               echo "Reachable (HTTP $code)"; exit 0
             fi
             echo "attempt $attempt: not ready (${response:-no response})"
