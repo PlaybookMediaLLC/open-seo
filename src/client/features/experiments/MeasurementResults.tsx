@@ -29,7 +29,7 @@ export function MeasurementResults({
   assessment: MeasurementAssessment;
 }) {
   const { experiment, latestRun } = detail;
-  const pending = !latestRun || latestRun.status === "running";
+  const pending = !latestRun;
   return (
     <section className="space-y-4" aria-label="Search Console results">
       <div className="rounded-xl border bg-card p-5 space-y-4">

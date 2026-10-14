@@ -119,13 +119,7 @@ export function ExperimentsPage({ projectId }: { projectId: string }) {
                                 : "secondary"
                             }
                           >
-                            {!item.latestRun
-                              ? "Pending"
-                              : item.latestRun.status === "failed"
-                                ? "Refresh failed"
-                                : item.latestRun.status === "running"
-                                  ? "Measuring"
-                                  : item.latestRun.outcome}
+                            {item.latestRun?.outcome ?? "Pending"}
                           </Badge>
                         </TableCell>
                       </TableRow>

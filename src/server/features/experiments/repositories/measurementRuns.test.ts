@@ -100,6 +100,12 @@ describe(`Experiment measurement runs real ${database.isPostgres ? "Postgres" : 
     ]);
     expect(detail?.runs[0].error).toBe("Bearer [redacted] [redacted] failed");
     expect(detail?.latestRun?.id).toBe(second.id);
+    const listed = await repo.list({
+      projectId: input.projectId,
+      limit: 50,
+      offset: 0,
+    });
+    expect(listed.items[0].latestRun?.id).toBe(second.id);
     expect(detail?.runs[0]).not.toHaveProperty("claimToken");
     expect(
       await status(database, "opportunities", experiment.opportunityId),

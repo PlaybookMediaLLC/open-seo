@@ -52,7 +52,9 @@ export async function list(
         measurementRuns,
         eq(
           measurementRuns.id,
-          sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${input.projectId} and latest.experiment_id = ${growthExperiments.id} order by latest.started_at desc, latest.id desc limit 1)`,
+          // Same rule as get(): the newest COMPLETED snapshot, so a later failed
+          // attempt never replaces the last valid assessment.
+          sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${input.projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' order by latest.started_at desc, latest.id desc limit 1)`,
         ),
       )
       .where(scope)
