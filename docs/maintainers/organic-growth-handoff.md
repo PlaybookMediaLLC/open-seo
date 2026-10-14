@@ -6,7 +6,7 @@ Updated October 14, 2026, approximately 1:25 PM America/New_York.
 
 M0 through M3 are implemented, committed and locally verified with mocked providers. The M3 integration described as unfinished in sections 6 and 7 below is complete. See the "Milestone 3 delivery update" in `organic-growth-audit.md` for results, and `docs/EXPERIMENTS.md` for user guidance.
 
-M3 commits, oldest first: `165f4549` schema and fenced repository, `8fb838c9` services and real-SQL tests, `ae8d99ef` experiments UI and Track results, `f8a5a701` list shows latest completed assessment, followed by a documentation commit.
+M3 commits, oldest first: `165f4549` schema and fenced repository, `8fb838c9` services and real-SQL tests, `ae8d99ef` experiments UI and Track results, `f8a5a701` list shows latest completed assessment, `9d17f2ab` docs, `e96623c8`/`160f2b5f` Pacific-date overlap, `dbddda5e` independent-review fixes. The independent security review required by section 7C is done and recorded in the audit. Final full suite: 248 files, 2,012 tests.
 
 The only remaining milestone work is **section 7F, live acceptance**. It needs user authorization for a real GSC property and selected repository. The user merges and deploys, and real observations take about 38 days after deployment. Do not claim live acceptance from the mocked or synthetic evidence. No PR, push, deployment or paid request has been made.
 

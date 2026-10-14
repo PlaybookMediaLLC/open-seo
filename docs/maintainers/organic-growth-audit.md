@@ -209,11 +209,23 @@ Milestone 3 is implemented and locally verified with mocked providers. See `spec
 
 ### Verification
 
-- Full Vitest suite passed: 248 files and 2,011 tests after the final list fix.
+- Full Vitest suite passed after the review fixes: 248 files and 2,012 tests.
 - Real-SQL experiment suites (repository lifecycle, measurement runs and integrated workflow, 41 tests) passed against both in-memory SQLite with the generated migration and disposable Postgres 14 with the generated migration. Covered: idempotent registration, cross-project and stale-claim rejection, immutable verified merge, revoked connection, deployment rejected before merge, in the future, after a stale check, or twice. Also baseline pinning and rebaseline refusal, observation appending, latest-completed reads, error redaction, cache, cooldown, the five-attempt cap, expired-claim abandonment with late-write rejection, property change rollback and same-page overlap.
 - The integrated workflow test uses real services, repositories, claims, encryption and the GitHub client with mocked GitHub HTTP and a mocked GSC service. It runs register, then open and merged status, rejected and accepted attestation, GitHub disconnect, a single measurement, and a cached refresh with no further provider calls. It also checks a tampered merged blob, member denial and cross-organization denial, and the no-request refusals.
 - Type checking, lint, Knip, Prettier and production build passed. The existing Playwright suite passed 11/11 after recreating the local-noauth `.env.local` it needs (logged as a papercut).
 - A real-browser check against the local app and D1 used three explicitly synthetic experiments with no GitHub token or GSC OAuth grant. It covered the list, awaiting-deployment with disabled GitHub actions, complete encouraging results with non-causal wording, partial and confounded results with Unknown days and a failed run, a wrong project, and a 390-pixel layout with no overflow. Page loads created no runs or claims, made no external requests and raised no page errors, and cleanup was exact. Artifacts are under `$JCODE_SCRATCH_DIR/experiment-browser-verification/`.
+
+### Independent review
+
+A separate reviewer agent read the M3 diff against `review-guidelines.md` and the measurement spec without editing code. It reported no high-severity findings. These were fixed with tests where they change behavior:
+
+- **Medium:** deployment attestation and measurement completion overwrote the opportunity status with no prior-state guard, so they could silently undo a later human rejection. They now advance only `in_progress` to `implemented`, and `implemented`/`measuring`/`completed` onward. Real-SQL test added.
+- **Low:** overlap detection compared UTC deployment dates with Pacific windows. It now compares the exact Pacific date. A boundary test fails on the old code.
+- **Low:** a failed-run write was dropped when the Search Console property changed mid-run, leaving a stale running row. Failing a run no longer requires the current property.
+- **Low:** the service-level cache check used the run start time while admission used the finish time. Both now use the finish time.
+- **Low:** the pinned pull request link now also passes the shared `safeHttpUrl` sanitizer.
+
+Accepted without change: Search Console rows are not cross-checked for clicks ≤ impressions. The reviewer confirmed project scoping, authorization, claim fencing, budget admission, immutability, merged-blob verification and secret handling.
 
 ### Not verified live
 
