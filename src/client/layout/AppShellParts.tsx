@@ -32,8 +32,8 @@ function SeoApiStatusBanners({
     <>
       {shouldShowSeoApiWarning ? (
         <AppBanner variant="warning" icon={icon}>
-          Setup needed: add your DataForSEO API key to use OpenSEO features. See
-          the quick steps on the {helpLink}.
+          Add a DataForSEO API key for paid SEO research. Search Console
+          opportunities do not require it. Setup steps are on the {helpLink}.
         </AppBanner>
       ) : null}
 
@@ -56,9 +56,11 @@ function MissingSeoSetupModal({ onClose }: { onClose: () => void }) {
             <AlertTriangle className="size-5" />
           </div>
           <div className="space-y-2">
-            <DialogTitle>One quick setup step</DialogTitle>
+            <DialogTitle>Set up DataForSEO research</DialogTitle>
             <DialogDescription>
-              Add your DataForSEO API key to start using OpenSEO.
+              Add your DataForSEO API key for paid SEO research. You can dismiss
+              this and use Search Console opportunities without a DataForSEO
+              key.
             </DialogDescription>
           </div>
         </DialogHeader>

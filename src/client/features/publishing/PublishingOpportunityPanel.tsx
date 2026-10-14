@@ -1,0 +1,295 @@
+import { useState } from "react";
+import { sortBy } from "remeda";
+import { Link } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CardShell } from "@/client/components/CardShell";
+import { QueryError } from "@/client/components/QueryState";
+import { Button } from "@/client/components/ui/button";
+import { Input } from "@/client/components/ui/input";
+import { Label } from "@/client/components/ui/label";
+import { Textarea } from "@/client/components/ui/textarea";
+import { prepareMetadataProposal } from "@/serverFunctions/publishing";
+import type { Opportunity } from "@/types/schemas/opportunities";
+import { prepareProposalInputSchema } from "@/types/schemas/publishing";
+import { publishingOpportunityOptions, useRefreshPublishing } from "./queries";
+import { PublishingRecovery } from "./PublishingRecovery";
+import { PublishingProposal } from "./PublishingProposal";
+
+function suggestPath(value: string, root: string) {
+  try {
+    const raw = /^https?:\/\/[^/?#\\\s]+(\/[^?#\\\s]*)?$/.exec(value);
+    const url = new URL(value);
+    if (
+      !raw ||
+      url.username ||
+      url.password ||
+      (raw[1] ?? "/") !== url.pathname ||
+      value.includes("//", value.indexOf("://") + 3)
+    )
+      return "";
+    const segments = url.pathname.split("/").filter(Boolean);
+    if (
+      segments.some((segment) => !/^[A-Za-z0-9-][A-Za-z0-9_-]*$/.test(segment))
+    )
+      return "";
+    return [root, "app", ...segments, "page.tsx"].filter(Boolean).join("/");
+  } catch {
+    return "";
+  }
+}
+
+export function PublishingOpportunityPanel({
+  opportunity,
+  readOnly = false,
+}: {
+  opportunity: Pick<
+    Opportunity,
+    "id" | "projectId" | "url" | "status" | "version"
+  >;
+  readOnly?: boolean;
+}) {
+  const { projectId, id } = opportunity;
+  const query = useQuery(publishingOpportunityOptions(projectId, id));
+  if (query.isPending)
+    return (
+      <CardShell title="Metadata publishing">
+        <p role="status" className="text-sm text-muted-foreground">
+          Loading proposals…
+        </p>
+      </CardShell>
+    );
+  if (query.isError)
+    return (
+      <CardShell title="Metadata publishing">
+        <QueryError
+          fallback="Could not load publishing proposals"
+          onRetry={() => void query.refetch()}
+        />
+      </CardShell>
+    );
+  const { configured, canManage, connection, proposals } = query.data;
+  const activeConnection = connection && !connection.revokedAt;
+  const enabled = configured && canManage && !readOnly && !!activeConnection;
+  const latestAttempt = sortBy(
+    proposals.flatMap((history) =>
+      history.executions.map((execution) => ({
+        execution,
+        connection: history.connection,
+      })),
+    ),
+    [(attempt) => Date.parse(attempt.execution.startedAt), "desc"],
+  )[0];
+  const canRecover =
+    enabled &&
+    opportunity.status === "failed" &&
+    latestAttempt?.execution.status === "failed" &&
+    latestAttempt.connection.repositoryId === connection?.repositoryId &&
+    latestAttempt.connection.baseBranch === connection?.baseBranch;
+  return (
+    <section className="space-y-4" aria-label="Metadata publishing">
+      <CardShell title="Metadata publishing">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Turn an approved opportunity into a small, reviewable GitHub pull
+            request. Only an existing static Next.js App Router page's
+            description can be replaced. Titles, dynamic metadata, dynamic
+            routes, and layouts are not supported.
+          </p>
+          {!configured && (
+            <p role="alert" className="rounded-lg border p-3 text-sm">
+              Publishing is not configured. A server administrator must set
+              BETTER_AUTH_SECRET to at least 32 characters.
+            </p>
+          )}
+          {(!canManage || readOnly) && (
+            <p className="text-sm text-muted-foreground">
+              Read-only view. You can inspect proposals and execution history,
+              but cannot prepare or approve changes.
+            </p>
+          )}
+          {!activeConnection && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Connect a selected GitHub repository to prepare a verified
+                proposal.
+              </p>
+              <Button
+                variant="outline"
+                nativeButton={false}
+                render={
+                  <Link
+                    to="/p/$projectId/settings/integrations"
+                    params={{ projectId }}
+                  />
+                }
+              >
+                Open publishing integration
+              </Button>
+            </div>
+          )}
+          {enabled && opportunity.status === "approved" ? (
+            <PrepareForm
+              key={`${id}-${connection.id}`}
+              opportunity={opportunity}
+              rootDirectory={connection.rootDirectory}
+            />
+          ) : (
+            opportunity.status !== "approved" && (
+              <p className="text-sm text-muted-foreground">
+                Approve this opportunity in the review section before preparing
+                a new proposal. Existing proposals remain available below.
+              </p>
+            )
+          )}
+        </div>
+      </CardShell>
+      {canRecover && (
+        <PublishingRecovery
+          key={`${id}-${opportunity.version}`}
+          projectId={projectId}
+          opportunityId={id}
+          expectedVersion={opportunity.version}
+        />
+      )}
+      {!proposals.length && (
+        <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+          No verified proposals yet. Preparing a proposal reads the selected
+          file and package.json, but writes nothing to GitHub.
+        </p>
+      )}
+      {proposals.map((history) => {
+        const blockedReason = !enabled
+          ? "Execution is unavailable without publishing configuration, management permission, and an active connection."
+          : history.connection.revokedAt ||
+              history.proposal.connectionId !== connection?.id
+            ? "This proposal's connection was revoked or replaced. Prepare a new proposal."
+            : !["approved", "in_progress", "failed"].includes(
+                  opportunity.status,
+                )
+              ? "This opportunity is no longer approved for execution."
+              : null;
+        return (
+          <PublishingProposal
+            key={history.proposal.id}
+            history={history}
+            canExecute={enabled}
+            canTrack={canManage && !readOnly}
+            blockedReason={blockedReason}
+          />
+        );
+      })}
+    </section>
+  );
+}
+
+function PrepareForm({
+  opportunity,
+  rootDirectory,
+}: {
+  opportunity: Pick<
+    Opportunity,
+    "id" | "projectId" | "url" | "status" | "version"
+  >;
+  rootDirectory: string;
+}) {
+  const [filePath, setFilePath] = useState(() =>
+    suggestPath(opportunity.url, rootDirectory),
+  );
+  const [description, setDescription] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const refresh = useRefreshPublishing(opportunity.projectId);
+  const mutation = useMutation({
+    meta: { errorToast: false },
+    mutationFn: async () => {
+      const input = prepareProposalInputSchema.safeParse({
+        projectId: opportunity.projectId,
+        opportunityId: opportunity.id,
+        expectedOpportunityVersion: opportunity.version,
+        filePath,
+        newDescription: description,
+      });
+      if (!input.success)
+        throw new Error(
+          "Enter an existing page path and a description of 1 to 320 characters without line breaks.",
+        );
+      return prepareMetadataProposal({ data: input.data });
+    },
+    onSuccess: (result) => {
+      setMessage(result.message);
+      if (result.ok) setDescription("");
+    },
+    onError: () =>
+      setMessage(
+        "Could not prepare the proposal. Check the existing static page path and description, then try again. Refresh if the opportunity changed.",
+      ),
+    onSettled: () => {
+      void refresh();
+    },
+  });
+  return (
+    <form
+      className="space-y-4 border-t pt-4"
+      onSubmit={(event) => {
+        event.preventDefault();
+        setMessage(null);
+        mutation.mutate();
+      }}
+    >
+      <fieldset disabled={mutation.isPending} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="publishing-file-path">
+            Existing page file (repository-relative)
+          </Label>
+          <Input
+            id="publishing-file-path"
+            value={filePath}
+            onChange={(event) => setFilePath(event.target.value)}
+            required
+            maxLength={300}
+            placeholder={`${rootDirectory ? `${rootDirectory}/` : ""}app/example/page.tsx`}
+          />
+          <p className="text-xs text-muted-foreground">
+            The URL-based suggestion is not verified. Confirm the actual file
+            under app/ or src/app/, using page.ts, page.tsx, page.js, or
+            page.jsx. Include the configured root directory prefix.
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="publishing-description">
+            Your replacement description
+          </Label>
+          <Textarea
+            id="publishing-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            required
+            maxLength={320}
+            rows={3}
+            placeholder="Write an accurate description supported by this page's content"
+          />
+          <p className="text-xs text-muted-foreground">
+            {description.length}/320 characters. Write your own factual
+            description. No AI-generated claims are supplied.
+          </p>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Preparation reads the selected file and package.json from the
+          connected repository and verifies a description-only change. It writes
+          nothing remotely and does not run the repository build or CI.
+        </p>
+        <Button
+          type="submit"
+          disabled={!description.trim() || !filePath.trim()}
+          pending={mutation.isPending}
+        >
+          Prepare verified proposal
+        </Button>
+      </fieldset>
+      {message && (
+        <p role="status" className="text-sm">
+          {message}
+        </p>
+      )}
+    </form>
+  );
+}

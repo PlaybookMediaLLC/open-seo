@@ -1,3 +1,4 @@
+import { PublishingConnectionCard } from "@/client/features/publishing/PublishingConnectionCard";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 import { googleConnectionOptions } from "@/client/features/integrations/googleProviders";
 import { createFileRoute } from "@tanstack/react-router";
@@ -33,6 +34,10 @@ function ProjectIntegrationsRoute() {
 
       <section id="google-analytics" className="scroll-mt-6">
         <GoogleConnectionCard provider="ga4" projectId={projectId} />
+      </section>
+
+      <section id="publishing" className="scroll-mt-6">
+        <PublishingConnectionCard key={projectId} projectId={projectId} />
       </section>
 
       <CrawlerAccessSettings projectId={projectId} />

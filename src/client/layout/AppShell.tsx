@@ -62,9 +62,15 @@ export function AuthenticatedAppLayout({
   // (a first visit to a page without a project in the URL).
   const sidebarProjectPending =
     sidebarProjectId === null && projectsQuery.isPending;
-  // The setup guide is where the modal and banners send the user, so it shows
-  // neither: a banner there would link to the page the user is already on.
+  // GSC opportunities, experiments and publishing setup do not use DataForSEO. Do not
+  // interrupt their review/approval flow with an unrelated paid-research modal.
+  const isGrowthWorkflow =
+    /^\/p\/[^/]+\/(?:opportunities(?:\/|$)|experiments(?:\/|$)|settings\/integrations(?:\/|$))/.test(
+      location.pathname,
+    );
+  // The setup guide also needs no banner linking back to itself.
   const shouldCheckSeoApiKeyStatus =
+    !isGrowthWorkflow &&
     location.pathname !== BILLING_ROUTE &&
     location.pathname !== dataforseoHelpLinkOptions.to;
   const seoApiKeyStatusQuery = useQuery({

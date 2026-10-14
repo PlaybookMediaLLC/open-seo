@@ -17,6 +17,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe("gscClient", () => {
   beforeEach(() => {
     mocks.getAccessToken.mockResolvedValue("tok_123");
+    mocks.fetch.mockResolvedValue(jsonResponse({ rows: [] }));
     vi.stubGlobal("fetch", mocks.fetch);
   });
   afterEach(() => {
@@ -149,6 +150,27 @@ describe("gscClient", () => {
     await expect(
       createGscClient({ userId: "u1" }).listSites(),
     ).rejects.toMatchObject({ status: 429 });
+  });
+
+  it("does not start a provider query when cancelled while refreshing the token", async () => {
+    let resolveToken!: (token: string) => void;
+    mocks.getAccessToken.mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        resolveToken = resolve;
+      }),
+    );
+    const controller = new AbortController();
+    const request = createGscClient({
+      userId: "u1",
+      signal: controller.signal,
+    }).querySearchAnalytics("sc-domain:example.com", {
+      startDate: "2026-01-01",
+      endDate: "2026-01-28",
+    });
+    controller.abort();
+    resolveToken("late-token");
+    await expect(request).rejects.toMatchObject({ name: "AbortError" });
+    expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
   it("throws GscTokenError when no access token can be minted", async () => {

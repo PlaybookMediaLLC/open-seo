@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { handleMissingProviderSetup } from "./domain-overview-test-utils";
 
 async function getProjectId(page: Page) {
   await page.goto("/");
@@ -12,6 +13,9 @@ async function getProjectId(page: Page) {
 }
 
 test.describe("Keyword Research navigation", () => {
+  test.beforeEach(async ({ page }) => {
+    await handleMissingProviderSetup(page);
+  });
   test("Back to Recent searches clears the active keyword tab query", async ({
     page,
   }) => {
