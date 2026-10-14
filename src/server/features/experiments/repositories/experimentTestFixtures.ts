@@ -1,3 +1,6 @@
+import { expect } from "vitest";
+import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
+import { ExperimentRepository } from "./ExperimentRepository";
 import { PublishingRepository } from "../../publishing/repositories/PublishingRepository";
 import {
   attempt,
@@ -6,6 +9,7 @@ import {
 import type { createExperimentTestDatabase } from "./experimentTestDb";
 import type {
   GrowthExperiment,
+  MeasurementDay,
   MeasurementRun,
 } from "@/types/schemas/experiments";
 
@@ -96,4 +100,113 @@ export function runningMeasurement(
     windowComplete: false,
     error: null,
   };
+}
+
+type Input = Awaited<ReturnType<typeof succeededExecution>>;
+export const mergedAt = new Date(Date.now() - 40 * 86_400_000).toISOString();
+export const deployedAt = new Date(Date.now() - 39 * 86_400_000).toISOString();
+export const windows = {
+  baselineStart: "2026-08-01",
+  baselineEnd: "2026-08-28",
+  observationStart: "2026-09-05",
+  observationEnd: "2026-10-02",
+};
+
+export async function registered(database: TestDatabase) {
+  const input = await succeededExecution(database);
+  const experiment = newExperiment(input);
+  expect(await ExperimentRepository.register({ ...input, experiment })).toBe(
+    true,
+  );
+  return { input, experiment };
+}
+
+export function scope(input: Input, experiment: GrowthExperiment) {
+  return {
+    projectId: input.projectId,
+    experimentId: experiment.id,
+    claimToken: input.claimToken,
+    organizationId: input.organizationId,
+  };
+}
+
+export function merged(
+  input: Input,
+  experiment: GrowthExperiment,
+  sha = "merge",
+) {
+  return ExperimentRepository.recordPullStatus({
+    ...scope(input, experiment),
+    connectionId: input.connection.id,
+    state: "merged",
+    checkedAt: new Date().toISOString(),
+    mergedAt,
+    mergeCommitSha: sha,
+  });
+}
+
+export function confirm(
+  input: Input,
+  experiment: GrowthExperiment,
+  at = deployedAt,
+) {
+  return ExperimentRepository.confirmDeployment({
+    ...scope(input, experiment),
+    deployedAt: at,
+    confirmedBy: "reviewer",
+    note: "Verified live",
+    confirmedAt: new Date().toISOString(),
+    otherChanges: false,
+    seasonalRisk: false,
+    ...windows,
+  });
+}
+
+export async function deployed(database: TestDatabase) {
+  const { input, experiment } = await registered(database);
+  expect(await merged(input, experiment)).toBe(true);
+  expect(await confirm(input, experiment)).toBe(true);
+  return { input, experiment };
+}
+
+export function days(run: MeasurementRun, period: MeasurementDay["period"]) {
+  const start =
+    period === "baseline" ? windows.baselineStart : windows.observationStart;
+  return Array.from({ length: 28 }, (_, index) => ({
+    id: crypto.randomUUID(),
+    projectId: run.projectId,
+    experimentId: run.experimentId,
+    runId: run.id,
+    period,
+    date: shiftGa4Date(start, index),
+    clicks: 5,
+    impressions: 50,
+    ctr: 0.1,
+    position: 10,
+  }));
+}
+
+export function completed(run: MeasurementRun): MeasurementRun {
+  return {
+    ...run,
+    status: "completed",
+    finishedAt: new Date().toISOString(),
+    observationThrough: windows.observationEnd,
+    windowComplete: true,
+    outcome: "inconclusive",
+    explanation: "Done",
+  };
+}
+
+export async function status(
+  database: TestDatabase,
+  table: string,
+  id: string,
+) {
+  return (
+    await database.client.execute({
+      sql: `SELECT status FROM ${table} WHERE id = ?`,
+      args: [id],
+    })
+  ).rows[0]?.status;
 }

@@ -168,7 +168,9 @@ export function attempt(input: Awaited<ReturnType<typeof fixture>>) {
   };
 }
 
-export async function nextClaim(input: Awaited<ReturnType<typeof fixture>>) {
+export async function nextClaim<T extends Awaited<ReturnType<typeof fixture>>>(
+  input: T,
+) {
   const claimToken = crypto.randomUUID();
   await db
     .update(dataRefreshClaims)
