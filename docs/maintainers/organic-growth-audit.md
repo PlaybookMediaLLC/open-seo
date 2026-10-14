@@ -215,6 +215,25 @@ Milestone 3 is implemented and locally verified with mocked providers. See `spec
 - Type checking, lint, Knip, Prettier and production build passed. The existing Playwright suite passed 11/11 after recreating the local-noauth `.env.local` it needs (logged as a papercut).
 - A real-browser check against the local app and D1 used three explicitly synthetic experiments with no GitHub token or GSC OAuth grant. It covered the list, awaiting-deployment with disabled GitHub actions, complete encouraging results with non-causal wording, partial and confounded results with Unknown days and a failed run, a wrong project, and a 390-pixel layout with no overflow. Page loads created no runs or claims, made no external requests and raised no page errors, and cleanup was exact. Artifacts are under `$JCODE_SCRATCH_DIR/experiment-browser-verification/`.
 
+### Final acceptance rerun on the post-review code
+
+The real-browser check was rerun against the final code on the local app and D1, with explicitly synthetic records and no GSC OAuth grant or GitHub token. All 11 checks passed with no page errors and no external requests, and cleanup was exact. Beyond the read-only states, it now drives the real UI writes through the real server functions:
+
+| Requirement | Observed |
+| --- | --- |
+| Track results registers idempotently, without provider calls | One experiment created with `unknown` PR state and no deployment. Navigated to it. A second click reused it. |
+| Measurement reserves its budget before provider work | One run inserted with `request_count` 1 before the provider attempt |
+| Provider failure is sanitized and preserves saved data | The missing grant failed before any network request, and the run was saved as failed with the generic message. Saved 26/28 baseline days were unchanged. |
+| Five-minute cooldown | Immediate retry refused, no new run |
+| 24-hour cache | A refresh of a result saved 1 hour ago returned the cached message and created no run |
+| Lease released | No unexpired publishing claim remained |
+| Latest completed result is shown | The list and detail kept the completed assessment despite newer failed runs |
+| Missing days are unknown | Rendered as Unknown, with reported-day counts 26/28 and 10/28 |
+| Wrong project is denied | Experiment not rendered under another project |
+| Mobile | No horizontal overflow at 390px |
+
+The existing Playwright suite passed 11/11 on the final code. Merge verification, deployment attestation and successful measurement are exercised only in the integrated service test with mocked GitHub and Search Console HTTP, because they need real provider responses.
+
 ### Independent review
 
 A separate reviewer agent read the M3 diff against `review-guidelines.md` and the measurement spec without editing code. It reported no high-severity findings. These were fixed with tests where they change behavior:
