@@ -61,6 +61,8 @@ import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/
 import { Route as AppPProjectIdAiVisibilityIndexRouteImport } from './routes/_app/p/$projectId/ai-visibility/index'
 import { Route as AppPProjectIdAiVisibilityResearchRouteImport } from './routes/_app/p/$projectId/ai-visibility/research'
 import { Route as AppPProjectIdAuditIndexRouteImport } from './routes/_app/p/$projectId/audit/index'
+import { Route as AppPProjectIdExperimentsIndexRouteImport } from './routes/_app/p/$projectId/experiments/index'
+import { Route as AppPProjectIdExperimentsExperimentIdRouteImport } from './routes/_app/p/$projectId/experiments/$experimentId'
 import { Route as AppPProjectIdOpportunitiesIndexRouteImport } from './routes/_app/p/$projectId/opportunities/index'
 import { Route as AppPProjectIdOpportunitiesOpportunityIdRouteImport } from './routes/_app/p/$projectId/opportunities/$opportunityId'
 import { Route as AppPProjectIdRankTrackingIndexRouteImport } from './routes/_app/p/$projectId/rank-tracking/index'
@@ -341,6 +343,18 @@ const AppPProjectIdAuditIndexRoute = AppPProjectIdAuditIndexRouteImport.update({
   path: '/audit/',
   getParentRoute: () => AppPProjectIdRouteRoute,
 } as any)
+const AppPProjectIdExperimentsIndexRoute =
+  AppPProjectIdExperimentsIndexRouteImport.update({
+    id: '/experiments/',
+    path: '/experiments/',
+    getParentRoute: () => AppPProjectIdRouteRoute,
+  } as any)
+const AppPProjectIdExperimentsExperimentIdRoute =
+  AppPProjectIdExperimentsExperimentIdRouteImport.update({
+    id: '/experiments/$experimentId',
+    path: '/experiments/$experimentId',
+    getParentRoute: () => AppPProjectIdRouteRoute,
+  } as any)
 const AppPProjectIdOpportunitiesIndexRoute =
   AppPProjectIdOpportunitiesIndexRouteImport.update({
     id: '/opportunities/',
@@ -462,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/p/$projectId/': typeof AppPProjectIdIndexRoute
   '/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
+  '/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
   '/p/$projectId/opportunities/$opportunityId': typeof AppPProjectIdOpportunitiesOpportunityIdRoute
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
@@ -470,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
+  '/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
   '/p/$projectId/opportunities/': typeof AppPProjectIdOpportunitiesIndexRoute
   '/p/$projectId/rank-tracking/': typeof AppPProjectIdRankTrackingIndexRoute
   '/p/$projectId/reports/': typeof AppPProjectIdReportsIndexRoute
@@ -520,6 +536,7 @@ export interface FileRoutesByTo {
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/p/$projectId': typeof AppPProjectIdIndexRoute
   '/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
+  '/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
   '/p/$projectId/opportunities/$opportunityId': typeof AppPProjectIdOpportunitiesOpportunityIdRoute
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
@@ -528,6 +545,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit': typeof AppPProjectIdAuditIndexRoute
+  '/p/$projectId/experiments': typeof AppPProjectIdExperimentsIndexRoute
   '/p/$projectId/opportunities': typeof AppPProjectIdOpportunitiesIndexRoute
   '/p/$projectId/rank-tracking': typeof AppPProjectIdRankTrackingIndexRoute
   '/p/$projectId/reports': typeof AppPProjectIdReportsIndexRoute
@@ -587,6 +605,7 @@ export interface FileRoutesById {
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/_app/p/$projectId/': typeof AppPProjectIdIndexRoute
   '/_app/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
+  '/_app/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
   '/_app/p/$projectId/opportunities/$opportunityId': typeof AppPProjectIdOpportunitiesOpportunityIdRoute
   '/_app/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/_app/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
@@ -595,6 +614,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/_app/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
+  '/_app/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
   '/_app/p/$projectId/opportunities/': typeof AppPProjectIdOpportunitiesIndexRoute
   '/_app/p/$projectId/rank-tracking/': typeof AppPProjectIdRankTrackingIndexRoute
   '/_app/p/$projectId/reports/': typeof AppPProjectIdReportsIndexRoute
@@ -652,6 +672,7 @@ export interface FileRouteTypes {
     | '/api/gsc/oauth/callback'
     | '/p/$projectId/'
     | '/p/$projectId/ai-visibility/research'
+    | '/p/$projectId/experiments/$experimentId'
     | '/p/$projectId/opportunities/$opportunityId'
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
@@ -660,6 +681,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/ai-visibility/'
     | '/p/$projectId/audit/'
+    | '/p/$projectId/experiments/'
     | '/p/$projectId/opportunities/'
     | '/p/$projectId/rank-tracking/'
     | '/p/$projectId/reports/'
@@ -710,6 +732,7 @@ export interface FileRouteTypes {
     | '/api/gsc/oauth/callback'
     | '/p/$projectId'
     | '/p/$projectId/ai-visibility/research'
+    | '/p/$projectId/experiments/$experimentId'
     | '/p/$projectId/opportunities/$opportunityId'
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
@@ -718,6 +741,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/ai-visibility'
     | '/p/$projectId/audit'
+    | '/p/$projectId/experiments'
     | '/p/$projectId/opportunities'
     | '/p/$projectId/rank-tracking'
     | '/p/$projectId/reports'
@@ -776,6 +800,7 @@ export interface FileRouteTypes {
     | '/api/gsc/oauth/callback'
     | '/_app/p/$projectId/'
     | '/_app/p/$projectId/ai-visibility/research'
+    | '/_app/p/$projectId/experiments/$experimentId'
     | '/_app/p/$projectId/opportunities/$opportunityId'
     | '/_app/p/$projectId/rank-tracking/$configId'
     | '/_app/p/$projectId/reports/$reportId'
@@ -784,6 +809,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/integrations'
     | '/_app/p/$projectId/ai-visibility/'
     | '/_app/p/$projectId/audit/'
+    | '/_app/p/$projectId/experiments/'
     | '/_app/p/$projectId/opportunities/'
     | '/_app/p/$projectId/rank-tracking/'
     | '/_app/p/$projectId/reports/'
@@ -1179,6 +1205,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdAuditIndexRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/_app/p/$projectId/experiments/': {
+      id: '/_app/p/$projectId/experiments/'
+      path: '/experiments'
+      fullPath: '/p/$projectId/experiments/'
+      preLoaderRoute: typeof AppPProjectIdExperimentsIndexRouteImport
+      parentRoute: typeof AppPProjectIdRouteRoute
+    }
+    '/_app/p/$projectId/experiments/$experimentId': {
+      id: '/_app/p/$projectId/experiments/$experimentId'
+      path: '/experiments/$experimentId'
+      fullPath: '/p/$projectId/experiments/$experimentId'
+      preLoaderRoute: typeof AppPProjectIdExperimentsExperimentIdRouteImport
+      parentRoute: typeof AppPProjectIdRouteRoute
+    }
     '/_app/p/$projectId/opportunities/': {
       id: '/_app/p/$projectId/opportunities/'
       path: '/opportunities'
@@ -1349,10 +1389,12 @@ interface AppPProjectIdRouteRouteChildren {
   AppPProjectIdSearchPerformanceRoute: typeof AppPProjectIdSearchPerformanceRoute
   AppPProjectIdSettingsRoute: typeof AppPProjectIdSettingsRouteWithChildren
   AppPProjectIdIndexRoute: typeof AppPProjectIdIndexRoute
+  AppPProjectIdExperimentsExperimentIdRoute: typeof AppPProjectIdExperimentsExperimentIdRoute
   AppPProjectIdOpportunitiesOpportunityIdRoute: typeof AppPProjectIdOpportunitiesOpportunityIdRoute
   AppPProjectIdReportsReportIdRoute: typeof AppPProjectIdReportsReportIdRoute
   AppPProjectIdReportsTemplatesRoute: typeof AppPProjectIdReportsTemplatesRoute
   AppPProjectIdAuditIndexRoute: typeof AppPProjectIdAuditIndexRoute
+  AppPProjectIdExperimentsIndexRoute: typeof AppPProjectIdExperimentsIndexRoute
   AppPProjectIdOpportunitiesIndexRoute: typeof AppPProjectIdOpportunitiesIndexRoute
   AppPProjectIdReportsIndexRoute: typeof AppPProjectIdReportsIndexRoute
   AppPProjectIdAuditIssuesResultIdRoute: typeof AppPProjectIdAuditIssuesResultIdRoute
@@ -1372,11 +1414,14 @@ const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
   AppPProjectIdSearchPerformanceRoute: AppPProjectIdSearchPerformanceRoute,
   AppPProjectIdSettingsRoute: AppPProjectIdSettingsRouteWithChildren,
   AppPProjectIdIndexRoute: AppPProjectIdIndexRoute,
+  AppPProjectIdExperimentsExperimentIdRoute:
+    AppPProjectIdExperimentsExperimentIdRoute,
   AppPProjectIdOpportunitiesOpportunityIdRoute:
     AppPProjectIdOpportunitiesOpportunityIdRoute,
   AppPProjectIdReportsReportIdRoute: AppPProjectIdReportsReportIdRoute,
   AppPProjectIdReportsTemplatesRoute: AppPProjectIdReportsTemplatesRoute,
   AppPProjectIdAuditIndexRoute: AppPProjectIdAuditIndexRoute,
+  AppPProjectIdExperimentsIndexRoute: AppPProjectIdExperimentsIndexRoute,
   AppPProjectIdOpportunitiesIndexRoute: AppPProjectIdOpportunitiesIndexRoute,
   AppPProjectIdReportsIndexRoute: AppPProjectIdReportsIndexRoute,
   AppPProjectIdAuditIssuesResultIdRoute: AppPProjectIdAuditIssuesResultIdRoute,
@@ -1469,6 +1514,7 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
 
 import type { getRouter } from './router.tsx'
 import type { startInstance } from './start.ts'

@@ -7,6 +7,7 @@ import { Checkbox } from "@/client/components/ui/checkbox";
 import { Label } from "@/client/components/ui/label";
 import { Textarea } from "@/client/components/ui/textarea";
 import { dateLabel } from "@/client/features/opportunities/shared";
+import { TrackResultsButton } from "@/client/features/experiments/TrackResultsButton";
 import { executeMetadataProposal } from "@/serverFunctions/publishing";
 import type { ProposalWithHistory } from "@/types/schemas/publishing";
 import { useRefreshPublishing } from "./queries";
@@ -14,13 +15,15 @@ import { useRefreshPublishing } from "./queries";
 export function PublishingProposal({
   history,
   canExecute,
+  canTrack,
   blockedReason,
 }: {
   history: ProposalWithHistory;
   canExecute: boolean;
+  canTrack: boolean;
   blockedReason: string | null;
 }) {
-  const { proposal, connection, approvals, executions, events } = history;
+  const { proposal, connection, executions } = history;
   const refresh = useRefreshPublishing(proposal.projectId);
   const [authorized, setAuthorized] = useState(false);
   const [note, setNote] = useState("");
@@ -209,101 +212,7 @@ export function PublishingProposal({
           </p>
         )}
       </div>
-      <div className="space-y-3 border-t bg-muted/20 p-5">
-        <h4 className="text-sm font-semibold">Execution history</h4>
-        {!executions.length ? (
-          <p className="text-sm text-muted-foreground">
-            No execution attempts. Nothing has been written to GitHub.
-          </p>
-        ) : (
-          <ol className="space-y-3">
-            {executions.map((execution) => {
-              const approval = approvals.find(
-                (item) => item.id === execution.approvalId,
-              );
-              const url = execution.pullRequestUrl;
-              const safeLink =
-                url &&
-                /^https:\/\/github\.com\/[^/?#]+\/[^/?#]+\/pull\/\d+$/.test(
-                  url,
-                );
-              return (
-                <li
-                  key={execution.id}
-                  className="space-y-2 rounded-lg border bg-card p-3 text-sm"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge
-                      variant={
-                        execution.status === "failed"
-                          ? "destructive"
-                          : execution.status === "succeeded"
-                            ? "success"
-                            : "secondary"
-                      }
-                    >
-                      {execution.status}
-                    </Badge>
-                    <span>{execution.phase.replaceAll("_", " ")}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Started {dateLabel(execution.startedAt)}
-                    {execution.finishedAt
-                      ? ` · Finished ${dateLabel(execution.finishedAt)}`
-                      : " · Not finished"}
-                  </p>
-                  <p className="break-all font-mono text-xs">
-                    Branch: {execution.branchName || "Not created"}
-                    {execution.commitSha
-                      ? ` · Commit: ${execution.commitSha}`
-                      : ""}
-                  </p>
-                  {approval && (
-                    <p className="whitespace-pre-wrap break-words text-xs text-muted-foreground">
-                      Approved {dateLabel(approval.createdAt)} by{" "}
-                      {approval.actorUserId}
-                      {approval.note ? ` · ${approval.note}` : ""}
-                    </p>
-                  )}
-                  {execution.error && (
-                    <p className="whitespace-pre-wrap break-words text-destructive">
-                      {execution.error}
-                    </p>
-                  )}
-                  {safeLink && (
-                    <Button
-                      variant="link"
-                      size="sm"
-                      nativeButton={false}
-                      render={
-                        <a
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        />
-                      }
-                    >
-                      View pull request #{execution.pullRequestNumber}
-                    </Button>
-                  )}
-                  <ol className="space-y-1 border-l pl-3 text-xs text-muted-foreground">
-                    {events
-                      .filter((event) => event.executionId === execution.id)
-                      .map((event) => (
-                        <li key={event.id}>
-                          <time dateTime={event.createdAt}>
-                            {dateLabel(event.createdAt)}
-                          </time>{" "}
-                          · {event.phase.replaceAll("_", " ")}: {event.message}
-                        </li>
-                      ))}
-                  </ol>
-                </li>
-              );
-            })}
-          </ol>
-        )}
-      </div>
+      <ExecutionHistory history={history} canTrack={canTrack} />
       {confirm && (
         <ConfirmDialog
           title="Create this pull request?"
@@ -322,5 +231,114 @@ export function PublishingProposal({
         </ConfirmDialog>
       )}
     </article>
+  );
+}
+
+function ExecutionHistory({
+  history,
+  canTrack,
+}: {
+  history: ProposalWithHistory;
+  canTrack: boolean;
+}) {
+  const { proposal, approvals, executions, events } = history;
+  return (
+    <div className="space-y-3 border-t bg-muted/20 p-5">
+      <h4 className="text-sm font-semibold">Execution history</h4>
+      {!executions.length ? (
+        <p className="text-sm text-muted-foreground">
+          No execution attempts. Nothing has been written to GitHub.
+        </p>
+      ) : (
+        <ol className="space-y-3">
+          {executions.map((execution) => {
+            const approval = approvals.find(
+              (item) => item.id === execution.approvalId,
+            );
+            const url = execution.pullRequestUrl;
+            const safeLink =
+              url &&
+              /^https:\/\/github\.com\/[^/?#]+\/[^/?#]+\/pull\/\d+$/.test(url);
+            return (
+              <li
+                key={execution.id}
+                className="space-y-2 rounded-lg border bg-card p-3 text-sm"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant={
+                      execution.status === "failed"
+                        ? "destructive"
+                        : execution.status === "succeeded"
+                          ? "success"
+                          : "secondary"
+                    }
+                  >
+                    {execution.status}
+                  </Badge>
+                  <span>{execution.phase.replaceAll("_", " ")}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Started {dateLabel(execution.startedAt)}
+                  {execution.finishedAt
+                    ? ` · Finished ${dateLabel(execution.finishedAt)}`
+                    : " · Not finished"}
+                </p>
+                <p className="break-all font-mono text-xs">
+                  Branch: {execution.branchName || "Not created"}
+                  {execution.commitSha
+                    ? ` · Commit: ${execution.commitSha}`
+                    : ""}
+                </p>
+                {approval && (
+                  <p className="whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                    Approved {dateLabel(approval.createdAt)} by{" "}
+                    {approval.actorUserId}
+                    {approval.note ? ` · ${approval.note}` : ""}
+                  </p>
+                )}
+                {execution.error && (
+                  <p className="whitespace-pre-wrap break-words text-destructive">
+                    {execution.error}
+                  </p>
+                )}
+                {safeLink && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    nativeButton={false}
+                    render={
+                      <a href={url} target="_blank" rel="noopener noreferrer" />
+                    }
+                  >
+                    View pull request #{execution.pullRequestNumber}
+                  </Button>
+                )}
+                {canTrack &&
+                  execution.status === "succeeded" &&
+                  execution.pullRequestNumber && (
+                    <TrackResultsButton
+                      projectId={proposal.projectId}
+                      executionId={execution.id}
+                    />
+                  )}
+                <ol className="space-y-1 border-l pl-3 text-xs text-muted-foreground">
+                  {events
+                    .filter((event) => event.executionId === execution.id)
+                    .map((event) => (
+                      <li key={event.id}>
+                        <time dateTime={event.createdAt}>
+                          {dateLabel(event.createdAt)}
+                        </time>{" "}
+                        · {event.phase.replaceAll("_", " ")}: {event.message}
+                      </li>
+                    ))}
+                </ol>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
   );
 }

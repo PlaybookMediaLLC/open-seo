@@ -173,6 +173,7 @@ export function PublishingOpportunityPanel({
             key={history.proposal.id}
             history={history}
             canExecute={enabled}
+            canTrack={canManage && !readOnly}
             blockedReason={blockedReason}
           />
         );

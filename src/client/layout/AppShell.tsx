@@ -62,10 +62,10 @@ export function AuthenticatedAppLayout({
   // (a first visit to a page without a project in the URL).
   const sidebarProjectPending =
     sidebarProjectId === null && projectsQuery.isPending;
-  // GSC opportunities and publishing setup do not use DataForSEO. Do not
+  // GSC opportunities, experiments and publishing setup do not use DataForSEO. Do not
   // interrupt their review/approval flow with an unrelated paid-research modal.
   const isGrowthWorkflow =
-    /^\/p\/[^/]+\/(?:opportunities(?:\/|$)|settings\/integrations(?:\/|$))/.test(
+    /^\/p\/[^/]+\/(?:opportunities(?:\/|$)|experiments(?:\/|$)|settings\/integrations(?:\/|$))/.test(
       location.pathname,
     );
   // The setup guide also needs no banner linking back to itself.
