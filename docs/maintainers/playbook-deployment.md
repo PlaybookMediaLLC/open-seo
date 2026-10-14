@@ -17,6 +17,8 @@ Deploys run automatically from `main` through `deploy-playbook.yml`. The first C
 
 The repository secrets `CLOUDFLARE_API_TOKEN` (token `github-actions-playbook-openseo`), `CLOUDFLARE_ACCOUNT_ID` and `ENV_PLAYBOOK` are set, as is the `playbook` environment.
 
+Google OAuth uses a Web client in Google Cloud project `playbook-openseo-prod` (organization solomon-ai.co). Its consent screen is Internal, so only solomon-ai.co Google accounts can connect, and the Search Console, Analytics Admin and Analytics Data APIs are enabled. The client is registered with the `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback` redirect URIs on `seo.playbookmedia.io`. Its ID and secret live only in `ENV_PLAYBOOK`.
+
 `DATAFORSEO_API_KEY` currently holds a placeholder, so keyword, domain and backlink research fail until a real key is placed in `ENV_PLAYBOOK`.
 
 ## System context
