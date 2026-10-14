@@ -1,0 +1,206 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Search } from "lucide-react";
+import { PageHeader } from "@/client/components/PageHeader";
+import { QueryState } from "@/client/components/QueryState";
+import { Button } from "@/client/components/ui/button";
+import { OpportunityFilterBar } from "@/client/features/opportunities/OpportunityFilterBar";
+import { OpportunityRunLog } from "@/client/features/opportunities/OpportunityRunLog";
+import { OpportunitiesList } from "@/client/features/opportunities/OpportunitiesList";
+import {
+  ConnectSearchConsole,
+  dateLabel,
+  opportunityKeys,
+  opportunitySearchSchema,
+  PAGE_SIZE,
+  type OpportunityFilters,
+} from "@/client/features/opportunities/shared";
+import {
+  detectProjectOpportunities,
+  listOpportunities,
+} from "@/serverFunctions/opportunities";
+
+export const Route = createFileRoute("/_app/p/$projectId/opportunities/")({
+  validateSearch: opportunitySearchSchema,
+  component: OpportunitiesPage,
+});
+
+function OpportunitiesPage() {
+  const { projectId } = Route.useParams();
+  // Remount mutation feedback when the project changes so one project's result
+  // is never presented as the outcome for another project.
+  return <ProjectOpportunities key={projectId} projectId={projectId} />;
+}
+
+function ProjectOpportunities({ projectId }: { projectId: string }) {
+  const filters = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: [...opportunityKeys.all(projectId), "list", filters],
+    queryFn: () =>
+      listOpportunities({ data: { projectId, ...filters, limit: PAGE_SIZE } }),
+    staleTime: 0,
+    refetchInterval: (state) => {
+      const run = state.state.data?.latestRun;
+      return run?.status === "running" &&
+        Date.now() - new Date(run.startedAt).getTime() < 180_000
+        ? 5000
+        : false;
+    },
+  });
+  const detection = useMutation({
+    mutationFn: () => detectProjectOpportunities({ data: { projectId } }),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({
+        queryKey: opportunityKeys.all(projectId),
+      }),
+    meta: { errorToast: false },
+  });
+  const update = (patch: Partial<OpportunityFilters>) => {
+    void navigate({
+      search: (previous) => ({ ...previous, offset: 0, ...patch }),
+      replace: true,
+    });
+  };
+  const filtered = Boolean(
+    filters.status || filters.type || filters.minPriority || filters.offset,
+  );
+  return (
+    <div className="overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <PageHeader
+          title="Opportunities"
+          description="Growth Operations · Evidence-led improvements for your current project."
+          actions={
+            <Button
+              onClick={() => detection.mutate()}
+              pending={detection.isPending}
+              disabled={detection.isPending || !query.data?.connected}
+            >
+              <Search data-icon="inline-start" />
+              Run detection
+            </Button>
+          }
+        />
+        <div className="rounded-xl border bg-card p-4 text-sm space-y-1">
+          <p className="font-medium">Research first. Review before action.</p>
+          <p className="text-muted-foreground">
+            Detection makes at most 3 free Google Search Console requests, with
+            at most 1,000 rows each. Results are cached for 24 hours. No paid AI
+            calls. Nothing is published or changed on your site.
+          </p>
+        </div>
+        {detection.isError ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/30 p-3 text-sm text-destructive"
+          >
+            Detection could not finish. Check your Search Console connection and
+            try again. No site changes were made.
+          </p>
+        ) : null}
+        {detection.data ? (
+          <p role="status" className="rounded-lg border p-3 text-sm">
+            {detection.data.message}
+          </p>
+        ) : null}
+        <QueryState query={query} errorFallback="Could not load opportunities">
+          {(data) => (
+            <>
+              {!data.connected ? (
+                <ConnectSearchConsole projectId={projectId} />
+              ) : null}
+              {!data.canReview ? (
+                <p className="text-sm text-muted-foreground">
+                  Only organization owners and admins can record review
+                  decisions. Project members can run bounded, read-only
+                  detection.
+                </p>
+              ) : null}
+              {data.latestRun ? (
+                <div
+                  className="text-sm text-muted-foreground space-y-1"
+                  aria-live="polite"
+                >
+                  <p>
+                    Latest detection:{" "}
+                    <span className="font-medium text-foreground">
+                      {data.latestRun.status}
+                    </span>{" "}
+                    · {dateLabel(data.latestRun.startedAt)} ·{" "}
+                    {data.latestRun.opportunityCount} opportunities
+                  </p>
+                  {data.latestRun.status === "running" &&
+                  Date.now() - new Date(data.latestRun.startedAt).getTime() >=
+                    180_000 ? (
+                    <p>
+                      This run may have been interrupted. Run detection again to
+                      retry after the expired three-minute lease.
+                    </p>
+                  ) : null}
+                  {data.latestRun.status === "failed" ? (
+                    <p className="text-destructive">
+                      Detection failed. Check the integration and retry.
+                      Existing opportunities remain available.
+                    </p>
+                  ) : null}
+                  {data.latestRun.truncated ? (
+                    <p>
+                      The source reached its row limit. These opportunities do
+                      not cover all search data.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+              <OpportunityRunLog runs={data.runs} />
+              {data.connected || data.rows.length > 0 || filtered ? (
+                <>
+                  <OpportunityFilterBar filters={filters} onChange={update} />
+                  <OpportunitiesList
+                    rows={data.rows}
+                    projectId={projectId}
+                    filtered={filtered}
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                    <p className="text-muted-foreground">
+                      {!data.rows.length
+                        ? `0 opportunities on this page (${data.total} total)`
+                        : `${filters.offset + 1}–${filters.offset + data.rows.length} of ${data.total} opportunities`}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        disabled={filters.offset === 0 || query.isFetching}
+                        onClick={() =>
+                          update({
+                            offset: Math.max(0, filters.offset - PAGE_SIZE),
+                          })
+                        }
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        disabled={
+                          filters.offset + PAGE_SIZE >= data.total ||
+                          filters.offset + PAGE_SIZE > 10000 ||
+                          query.isFetching
+                        }
+                        onClick={() =>
+                          update({ offset: filters.offset + PAGE_SIZE })
+                        }
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : null}
+            </>
+          )}
+        </QueryState>
+      </div>
+    </div>
+  );
+}

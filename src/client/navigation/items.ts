@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Search,
   TrendingUp,
+  Target,
 } from "lucide-react";
 import { linkOptions } from "@tanstack/react-router";
 import { GoogleGlyphMuted } from "@/client/features/gsc/GoogleGlyph";
@@ -23,6 +24,11 @@ const projectNavItems = [
     // Without exact matching, the index path is a prefix of every project
     // route and the Dashboard item would render active everywhere.
     activeOptions: { exact: true, includeSearch: false },
+  },
+  {
+    to: "/p/$projectId/opportunities" as const,
+    label: "Opportunities",
+    icon: Target,
   },
   {
     to: "/p/$projectId/keywords" as const,
@@ -122,7 +128,7 @@ export function getProjectNavGroups(projectId: string) {
   return [
     {
       label: "Overview",
-      items: [byPath("/p/$projectId")],
+      items: [byPath("/p/$projectId"), byPath("/p/$projectId/opportunities")],
     },
     {
       label: "Research",
