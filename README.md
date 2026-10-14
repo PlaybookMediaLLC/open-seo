@@ -27,6 +27,7 @@ Try OpenSEO for free on our website. If you want to support the project, a hoste
 
 ## Main SEO Workflows
 
+- [Opportunities](docs/OPPORTUNITIES.md): review evidence-backed Search Console opportunities before preparing changes.
 - Keyword research
 - Rank tracking
 - Competitor Insights
