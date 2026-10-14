@@ -78,20 +78,18 @@ export async function fixture(database: TestDatabase) {
     lastDetectedAt: now,
     version: 2,
   });
-  await db
-    .insert(opportunityDecisions)
-    .values({
-      id: crypto.randomUUID(),
-      projectId,
-      opportunityId,
-      evidenceRunId: run.id,
-      actorUserId: "reviewer",
-      decision: "approved",
-      fromStatus: "discovered",
-      toStatus: "approved",
-      note: "Reviewed evidence",
-      createdAt: now,
-    });
+  await db.insert(opportunityDecisions).values({
+    id: crypto.randomUUID(),
+    projectId,
+    opportunityId,
+    evidenceRunId: run.id,
+    actorUserId: "reviewer",
+    decision: "approved",
+    fromStatus: "discovered",
+    toStatus: "approved",
+    note: "Reviewed evidence",
+    createdAt: now,
+  });
   const connection: PublishingConnectionRecord = {
     id: crypto.randomUUID(),
     projectId,

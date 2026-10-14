@@ -63,11 +63,14 @@ export type ConnectPublishingInput = z.infer<
 >;
 export type PrepareProposalInput = z.infer<typeof prepareProposalInputSchema>;
 export type ExecuteProposalInput = z.infer<typeof executeProposalInputSchema>;
-export const recoverPublishingInputSchema = publishingOpportunityInputSchema.extend({
-  expectedVersion: z.number().int().positive(),
-  confirmRecovery: z.literal(true),
-});
-export type RecoverPublishingInput = z.infer<typeof recoverPublishingInputSchema>;
+export const recoverPublishingInputSchema =
+  publishingOpportunityInputSchema.extend({
+    expectedVersion: z.number().int().positive(),
+    confirmRecovery: z.literal(true),
+  });
+export type RecoverPublishingInput = z.infer<
+  typeof recoverPublishingInputSchema
+>;
 
 export type PublishingMutationResult = {
   ok: boolean;
