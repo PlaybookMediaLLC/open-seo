@@ -1,3 +1,4 @@
+import { PublishingOpportunityPanel } from "@/client/features/publishing/PublishingOpportunityPanel";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
@@ -189,6 +190,11 @@ function OpportunityDetailPage() {
           canReview={
             access.isSuccess && access.data.canReview && !query.isError
           }
+        />
+        <PublishingOpportunityPanel
+          key={item.id}
+          opportunity={item}
+          readOnly={query.isError}
         />
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Review history</h2>

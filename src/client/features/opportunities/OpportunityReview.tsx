@@ -92,9 +92,9 @@ export function OpportunityReview({
           Review decision
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Approval only authorizes proposal preparation. It does not publish,
-          execute changes, or verify code. No publishing integration is enabled
-          here.
+          Approval only authorizes proposal preparation. Creating a GitHub pull
+          request requires a separate approval of the exact verified change in
+          the publishing section. Nothing is automatically merged or deployed.
         </p>
       </div>
       {!canReview ? (
