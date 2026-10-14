@@ -11,6 +11,14 @@ This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://seo
 - **Access:** `AUTH_MODE=cloudflare_access` is the default. A Cloudflare Access application covering only `seo.playbookmedia.io` lets through the emails in `ACCESS_ALLOWED_EMAILS`.
 - **Deploys:** `.github/workflows/deploy-playbook.yml` runs on every push to `main` and on manual dispatch. It runs checks, builds, deploys, applies D1 migrations, then verifies the Access gate.
 
+## Current status
+
+The first deploy was run locally on October 14, 2026, with `pnpm alchemy deploy --stage playbook`. It created 22 resources. `https://seo.playbookmedia.io` redirects to the `solomon-ai.cloudflareaccess.com` login, the workers.dev URL returns 404, and D1 `open-seo-db-playbook` has all 59 migrations applied through `0058_blue_terror.sql`.
+
+The Alchemy state store is bootstrapped in the account. The `ENV_PLAYBOOK` and `CLOUDFLARE_ACCOUNT_ID` repository secrets and the `playbook` environment are set. `CLOUDFLARE_API_TOKEN` is still missing, because creating an API token requires the account's Global API Key or the dashboard. Until it is added, the CI deploy job fails at its first step and the live site keeps running the last local deploy.
+
+`DATAFORSEO_API_KEY` currently holds a placeholder, so keyword, domain and backlink research will fail until a real key is placed in `ENV_PLAYBOOK`. Google OAuth is not configured yet.
+
 ## System context
 
 ```mermaid

@@ -81,6 +81,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
 
+      - name: Require Cloudflare credentials
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Set the CLOUDFLARE_API_TOKEN repository secret (see docs/maintainers/playbook-deployment.md)"
+            exit 1
+          fi
+
       - name: Write .env.playbook
         run: printf '%s' "$ENV_PLAYBOOK" > .env.playbook
         env:
