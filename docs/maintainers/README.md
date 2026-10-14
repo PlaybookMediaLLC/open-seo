@@ -7,3 +7,5 @@ User-facing documentation belongs in the rest of `docs/` or `web/content/docs/`.
 `review-guidelines.md` is the shared context for code reviewers, human and agent: hard invariants plus the false-positive controls that keep reviewers from flagging intentional behavior.
 
 Create documents when they will help future maintenance or when explicitly requested. Keep task status, PR review notes, and validation results in the PR description. Log repository friction in `.agents/PAPERCUTS.md`.
+
+`playbook-deployment.md` describes the PlaybookMediaLLC fork deployment at `seo.playbookmedia.io`: Cloudflare resources, external dependencies, the deploy workflow and one-time setup.

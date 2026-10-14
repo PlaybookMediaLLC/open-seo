@@ -178,6 +178,7 @@ const resolveSelfHostAccess = (
   stage: string,
   provision: boolean,
   workersSubdomain: string,
+  customDomain: string,
 ) =>
   Effect.gen(function* () {
     let teamDomain = yield* optionalVar("TEAM_DOMAIN");
@@ -252,7 +253,9 @@ const resolveSelfHostAccess = (
         applicationId: "SelfHostAccess",
         policyName: `open-seo ${stage} self-host users`,
         applicationName: `open-seo ${stage}`,
-        domain: `${workerName(stage)}.${subdomain}`,
+        // A custom-domain stage serves only that hostname (its workers.dev URL
+        // is disabled below), so the gate must cover exactly that hostname.
+        domain: customDomain || `${workerName(stage)}.${subdomain}`,
         emails: allowedEmails,
       });
       policyAud = application.aud;
@@ -320,6 +323,16 @@ export default Alchemy.Stack(
     );
     const databaseProvider = yield* optionalVar("DATABASE_PROVIDER");
     const workersSubdomain = yield* readWorkersSubdomain({ required: false });
+    // Optional custom hostname for a non-prod stage (e.g. a team deployment on
+    // its own zone). The zone must already exist in the Cloudflare account.
+    const customDomain = (yield* optionalVar("CUSTOM_DOMAIN")).toLowerCase();
+    if (customDomain && !/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(customDomain)) {
+      return yield* Effect.die(
+        new Error(
+          "CUSTOM_DOMAIN must be a bare hostname like seo.example.com.",
+        ),
+      );
+    }
 
     // Auth needs an absolute BETTER_AUTH_URL. Prod sets it explicitly;
     // previews always derive it from the deterministic worker name — a wrong
@@ -343,6 +356,8 @@ export default Alchemy.Stack(
           ),
         );
       }
+    } else if (customDomain) {
+      authUrl = `https://${customDomain}`;
     } else if (workersSubdomain) {
       authUrl = `https://${workerName(stage)}.${workersSubdomain}`;
     } else if (authMode === "hosted") {
@@ -361,6 +376,7 @@ export default Alchemy.Stack(
       stage,
       authMode === "cloudflare_access" && !prod,
       workersSubdomain,
+      customDomain,
     );
 
     // Created once and bound into BOTH workers — they share the same
@@ -432,7 +448,12 @@ export default Alchemy.Stack(
     const app = yield* Cloudflare.Worker("open-seo", {
       name: workerName(stage),
       // Prod serves the real domains; the zone is inferred from the hostname.
-      domain: prod ? ["app.openseo.so", "www.app.openseo.so"] : undefined,
+      domain: prod
+        ? ["app.openseo.so", "www.app.openseo.so"]
+        : customDomain || undefined,
+      // With a custom domain, disable the workers.dev URL: the Access gate
+      // covers only the custom hostname, so a second public URL would bypass it.
+      ...(!prod && customDomain ? { url: false } : {}),
       // Prebuilt worker from `vite build` (@cloudflare/vite-plugin). The entry
       // exports the DO + WorkflowEntrypoint classes (re-exported by
       // src/server.ts), which `bundle: false` requires. Sibling chunks under
@@ -542,6 +563,8 @@ export default Alchemy.Stack(
       Alchemy.RemovalPolicy.retain(prod),
     );
 
-    return { url: app.url.as<string>() };
+    return {
+      url: customDomain ? `https://${customDomain}` : app.url.as<string>(),
+    };
   }),
 );
