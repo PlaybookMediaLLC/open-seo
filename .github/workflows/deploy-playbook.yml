@@ -141,6 +141,27 @@ jobs:
           echo "::error::Could not verify $DEPLOY_URL after 12 attempts (DNS or certificate may still be provisioning). Re-run this job."
           exit 1
 
+      # The public site's moving parts, beyond "it answers": server-rendered
+      # pages, docs search, and the files crawlers read. Hosted mode only;
+      # Access would answer every request with its login page.
+      - name: Smoke-test the public site
+        run: |
+          mode=$(grep '^AUTH_MODE=' .env.playbook | tail -1 | cut -d= -f2-)
+          [ "$mode" = "hosted" ] || { echo "Skipped: AUTH_MODE=$mode"; exit 0; }
+          check() {
+            body=$(curl -fsS -m 15 "$DEPLOY_URL$1") || { echo "::error::$1 failed to load"; return 1; }
+            printf '%s' "$body" | grep -aq -- "$2" || { echo "::error::$1 is missing: $2"; return 1; }
+            echo "ok $1"
+          }
+          fail=0
+          check / "Continue with Google" || fail=1
+          check /docs/getting-started "Create a project" || fail=1
+          check "/api/search?query=audit" '"url"' || fail=1
+          check /sitemap.xml "<urlset" || fail=1
+          check /robots.txt "Sitemap:" || fail=1
+          check /favicon.svg "<svg" || fail=1
+          exit $fail
+
       - name: Remove env file
         if: always()
         run: rm -f .env.playbook
