@@ -13,7 +13,7 @@ import { SkeletonPage } from "@/client/components/SkeletonPresets";
 import { StatusScreen } from "@/client/components/StatusScreen";
 import { SUBSCRIBE_ROUTE } from "@/shared/billing";
 
-export const Route = createFileRoute("/_app/")({
+export const Route = createFileRoute("/_app/app")({
   component: IndexRedirect,
 });
 

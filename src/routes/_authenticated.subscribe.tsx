@@ -122,7 +122,7 @@ function SubscribePage() {
       if (checkoutCompleted) {
         captureClientEvent("billing:checkout_success");
       }
-      void navigate({ href: redirect ?? "/", replace: true });
+      void navigate({ href: redirect ?? "/app", replace: true });
     }
   }, [checkoutCompleted, navigate, redirect, subscribeRouteState]);
 
@@ -276,7 +276,7 @@ function SubscribePage() {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => void navigate({ to: "/", replace: true })}
+            onClick={() => void navigate({ to: "/app", replace: true })}
           >
             <ArrowRight className="size-3.5 rotate-180" />
             Back to app

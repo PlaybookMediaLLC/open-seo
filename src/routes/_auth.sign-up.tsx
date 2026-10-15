@@ -21,7 +21,11 @@ import { GOOGLE_ONLY_AUTH } from "@/lib/auth-mode";
 import { getFormError } from "@/client/lib/forms";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
-import { getSignInSearch, getVerifyEmailSearch } from "@/lib/auth-redirect";
+import {
+  APP_HOME,
+  getSignInSearch,
+  getVerifyEmailSearch,
+} from "@/lib/auth-redirect";
 import { z } from "zod";
 
 const signUpSchema = z
@@ -49,7 +53,7 @@ function SignUpPage() {
   const navigate = useNavigate();
   const { redirectTo, isHostedMode } = useAuthPageState(search.redirect);
   const postSignupRedirect =
-    redirectTo !== "/"
+    redirectTo !== APP_HOME
       ? redirectTo
       : search.domain
         ? `/onboarding?${new URLSearchParams({ domain: search.domain }).toString()}`

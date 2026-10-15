@@ -57,7 +57,7 @@ function useProjectAccessRedirect(projectId: string) {
     // Forget it if it's the remembered project, or the landing redirect
     // would bring the user straight back here.
     if (getLastProjectId() === projectId) clearLastProjectId();
-    void navigate({ to: "/", replace: true });
+    void navigate({ to: "/app", replace: true });
   }, [error, navigate, projectId]);
   return access.isSuccess;
 }

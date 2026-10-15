@@ -54,7 +54,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
           {isRoot ? (
             <Button
               nativeButton={false}
-              render={<Link to="/" />}
+              render={<Link to="/app" />}
               size="sm"
               variant="outline"
             >
@@ -65,7 +65,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
               nativeButton={false}
               render={
                 <Link
-                  to="/"
+                  to="/app"
                   onClick={(e) => {
                     e.preventDefault();
                     window.history.back();

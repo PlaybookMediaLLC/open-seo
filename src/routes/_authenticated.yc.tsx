@@ -86,7 +86,7 @@ function YcPlanPage() {
       // the new plan; new subscribers go into the app.
       await openPlanCheckout(
         YC_PLAN_OFFER.planId,
-        isPaid ? BILLING_ROUTE : "/",
+        isPaid ? BILLING_ROUTE : "/app",
       );
     } catch (err) {
       setError(
@@ -188,7 +188,7 @@ function YcPlanPage() {
           .
         </p>
         <Link
-          to="/"
+          to="/app"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowRight className="size-3.5 rotate-180" />
