@@ -8,4 +8,4 @@ User-facing documentation belongs in the rest of `docs/` or `web/content/docs/`.
 
 Create documents when they will help future maintenance or when explicitly requested. Keep task status, PR review notes, and validation results in the PR description. Log repository friction in `.agents/PAPERCUTS.md`.
 
-`playbook-deployment.md` describes the PlaybookMediaLLC fork deployment at `seo.playbookmedia.io`: Cloudflare resources, external dependencies, the deploy workflow and one-time setup.
+`playbook-deployment.md` describes the PlaybookMediaLLC fork deployment at `relay.playbookmedia.io`: Cloudflare resources, external dependencies, the deploy workflow and one-time setup.

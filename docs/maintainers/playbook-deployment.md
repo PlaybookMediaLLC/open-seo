@@ -1,19 +1,19 @@
 # Playbook Media deployment architecture
 
-This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://seo.playbookmedia.io`, what it depends on, and how it gets deployed. It is for engineers who maintain the deployment. User-facing behaviour is documented in `docs/`.
+This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://relay.playbookmedia.io`, what it depends on, and how it gets deployed. It is for engineers who maintain the deployment. User-facing behaviour is documented in `docs/`.
 
 ## Summary
 
 - **Code:** `PlaybookMediaLLC/open-seo` is an upstream-tracking fork of `every-app/open-seo`. The MIT license and upstream notices are preserved. Pull upstream changes into `main` periodically.
 - **Runtime:** two Cloudflare Workers, deployed by the repository's existing Alchemy stack (`deploy/alchemy/alchemy.run.ts`) as stage `playbook`.
 - **Data:** a dedicated D1 database `open-seo-db-playbook`, plus stage-suffixed KV, R2, Workflows and Durable Objects. Nothing is shared with openseo.so, previews or any other stage.
-- **Hostname:** `seo.playbookmedia.io` is bound as a Worker custom domain on the `playbookmedia.io` zone. The workers.dev URL is disabled.
+- **Hostname:** `relay.playbookmedia.io` is bound as a Worker custom domain on the `playbookmedia.io` zone. The workers.dev URL is disabled.
 - **Access:** public, `AUTH_MODE=hosted` with Google-only sign-in. Each user gets their own organization. Switching back to `cloudflare_access` re-creates an email-gated Access application.
 - **Deploys:** `.github/workflows/deploy-playbook.yml` runs on every push to `main` and on manual dispatch. It runs checks, builds, deploys, applies D1 migrations, then verifies the Access gate.
 
 ## Current status
 
-`https://seo.playbookmedia.io` is public. It runs `AUTH_MODE=hosted` with `AUTH_GOOGLE_ONLY=true`: anyone can sign up and sign in with Google, and the email/password sign-in, sign-up and reset endpoints are disabled server-side. The product is branded **Relay** (see [Relay brand](#relay-brand)). `/privacy` and `/terms` are public Playbook Media LLC pages under Delaware law, with contact `team@playbookmedia.io`. `/` is a public, dark marketing landing page modelled on superwhisper.com: a floating pill nav, a sky hero that shrinks into a framed desktop showing the product, feature cards, pricing and an FAQ. It has no GitHub or self-hosting links. Signed-in users land on `/app`, which opens their last project, and every sign-in redirect defaults there. Inside the app the shell is a floating inset frame on a soft sidebar, and every page shares the `page-pad` gutter defined in `app.css`. Deploys run automatically from `main`. The verify step checks that the public privacy page and the landing page are served.
+`https://relay.playbookmedia.io` is public. It runs `AUTH_MODE=hosted` with `AUTH_GOOGLE_ONLY=true`: anyone can sign up and sign in with Google, and the email/password sign-in, sign-up and reset endpoints are disabled server-side. The product is branded **Relay** (see [Relay brand](#relay-brand)). `/privacy` and `/terms` are public Playbook Media LLC pages under Delaware law, with contact `team@playbookmedia.io`. `/` is a public, dark marketing landing page modelled on superwhisper.com: a floating pill nav, a sky hero that shrinks into a framed desktop showing the product, feature cards, pricing and an FAQ. It has no GitHub or self-hosting links. Signed-in users land on `/app`, which opens their last project, and every sign-in redirect defaults there. Inside the app the shell is a floating inset frame on a soft sidebar, and every page shares the `page-pad` gutter defined in `app.css`. Deploys run automatically from `main`. The verify step checks that the public privacy page and the landing page are served.
 
 Google OAuth uses a Web client in project `playbook-openseo-prod` (organization solomon-ai.co). The consent screen is External and In production, with the app name `Relay`, the home, privacy and terms URLs and the authorized domain `playbookmedia.io`. Google shows the app name only after brand verification, which is not done yet. The redirect URIs are `/api/auth/callback/google` (sign-in), `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback`. The client ID and secret live only in `ENV_PLAYBOOK`.
 
@@ -23,7 +23,7 @@ Open items:
 - **Billing:** Autumn (org "D Yoan L's Org", production) is connected by Stripe OAuth to the **playbookmedia.io** Stripe account `acct_1OXB5bH7s84UCOP5`. Pricing lives in `autumn.config.ts` and is applied with `AUTUMN_PROD_SECRET_KEY=... pnpm exec atmn --prod push --yes`. Free ($1 of credits a month) is assigned automatically; the Base Plan is $10 a month with $10 of credits; top-ups are $1 per 1,000 credits. Autumn webhook `seo-playbookmedia` sends `billing.updated` to `/api/autumn/webhook`. `AUTUMN_SECRET_KEY` and `AUTUMN_WEBHOOK_SECRET` live in `ENV_PLAYBOOK`.
 - **Icons:** `@tabler/icons-react`. Every icon's default size and stroke come from `--icon-size` and `--icon-stroke` in `src/client/styles/app.css`. Use `icon-nav` and `icon-card` for Eigenn's 14px and 20px sizes.
 - **DataForSEO:** pay-as-you-go account with API credentials (Base64 `login:password`) in `ENV_PLAYBOOK` as `DATAFORSEO_API_KEY`. Calls fail with DataForSEO code 40104 until the account's email/phone verification is completed in the DataForSEO panel. Paid use needs a $50 minimum deposit. Users are billed through Autumn credits at the 1.28x markup in `src/shared/billing.ts`.
-- **Turnstile:** a widget exists for `seo.playbookmedia.io`. Its keys are in `ENV_PLAYBOOK`, but Google-only mode does not use them.
+- **Turnstile:** a widget exists for `relay.playbookmedia.io`. Its keys are in `ENV_PLAYBOOK`, but Google-only mode does not use them.
 
 ## Relay brand
 
@@ -44,7 +44,7 @@ flowchart LR
   user([Team member browser])
   agent([AI agent via MCP])
   subgraph CF[Cloudflare account: playbookmedia.io zone]
-    access[Cloudflare Access<br/>seo.playbookmedia.io]
+    access[Cloudflare Access<br/>relay.playbookmedia.io]
     app[Worker open-seo-playbook<br/>TanStack Start app, API, MCP, crons]
     audit[Worker open-seo-playbook-audit<br/>site-audit engine]
   end
@@ -172,7 +172,7 @@ flowchart LR
   env --> validate[Validate domain, DB provider, auth mode, secret length]
   validate --> build[vite build --mode playbook]
   build --> alchemy[alchemy deploy --stage playbook<br/>creates or updates workers, D1 + migrations, KV, R2, Access, custom domain]
-  alchemy --> verify[curl seo.playbookmedia.io<br/>expect Access login redirect]
+  alchemy --> verify[curl relay.playbookmedia.io<br/>expect Access login redirect]
 ```
 
 Deploys never cancel each other, so a D1 migration is never interrupted midway. Alchemy keeps its state in the account's Cloudflare state store, which requires a one-time `pnpm alchemy cloudflare bootstrap`.
@@ -188,7 +188,7 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
    - `CLOUDFLARE_API_TOKEN`: the token from step 2.
    - `CLOUDFLARE_ACCOUNT_ID`: the account ID from step 1.
    - `ENV_PLAYBOOK`: the filled-in contents of `deploy/.env.playbook.example`. Set `ACCESS_ALLOWED_EMAILS`, a `BETTER_AUTH_SECRET` generated with `openssl rand -base64 48`, `DATAFORSEO_API_KEY`, and the Google OAuth client.
-4. **Google OAuth client:** add the authorized redirect URIs `https://seo.playbookmedia.io/api/gsc/oauth/callback` and `https://seo.playbookmedia.io/api/ga4/oauth/callback`.
+4. **Google OAuth client:** add the authorized redirect URIs `https://relay.playbookmedia.io/api/gsc/oauth/callback` and `https://relay.playbookmedia.io/api/ga4/oauth/callback`.
 5. **GitHub environment:** create an environment named `playbook` and optionally require reviewers to approve each production deploy.
 6. Run the workflow manually (Actions, "Deploy (Playbook Media)", Run workflow). The first run creates every resource, and the custom domain's certificate can take a few minutes to issue.
 

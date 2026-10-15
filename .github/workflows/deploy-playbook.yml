@@ -1,6 +1,6 @@
 name: Deploy (Playbook Media)
 
-# Deploys the PlaybookMediaLLC fork to Cloudflare at https://seo.playbookmedia.io
+# Deploys the PlaybookMediaLLC fork to Cloudflare at https://relay.playbookmedia.io
 # through the same Alchemy stack as previews and self-host
 # (deploy/alchemy/alchemy.run.ts), using the dedicated stage "playbook".
 #
@@ -42,7 +42,7 @@ permissions:
 
 env:
   STAGE: playbook
-  DEPLOY_URL: https://seo.playbookmedia.io
+  DEPLOY_URL: https://relay.playbookmedia.io
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
@@ -71,7 +71,7 @@ jobs:
     timeout-minutes: 30
     environment:
       name: playbook
-      url: https://seo.playbookmedia.io
+      url: https://relay.playbookmedia.io
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -97,7 +97,7 @@ jobs:
       - name: Validate deployment configuration
         run: |
           get() { grep "^$1=" .env.playbook | tail -1 | cut -d= -f2-; }
-          [ "$(get CUSTOM_DOMAIN)" = "seo.playbookmedia.io" ] || { echo "::error::ENV_PLAYBOOK must set CUSTOM_DOMAIN=seo.playbookmedia.io"; exit 1; }
+          [ "$(get CUSTOM_DOMAIN)" = "relay.playbookmedia.io" ] || { echo "::error::ENV_PLAYBOOK must set CUSTOM_DOMAIN=relay.playbookmedia.io"; exit 1; }
           [ "$(get DATABASE_PROVIDER)" = "d1" ] || { echo "::error::ENV_PLAYBOOK must set DATABASE_PROVIDER=d1"; exit 1; }
           case "$(get AUTH_MODE)" in
             cloudflare_access) [ -n "$(get ACCESS_ALLOWED_EMAILS)" ] || { echo "::error::cloudflare_access needs ACCESS_ALLOWED_EMAILS"; exit 1; } ;;
