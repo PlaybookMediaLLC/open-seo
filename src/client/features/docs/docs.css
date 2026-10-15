@@ -142,9 +142,11 @@ body {
 /* Sidebar: flush rows, no rounded corners. The rules cover the desktop
    sidebar and the phone drawer. */
 .relay-docs-logo {
-  font: 500 18px/1 var(--font-mono);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 16px/1 var(--font-sans);
   letter-spacing: -0.2px;
-  text-transform: uppercase;
   color: var(--color-fd-foreground);
 }
 :is(#nd-sidebar, #nd-sidebar-mobile) > div:first-child {

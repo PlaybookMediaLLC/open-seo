@@ -10,8 +10,10 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
+import { BrandMark } from "@/client/components/BrandMark";
 import docsCss from "@/client/features/docs/docs.css?url";
 import { docsMdxComponents } from "@/client/features/docs/docsMdxComponents";
+import { LandingNotFound } from "@/client/features/landing/LandingNotFound";
 import { publicPageHead } from "@/lib/relay-seo";
 import type { DocsPageData } from "@/server/lib/docsPage";
 import { docs } from "../../../.source/index";
@@ -56,6 +58,7 @@ export const Route = createFileRoute("/docs/$")({
     };
   },
   component: DocsRoute,
+  notFoundComponent: LandingNotFound,
 });
 
 const clientLoader = createClientLoader(docs, {
@@ -116,7 +119,12 @@ function DocsRoute() {
       <DocsLayout
         tree={page.pageTree}
         nav={{
-          title: <span className="relay-docs-logo">Relay.</span>,
+          title: (
+            <span className="relay-docs-logo">
+              <BrandMark className="size-5" />
+              Relay
+            </span>
+          ),
           url: "/docs",
         }}
         links={[

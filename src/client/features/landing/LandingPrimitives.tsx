@@ -50,7 +50,7 @@ export function Reveal({
         node.dataset.visible = "";
         observer.disconnect();
       },
-      { threshold: 0.15 },
+      { threshold: 0.05 },
     );
     observer.observe(node);
     return () => observer.disconnect();
@@ -67,27 +67,15 @@ export function Reveal({
   );
 }
 
-/** The small colored kicker above a section title (14/500, +0.14px). */
+/** The small mono kicker above a section title. */
 export function Eyebrow({
   children,
-  color,
   className,
 }: {
   children: ReactNode;
-  color: string;
   className?: string;
 }) {
-  return (
-    <p
-      className={cn(
-        "text-[14px] font-medium leading-[21px] tracking-[0.14px]",
-        className,
-      )}
-      style={{ color }}
-    >
-      {children}
-    </p>
-  );
+  return <p className={cn("landing-eyebrow", className)}>{children}</p>;
 }
 
 /** Cycles through options on a timer until the user picks one. */
