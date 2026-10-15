@@ -1,63 +1,87 @@
 import type { ReactNode } from "react";
 import {
   IconBrandGoogle,
+  IconBrandOpenai,
+  IconBrandStripe,
+  IconBrandVercel,
+  IconBrandVscode,
+  IconBrandWebflow,
+  IconBrandWordpress,
   IconBrain,
   IconChartBar,
+  IconCloud,
+  IconMessageChatbot,
+  IconShoppingBag,
   IconClipboardCheck,
   IconFileText,
   IconFlask,
   IconGitPullRequest,
   IconLink,
   IconTarget,
+  IconTerminal2,
   IconWorld,
   type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
 import { Eyebrow, Reveal, useAutoCycle } from "./LandingPrimitives";
-import { LandingSeeAll } from "./LandingHero";
+import {
+  CitationArt,
+  ContextArt,
+  DiffArt,
+  ExperimentArt,
+  OpportunityArt,
+  SearchConsoleArt,
+} from "./CardArt";
 
-const SOURCES = [
-  "Search Console",
-  "Analytics 4",
-  "DataForSEO",
-  "Claude",
-  "ChatGPT",
-  "Perplexity",
-  "Cursor",
-  "Codex",
-  "Cloudflare",
-  "Stripe",
-  "WordPress",
-  "Webflow",
+const LOGOS: { name: string; icon: Icon }[] = [
+  { name: "Search Console", icon: IconBrandGoogle },
+  { name: "Analytics 4", icon: IconChartBar },
+  { name: "Claude", icon: IconMessageChatbot },
+  { name: "OpenAI", icon: IconBrandOpenai },
+  { name: "Cursor", icon: IconBrandVscode },
+  { name: "Codex", icon: IconTerminal2 },
+  { name: "WordPress", icon: IconBrandWordpress },
+  { name: "Webflow", icon: IconBrandWebflow },
+  { name: "Vercel", icon: IconBrandVercel },
+  { name: "Cloudflare", icon: IconCloud },
+  { name: "Shopify", icon: IconShoppingBag },
+  { name: "Stripe", icon: IconBrandStripe },
 ];
 
 export function LandingLogos() {
   return (
-    <section className="w-full px-4 pb-10 pt-24">
-      <Reveal className="mx-auto max-w-[760px]">
-        <div className="landing-marquee overflow-hidden">
-          <div className="landing-marquee-track py-1">
-            {[...SOURCES, ...SOURCES].map((name, i) => (
-              <span
-                key={i}
-                className="mx-7 flex h-8 items-center whitespace-nowrap text-[17px] font-semibold tracking-[-0.4px] text-white/45"
-              >
-                {name}
-              </span>
-            ))}
+    <section className="w-full px-4 pb-6 pt-28">
+      <Reveal className="mx-auto max-w-[1024px]">
+        {[false, true].map((reverse) => (
+          <div
+            key={String(reverse)}
+            className="landing-marquee overflow-hidden"
+          >
+            <div
+              className="landing-marquee-track"
+              data-reverse={reverse ? "" : undefined}
+            >
+              {[...LOGOS, ...LOGOS].map(({ name, icon: Icon }, index) => (
+                <span
+                  key={`${name}-${index}`}
+                  className="mx-5 flex h-11 shrink-0 items-center gap-2 text-white/25 transition-colors hover:text-white/50"
+                >
+                  <Icon className="size-[18px]" stroke={1.6} />
+                  <span className="whitespace-nowrap text-[14px] font-medium tracking-[-0.2px]">
+                    {name}
+                  </span>
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        ))}
         <h2 className="mt-12 text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
-          Built for those who ship fast
+          Built for those who move fast
         </h2>
-        <p className="mt-2 text-center text-[16px] leading-[22.4px] text-[#888b91]">
-          Your real Google data, live search research,
+        <p className="mt-3 text-center text-[16px] leading-[22.4px] text-[#888b91]">
+          Your Google data, live search research and
           <br />
-          and{" "}
-          <span className="text-[#fafafa]">the AI agents you already use</span>.
-        </p>
-        <p className="mt-4 text-center">
-          <LandingSeeAll />
+          the <span className="text-[#fafafa]">AI agents you already use</span>.
         </p>
       </Reveal>
     </section>
@@ -102,7 +126,7 @@ export function LandingAdaptability() {
             <div className="landing-dots pointer-events-none absolute inset-0" />
             <div className="relative">
               <Eyebrow color="#798498">Adaptability</Eyebrow>
-              <h2 className="mt-2 w-[300px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+              <h2 className="mt-2 max-w-[320px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
                 SEO isn’t one-size-fits-all
               </h2>
             </div>
@@ -179,7 +203,7 @@ const CARDS: Card[] = [
     color: "#dd55e7",
     bg: "#1c031f",
     icon: IconTarget,
-    art: <ScoreArt />,
+    art: <OpportunityArt />,
   },
   {
     title: "Experiments",
@@ -188,7 +212,7 @@ const CARDS: Card[] = [
     color: "#1cecbb",
     bg: "#031310",
     icon: IconFlask,
-    art: <ChartArt color="#1cecbb" />,
+    art: <ExperimentArt />,
   },
   {
     title: "Pull requests",
@@ -206,7 +230,7 @@ const CARDS: Card[] = [
     color: "#0088ff",
     bg: "#030719",
     icon: IconChartBar,
-    art: <ChartArt color="#0088ff" bars />,
+    art: <CitationArt />,
   },
   {
     title: "Search Console",
@@ -215,7 +239,7 @@ const CARDS: Card[] = [
     color: "#17c253",
     bg: "#02160b",
     icon: IconBrandGoogle,
-    art: <ScoreArt label="Clicks" value="+38%" />,
+    art: <SearchConsoleArt />,
   },
   {
     title: "Project context",
@@ -224,7 +248,7 @@ const CARDS: Card[] = [
     color: "#ffdd00",
     bg: "#191303",
     icon: IconBrain,
-    art: <ScoreArt label="Context" value="4/4" />,
+    art: <ContextArt />,
   },
 ];
 
@@ -240,10 +264,13 @@ export function LandingWhatsInside() {
             seamlessly integrated.
           </p>
         </div>
-        <div className="landing-no-scrollbar mt-8 flex gap-8 overflow-x-auto px-6 pb-2 sm:px-8">
-          {CARDS.map((card) => (
-            <FeatureCard key={card.title} card={card} />
-          ))}
+        <div className="relative">
+          <div className="landing-no-scrollbar mt-8 flex gap-8 overflow-x-auto px-6 pb-2 sm:px-8">
+            {CARDS.map((card) => (
+              <FeatureCard key={card.title} card={card} />
+            ))}
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-black to-transparent" />
         </div>
         <div className="mt-14 grid gap-10 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
           {SMALL_FEATURES.map(({ icon: Icon, title, body, badge }) => (
@@ -277,14 +304,20 @@ function FeatureCard({ card }: { card: Card }) {
     >
       <div className="absolute inset-x-0 top-0 h-64 overflow-hidden rounded-t-3xl">
         <div
-          className="absolute inset-0 opacity-60"
+          className="absolute inset-0"
           style={{
-            background: `radial-gradient(120% 90% at 50% 0%, ${card.color}55, transparent 70%)`,
+            background: `radial-gradient(120% 80% at 50% -10%, ${card.color}2e, transparent 65%)`,
           }}
         />
         <div className="absolute inset-0 grid place-items-center">
           {card.art}
         </div>
+        <div
+          className="absolute inset-x-0 bottom-0 h-16"
+          style={{
+            background: `linear-gradient(to bottom, transparent, ${card.bg})`,
+          }}
+        />
       </div>
       <div className="relative mb-2 flex items-center">
         <span
@@ -305,66 +338,6 @@ function FeatureCard({ card }: { card: Card }) {
         <br />
         <span className="text-white">{card.emphasis}</span>
       </p>
-    </div>
-  );
-}
-
-function ScoreArt({
-  label = "Priority",
-  value = "92",
-}: {
-  label?: string;
-  value?: string;
-}) {
-  return (
-    <div className="rounded-[32px] bg-[#3a3a3c]/50 px-8 py-6 shadow-2xl backdrop-blur">
-      <p className="text-[15px] text-white/60">{label}</p>
-      <p className="text-[44px] font-semibold leading-none tracking-[-1.5px] text-white">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-function ChartArt({ color, bars = false }: { color: string; bars?: boolean }) {
-  const points = [30, 34, 31, 42, 40, 55, 52, 66, 70, 84];
-  const path = points
-    .map((h, i) => `${i === 0 ? "M" : "L"}${i * 22} ${100 - h}`)
-    .join(" ");
-  return (
-    <div className="w-[230px] rounded-2xl bg-white/[0.06] p-4 backdrop-blur">
-      {bars ? (
-        <div className="flex h-24 items-end gap-1.5">
-          {points.map((h, i) => (
-            <span
-              key={i}
-              className="flex-1 rounded-sm"
-              style={{
-                height: `${h}%`,
-                background: color,
-                opacity: 0.4 + i * 0.06,
-              }}
-            />
-          ))}
-        </div>
-      ) : (
-        <svg viewBox="0 0 198 100" className="h-24 w-full" aria-hidden>
-          <path d={`${path} L198 100 L0 100Z`} fill={color} opacity="0.15" />
-          <path d={path} fill="none" stroke={color} strokeWidth="2.5" />
-          <circle cx="198" cy="16" r="4" fill={color} />
-        </svg>
-      )}
-    </div>
-  );
-}
-
-function DiffArt() {
-  return (
-    <div className="w-[240px] rounded-2xl bg-black/40 p-3 font-mono text-[11px] leading-5 backdrop-blur">
-      <p className="text-[#ff7b72]">- title: Pricing</p>
-      <p className="text-[#3fb950]">+ title: Pricing · Plans from $0</p>
-      <p className="text-[#ff7b72]">- description: (missing)</p>
-      <p className="text-[#3fb950]">+ description: Rank tracking…</p>
     </div>
   );
 }

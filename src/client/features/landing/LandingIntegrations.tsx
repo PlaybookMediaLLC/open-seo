@@ -58,8 +58,8 @@ function Point({
 
 export function LandingBuildIt() {
   return (
-    <section className="w-full overflow-hidden px-4 py-32">
-      <Reveal className="mx-auto grid max-w-[1024px] items-center gap-16 md:grid-cols-2">
+    <section className="w-full overflow-hidden px-4 py-28">
+      <Reveal className="mx-auto grid max-w-[1024px] items-center gap-10 md:grid-cols-2">
         <SettingsMock />
         <div>
           <Eyebrow color="#0088ff">Project context</Eyebrow>
@@ -100,8 +100,8 @@ export function LandingBuildIt() {
 function SettingsMock() {
   const nav = ["Dashboard", "Opportunities", "Keywords", "Context"];
   return (
-    <div className="relative h-[420px] [perspective:1400px]">
-      <div className="absolute -left-24 top-10 w-[440px] rounded-[14px] border border-white/10 bg-[#141416] p-3 shadow-[0_40px_100px_-20px_#000] [transform:rotateX(18deg)_rotateY(-22deg)_rotateZ(8deg)]">
+    <div className="relative h-[300px] [perspective:1400px]">
+      <div className="absolute left-0 top-0 w-[400px] rounded-[14px] border border-white/10 bg-[#141416] p-3 shadow-[0_40px_100px_-20px_#000] [transform:rotateX(12deg)_rotateY(-16deg)_rotateZ(5deg)]">
         <div className="mb-3 flex gap-1.5">
           <span className="size-2 rounded-full bg-[#ff5f57]" />
           <span className="size-2 rounded-full bg-[#febc2e]" />
@@ -141,7 +141,7 @@ function SettingsMock() {
           </div>
         </div>
       </div>
-      <div className="absolute left-40 top-28 w-[190px] rounded-[12px] border border-white/10 bg-[#1c1c1f] p-2 shadow-[0_30px_60px_-10px_#000] [transform:rotateX(18deg)_rotateY(-22deg)_rotateZ(8deg)]">
+      <div className="absolute left-52 top-36 w-[180px] rounded-[12px] border border-white/10 bg-[#1c1c1f] p-2 shadow-[0_30px_60px_-10px_#000] [transform:rotateX(12deg)_rotateY(-16deg)_rotateZ(5deg)]">
         <p className="px-1.5 pb-1 text-[10px] font-semibold text-white/50">
           Assistant
         </p>
@@ -196,7 +196,7 @@ const KEYS: { icon: Icon; color: string; bg: string }[][] = [
 
 export function LandingIntegrations() {
   return (
-    <section className="w-full overflow-hidden px-4 pt-32 text-center">
+    <section className="w-full overflow-hidden px-4 pb-20 pt-32 text-center">
       <Reveal>
         <Eyebrow color="#83c9ff">Integrations</Eyebrow>
         <h2 className="mt-3 text-[36px] font-semibold leading-[38px] text-[#70757c] sm:text-[48px] sm:leading-[51px]">
@@ -211,38 +211,38 @@ export function LandingIntegrations() {
           You approve it, OpenSEO ships it.
         </p>
       </Reveal>
-      <div className="relative mx-auto mt-20 h-[300px] max-w-[800px]">
-        <div className="absolute bottom-[-60px] left-1/2 w-[760px] -translate-x-1/2 -rotate-[4deg] rounded-[15px] border-[1.5px] border-[#999] bg-gradient-to-b from-[#7e7e7e] to-[#4e4e4e] p-2.5 shadow-[0_0_45px_0_#000]">
+      <div className="relative mx-auto mt-14 h-[300px] max-w-[900px] overflow-hidden">
+        <div className="absolute left-1/2 top-4 w-[700px] -translate-x-1/2 rotate-[3deg] rounded-[13px] border-[1.5px] border-[#999] bg-gradient-to-b from-[#7e7e7e] to-[#4e4e4e] p-2 shadow-[0_0_45px_0_#000]">
           {KEYS.map((row, rowIndex) => (
             <div
               key={rowIndex}
-              className="mb-[5px] flex gap-[5px]"
-              style={{ paddingLeft: 20 + rowIndex * 22 }}
+              className="mb-1 flex gap-1"
+              style={{ paddingLeft: 14 + rowIndex * 18 }}
             >
               <Blank wide />
               {row.map(({ icon: KeyIcon, color, bg }, i) => (
                 <span
                   key={i}
-                  className="grid size-[50px] shrink-0 place-items-center rounded-[9px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.25),0_1px_0_rgb(255_255_255/0.25)]"
+                  className="grid size-[42px] shrink-0 place-items-center rounded-[8px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.25),0_1px_0_rgb(255_255_255/0.25)]"
                   style={{ background: bg }}
                 >
-                  <KeyIcon className="size-7" style={{ color }} stroke={1.8} />
+                  <KeyIcon className="size-6" style={{ color }} stroke={1.8} />
                 </span>
               ))}
               <Blank grow />
             </div>
           ))}
-          <div className="flex gap-[5px]">
+          <div className="flex gap-1">
             {[1, 1, 1, 7, 1, 1].map((w, i) => (
               <span
                 key={i}
-                className="h-[50px] rounded-[9px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]"
+                className="h-[42px] rounded-[8px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]"
                 style={{ flex: w }}
               />
             ))}
           </div>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-[-60px] h-24 bg-gradient-to-b from-transparent to-black" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-black" />
       </div>
     </section>
   );
@@ -252,8 +252,8 @@ function Blank({ wide, grow }: { wide?: boolean; grow?: boolean }) {
   return (
     <span
       className={cn(
-        "h-[50px] shrink-0 rounded-[9px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]",
-        wide && "w-[50px]",
+        "h-[42px] shrink-0 rounded-[8px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]",
+        wide && "w-[42px]",
         grow && "flex-1",
       )}
     />
@@ -262,7 +262,7 @@ function Blank({ wide, grow }: { wide?: boolean; grow?: boolean }) {
 
 export function LandingAgents() {
   return (
-    <section id="agents" className="w-full px-4 py-40">
+    <section id="agents" className="w-full px-4 pb-32 pt-10">
       <Reveal className="mx-auto grid max-w-[1024px] items-center gap-12 md:grid-cols-[1fr_1.45fr]">
         <div>
           <Eyebrow color="#ffdd00" className="font-normal tracking-normal">
