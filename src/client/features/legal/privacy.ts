@@ -20,7 +20,7 @@ export const PRIVACY: LegalDocument = {
       id: "who-we-are",
       title: "Who we are",
       blocks: [
-        "Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”), operates Relay, the hosted SEO service at [seo.playbookmedia.io](https://seo.playbookmedia.io), with its MCP server, API and related websites (the “Service”). Relay was previously called Playbook Media SEO, and you may still see that name on Google’s sign-in and permission screens.",
+        "Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”), operates Relay, the hosted SEO service at [relay.playbookmedia.io](https://relay.playbookmedia.io), with its MCP server, API and related websites (the “Service”). Relay was previously called Playbook Media SEO, and you may still see that name on Google’s sign-in and permission screens.",
         "This policy explains what personal information we collect, how we use and share it, and the choices and rights you have. For the purposes of data protection law, Playbook Media is the controller of your personal information. Our [Terms of Service](/terms) also apply.",
       ],
     },

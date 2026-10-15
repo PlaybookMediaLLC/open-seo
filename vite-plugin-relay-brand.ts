@@ -21,8 +21,11 @@ const REPLACEMENTS: [RegExp, string][] = [
   [/support@openseo\.so/g, "team@playbookmedia.io"],
   // Upstream's hosted app is the fallback origin (SSR, the AI assistant's MCP
   // URL); ours must point users at this deployment, not at app.openseo.so.
-  [/https:\/\/app\.openseo\.so/g, "https://seo.playbookmedia.io"],
-  [/https:\/\/openseo\.so\/pricing/g, "https://seo.playbookmedia.io/#pricing"],
+  [/https:\/\/app\.openseo\.so/g, "https://relay.playbookmedia.io"],
+  [
+    /https:\/\/openseo\.so\/pricing/g,
+    "https://relay.playbookmedia.io/#pricing",
+  ],
 ];
 
 const APP_MODULE = /\/src\/[^?]*\.(?:[cm]?[jt]sx?|md)(?:\?|$)/;

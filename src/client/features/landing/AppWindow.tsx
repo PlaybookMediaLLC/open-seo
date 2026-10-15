@@ -1,37 +1,28 @@
+import { useEffect, useRef } from "react";
 import { cn } from "cn";
 
 /**
- * Real screenshots of the running app, captured by `pnpm capture:product` and
- * served from src/public. Re-run that script when the UI they show changes.
+ * The product in a macOS-style window, playing a recorded walkthrough of the
+ * real, signed-in app. `pnpm capture:product` records it into src/public;
+ * re-record when the UI it shows changes.
  */
-const PRODUCT_SHOTS = {
-  opportunities: {
-    src: "/product/opportunities.webp",
-    alt: "The Relay Opportunities page, listing ranked page fixes with their priority, status and effort.",
-  },
-  rankTracking: {
-    src: "/product/rank-tracking.webp",
-    alt: "The Relay Rank Tracking page, showing a position distribution chart and tracked keywords with volume, difficulty and CPC.",
-  },
-  savedKeywords: {
-    src: "/product/saved-keywords.webp",
-    alt: "The Relay Saved Keywords table, with search volume, CPC, competition, difficulty and intent for each keyword.",
-  },
-} as const;
+export function AppWindow({ className }: { className?: string }) {
+  const video = useRef<HTMLVideoElement>(null);
 
-export type ShotKey = keyof typeof PRODUCT_SHOTS;
+  // React renders `muted` as a property, not into the server HTML, so the
+  // browser blocks the autoplay; start it once mounted. Motion-sensitive
+  // visitors get the still poster instead.
+  useEffect(() => {
+    const node = video.current;
+    if (!node) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      node.pause();
+      return;
+    }
+    node.muted = true;
+    node.play().catch(() => {});
+  }, []);
 
-/**
- * The product in a macOS-style window. All screenshots are stacked so a
- * change of `shot` cross-fades instead of flashing.
- */
-export function AppWindow({
-  shot = "opportunities",
-  className,
-}: {
-  shot?: ShotKey;
-  className?: string;
-}) {
   return (
     <div
       className={cn(
@@ -44,23 +35,23 @@ export function AppWindow({
         <span className="size-[11px] rounded-full bg-[#febc2e]" />
         <span className="size-[11px] rounded-full bg-[#28c840]" />
         <span className="mx-auto -translate-x-[27px] rounded-md bg-white/[0.06] px-3 py-0.5 text-[10px] text-white/40">
-          seo.playbookmedia.io
+          relay.playbookmedia.io
         </span>
       </div>
-      <div className="relative aspect-[1.6]">
-        {Object.entries(PRODUCT_SHOTS).map(([key, { src, alt }]) => (
-          <img
-            key={key}
-            src={src}
-            alt={key === shot ? alt : ""}
-            width={2720}
-            height={1700}
-            decoding="async"
-            className="absolute inset-0 size-full transition-opacity duration-500"
-            style={{ opacity: key === shot ? 1 : 0 }}
-          />
-        ))}
-      </div>
+      <video
+        ref={video}
+        className="block aspect-[1.6] w-full bg-black"
+        poster="/product/app-demo.webp"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label="A walkthrough of Relay: ranked opportunities, rank tracking for a domain, and saved keywords."
+      >
+        <source src="/product/app-demo.webm" type="video/webm; codecs=vp9" />
+        <source src="/product/app-demo.mp4" type="video/mp4" />
+      </video>
     </div>
   );
 }

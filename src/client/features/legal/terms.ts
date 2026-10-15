@@ -20,7 +20,7 @@ export const TERMS: LegalDocument = {
       id: "agreement",
       title: "Agreement to these terms",
       blocks: [
-        "These Terms of Service (the “Terms”) govern your use of Relay, the hosted SEO service at [seo.playbookmedia.io](https://seo.playbookmedia.io), its MCP server and API, and related websites (together, the “Service”). Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”), operates the Service. Relay was previously called Playbook Media SEO.",
+        "These Terms of Service (the “Terms”) govern your use of Relay, the hosted SEO service at [relay.playbookmedia.io](https://relay.playbookmedia.io), its MCP server and API, and related websites (together, the “Service”). Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”), operates the Service. Relay was previously called Playbook Media SEO.",
         "By creating an account or using the Service, you agree to these Terms and to our [Privacy Policy](/privacy). If you do not agree, do not use the Service.",
         "If you use the Service for a company or other organization, you confirm that you can bind it to these Terms, and “you” includes that organization.",
       ],
