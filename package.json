@@ -6,7 +6,7 @@
   "type": "module",
   "packageManager": "pnpm@10.30.1",
   "scripts": {
-    "postinstall": "fumadocs-mdx",
+    "postinstall": "[ ! -f source.config.ts ] || fumadocs-mdx",
     "dev": "vite dev",
     "dev:agents": "mkdir -p .logs && portless run vite dev 2>&1 | tee .logs/dev-server.log",
     "dev:agents:force": "mkdir -p .logs && portless --force run vite dev 2>&1 | tee .logs/dev-server.log",

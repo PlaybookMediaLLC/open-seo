@@ -1,16 +1,16 @@
 {
   "name": "openseo",
-  "displayName": "OpenSEO",
+  "displayName": "Relay",
   "version": "1.0.21",
   "description": "Research keywords and competitors, audit sites, track rankings and AI visibility, and use connected Search Console data from your AI assistant.",
   "author": {
-    "name": "OpenSEO",
-    "url": "https://openseo.so"
+    "name": "Playbook Media LLC",
+    "url": "https://relay.playbookmedia.io"
   },
-  "homepage": "https://openseo.so",
-  "privacyPolicyUrl": "https://openseo.so/privacy",
+  "homepage": "https://relay.playbookmedia.io",
+  "privacyPolicyUrl": "https://relay.playbookmedia.io/privacy",
   "icon": "./assets/icon.png",
-  "repository": "https://github.com/every-app/open-seo",
+  "repository": "https://github.com/PlaybookMediaLLC/open-seo",
   "license": "MIT",
   "keywords": [
     "seo",
