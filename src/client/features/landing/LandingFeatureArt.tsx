@@ -28,7 +28,7 @@ export function OpportunityArt() {
             cy="18"
             r="15.5"
             fill="none"
-            stroke="#dd55e7"
+            stroke="#fafafa"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={`${(score / 100) * 97.4} 97.4`}
@@ -59,9 +59,9 @@ export function RankArt() {
       <div className="flex items-center gap-2">
         <span className="flex h-9 flex-1 items-center rounded-lg border border-white/15 bg-black/40 px-3 text-[13px] text-white">
           rank tracking api
-          <span className="landing-caret ml-px h-[16px] w-[2px] rounded-[3px] bg-[#1cecbb]" />
+          <span className="landing-caret ml-px h-[16px] w-[2px] rounded-[3px] bg-white" />
         </span>
-        <span className="flex h-9 items-center rounded-lg bg-[#1cecbb] px-3 text-[13px] font-medium text-black">
+        <span className="flex h-9 items-center rounded-lg bg-white px-3 text-[13px] font-medium text-black">
           Track
         </span>
       </div>
@@ -79,7 +79,7 @@ export function RankArt() {
             <span className="flex items-center gap-1 tabular-nums text-white/45">
               {from}
               <IconArrowRight className="size-3" />
-              <span className="rounded bg-[#1cecbb]/20 px-1.5 font-medium text-[#1cecbb]">
+              <span className="rounded bg-white/15 px-1.5 font-medium text-white">
                 {to}
               </span>
             </span>
@@ -107,7 +107,7 @@ export function KeywordArt() {
           style={{ opacity }}
         >
           {keyword}
-          <span className="ml-2 text-[13px] font-medium tracking-normal text-[#5aa9ff]">
+          <span className="ml-2 text-[13px] font-medium tracking-normal text-white/45">
             {volume}
           </span>
         </p>
@@ -134,7 +134,7 @@ export function ExperimentArt() {
                   ? {
                       background: "#fff",
                       boxShadow:
-                        "0 0 0 3px #ff5252, 0 4px 10px rgb(0 0 0 / 0.2)",
+                        "0 0 0 3px #fafafa, 0 4px 10px rgb(0 0 0 / 0.2)",
                       transform: "scale(1.05)",
                     }
                   : {
@@ -149,7 +149,7 @@ export function ExperimentArt() {
               className="rounded-full px-3 py-0.5 text-[12px]"
               style={
                 active
-                  ? { background: "#ff5252", color: "#fff" }
+                  ? { background: "#fafafa", color: "#0a0a0a" }
                   : { color: "rgb(255 255 255 / 0.7)" }
               }
             >
@@ -170,7 +170,7 @@ export function ConsoleArt() {
           <Logo slug="googlesearchconsole" className="size-3.5 text-white/70" />
           Clicks · last 28 days
         </span>
-        <span className="font-medium text-[#17c253]">+18%</span>
+        <span className="font-medium text-white/80">+18%</span>
       </div>
       <p className="mt-1 text-[30px] font-semibold tracking-[-0.9px] text-white">
         12.4k
@@ -178,8 +178,8 @@ export function ConsoleArt() {
       <svg viewBox="0 0 200 56" className="mt-1 h-14 w-full" aria-hidden>
         <defs>
           <linearGradient id="landing-console-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#17c253" stopOpacity="0.45" />
-            <stop offset="1" stopColor="#17c253" stopOpacity="0" />
+            <stop offset="0" stopColor="#fafafa" stopOpacity="0.3" />
+            <stop offset="1" stopColor="#fafafa" stopOpacity="0" />
           </linearGradient>
         </defs>
         <path
@@ -189,7 +189,7 @@ export function ConsoleArt() {
         <path
           d="M0 44 C20 42 30 46 45 38 S70 34 85 36 110 24 125 26 150 18 165 14 185 10 200 6"
           fill="none"
-          stroke="#17c253"
+          stroke="#fafafa"
           strokeWidth="2"
         />
       </svg>
@@ -200,7 +200,7 @@ export function ConsoleArt() {
 export function ReportArt() {
   return (
     <div className="relative mt-2">
-      <div className="w-[214px] -rotate-3 rounded-2xl bg-[#f6f4ec] p-4 text-black shadow-[0_24px_48px_-16px_rgb(0_0_0/0.8)]">
+      <div className="w-[214px] -rotate-3 rounded-2xl bg-[#f5f5f5] p-4 text-black shadow-[0_24px_48px_-16px_rgb(0_0_0/0.8)]">
         <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-black/40">
           Monthly SEO report
         </p>
@@ -231,7 +231,7 @@ export function ReportArt() {
           ))}
         </div>
       </div>
-      <span className="absolute -bottom-3 -right-6 flex items-center gap-1.5 rounded-full bg-[#ffdd00] px-3 py-1.5 text-[12px] font-medium text-black shadow-[0_8px_20px_-6px_rgb(0_0_0/0.6)]">
+      <span className="absolute -bottom-3 -right-6 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-[12px] font-medium text-black ring-1 ring-black/10 shadow-[0_8px_20px_-6px_rgb(0_0_0/0.6)]">
         <IconLink className="size-3.5" stroke={2} />
         Copy link
       </span>

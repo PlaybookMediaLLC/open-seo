@@ -19,7 +19,7 @@ import {
   startAnalyticsCapture,
   stopAnalyticsCapture,
 } from "@/client/lib/posthog";
-import { NotFound } from "@/client/components/NotFound";
+import { LandingNotFound } from "@/client/features/landing/LandingNotFound"; // playbook-seam
 import { TooltipProvider } from "@/client/components/ui/tooltip";
 import appCss from "@/client/styles/app.css?url";
 import { useSession } from "@/lib/auth-client";
@@ -73,7 +73,7 @@ export const Route = createRootRoute({
   }),
   component: AppLayout,
   errorComponent: DefaultCatchBoundary,
-  notFoundComponent: () => <NotFound />,
+  notFoundComponent: () => <LandingNotFound />, // playbook-seam
   shellComponent: RootDocument,
 });
 

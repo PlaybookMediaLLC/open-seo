@@ -1,9 +1,11 @@
 /* Landing page, modelled on superwhisper.com and measured from it: Inter on
-   black, a 1024px column, 48/51 headlines, a sky hero that shrinks into a
-   framed desktop, 24px feature cards and 20px pricing cards. Scoped under
-   .landing so none of it leaks into the app. */
+   black, a 1024px column, 48/51 headlines, a hero that shrinks into a framed
+   desktop, 24px feature cards and 20px pricing cards. Monochrome, like the R
+   mark: black, white and grays; only real brand logos keep their colors.
+   Scoped under .landing so none of it leaks into the app. */
 
 @import "@fontsource-variable/inter";
+@import "@fontsource-variable/geist-mono";
 
 .landing {
   font-family:
@@ -20,6 +22,27 @@
   /* The app's Eigenn theme sets --radius to 0. */
   --radius: 0.5rem;
   -webkit-font-smoothing: antialiased;
+
+  /* Surfaces, lines and text, darkest to lightest. */
+  --l-surface: #0a0a0a;
+  --l-raised: #121212;
+  --l-control: #1c1c1c;
+  --l-line: rgb(255 255 255 / 0.08);
+  --l-line-strong: rgb(255 255 255 / 0.16);
+  --l-text: #fafafa;
+  --l-text-2: #a3a3a3;
+  --l-text-3: #858585;
+  --l-mono:
+    "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+}
+
+/* The small kicker above a section title, the same as the docs' labels. */
+.landing-eyebrow {
+  font: 400 12px/18px var(--l-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--l-text-3);
 }
 
 /* The page owns its scroll container: the app sets overflow hidden on body. */
@@ -42,168 +65,40 @@
   }
 }
 
-/* The sky, clipped by JS from full bleed to a 1024 x 627 rounded frame. */
+/* The hero field, clipped by JS from full bleed to a 1024 x 627 rounded
+   frame: near-black, a soft light from the top, and a grid that fades out. */
 .landing-frame {
   position: absolute;
   inset: 0;
   overflow: hidden;
   will-change: clip-path;
+  background:
+    radial-gradient(70% 55% at 50% 0%, rgb(255 255 255 / 0.1), transparent 70%),
+    #0b0b0b;
 }
-
-/* superwhisper's three skies, verbatim. They cross-fade on change. */
-.landing-sky {
+.landing-frame::before {
+  content: "";
   position: absolute;
   inset: 0;
-  opacity: 0;
-  transition: opacity 1.2s ease-in-out;
-}
-.landing-sky[data-active] {
-  opacity: 1;
-}
-.landing-sky-day {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(25 74 232 / 0.2) 2.75%,
-      rgb(255 190 10 / 0.2) 99.26%
-    ),
-    radial-gradient(
-      170.32% 104.24% at 50% -0.22%,
-      rgb(38 84 144 / 0.5) 17.02%,
-      rgb(255 255 255 / 0.5) 100%
-    ),
-    radial-gradient(
-      570.89% 154.84% at 50% -37.73%,
-      rgb(0 0 0 / 0.5) 0,
-      rgb(2 32 68 / 0.5) 21%,
-      rgb(31 93 135 / 0.5) 45.71%,
-      rgb(93 109 142 / 0.5) 61.83%,
-      rgb(159 138 145 / 0.5) 73.67%,
-      hsl(13 39% 68% / 0.5) 80.39%,
-      rgb(255 226 97 / 0.5) 88%,
-      rgb(255 126 34 / 0.5) 92.69%,
-      rgb(205 122 21 / 0.5) 97.68%
-    ),
-    linear-gradient(180deg, #2c84d7, #84a9ff),
-    linear-gradient(
-      180deg,
-      #000 -11.51%,
-      #022044 18.08%,
-      #1f5d87 52.9%,
-      #5d6d8e 75.62%,
-      #9f8a91 92.29%,
-      #cd9b8d 101.77%,
-      #ffc261 112.49%,
-      #ffc422 119.1%,
-      #cd4015 126.13%
-    ),
-    linear-gradient(0deg, #000, #000), #fff;
-  background-blend-mode:
-    overlay, screen, overlay, normal, normal, normal, normal;
-}
-.landing-sky-dusk {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(25 153 232 / 0.15) 2.75%,
-      rgb(164 91 242 / 0.15) 99.26%
-    ),
-    linear-gradient(
-      180deg,
-      rgb(0 0 0 / 0.5) 0.85%,
-      rgb(0 5 46 / 0.5) 25.81%,
-      rgb(41 40 94 / 0.5) 58.36%,
-      rgb(84 60 123 / 0.5) 79.52%,
-      rgb(133 90 146 / 0.5) 95.8%,
-      rgb(195 134 171 / 0.5) 107.19%
-    ),
-    linear-gradient(
-      180deg,
-      #000 0.85%,
-      #112d72 33.4%,
-      #4b52aa 49.68%,
-      #a887dc 70.84%,
-      #e6c4e7 95.8%,
-      #fcdbef 107.19%
-    ),
-    #000;
-  background-blend-mode: overlay, normal, normal, normal;
-}
-.landing-sky-night {
-  background:
-    linear-gradient(
-      90deg,
-      rgb(25 153 232 / 0.1) 2.75%,
-      rgb(164 91 242 / 0.1) 99.26%
-    ),
-    radial-gradient(
-      83.41% 104.24% at 50% -0.22%,
-      rgb(38 84 144 / 0) 72.08%,
-      hsl(0 100% 73% / 0) 100%
-    ),
-    radial-gradient(
-      609.81% 213.79% at 50% -37.73%,
-      rgb(0 0 0 / 0.5) 0,
-      rgb(2 32 68 / 0.5) 21%,
-      rgb(31 93 135 / 0.5) 45.71%,
-      rgb(93 109 142 / 0.5) 61.83%,
-      rgb(159 138 145 / 0.5) 73.67%,
-      hsl(13 39% 68% / 0.5) 80.39%,
-      rgb(255 162 97 / 0.5) 88%,
-      rgb(255 126 34 / 0.5) 92.69%,
-      rgb(205 64 21 / 0.5) 97.68%
-    ),
-    linear-gradient(
-      180deg,
-      #000 -11.51%,
-      #022044 18.08%,
-      #1f5d87 52.9%,
-      #5d6d8e 75.62%,
-      #9f8a91 92.29%,
-      #cd9b8d 101.77%,
-      #ffa261 112.49%,
-      #ff7e22 119.1%,
-      #cd4015 126.13%
-    ),
-    #000;
-  background-blend-mode: overlay, overlay, normal, normal, normal;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center;
+  mask-image: radial-gradient(
+    ellipse 70% 60% at 50% 45%,
+    #000 25%,
+    transparent 80%
+  );
+  pointer-events: none;
 }
 
-/* The day/dusk/night switch in the hero's top-right corner. */
-.landing-time {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 30;
-  display: flex;
-  padding: 5px;
-  border-radius: 17px;
-  border: 1px solid rgb(255 255 255 / 0.1);
-  background: rgb(0 0 0 / 0.6);
-  backdrop-filter: blur(20px);
-}
-.landing-time button {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
-  color: rgb(255 255 255 / 0.4);
-  transition:
-    color 0.2s ease-in-out,
-    background 0.2s ease-in-out;
-}
-.landing-time button:hover {
-  color: rgb(255 255 255 / 0.7);
-}
-.landing-time button[aria-pressed="true"] {
-  color: rgb(255 255 255 / 0.95);
-  background: rgb(255 255 255 / 0.15);
-}
-
-/* The framed "desktop" the sky becomes: a menu bar, a window and a dock. */
+/* The framed "desktop" the hero becomes: a menu bar, a window and a dock.
+   Its hairline marks the frame's edge against the black page. */
 .landing-desk {
   container-type: size;
+  border: 1px solid var(--l-line-strong);
+  border-radius: 18px;
 }
 .landing-desk-window {
   width: min(860px, 100cqw - 64px, (100cqh - 150px) * 1.6);
@@ -280,8 +175,16 @@
 .landing-nav-link:hover {
   color: rgb(255 255 255 / 0.6);
 }
-.landing-nav-link[data-active] {
-  color: rgb(255 255 255 / 0.8);
+/* The R mark and name, the nav's home link. */
+.landing-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  color: rgb(255 255 255 / 0.9);
 }
 .landing-nav-cta {
   display: flex;
@@ -619,31 +522,11 @@
 /* ---- Testimonial-style folders ------------------------------------------ */
 
 .landing-testimonials {
-  background: linear-gradient(
-    180deg,
-    #000 0,
-    #00052e 23%,
-    #29285e 53%,
-    #543c7b 73%,
-    #855a92 88%,
-    #c386ab 98%
+  background: radial-gradient(
+    60% 45% at 50% 62%,
+    rgb(255 255 255 / 0.07),
+    transparent 70%
   );
-}
-.landing-testimonials::before,
-.landing-testimonials::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-.landing-testimonials::before {
-  opacity: 0.15;
-  mix-blend-mode: overlay;
-  background: linear-gradient(90deg, #1999e8 0, #a45bf2);
-}
-.landing-testimonials::after {
-  opacity: 0.2;
-  background: linear-gradient(90deg, #000 0, rgb(0 0 0 / 0.5));
 }
 .landing-folder {
   backdrop-filter: blur(10px);
@@ -663,19 +546,19 @@
   font-weight: 600;
   line-height: 28px;
   letter-spacing: -0.4px;
-  color: #fafafa;
+  color: var(--l-text);
 }
 .landing-legal h3 {
   margin: 24px 0 8px;
   font-size: 16px;
   font-weight: 500;
-  color: #fafafa;
+  color: var(--l-text);
 }
 .landing-legal p,
 .landing-legal li {
   font-size: 15px;
   line-height: 1.7;
-  color: #c4c5c9;
+  color: var(--l-text-2);
 }
 .landing-legal p + p,
 .landing-legal p + ul,
@@ -690,14 +573,14 @@
   margin-top: 8px;
 }
 .landing-legal li::marker {
-  color: #70757c;
+  color: var(--l-text-3);
 }
 .landing-legal strong {
   font-weight: 500;
-  color: #fafafa;
+  color: var(--l-text);
 }
 .landing-legal a {
-  color: #fafafa;
+  color: var(--l-text);
   text-decoration: underline;
   text-decoration-color: rgb(255 255 255 / 0.25);
   text-underline-offset: 4px;
@@ -709,23 +592,10 @@
 
 /* ---- Pricing ------------------------------------------------------------ */
 
-/* Featured pricing card (.hover-gradient). */
+/* Featured pricing card: inverted, white on the black page. */
 .landing-price-featured {
-  background-image: linear-gradient(
-    180deg,
-    #050116 0,
-    #112d72 30%,
-    #4b68aa 45%,
-    #87a7dc 64%,
-    #9cacd0 88%,
-    #fcdbef 98%
-  );
-  background-size: 200% 200%;
-  background-position: 0 0;
-  transition: background-position 0.8s ease;
-}
-.landing-price-featured:hover {
-  background-position: 0 50%;
+  background: #fafafa;
+  color: #0a0a0a;
 }
 
 /* The selected billing pill's gradient rim (.bg-pricing-selector). */
@@ -753,10 +623,10 @@
 
 .landing-reveal {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(16px);
   transition:
-    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .landing-reveal[data-visible] {
   opacity: 1;

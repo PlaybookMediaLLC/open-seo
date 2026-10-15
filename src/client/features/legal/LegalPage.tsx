@@ -2,6 +2,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { useSession } from "@/lib/auth-client";
 import { LandingFooter } from "@/client/features/landing/LandingFooter";
 import { LandingNav } from "@/client/features/landing/LandingHero";
+import { Eyebrow } from "@/client/features/landing/LandingPrimitives";
 
 /** A paragraph, a bullet list, or a sub-heading inside a section. */
 type Block = string | { list: string[] } | { heading: string };
@@ -26,15 +27,13 @@ export function LegalPage({ document }: { document: LegalDocument }) {
       <main className="mx-auto grid w-full max-w-[1075px] gap-12 px-6 pb-16 pt-36 lg:grid-cols-[200px_1fr] lg:gap-16">
         <aside className="hidden lg:block">
           <nav aria-label="On this page" className="sticky top-32">
-            <p className="text-[14px] font-semibold leading-[14px] text-[#b8babf]">
-              On this page
-            </p>
+            <Eyebrow>On this page</Eyebrow>
             <ol className="mt-5 space-y-2">
               {sections.map((section) => (
                 <li key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className="text-[13px] leading-5 text-[#70757c] transition-colors duration-300 hover:text-white hover:duration-0"
+                    className="text-[13px] leading-5 text-(--l-text-3) transition-colors duration-300 hover:text-white hover:duration-0"
                   >
                     {section.title}
                   </a>
@@ -44,34 +43,32 @@ export function LegalPage({ document }: { document: LegalDocument }) {
           </nav>
         </aside>
         <article className="min-w-0 max-w-[680px]">
-          <p className="text-[14px] font-medium tracking-[0.14px] text-[#888b91]">
-            Legal
-          </p>
-          <h1 className="mt-3 text-[36px] font-semibold leading-[1.07] tracking-[-1.8px] text-[#fafafa] sm:text-[48px]">
+          <Eyebrow>Legal</Eyebrow>
+          <h1 className="mt-3 text-[36px] font-semibold leading-[1.07] tracking-[-1.8px] text-(--l-text) sm:text-[48px]">
             {title}
           </h1>
-          <p className="mt-4 text-[14px] text-[#70757c]">
+          <p className="mt-4 text-[14px] text-(--l-text-3)">
             Last updated {updated}
           </p>
-          <div className="mt-10 rounded-[20px] border border-[#1c1d1f] bg-[#0f0f10] p-6 sm:p-8">
-            <p className="text-[16px] font-medium text-[#fafafa]">
+          <div className="mt-10 rounded-[20px] border border-(--l-line) bg-(--l-surface) p-6 sm:p-8">
+            <p className="text-[16px] font-medium text-(--l-text)">
               The short version
             </p>
             <ul className="mt-4 space-y-3">
               {summary.map((item) => (
                 <li
                   key={item}
-                  className="flex gap-3 text-[15px] leading-[22.5px] text-[#c4c5c9]"
+                  className="flex gap-3 text-[15px] leading-[22.5px] text-(--l-text-2)"
                 >
                   <IconCheck
-                    className="mt-[3px] size-4 shrink-0 text-[#0088ff]"
+                    className="mt-[3px] size-4 shrink-0 text-(--l-text)"
                     stroke={2}
                   />
                   {item}
                 </li>
               ))}
             </ul>
-            <p className="mt-5 text-[13px] leading-5 text-[#70757c]">
+            <p className="mt-5 text-[13px] leading-5 text-(--l-text-3)">
               This summary is here to help you read the full text. The full text
               below is what applies.
             </p>

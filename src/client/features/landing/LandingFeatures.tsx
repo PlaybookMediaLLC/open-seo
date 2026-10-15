@@ -27,7 +27,7 @@ const LOGOS = [
 
 export function LandingLogos() {
   return (
-    <section className="relative my-24 flex w-full flex-col items-center overflow-hidden">
+    <section className="relative mb-24 mt-8 flex w-full flex-col items-center overflow-hidden">
       <div
         aria-hidden
         className="landing-dots pointer-events-none absolute h-[350px] w-[550px] max-w-full [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_0%,#000_40%,transparent_90%)]"
@@ -47,7 +47,7 @@ export function LandingLogos() {
               {LOGOS.map(([slug, name]) => (
                 <span
                   key={slug}
-                  className="flex h-8 items-center justify-center gap-2 text-[#c5c7cd]"
+                  className="flex h-8 items-center justify-center gap-2 text-(--l-text-2)"
                 >
                   <Logo slug={slug} className="size-[18px]" />
                   <span className="whitespace-nowrap text-[17px] font-semibold tracking-[-0.5px]">
@@ -59,14 +59,14 @@ export function LandingLogos() {
           ))}
         </div>
         <div className="px-8 md:px-0">
-          <h2 className="text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+          <h2 className="text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-(--l-text) sm:text-[31px]">
             Built for those who move fast
           </h2>
-          <p className="mt-3 text-center text-[14px] font-medium leading-[160%] tracking-[0.14px] text-[#888b91]">
+          <p className="mt-3 text-center text-[14px] font-medium leading-[160%] tracking-[0.14px] text-(--l-text-2)">
             Your Google data, live search research
             <br />
             and{" "}
-            <span className="text-[#fafafa]">
+            <span className="text-(--l-text)">
               the AI agents you already use
             </span>
             , in one place.
@@ -74,7 +74,7 @@ export function LandingLogos() {
           <p className="mt-4 text-center">
             <a
               href="#integrations"
-              className="text-[14px] font-medium tracking-[0.14px] text-[#888b91] underline decoration-white/25 underline-offset-4 transition-colors hover:text-[#fafafa] hover:decoration-white/60"
+              className="text-[14px] font-medium tracking-[0.14px] text-(--l-text-2) underline decoration-white/25 underline-offset-4 transition-colors hover:text-(--l-text) hover:decoration-white/60"
             >
               See every integration
             </a>
@@ -89,8 +89,6 @@ export function LandingLogos() {
 const LENSES = [
   {
     name: "Pages",
-    color: "#0088ff",
-    ink: "#fff",
     question: "/pricing gets 18k views but only 1% click. Why?",
     work: "Checking titles, snippets and the top ten results",
     answer:
@@ -98,8 +96,6 @@ const LENSES = [
   },
   {
     name: "Keywords",
-    color: "#16c253",
-    ink: "#000",
     question: "Which keywords can we win this month?",
     work: "Comparing volume, difficulty and current rank",
     answer:
@@ -107,8 +103,6 @@ const LENSES = [
   },
   {
     name: "Links",
-    color: "#ffb764",
-    ink: "#000",
     question: "Who links to our competitors but not to us?",
     work: "Diffing referring domains across three rivals",
     answer:
@@ -116,8 +110,6 @@ const LENSES = [
   },
   {
     name: "AI answers",
-    color: "#b855e7",
-    ink: "#000",
     question: "Does ChatGPT recommend us?",
     work: "Asking ChatGPT, Perplexity and Gemini",
     answer:
@@ -149,8 +141,8 @@ export function LandingAdaptability() {
           />
           <div className="relative z-20 mb-12 ml-6 md:mb-36 md:ml-12">
             <div className="flex h-[140px] w-full flex-col justify-end sm:h-[260px] md:w-[400px]">
-              <Eyebrow color="#798498">Adaptability</Eyebrow>
-              <h2 className="mt-2 w-[300px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+              <Eyebrow>Adaptability</Eyebrow>
+              <h2 className="mt-2 w-[300px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-(--l-text) sm:text-[31px]">
                 SEO isn’t
                 <br />
                 one-size-fits-all
@@ -158,19 +150,16 @@ export function LandingAdaptability() {
             </div>
           </div>
         </div>
-        <div
-          className="relative z-10 flex h-[400px] w-full flex-col items-center overflow-hidden rounded-t-[32px] border-x border-t bg-black px-6 sm:px-10 md:w-[500px]"
-          style={{ borderColor: "#0088ff33" }}
-        >
+        <div className="relative z-10 flex h-[400px] w-full flex-col items-center overflow-hidden rounded-t-[32px] border-x border-t border-(--l-line-strong) bg-black px-6 sm:px-10 md:w-[500px]">
           <div key={lens.name} className="flex h-[300px] w-full items-center">
             <div className="w-full">
-              <Bubble lens={lens} side="you" tilt="-rotate-1" delay={0}>
+              <Bubble side="you" tilt="-rotate-1" delay={0}>
                 {lens.question}
               </Bubble>
-              <Bubble lens={lens} side="work" delay={140}>
+              <Bubble side="work" delay={140}>
                 <Redacted text={lens.work} />
               </Bubble>
-              <Bubble lens={lens} side="you" tilt="rotate-2" delay={280}>
+              <Bubble side="you" tilt="rotate-2" delay={280}>
                 {lens.answer}
               </Bubble>
             </div>
@@ -179,12 +168,8 @@ export function LandingAdaptability() {
           <div className="relative z-30 mb-6 mt-auto flex items-center gap-x-1 sm:gap-x-4">
             <span
               aria-hidden
-              className="absolute h-8 rounded-full transition-all duration-300"
-              style={{
-                left: pill.left,
-                width: pill.width,
-                background: `color-mix(in srgb, ${lens.color} 18%, #000)`,
-              }}
+              className="absolute h-8 rounded-full bg-white/10 transition-all duration-300"
+              style={{ left: pill.left, width: pill.width }}
             />
             {LENSES.map((item, index) => (
               <button
@@ -197,9 +182,10 @@ export function LandingAdaptability() {
                 onClick={() => pick(index)}
                 className={cn(
                   "relative z-10 select-none whitespace-nowrap px-4 py-1 text-sm transition-colors duration-200",
-                  index !== active && "text-[#c4c5c9] hover:text-[#fafafa]",
+                  index === active
+                    ? "text-(--l-text)"
+                    : "text-(--l-text-2) hover:text-(--l-text)",
                 )}
-                style={{ color: index === active ? item.color : undefined }}
               >
                 {item.name}
               </button>
@@ -212,13 +198,11 @@ export function LandingAdaptability() {
 }
 
 function Bubble({
-  lens,
   side,
   tilt,
   delay,
   children,
 }: {
-  lens: (typeof LENSES)[number];
   side: "you" | "work";
   tilt?: string;
   delay: number;
@@ -234,18 +218,10 @@ function Bubble({
         className={cn(
           "max-w-80 px-6 py-4 text-[15px] leading-snug",
           you
-            ? "rounded-t-[24px] rounded-bl-[24px] rounded-br-[10px] border border-white/35"
-            : "rounded-t-[24px] rounded-bl-[10px] rounded-br-[24px]",
+            ? "rounded-t-[24px] rounded-bl-[24px] rounded-br-[10px] bg-(--l-text) text-black"
+            : "rounded-t-[24px] rounded-bl-[10px] rounded-br-[24px] bg-white/10 text-white/60",
           tilt,
         )}
-        style={
-          you
-            ? { background: lens.color, color: lens.ink }
-            : {
-                background: `color-mix(in srgb, ${lens.color} 20%, transparent)`,
-                color: lens.color,
-              }
-        }
       >
         {children}
       </div>

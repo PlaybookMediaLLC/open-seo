@@ -14,6 +14,8 @@ import type { Plugin } from "vite";
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
  * - src/routes/__root.tsx: public pages render on the server too
  *   (src/client/components/RelayClientOnly.tsx).
+ * - src/routes/__root.tsx: unknown URLs get the landing 404
+ *   (src/client/features/landing/LandingNotFound.tsx).
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
  *   brand, because static files skip the module pipeline.
  * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.

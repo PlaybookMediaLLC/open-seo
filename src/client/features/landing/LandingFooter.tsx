@@ -2,7 +2,7 @@ import { useState } from "react";
 import { IconArrowRight, IconChevronDown, IconMail } from "@tabler/icons-react";
 import { cn } from "cn";
 import { BrandMark } from "@/client/components/BrandMark";
-import { Reveal } from "./LandingPrimitives";
+import { Eyebrow, Reveal } from "./LandingPrimitives";
 
 const FAQS = [
   [
@@ -30,23 +30,23 @@ const FAQS = [
 export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(null);
   return (
-    <section id="faq" className="w-full px-4 pb-20 pt-40">
+    <section id="faq" className="w-full px-4 py-16">
       <Reveal className="mx-auto grid max-w-[1075px] gap-16 px-2 md:grid-cols-[1.2fr_1fr] md:px-14">
         <div>
-          <p className="text-[14px] leading-5 text-white/40">Support</p>
-          <h2 className="mt-3 text-[30px] font-semibold leading-8 tracking-[-1.5px] text-[#c4c5c9]">
+          <Eyebrow>Support</Eyebrow>
+          <h2 className="mt-3 text-[30px] font-semibold leading-8 tracking-[-1.5px] text-(--l-text)">
             Frequently asked questions
           </h2>
           <div className="mt-8 max-w-2xl">
             {FAQS.map(([question, answer], index) => {
               const isOpen = open === index;
               return (
-                <div key={question} className="border-b border-white/[0.07]">
+                <div key={question} className="border-b border-(--l-line)">
                   <button
                     type="button"
                     aria-expanded={isOpen}
                     onClick={() => setOpen(isOpen ? null : index)}
-                    className="flex w-full items-center justify-between gap-4 rounded-lg py-4 text-left text-[18px] leading-7 text-[#c4c5c9] outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/70"
+                    className="flex w-full items-center justify-between gap-4 rounded-lg py-4 text-left text-[18px] leading-7 text-(--l-text) outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white/70"
                   >
                     {question}
                     <IconChevronDown
@@ -62,7 +62,7 @@ export function LandingFaq() {
                       isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
                     )}
                   >
-                    <p className="overflow-hidden pr-8 text-[16px] leading-6 text-[#888b91]">
+                    <p className="overflow-hidden pr-8 text-[16px] leading-6 text-(--l-text-2)">
                       <span className="block pb-5">{answer}</span>
                     </p>
                   </div>
@@ -71,14 +71,14 @@ export function LandingFaq() {
             })}
           </div>
         </div>
-        <div className="flex flex-col justify-end pb-2">
-          <p className="max-w-[280px] text-[16px] leading-6 text-[#888b91]">
+        <div className="flex flex-col md:pt-[98px]">
+          <p className="max-w-[280px] text-[16px] leading-6 text-(--l-text-2)">
             Can’t find the answer you’re looking for? Write to us and a real
             person will get back to you.
           </p>
           <a
             href="mailto:team@playbookmedia.io"
-            className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-[#1c1d1f] px-4 py-2 text-[16px] text-[#c4c5c9] transition-colors hover:text-white"
+            className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-(--l-control) px-4 py-2 text-[16px] text-(--l-text-2) transition-colors hover:text-white"
           >
             Email us <IconArrowRight className="size-4" />
           </a>
@@ -126,22 +126,22 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
 
 export function LandingFooter() {
   return (
-    <footer className="mt-24 w-full bg-black">
+    <footer className="mt-16 w-full border-t border-(--l-line) bg-black">
       <div className="mx-auto w-full max-w-[1075px] px-6 py-10">
         <div className="flex items-center justify-between">
           <p className="flex items-center gap-2.5">
             <BrandMark className="size-5" />
-            <span className="text-[17px] font-medium tracking-[-0.3px] text-[#fafafa]">
-              relay
+            <span className="text-[17px] font-medium tracking-[-0.3px] text-(--l-text)">
+              Relay
             </span>
-            <span className="text-sm text-[#70757c]">
+            <span className="text-sm text-(--l-text-3)">
               © {new Date().getFullYear()}
             </span>
           </p>
           <a
             href="mailto:team@playbookmedia.io"
             aria-label="Email us"
-            className="grid size-10 place-items-center text-[#70757c] transition-colors duration-300 hover:text-white hover:duration-0"
+            className="grid size-10 place-items-center text-(--l-text-3) transition-colors duration-300 hover:text-white hover:duration-0"
           >
             <IconMail className="size-5" />
           </a>
@@ -149,7 +149,7 @@ export function LandingFooter() {
         <nav className="mt-12 grid grid-cols-2 gap-10 md:grid-cols-4">
           {COLUMNS.map((column) => (
             <div key={column.title}>
-              <p className="text-[14px] font-semibold leading-[14px] text-[#b8babf]">
+              <p className="text-[14px] font-semibold leading-[14px] text-(--l-text-2)">
                 {column.title}
               </p>
               <ul className="mt-5 space-y-2">
@@ -157,7 +157,7 @@ export function LandingFooter() {
                   <li key={label}>
                     <a
                       href={href}
-                      className="text-[14px] leading-5 text-[#70757c] transition-colors duration-300 hover:text-white hover:duration-0"
+                      className="text-[14px] leading-5 text-(--l-text-3) transition-colors duration-300 hover:text-white hover:duration-0"
                     >
                       {label}
                     </a>
@@ -167,8 +167,8 @@ export function LandingFooter() {
             </div>
           ))}
         </nav>
-        <div className="mt-12 border-t border-white/[0.07] pt-8">
-          <p className="text-xs text-[#70757c]">
+        <div className="mt-12 border-t border-(--l-line) pt-8">
+          <p className="text-xs text-(--l-text-3)">
             Relay is a product of Playbook Media LLC.
           </p>
         </div>

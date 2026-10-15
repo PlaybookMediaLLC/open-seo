@@ -4,10 +4,7 @@ import {
   IconBattery3,
   IconBrandGoogle,
   IconChevronRight,
-  IconMoon,
   IconSparkles,
-  IconSun,
-  IconSunset2,
   IconWifi,
 } from "@tabler/icons-react";
 import { BrandMark } from "@/client/components/BrandMark";
@@ -41,12 +38,9 @@ export function LandingNav({
       aria-label="Primary"
       data-hidden={atTop ? "" : undefined}
     >
-      <a
-        href="/#top"
-        className="landing-nav-link"
-        data-active={pinned ? undefined : ""}
-      >
-        Home
+      <a href="/#top" className="landing-nav-brand">
+        <BrandMark className="size-4" />
+        Relay
       </a>
       <a href="/#features" className="landing-nav-link hidden sm:inline">
         Features
@@ -58,28 +52,19 @@ export function LandingNav({
         Pricing
       </a>
       <Link to={signedIn ? "/app" : "/sign-in"} className="landing-nav-cta">
-        <BrandMark className="size-[15px]" />
         {signedIn ? "Open app" : "Get started"}
       </Link>
     </nav>
   );
 }
 
-const SKIES = [
-  { id: "day", label: "Day sky", icon: IconSun },
-  { id: "dusk", label: "Dusk sky", icon: IconSunset2 },
-  { id: "night", label: "Night sky", icon: IconMoon },
-] as const;
-type Sky = (typeof SKIES)[number]["id"];
-
 /**
- * The hero, built like superwhisper's: a pinned full-bleed sky that shrinks
+ * The hero, built like superwhisper's: a pinned full-bleed field that shrinks
  * into a 1024 x 627 rounded frame as the page scrolls. The intro fades out,
  * and the frame becomes a small desktop playing a walkthrough of the app. One
  * rAF-throttled scroll handler drives it all. Phones get a static hero.
  */
 export function LandingHero({ signedIn }: { signedIn: boolean }) {
-  const [sky, setSky] = useState<Sky>("night");
   const frame = useRef<HTMLDivElement>(null);
   const intro = useRef<HTMLDivElement>(null);
   const desk = useRef<HTMLDivElement>(null);
@@ -137,20 +122,12 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
       <section id="top" className="landing-hero relative w-full">
         <div className="sticky top-0 h-[100svh] overflow-hidden bg-black">
           <div ref={frame} className="landing-frame">
-            {SKIES.map(({ id }) => (
-              <div
-                key={id}
-                className={`landing-sky landing-sky-${id}`}
-                data-active={sky === id ? "" : undefined}
-              />
-            ))}
-
             <div
               ref={intro}
               className="absolute inset-0 z-20 flex items-center justify-center px-4 text-center"
             >
               <div className="w-[672px] max-w-full">
-                <h1 className="m-0 mb-6 text-[36px] font-semibold leading-[38.5px] tracking-[-1.8px] text-[#fafafa] sm:text-[48px] sm:leading-[51px] sm:tracking-[-1.92px]">
+                <h1 className="m-0 mb-6 text-[36px] font-semibold leading-[38.5px] tracking-[-1.8px] text-(--l-text) sm:text-[48px] sm:leading-[51px] sm:tracking-[-1.92px]">
                   <span className="block">Just ship.</span>
                   <span className="block">Rank faster.</span>
                 </h1>
@@ -194,20 +171,6 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
               </div>
               <Dock />
             </div>
-          </div>
-
-          <div className="landing-time" role="group" aria-label="Hero sky">
-            {SKIES.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                type="button"
-                aria-label={label}
-                aria-pressed={sky === id}
-                onClick={() => setSky(id)}
-              >
-                <Icon className="size-3" stroke={2} />
-              </button>
-            ))}
           </div>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-black min-[800px]:hidden" />
@@ -294,7 +257,7 @@ const DOCK: { slug: string; bg: string; fg: string }[] = [
 function Dock() {
   return (
     <div className="landing-dock absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
-      <span className="relative grid size-[38px] place-items-center rounded-[10px] bg-[#0f1020]">
+      <span className="relative grid size-[38px] place-items-center rounded-[10px] bg-black ring-1 ring-white/15">
         <BrandMark className="size-[30px]" />
         <span className="absolute -bottom-[3px] size-[3px] rounded-full bg-white/80" />
       </span>
