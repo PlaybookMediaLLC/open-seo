@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /ai
+Disallow: /app
+Disallow: /billing
+Disallow: /help
+Disallow: /p/
+Disallow: /projects
+Disallow: /settings
+
+Sitemap: https://relay.playbookmedia.io/sitemap.xml

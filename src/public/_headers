@@ -3,7 +3,3 @@
 # manifest keep stable names, so they keep the default revalidating policy.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-
-# playbook-seam: the default type for this extension is application/octet-stream.
-/site.webmanifest
-  Content-Type: application/manifest+json

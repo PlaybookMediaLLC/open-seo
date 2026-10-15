@@ -4,8 +4,7 @@ import {
   agentUpdatePrompt,
   getAgentSetupPrompt,
 } from "@/client/features/ai-mcp/agentSetupPrompt";
-
-const RELAY_ORIGIN = "https://relay.playbookmedia.io";
+import { RELAY_ORIGIN } from "@/lib/relay-seo";
 
 /** How to run a skill, styled as a tiny terminal. */
 function RunSkillCallout({ command }: { command: string }) {
