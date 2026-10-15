@@ -47,7 +47,7 @@ describe("billing checkout links", () => {
       // Links are created before the click, which is only safe because
       // "always" returns a link instead of charging a saved card.
       redirectMode: "always",
-      successUrl: `${origin}/subscribe?checkout=success&redirect=%2F`,
+      successUrl: `${origin}/subscribe?checkout=success&redirect=%2Fapp`,
       checkoutSessionParams: AUTUMN_CHECKOUT_SESSION_PARAMS,
     });
   });

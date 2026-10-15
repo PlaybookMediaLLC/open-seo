@@ -57,18 +57,14 @@ export function ProjectSwitcher({
     // button's slot, so nothing moves when the projects arrive.
     return (
       <div
-        className="flex items-stretch rounded-lg border border-sidebar-border bg-card"
+        className="flex h-12 items-center gap-2.5 rounded-xl border border-sidebar-border bg-sidebar-active px-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
         aria-busy
       >
-        <div className="flex min-w-0 flex-1 flex-col px-3 py-1.5">
-          <span className="flex h-5 items-center">
-            <Skeleton className="h-3.5 w-28" />
-          </span>
-          <span className="flex h-4 items-center">
-            <Skeleton className="h-3 w-20" />
-          </span>
+        <Skeleton className="size-7 rounded-lg" />
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-3 w-16" />
         </div>
-        <div className="w-12 border-l border-sidebar-border" />
       </div>
     );
   }
@@ -111,17 +107,23 @@ export function ProjectSwitcher({
           if (project) handleSelect(project);
         }}
       >
-        <div className="flex items-stretch rounded-lg border border-sidebar-border bg-card">
+        <div className="group/switcher flex h-12 items-center rounded-xl border border-sidebar-border bg-sidebar-active shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
           <ComboboxTrigger
             aria-label="Switch project"
-            className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-l-lg px-3 py-1.5 text-left hover:bg-accent"
+            className="flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-l-xl pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
           >
-            <span className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-medium">
+            <span
+              aria-hidden
+              className="grid size-7 shrink-0 place-items-center rounded-lg bg-foreground text-[12px] font-semibold text-background"
+            >
+              {(activeProject?.name ?? "?").trim().charAt(0).toUpperCase()}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col leading-tight">
+              <span className="truncate text-[13px] font-medium">
                 {activeProject?.name ?? "Select project"}
               </span>
               {activeProject?.domain ? (
-                <span className="truncate text-xs text-muted-foreground">
+                <span className="truncate text-[11px] text-muted-foreground">
                   {activeProject.domain}
                 </span>
               ) : null}
@@ -143,7 +145,8 @@ export function ProjectSwitcher({
                 />
               }
               variant="ghost"
-              className="h-auto self-stretch rounded-l-none border-0 border-l border-sidebar-border"
+              size="icon-sm"
+              className="mr-1.5 text-muted-foreground hover:text-foreground"
             >
               <Settings className="size-4" />
             </Button>

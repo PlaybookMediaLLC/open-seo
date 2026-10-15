@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteRouteImport } from './routes/_app/route'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -19,8 +20,8 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as Char91DotwellKnownChar93OpenaiAppsChallengeRouteImport } from './routes/[.well-known]/openai-apps-challenge'
-import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAiRouteImport } from './routes/_app/ai'
+import { Route as AppAppRouteImport } from './routes/_app/app'
 import { Route as AppBillingRouteImport } from './routes/_app/billing'
 import { Route as AppProjectsRouteImport } from './routes/_app/projects'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
@@ -78,6 +79,11 @@ import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
 import { Route as AppPProjectIdAuditIssuesResultIdRouteImport } from './routes/_app/p/$projectId/audit/issues/$resultId'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRouteRoute = AppRouteRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
@@ -126,14 +132,14 @@ const Char91DotwellKnownChar93OpenaiAppsChallengeRoute =
     path: '/.well-known/openai-apps-challenge',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AppIndexRoute = AppIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppAiRoute = AppAiRouteImport.update({
   id: '/ai',
   path: '/ai',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppAppRoute = AppAppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppBillingRoute = AppBillingRouteImport.update({
@@ -441,7 +447,7 @@ const AppPProjectIdAuditIssuesResultIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/auth-error': typeof AuthErrorRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
@@ -450,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/.well-known/openai-apps-challenge': typeof Char91DotwellKnownChar93OpenaiAppsChallengeRoute
   '/ai': typeof AppAiRoute
+  '/app': typeof AppAppRoute
   '/billing': typeof AppBillingRoute
   '/projects': typeof AppProjectsRoute
   '/settings': typeof AppSettingsRouteWithChildren
@@ -508,7 +515,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof AppIndexRoute
+  '/': typeof IndexRoute
   '/auth-error': typeof AuthErrorRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
@@ -517,6 +524,7 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/.well-known/openai-apps-challenge': typeof Char91DotwellKnownChar93OpenaiAppsChallengeRoute
   '/ai': typeof AppAiRoute
+  '/app': typeof AppAppRoute
   '/billing': typeof AppBillingRoute
   '/projects': typeof AppProjectsRoute
   '/support': typeof AppSupportRoute
@@ -571,6 +579,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_app': typeof AppRouteRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/_authenticated': typeof AuthenticatedRouteWithChildren
@@ -582,6 +591,7 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/.well-known/openai-apps-challenge': typeof Char91DotwellKnownChar93OpenaiAppsChallengeRoute
   '/_app/ai': typeof AppAiRoute
+  '/_app/app': typeof AppAppRoute
   '/_app/billing': typeof AppBillingRoute
   '/_app/projects': typeof AppProjectsRoute
   '/_app/settings': typeof AppSettingsRouteWithChildren
@@ -594,7 +604,6 @@ export interface FileRoutesById {
   '/accept-invitation/$id': typeof AcceptInvitationIdRoute
   '/api/health': typeof ApiHealthRoute
   '/r/$reportId': typeof RReportIdRoute
-  '/_app/': typeof AppIndexRoute
   '/_app/p/$projectId': typeof AppPProjectIdRouteRouteWithChildren
   '/_app/billing_/fix-payment': typeof AppBillingFixPaymentRoute
   '/_app/help/dataforseo-api-key': typeof AppHelpDataforseoApiKeyRoute
@@ -652,6 +661,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/.well-known/openai-apps-challenge'
     | '/ai'
+    | '/app'
     | '/billing'
     | '/projects'
     | '/settings'
@@ -719,6 +729,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/.well-known/openai-apps-challenge'
     | '/ai'
+    | '/app'
     | '/billing'
     | '/projects'
     | '/support'
@@ -772,6 +783,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/audit/issues/$resultId'
   id:
     | '__root__'
+    | '/'
     | '/_app'
     | '/_auth'
     | '/_authenticated'
@@ -783,6 +795,7 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/.well-known/openai-apps-challenge'
     | '/_app/ai'
+    | '/_app/app'
     | '/_app/billing'
     | '/_app/projects'
     | '/_app/settings'
@@ -795,7 +808,6 @@ export interface FileRouteTypes {
     | '/accept-invitation/$id'
     | '/api/health'
     | '/r/$reportId'
-    | '/_app/'
     | '/_app/p/$projectId'
     | '/_app/billing_/fix-payment'
     | '/_app/help/dataforseo-api-key'
@@ -843,6 +855,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppRouteRoute: typeof AppRouteRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
@@ -867,6 +880,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app': {
       id: '/_app'
       path: ''
@@ -937,18 +957,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OpenaiAppsChallengeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/': {
-      id: '/_app/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/ai': {
       id: '/_app/ai'
       path: '/ai'
       fullPath: '/ai'
       preLoaderRoute: typeof AppAiRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/app': {
+      id: '/_app/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppAppRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/billing': {
@@ -1472,11 +1492,11 @@ const AppPProjectIdRouteRouteWithChildren =
 
 interface AppRouteRouteChildren {
   AppAiRoute: typeof AppAiRoute
+  AppAppRoute: typeof AppAppRoute
   AppBillingRoute: typeof AppBillingRoute
   AppProjectsRoute: typeof AppProjectsRoute
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppSupportRoute: typeof AppSupportRoute
-  AppIndexRoute: typeof AppIndexRoute
   AppPProjectIdRouteRoute: typeof AppPProjectIdRouteRouteWithChildren
   AppBillingFixPaymentRoute: typeof AppBillingFixPaymentRoute
   AppHelpDataforseoApiKeyRoute: typeof AppHelpDataforseoApiKeyRoute
@@ -1485,11 +1505,11 @@ interface AppRouteRouteChildren {
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAiRoute: AppAiRoute,
+  AppAppRoute: AppAppRoute,
   AppBillingRoute: AppBillingRoute,
   AppProjectsRoute: AppProjectsRoute,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppSupportRoute: AppSupportRoute,
-  AppIndexRoute: AppIndexRoute,
   AppPProjectIdRouteRoute: AppPProjectIdRouteRouteWithChildren,
   AppBillingFixPaymentRoute: AppBillingFixPaymentRoute,
   AppHelpDataforseoApiKeyRoute: AppHelpDataforseoApiKeyRoute,
@@ -1531,6 +1551,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,

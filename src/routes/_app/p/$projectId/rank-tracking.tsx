@@ -10,7 +10,7 @@ function RankTrackingLayout() {
   const { projectId, configId } = useParams({ strict: false });
 
   return (
-    <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
+    <div className="page-pad overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
         <PageHeader
           title="Rank Tracking"

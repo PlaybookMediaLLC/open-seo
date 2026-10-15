@@ -176,7 +176,7 @@ function DangerSection({
       });
       toast.success("Project archived");
       // Re-resolve to a remaining project via the landing redirect.
-      void navigate({ to: "/" });
+      void navigate({ to: "/app" });
     },
   });
 

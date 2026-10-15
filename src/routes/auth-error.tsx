@@ -39,7 +39,7 @@ function AuthErrorPage() {
       >
         <Button
           nativeButton={false}
-          render={<Link to="/" />}
+          render={<Link to="/app" />}
           variant="secondary"
           className="w-full"
         >

@@ -36,27 +36,28 @@ describe("auth redirect helpers", () => {
     expect(isDocumentRoute("/sign-in")).toBe(false);
   });
 
-  it("defaults unsafe or missing redirects to the app root, keeping same-origin paths", () => {
-    expect(normalizeAuthRedirect(undefined)).toBe("/");
-    expect(normalizeAuthRedirect("https://evil.example/app")).toBe("/");
-    expect(normalizeAuthRedirect("//evil.example/app")).toBe("/");
+  it("defaults unsafe, missing or landing-page redirects to the app home, keeping same-origin paths", () => {
+    expect(normalizeAuthRedirect(undefined)).toBe("/app");
+    expect(normalizeAuthRedirect("/")).toBe("/app");
+    expect(normalizeAuthRedirect("https://evil.example/app")).toBe("/app");
+    expect(normalizeAuthRedirect("//evil.example/app")).toBe("/app");
     expect(
       normalizeAuthRedirect("/api/auth/oauth2/authorize?client_id=abc"),
     ).toBe("/api/auth/oauth2/authorize?client_id=abc");
   });
 
   it("rejects backslash redirects that URL parsers treat as slashes", () => {
-    expect(normalizeAuthRedirect("/\\evil.test")).toBe("/");
-    expect(normalizeAuthRedirect("/path\\..\\evil")).toBe("/");
+    expect(normalizeAuthRedirect("/\\evil.test")).toBe("/app");
+    expect(normalizeAuthRedirect("/path\\..\\evil")).toBe("/app");
   });
 
   it("rejects tab and newline redirects that URL parsers strip into //", () => {
-    expect(normalizeAuthRedirect("/\t/evil.test")).toBe("/");
-    expect(normalizeAuthRedirect("/\n/evil.test")).toBe("/");
+    expect(normalizeAuthRedirect("/\t/evil.test")).toBe("/app");
+    expect(normalizeAuthRedirect("/\n/evil.test")).toBe("/app");
   });
 
   it("builds sign-in links with the redirect query only when needed", () => {
-    expect(getSignInHref("/")).toBe("/sign-in");
+    expect(getSignInHref("/app")).toBe("/sign-in");
     expect(getSignInHref("/oauth-consent?client_id=abc")).toBe(
       "/sign-in?redirect=%2Foauth-consent%3Fclient_id%3Dabc",
     );

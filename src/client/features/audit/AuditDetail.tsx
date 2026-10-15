@@ -81,7 +81,7 @@ export function AuditDetail({
 
   if (statusQuery.isError) {
     return (
-      <div className="px-4 py-4 md:px-6 md:py-6">
+      <div className="page-pad">
         <div className="mx-auto max-w-7xl space-y-4">
           <BackButton onClick={onBack}>All audits</BackButton>
           <QueryError
@@ -116,7 +116,7 @@ export function AuditDetail({
     );
 
   return (
-    <div className="px-4 py-4 md:px-6 md:py-6 pb-24 md:pb-8 overflow-auto">
+    <div className="page-pad overflow-auto">
       <div className="mx-auto max-w-7xl space-y-4">
         <div className="space-y-3">
           <BackButton onClick={onBack}>All audits</BackButton>

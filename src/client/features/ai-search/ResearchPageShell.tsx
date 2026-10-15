@@ -87,13 +87,7 @@ export function ResearchPageShell<TData>({
   const resultData = hasActiveQuery ? query.data : undefined;
 
   return (
-    <div
-      className={
-        contained
-          ? undefined
-          : "overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8"
-      }
-    >
+    <div className={contained ? undefined : "overflow-auto page-pad"}>
       <PaidPlanGate {...gate}>
         <div className="mx-auto max-w-7xl space-y-4">
           <PageHeader

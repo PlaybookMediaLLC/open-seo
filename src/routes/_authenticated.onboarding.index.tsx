@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/onboarding/")({
       onboardingAnswersQueryOptions(),
     );
     if (data.completedAt) {
-      throw redirect({ to: "/", replace: true });
+      throw redirect({ to: "/app", replace: true });
     }
   },
   component: OnboardingPage,
@@ -116,7 +116,7 @@ function OnboardingPage() {
         return;
       }
     }
-    void navigate({ to: "/", replace: true });
+    void navigate({ to: "/app", replace: true });
   };
 
   return (

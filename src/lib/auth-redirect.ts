@@ -1,3 +1,6 @@
+/** Where signed-in users land. "/" is the public landing page. */
+export const APP_HOME = "/app";
+
 const OAUTH_AUTHORIZE_PATH = "/api/auth/oauth2/authorize";
 const OAUTH_SIGNED_QUERY_END = "sig";
 const OAUTH_AUTHORIZE_MARKERS = ["response_type", "client_id", "redirect_uri"];
@@ -14,10 +17,11 @@ export function normalizeAuthRedirect(value: string | null | undefined) {
     value.includes("\\") ||
     /[\t\n\r]/.test(value)
   ) {
-    return "/";
+    return APP_HOME;
   }
 
-  return value;
+  // The landing page is never a post-auth destination.
+  return value === "/" ? APP_HOME : value;
 }
 
 export function getOAuthSignedQuery(search: string | null | undefined) {
@@ -98,7 +102,7 @@ export function toAuthCallbackURL(redirectTo: string) {
 }
 
 export function getSignInSearch(redirectTo: string) {
-  return redirectTo === "/" ? {} : { redirect: redirectTo };
+  return redirectTo === APP_HOME ? {} : { redirect: redirectTo };
 }
 
 export function getVerifyEmailSearch(
@@ -107,7 +111,7 @@ export function getVerifyEmailSearch(
 ) {
   const search: { email?: string; redirect?: string } = {};
   if (email) search.email = email;
-  if (redirectTo !== "/") search.redirect = redirectTo;
+  if (redirectTo !== APP_HOME) search.redirect = redirectTo;
   return search;
 }
 
@@ -117,7 +121,7 @@ export function getSignInHref(redirectTo: string) {
     return "/sign-in";
   }
 
-  return `/sign-in?redirect=${encodeURIComponent(search.redirect ?? "/")}`;
+  return `/sign-in?redirect=${encodeURIComponent(search.redirect ?? APP_HOME)}`;
 }
 
 export function getSignInHrefForLocation(location: {

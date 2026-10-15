@@ -59,7 +59,7 @@ export function DashboardPage({
 
   if (activationQuery.isError && !activation) {
     return (
-      <div className="px-4 py-4 md:px-6 md:py-6">
+      <div className="page-pad">
         <QueryError
           error={activationQuery.error}
           fallback="Failed to load dashboard"
@@ -76,7 +76,7 @@ export function DashboardPage({
   // with the error in place of the audit card.
   if (!activation || overviewQuery.isPending) {
     return (
-      <div className="px-4 py-4 md:px-6 md:py-6" aria-busy>
+      <div className="page-pad" aria-busy>
         <div className="mx-auto flex max-w-7xl flex-col gap-5">
           <Skeleton className="h-8 w-52" />
           <Skeleton className="h-36" />
@@ -159,7 +159,7 @@ export function DashboardPage({
   ];
 
   return (
-    <div className="px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+    <div className="page-pad">
       <div className="mx-auto flex max-w-7xl flex-col gap-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>

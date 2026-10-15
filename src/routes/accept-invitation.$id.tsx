@@ -122,7 +122,7 @@ function InvitationCard({
       // Full navigation: every cached query in this tab, and the remembered
       // project, belong to the old workspace.
       clearLastProjectId();
-      window.location.assign("/");
+      window.location.assign("/app");
     } catch {
       setActionError("We couldn't accept the invitation. Please try again.");
       setPendingAction(null);
@@ -191,7 +191,7 @@ function InvitationCard({
           </Button>
           <Button
             nativeButton={false}
-            render={<Link to="/" />}
+            render={<Link to="/app" />}
             variant="ghost"
             className="w-full"
           >
@@ -214,7 +214,7 @@ function InvitationCard({
         </p>
         <Button
           nativeButton={false}
-          render={<Link to="/" />}
+          render={<Link to="/app" />}
           variant="ghost"
           className="w-full"
         >

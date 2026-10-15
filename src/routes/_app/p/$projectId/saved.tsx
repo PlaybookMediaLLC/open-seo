@@ -309,7 +309,7 @@ function SavedKeywordsPage() {
   };
 
   return (
-    <div className="overflow-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+    <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-7xl space-y-4">
         <SavedKeywordsHeader
           totalCount={totalCount}
