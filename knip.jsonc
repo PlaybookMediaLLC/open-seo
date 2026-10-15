@@ -38,6 +38,8 @@
     // Skill-bundled scripts, run by hand from the skill's instructions
     "!.agents/**",
     "!.claude/**",
+    // Fumadocs MDX output (generated, gitignored)
+    "!.source/**",
   ],
   "ignore": ["drizzle/remote-d1.config.ts"],
   // Disable Drizzle plugin - it tries to load drizzle/sqlite.config.ts which imports cloudflare:workers

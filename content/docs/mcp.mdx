@@ -1,0 +1,119 @@
+---
+title: "Connect with MCP"
+description: "Connect Relay to Claude, Cursor, Codex, ChatGPT, and any other MCP client."
+---
+
+Relay's MCP server gives compatible AI clients the same tools you use in the app: keyword research, live search results, domain and backlink research, rank tracking, saved keywords, Search Console performance, URL inspection, AI visibility, reports, and your shared project context.
+
+The MCP server address is:
+
+```txt
+https://relay.playbookmedia.io/mcp
+```
+
+The first connection opens Relay sign-in in your browser. After you approve, your client can call Relay tools for the projects in your workspace. For servers and CI, [connect with an API key](#connect-with-an-api-key) instead.
+
+Want your agent to do the setup? Use the [setup prompt](/docs/agent-setup).
+
+## Claude Code
+
+```bash
+claude mcp add --transport http --scope user relay https://relay.playbookmedia.io/mcp
+```
+
+Use `--scope user` to make Relay available in every project, or leave it out for the current project only. Approve the sign-in when Claude asks. Then [add the skills](/docs/skills/setup).
+
+## Claude desktop and claude.ai
+
+1. Open **Customize → Connectors**.
+2. Select **Add** (or **+**), then **Add custom connector**.
+3. Name it **Relay** and paste `https://relay.playbookmedia.io/mcp`.
+4. Approve the Relay sign-in.
+
+Free Claude plans support one custom connector.
+
+## Cursor
+
+1. Open **Cursor Settings → Tools & Integrations → MCP Tools**.
+2. Select **New MCP Server**. Cursor opens `mcp.json`.
+3. Add:
+
+```json
+{
+  "mcpServers": {
+    "relay": {
+      "url": "https://relay.playbookmedia.io/mcp"
+    }
+  }
+}
+```
+
+4. Approve the Relay sign-in.
+
+## Codex
+
+```bash
+codex mcp add relay --url https://relay.playbookmedia.io/mcp
+codex mcp login relay
+```
+
+In the ChatGPT desktop app, open **Codex → Settings → MCP servers → Add server**, name it `relay`, choose **Streamable HTTP**, and enter the address above. See the [Codex guide](/docs/codex-plugin).
+
+## ChatGPT
+
+Follow the [ChatGPT guide](/docs/chatgpt).
+
+## Connect with an API key
+
+Use an API key on servers, in CI, or in clients where browser sign-in is not practical. A key acts as you: anything an agent does with it happens in your workspace.
+
+In Relay, open **Settings → API keys**, create a key, and copy it. Relay shows it only once.
+
+Claude Code:
+
+```bash
+claude mcp add --transport http --scope user relay https://relay.playbookmedia.io/mcp --header "Authorization: Bearer relay_YOUR_KEY"
+```
+
+Cursor (`mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "relay": {
+      "url": "https://relay.playbookmedia.io/mcp",
+      "headers": {
+        "Authorization": "Bearer relay_YOUR_KEY"
+      }
+    }
+  }
+}
+```
+
+Codex:
+
+```bash
+export RELAY_API_KEY=relay_YOUR_KEY
+codex mcp add relay --url https://relay.playbookmedia.io/mcp --bearer-token-env-var RELAY_API_KEY
+```
+
+Any client that sends custom headers can use `Authorization: Bearer relay_YOUR_KEY` or `x-api-key: relay_YOUR_KEY`. Keys created before Relay's rename start with `oseo_` and keep working.
+
+## Check the connection
+
+Ask your agent:
+
+```text
+Use Relay to check my connection and list my projects. Do not run SEO research or create anything.
+```
+
+These reads are free. An empty project list still means the connection works.
+
+## Troubleshooting
+
+- **Cannot connect:** check that the address is exactly `https://relay.playbookmedia.io/mcp`.
+- **Sign-in fails:** remove the Relay server from your client, add it again, and sign in again.
+- **Codex reports a missing issuer:** update Codex to 0.147.0 or later, or connect with an API key.
+- **The agent cannot find a project:** ask it to list your Relay projects first, then use the returned project ID.
+
+Next: [add the SEO skills](/docs/skills/setup) so your agent knows how to use the data.

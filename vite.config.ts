@@ -8,6 +8,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import { devtools } from "@tanstack/devtools-vite";
 import { leanWorkerBundle } from "./vite-plugin-lean-worker-bundle";
 import { relayBrand } from "./vite-plugin-relay-brand"; // playbook-seam
+import { relayDocs } from "./vite-plugin-relay-docs"; // playbook-seam
 
 export default defineConfig(({ mode, command }) => {
   // Vitest sets mode to "test". Return a config without the Cloudflare and
@@ -73,6 +74,7 @@ export default defineConfig(({ mode, command }) => {
     },
     plugins: [
       relayBrand(), // playbook-seam
+      relayDocs(), // playbook-seam
       leanWorkerBundle(),
       showDevtools
         ? devtools({

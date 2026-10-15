@@ -1,0 +1,44 @@
+---
+title: "Codex"
+description: "Add Relay's MCP connection and SEO skills to Codex CLI and Codex in the ChatGPT desktop app."
+---
+
+## Codex CLI
+
+**1. Connect Relay and sign in:**
+
+```bash
+codex mcp add relay --url https://relay.playbookmedia.io/mcp
+codex mcp login relay
+```
+
+**2. Add the SEO skills:**
+
+```bash
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills --skill '*' --agent codex
+```
+
+Restart Codex, then ask:
+
+```text
+Use Relay to check my connection and list my projects.
+```
+
+This check is free. Then ask Codex to use **SEO Coach**.
+
+## Codex in the ChatGPT desktop app [#desktop-app]
+
+The easiest way is to open **Codex**, start a new chat, and paste the [setup prompt](/docs/agent-setup). To do it by hand:
+
+1. Open **Codex → Settings → MCP servers → Add server**.
+2. Name it `relay`, choose **Streamable HTTP**, and enter `https://relay.playbookmedia.io/mcp`.
+3. Save, and select **Restart** when asked.
+4. Select **Authenticate** for Relay and approve the sign-in.
+5. Start a new Codex chat and run the connection check above.
+
+A local Codex setup does not connect ChatGPT on the web. For that, see the [ChatGPT guide](/docs/chatgpt).
+
+## Troubleshooting
+
+- **"Authorization server response missing required issuer":** update Codex to 0.147.0 or later, or [use an API key](/docs/mcp#connect-with-an-api-key).
+- **Tools do not appear:** restart Codex and start a new chat.

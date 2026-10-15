@@ -1,0 +1,42 @@
+---
+title: "Agent setup"
+description: "Connect your AI agent to Relay and keep its SEO skills up to date."
+---
+
+Relay connects your agent to live SEO data through MCP. **Skills** give it ready-made workflows for audits, keyword research, competitor research, and more.
+
+## Set up your agent
+
+**Using ChatGPT?** Follow the [ChatGPT guide](/docs/chatgpt). ChatGPT cannot install Relay from a chat, so it walks you through the steps.
+
+Copy this prompt into Claude Code, Claude Cowork, Codex, Cursor, or another agent. It asks the agent to use its own installation method and to guide you through anything you need to do yourself.
+
+<AgentPrompt kind="setup" />
+
+Approve the Relay sign-in in your browser when your agent asks. When setup is done, ask your agent to use **SEO Coach** to help you choose what to do first.
+
+You can also copy this prompt from **Agent setup** in the Relay app.
+
+Prefer to set it up yourself? Follow the guide for your agent:
+
+- [Claude Code and Claude desktop](/docs/claude-code-plugin)
+- [Codex](/docs/codex-plugin)
+- [ChatGPT](/docs/chatgpt)
+- [Cursor and other MCP clients](/docs/mcp)
+
+## Update your skills [#update-your-skills]
+
+When Relay releases improved skills, update the copies in your agent. Updating the MCP connection alone does not update skill files.
+
+Paste this prompt into the agent where you use Relay. It checks how the skills were installed and keeps your connection settings and personal edits.
+
+<AgentPrompt kind="update" />
+
+To update by hand with the skills CLI, list your installations and update the Relay skills by name:
+
+```bash
+npx skills list
+npx skills update seo-coach seo-audit
+```
+
+Use the names you installed and the same scope (`-g` for global, `-p` for project). Then reload skills or start a new session, and ask your agent to confirm it can find the updated skills.

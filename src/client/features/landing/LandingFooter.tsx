@@ -110,6 +110,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   {
     title: "Support",
     links: [
+      ["Documentation", "/docs"],
       ["Email support", "mailto:team@playbookmedia.io"],
       ["FAQ", "/#faq"],
     ],

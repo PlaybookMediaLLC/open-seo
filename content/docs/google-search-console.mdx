@@ -1,0 +1,41 @@
+---
+title: "Connect Google Search Console"
+description: "Give Relay read-only access to your Search Console data, and fix the common setup problems."
+---
+
+Relay finds opportunities from your real search performance, so Search Console is the most important connection.
+
+## Before you start
+
+- Your site must be a property in [Google Search Console](https://search.google.com/search-console).
+- You must sign in to Google with an account that can see that property. A **Full** or **Restricted** user is enough, because Relay only reads data.
+
+If your site is not in Search Console yet, add it there first. A **Domain** property (for example `example.com`) covers every subdomain and protocol. Google verifies a Domain property with a DNS record. A **URL prefix** property (for example `https://www.example.com/`) covers only that address.
+
+## Connect it
+
+1. In Relay, open your project and go to **GSC Insights** or the dashboard's setup step.
+2. Select **Connect Google Search Console**.
+3. Choose the Google account that can see your property, and approve read-only access.
+4. Pick the property that matches your project's site.
+
+Relay requests read-only access (`webmasters.readonly`). It cannot change anything in Search Console.
+
+## When data appears
+
+Search Console data is usually two to three days behind. A new property can take a few days to collect enough data for opportunities.
+
+## Fix common problems
+
+| What you see                            | What to do                                                                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Your property is not in the list        | Sign in with the Google account that has access to the property, or ask the property owner to add that account as a user.                      |
+| You see the property but no data        | The property may be new, or it may be a different version of the site (for example `http://` instead of `https://`). Prefer a Domain property. |
+| Google warns that the app is unverified | Select **Advanced**, then continue to Relay. Google shows this while Relay's access review is in progress.                                     |
+| You want to stop sharing data           | Disconnect Search Console in Relay, or remove Relay at [myaccount.google.com/permissions](https://myaccount.google.com/permissions).           |
+
+## Google Analytics
+
+Connecting Google Analytics is optional. It adds landing-page and conversion data to reports. The steps are the same, and access is read-only (`analytics.readonly`).
+
+Read how Relay handles Google data in the [Privacy Policy](/privacy).

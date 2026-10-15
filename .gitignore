@@ -46,3 +46,6 @@ dist-sourcemaps/
 
 # Alchemy local state + bundle artifacts (SaaS deploys)
 .alchemy/
+
+# Fumadocs MDX output for the /docs pages (generated on install and dev)
+.source

@@ -33,6 +33,7 @@ import { Route as AuthenticatedSubscribeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedYcRouteImport } from './routes/_authenticated.yc'
 import { Route as AcceptInvitationIdRouteImport } from './routes/accept-invitation.$id'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as MediaNameRouteImport } from './routes/media.$name'
 import { Route as RReportIdRouteImport } from './routes/r/$reportId'
 import { Route as AppBillingFixPaymentRouteImport } from './routes/_app/billing_.fix-payment'
@@ -197,6 +198,11 @@ const AcceptInvitationIdRoute = AcceptInvitationIdRouteImport.update({
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/docs/$',
+  path: '/docs/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MediaNameRoute = MediaNameRouteImport.update({
@@ -474,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/yc': typeof AuthenticatedYcRoute
   '/accept-invitation/$id': typeof AcceptInvitationIdRoute
   '/api/health': typeof ApiHealthRoute
+  '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
   '/p/$projectId': typeof AppPProjectIdRouteRouteWithChildren
@@ -542,6 +549,7 @@ export interface FileRoutesByTo {
   '/yc': typeof AuthenticatedYcRoute
   '/accept-invitation/$id': typeof AcceptInvitationIdRoute
   '/api/health': typeof ApiHealthRoute
+  '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
   '/billing/fix-payment': typeof AppBillingFixPaymentRoute
@@ -611,6 +619,7 @@ export interface FileRoutesById {
   '/_authenticated/yc': typeof AuthenticatedYcRoute
   '/accept-invitation/$id': typeof AcceptInvitationIdRoute
   '/api/health': typeof ApiHealthRoute
+  '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
   '/_app/p/$projectId': typeof AppPProjectIdRouteRouteWithChildren
@@ -682,6 +691,7 @@ export interface FileRouteTypes {
     | '/yc'
     | '/accept-invitation/$id'
     | '/api/health'
+    | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
     | '/p/$projectId'
@@ -750,6 +760,7 @@ export interface FileRouteTypes {
     | '/yc'
     | '/accept-invitation/$id'
     | '/api/health'
+    | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
     | '/billing/fix-payment'
@@ -818,6 +829,7 @@ export interface FileRouteTypes {
     | '/_authenticated/yc'
     | '/accept-invitation/$id'
     | '/api/health'
+    | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
     | '/_app/p/$projectId'
@@ -880,6 +892,7 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OpenaiAppsChallengeRoute: typeof Char91DotwellKnownChar93OpenaiAppsChallengeRoute
   AcceptInvitationIdRoute: typeof AcceptInvitationIdRoute
   ApiHealthRoute: typeof ApiHealthRoute
+  DocsSplatRoute: typeof DocsSplatRoute
   MediaNameRoute: typeof MediaNameRoute
   RReportIdRoute: typeof RReportIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -1059,6 +1072,13 @@ declare module '@tanstack/react-router' {
       path: '/api/health'
       fullPath: '/api/health'
       preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/docs/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/media/$name': {
@@ -1585,6 +1605,7 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OpenaiAppsChallengeRoute,
   AcceptInvitationIdRoute: AcceptInvitationIdRoute,
   ApiHealthRoute: ApiHealthRoute,
+  DocsSplatRoute: DocsSplatRoute,
   MediaNameRoute: MediaNameRoute,
   RReportIdRoute: RReportIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
