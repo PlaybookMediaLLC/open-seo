@@ -195,11 +195,11 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ### 5.8 Rate limits on paid actions
 
-1. Use the Cloudflare Workers rate limiting binding. Add one binding in `wrangler.jsonc` with a 60-second period.
+1. Use the Cloudflare Workers rate limiting binding. Declare `PAID_ACTION_RATE_LIMIT` in `deploy/alchemy/alchemy.run.ts`, next to the existing `MCP_RATE_LIMIT`, with its own namespace id and a 60-second period. The `wrangler.jsonc` surfaces skip the check when the binding is absent, as `MCP_RATE_LIMIT` does.
 2. Key: `{userId}:{feature}`. Limit: 30 paid actions per minute per user and feature.
 3. Apply it in `admitSpend` before the ledger insert. Return `RATE_LIMITED` with the retry time.
 4. Self-hosted installs without the binding skip this check and log one warning at startup.
-5. MCP API keys keep their existing Better Auth rate limit.
+5. MCP API keys keep their existing per-user limit (`MCP_RATE_LIMIT`, 5,000 requests per minute, in `src/server/mcp/api-key-auth.ts`). The Better Auth plugin limiter stays disabled.
 
 ## 6. Security and tenancy
 
@@ -250,7 +250,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 - [ ] Test: a version 0 row decrypts with the old secret and is re-encrypted.
 - [ ] Test: a missing key fails closed with the reconnect message.
 - [ ] Rotation steps documented.
-- [ ] Rate limit binding added, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
+- [ ] `PAID_ACTION_RATE_LIMIT` binding added in the Alchemy stack, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
 - [ ] Docs explain limits, the Activity page and what counts as a paid action.
 
 ## 9. Open questions
