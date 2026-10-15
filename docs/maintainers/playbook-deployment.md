@@ -20,7 +20,8 @@ Google OAuth uses a Web client in project `playbook-openseo-prod` (organization 
 Open items:
 
 - **Google sensitive scopes:** Search Console (`webmasters.readonly`) and Analytics (`analytics.readonly`) are requested at connect time but not yet declared under Data Access. Users connecting them see Google's unverified-app warning, and the 100-user cap applies, until the scopes are declared and Google completes its sensitive-scope verification (days to weeks, with a demo video). Sign-in itself uses only basic profile scopes.
-- **Billing:** billing runs on Autumn backed by Playbook Media's Stripe account. `AUTUMN_SECRET_KEY` is not set yet, so credit-metered features (keyword, domain and backlink research, audits, AI visibility) fail until an Autumn account is connected to Stripe and the key is added to `ENV_PLAYBOOK`. Opportunities, publishing and experiments use free Search Console data.
+- **Billing:** Autumn (org "D Yoan L's Org", production) is connected by Stripe OAuth to the **playbookmedia.io** Stripe account `acct_1OXB5bH7s84UCOP5`. Pricing lives in `autumn.config.ts` and is applied with `AUTUMN_PROD_SECRET_KEY=... pnpm exec atmn --prod push --yes`. Free ($1 of credits a month) is assigned automatically; the Base Plan is $10 a month with $10 of credits; top-ups are $1 per 1,000 credits. Autumn webhook `seo-playbookmedia` sends `billing.updated` to `/api/autumn/webhook`. `AUTUMN_SECRET_KEY` and `AUTUMN_WEBHOOK_SECRET` live in `ENV_PLAYBOOK`.
+- **Icons:** `@tabler/icons-react`. Every icon's default size and stroke come from `--icon-size` and `--icon-stroke` in `src/client/styles/app.css`. Use `icon-nav` and `icon-card` for Eigenn's 14px and 20px sizes.
 - **DataForSEO:** still a placeholder key.
 - **Turnstile:** a widget exists for `seo.playbookmedia.io`. Its keys are in `ENV_PLAYBOOK`, but Google-only mode does not use them.
 
