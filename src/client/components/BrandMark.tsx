@@ -1,30 +1,24 @@
 import { cn } from "cn";
 
-/** The OpenSEO mark: a rising signal inside a rounded tile. */
+/** The Relay mark: a white R on a black square. Same art as the favicon. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="100 100 440 440"
       aria-hidden
       className={cn("shrink-0", className)}
       fill="none"
     >
-      <defs>
-        <linearGradient id="brandmark-fill" x1="0" y1="0" x2="24" y2="24">
-          <stop offset="0" stopColor="#6d8dff" />
-          <stop offset="0.55" stopColor="#8a6cff" />
-          <stop offset="1" stopColor="#d77ab8" />
-        </linearGradient>
-      </defs>
-      <rect width="24" height="24" rx="7" fill="url(#brandmark-fill)" />
-      <path
-        d="M6.5 15.5 10 12l2.5 2.5L17.5 9"
-        stroke="#fff"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle cx="17.5" cy="9" r="1.4" fill="#fff" />
+      <rect x="100" y="100" width="440" height="440" fill="#0a0a0a" />
+      <g transform="translate(-12 0)" stroke="#fff" strokeWidth="72">
+        <path d="M226 150V490" />
+        <path d="M190 186H340A74 74 0 0 1 340 334H262" />
+        <polygon
+          points="300,394 378,394 474,490 396,490"
+          fill="#fff"
+          stroke="none"
+        />
+      </g>
     </svg>
   );
 }
