@@ -48,5 +48,7 @@
     // Imported by app.css; shadcn is also the component CLI
     "tw-animate-css",
     "shadcn",
+    // Imported by the landing page's landing.css
+    "@fontsource-variable/inter",
   ],
 }
