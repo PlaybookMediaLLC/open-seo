@@ -15,8 +15,8 @@ import {
   IconClipboardCheck,
   IconFileText,
   IconFlask,
-  IconGitPullRequest,
   IconLink,
+  IconSearch,
   IconTarget,
   IconTerminal2,
   IconWorld,
@@ -24,14 +24,7 @@ import {
 } from "@tabler/icons-react";
 import { cn } from "cn";
 import { Eyebrow, Reveal, useAutoCycle } from "./LandingPrimitives";
-import {
-  CitationArt,
-  ContextArt,
-  DiffArt,
-  ExperimentArt,
-  OpportunityArt,
-  SearchConsoleArt,
-} from "./CardArt";
+import { ShotCrop } from "./AppWindow";
 
 const LOGOS: { name: string; icon: Icon }[] = [
   { name: "Search Console", icon: IconBrandGoogle },
@@ -131,24 +124,24 @@ export function LandingAdaptability() {
               </h2>
             </div>
           </div>
-          <div className="relative z-10 flex h-[400px] flex-col justify-between rounded-t-[32px] border border-b-0 border-[#0088ff]/20 bg-black p-8">
+          <div className="relative z-10 flex h-[340px] flex-col rounded-t-[32px] border border-b-0 border-[#0088ff]/20 bg-black p-8">
             <div
               key={lens.name}
-              className="landing-reveal space-y-4"
+              className="landing-reveal flex flex-1 flex-col justify-center gap-3"
               data-visible=""
             >
               <Bubble tilt="-rotate-2">{question}</Bubble>
-              <div className="flex h-10 w-[120px] items-center gap-1.5 rounded-2xl bg-[#0b2a4a] px-4">
+              <div className="flex h-9 w-[104px] items-center gap-1.5 rounded-2xl bg-[#0b2a4a] px-4">
                 {[0, 1, 2, 3].map((i) => (
                   <span
                     key={i}
-                    className="h-1 w-5 rounded-full bg-[#5aa6ff]/60"
+                    className="h-1 w-4 rounded-full bg-[#5aa6ff]/60"
                   />
                 ))}
               </div>
               <Bubble tilt="rotate-1">{answer}</Bubble>
             </div>
-            <div className="flex justify-center gap-1">
+            <div className="mt-5 flex justify-center gap-1">
               {LENSES.map((item, index) => (
                 <button
                   key={item.name}
@@ -192,7 +185,10 @@ type Card = {
   color: string;
   bg: string;
   icon: Icon;
-  art: ReactNode;
+  /** Which screenshot to crop, and the region of it to show. */
+  shot: Parameters<typeof ShotCrop>[0]["shot"];
+  focus: string;
+  scale?: number;
 };
 
 const CARDS: Card[] = [
@@ -203,34 +199,42 @@ const CARDS: Card[] = [
     color: "#dd55e7",
     bg: "#1c031f",
     icon: IconTarget,
-    art: <OpportunityArt />,
+    shot: "opportunities",
+    focus: "22% 78%",
+    scale: 2.1,
+  },
+  {
+    title: "Rank tracking",
+    body: "Weekly positions for every keyword that matters.",
+    emphasis: "See the trend, not a snapshot.",
+    color: "#1cecbb",
+    bg: "#031310",
+    icon: IconChartBar,
+    shot: "rankTracking",
+    focus: "60% 36%",
+    scale: 1.9,
+  },
+  {
+    title: "Keyword research",
+    body: "Volume, difficulty, CPC and intent for every idea.",
+    emphasis: "Save the ones worth writing.",
+    color: "#0088ff",
+    bg: "#030719",
+    icon: IconSearch,
+    shot: "savedKeywords",
+    focus: "55% 40%",
+    scale: 2,
   },
   {
     title: "Experiments",
     body: "Ship a change and measure it against a baseline.",
     emphasis: "Know what actually moved.",
-    color: "#1cecbb",
-    bg: "#031310",
-    icon: IconFlask,
-    art: <ExperimentArt />,
-  },
-  {
-    title: "Pull requests",
-    body: "Approved metadata fixes open as PRs in your repo.",
-    emphasis: "Review, merge, done.",
     color: "#ff5252",
     bg: "#200401",
-    icon: IconGitPullRequest,
-    art: <DiffArt />,
-  },
-  {
-    title: "AI visibility",
-    body: "See how ChatGPT, Claude and Perplexity answer about you.",
-    emphasis: "Know who gets cited.",
-    color: "#0088ff",
-    bg: "#030719",
-    icon: IconChartBar,
-    art: <CitationArt />,
+    icon: IconFlask,
+    shot: "opportunities",
+    focus: "78% 62%",
+    scale: 2.4,
   },
   {
     title: "Search Console",
@@ -239,7 +243,9 @@ const CARDS: Card[] = [
     color: "#17c253",
     bg: "#02160b",
     icon: IconBrandGoogle,
-    art: <SearchConsoleArt />,
+    shot: "opportunities",
+    focus: "50% 22%",
+    scale: 2.2,
   },
   {
     title: "Project context",
@@ -248,7 +254,9 @@ const CARDS: Card[] = [
     color: "#ffdd00",
     bg: "#191303",
     icon: IconBrain,
-    art: <ContextArt />,
+    shot: "rankTracking",
+    focus: "20% 20%",
+    scale: 2.2,
   },
 ];
 
@@ -265,12 +273,14 @@ export function LandingWhatsInside() {
           </p>
         </div>
         <div className="relative">
-          <div className="landing-no-scrollbar mt-8 flex gap-8 overflow-x-auto px-6 pb-2 sm:px-8">
+          {/* Scrolls horizontally, with a fade at the right edge so a card
+              reads as continuing rather than being sliced by the container. */}
+          <div className="landing-rail landing-no-scrollbar mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-2 sm:px-8">
             {CARDS.map((card) => (
               <FeatureCard key={card.title} card={card} />
             ))}
+            <span aria-hidden className="w-2 flex-none" />
           </div>
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-black to-transparent" />
         </div>
         <div className="mt-14 grid gap-10 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
           {SMALL_FEATURES.map(({ icon: Icon, title, body, badge }) => (
@@ -299,7 +309,7 @@ function FeatureCard({ card }: { card: Card }) {
   const Icon = card.icon;
   return (
     <div
-      className="landing-card-border relative flex h-[400px] w-[300px] flex-none flex-col justify-end rounded-3xl p-6 sm:w-80"
+      className="landing-card-border relative flex h-[400px] w-[300px] flex-none snap-start flex-col justify-end rounded-3xl p-6 sm:w-80"
       style={{ background: card.bg }}
     >
       <div className="absolute inset-x-0 top-0 h-64 overflow-hidden rounded-t-3xl">
@@ -310,7 +320,13 @@ function FeatureCard({ card }: { card: Card }) {
           }}
         />
         <div className="absolute inset-0 grid place-items-center">
-          {card.art}
+          <ShotCrop
+            shot={card.shot}
+            width={250}
+            aspect={0.62}
+            focus={card.focus}
+            scale={card.scale}
+          />
         </div>
         <div
           className="absolute inset-x-0 bottom-0 h-16"
