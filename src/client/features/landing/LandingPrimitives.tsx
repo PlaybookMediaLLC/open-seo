@@ -1,5 +1,33 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { cn } from "cn";
+
+/**
+ * A one-colour brand mark from src/public/logos (simple-icons, CC0), painted
+ * with the current text colour so it can be greyed out or set on a tile.
+ */
+export function Logo({
+  slug,
+  className,
+  color,
+}: {
+  slug: string;
+  className?: string;
+  color?: string;
+}) {
+  return (
+    <span
+      aria-hidden
+      className={cn("landing-logo", className)}
+      style={{ "--logo": `url(/logos/${slug}.svg)`, color } as CSSProperties}
+    />
+  );
+}
 
 /** Fades and lifts its children in the first time they scroll into view. */
 export function Reveal({

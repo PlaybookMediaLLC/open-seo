@@ -1,388 +1,271 @@
-import type { ReactNode } from "react";
-import {
-  IconBrandGoogle,
-  IconBrandOpenai,
-  IconBrandStripe,
-  IconBrandVercel,
-  IconBrandVscode,
-  IconBrandWebflow,
-  IconBrandWordpress,
-  IconBrain,
-  IconChartBar,
-  IconCloud,
-  IconMessageChatbot,
-  IconShoppingBag,
-  IconClipboardCheck,
-  IconFileText,
-  IconFlask,
-  IconLink,
-  IconSearch,
-  IconTarget,
-  IconTerminal2,
-  IconWorld,
-  type Icon,
-} from "@tabler/icons-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "cn";
-import { Eyebrow, Reveal, useAutoCycle } from "./LandingPrimitives";
-import { ShotCrop } from "./AppWindow";
+import { Eyebrow, Logo, Reveal, useAutoCycle } from "./LandingPrimitives";
 
-const LOGOS: { name: string; icon: Icon }[] = [
-  { name: "Search Console", icon: IconBrandGoogle },
-  { name: "Analytics 4", icon: IconChartBar },
-  { name: "Claude", icon: IconMessageChatbot },
-  { name: "OpenAI", icon: IconBrandOpenai },
-  { name: "Cursor", icon: IconBrandVscode },
-  { name: "Codex", icon: IconTerminal2 },
-  { name: "WordPress", icon: IconBrandWordpress },
-  { name: "Webflow", icon: IconBrandWebflow },
-  { name: "Vercel", icon: IconBrandVercel },
-  { name: "Cloudflare", icon: IconCloud },
-  { name: "Shopify", icon: IconShoppingBag },
-  { name: "Stripe", icon: IconBrandStripe },
-];
+const LOGOS = [
+  ["googlesearchconsole", "Search Console"],
+  ["googleanalytics", "Analytics"],
+  ["claude", "Claude"],
+  ["openai", "ChatGPT"],
+  ["cursor", "Cursor"],
+  ["perplexity", "Perplexity"],
+  ["googlegemini", "Gemini"],
+  ["github", "GitHub"],
+  ["wordpress", "WordPress"],
+  ["webflow", "Webflow"],
+  ["shopify", "Shopify"],
+  ["wix", "Wix"],
+  ["squarespace", "Squarespace"],
+  ["ghost", "Ghost"],
+  ["framer", "Framer"],
+  ["nextdotjs", "Next.js"],
+  ["vercel", "Vercel"],
+  ["netlify", "Netlify"],
+  ["cloudflare", "Cloudflare"],
+  ["notion", "Notion"],
+] as const;
 
 export function LandingLogos() {
   return (
-    <section className="w-full px-4 pb-6 pt-28">
-      <Reveal className="mx-auto max-w-[1024px]">
-        {[false, true].map((reverse) => (
-          <div
-            key={String(reverse)}
-            className="landing-marquee overflow-hidden"
-          >
+    <section className="relative my-24 flex w-full flex-col items-center overflow-hidden">
+      <div
+        aria-hidden
+        className="landing-dots pointer-events-none absolute h-[350px] w-[550px] max-w-full [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,#000_0%,#000_40%,transparent_90%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute h-[700px] w-[1100px] bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgb(255_255_255/0.06)_0%,transparent_70%)]"
+      />
+      <Reveal className="relative z-10 flex w-full flex-col items-center">
+        <div className="landing-marquee mb-8 w-full">
+          {[0, 1].map((copy) => (
             <div
+              key={copy}
+              aria-hidden={copy === 1}
               className="landing-marquee-track"
-              data-reverse={reverse ? "" : undefined}
             >
-              {[...LOGOS, ...LOGOS].map(({ name, icon: Icon }, index) => (
+              {LOGOS.map(([slug, name]) => (
                 <span
-                  key={`${name}-${index}`}
-                  className="mx-5 flex h-11 shrink-0 items-center gap-2 text-white/25 transition-colors hover:text-white/50"
+                  key={slug}
+                  className="flex h-8 items-center justify-center gap-2 text-[#c5c7cd]"
                 >
-                  <Icon className="size-[18px]" stroke={1.6} />
-                  <span className="whitespace-nowrap text-[14px] font-medium tracking-[-0.2px]">
+                  <Logo slug={slug} className="size-[18px]" />
+                  <span className="whitespace-nowrap text-[17px] font-semibold tracking-[-0.5px]">
                     {name}
                   </span>
                 </span>
               ))}
             </div>
-          </div>
-        ))}
-        <h2 className="mt-12 text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
-          Built for those who move fast
-        </h2>
-        <p className="mt-3 text-center text-[16px] leading-[22.4px] text-[#888b91]">
-          Your Google data, live search research and
-          <br />
-          the <span className="text-[#fafafa]">AI agents you already use</span>.
-        </p>
+          ))}
+        </div>
+        <div className="px-8 md:px-0">
+          <h2 className="text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+            Built for those who move fast
+          </h2>
+          <p className="mt-3 text-center text-[14px] font-medium leading-[160%] tracking-[0.14px] text-[#888b91]">
+            Your Google data, live search research
+            <br />
+            and{" "}
+            <span className="text-[#fafafa]">
+              the AI agents you already use
+            </span>
+            , in one place.
+          </p>
+          <p className="mt-4 text-center">
+            <a
+              href="#integrations"
+              className="text-[14px] font-medium tracking-[0.14px] text-[#888b91] underline decoration-white/25 underline-offset-4 transition-colors hover:text-[#fafafa] hover:decoration-white/60"
+            >
+              See every integration
+            </a>
+          </p>
+        </div>
       </Reveal>
     </section>
   );
 }
 
+/** Each lens is one question, the work in between, and the answer. */
 const LENSES = [
   {
     name: "Pages",
-    question: "/pricing gets 18k views but only 1% click",
-    answer: "Rewrite the title and description to lift clicks by ~640 a month.",
+    color: "#0088ff",
+    ink: "#fff",
+    question: "/pricing gets 18k views but only 1% click. Why?",
+    work: "Checking titles, snippets and the top ten results",
+    answer:
+      "The title hides the price. Rewrite it and the description to win about 640 more clicks a month.",
   },
   {
     name: "Keywords",
+    color: "#16c253",
+    ink: "#000",
     question: "Which keywords can we win this month?",
+    work: "Comparing volume, difficulty and current rank",
     answer:
-      "“seo audit checklist”: 6.6k searches, difficulty 22, you rank #14.",
+      "“seo audit checklist”: 6.6k searches a month, difficulty 22, and you already rank #14.",
   },
   {
     name: "Links",
-    question: "Who links to competitors but not us?",
+    color: "#ffb764",
+    ink: "#000",
+    question: "Who links to our competitors but not to us?",
+    work: "Diffing referring domains across three rivals",
     answer:
-      "dev.to and indiehackers.com, 3 rival mentions each. Draft pitches?",
+      "dev.to and indiehackers.com mention two rivals each. Want a pitch draft for both?",
   },
   {
     name: "AI answers",
+    color: "#b855e7",
+    ink: "#000",
     question: "Does ChatGPT recommend us?",
+    work: "Asking ChatGPT, Perplexity and Gemini",
     answer:
-      "Not yet: it cites two rivals for “best seo tools”. Here’s the gap.",
+      "Not yet. It cites two rivals for “best seo tools”. Here is what their pages have that yours lacks.",
   },
 ] as const;
 
 export function LandingAdaptability() {
-  const [active, pick] = useAutoCycle(LENSES.length, 3600);
+  const [active, pick] = useAutoCycle(LENSES.length, 4500);
   const lens = LENSES[active] ?? LENSES[0];
-  const { question, answer } = lens;
+  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pill, setPill] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const tab = tabs.current[active];
+    if (tab) setPill({ left: tab.offsetLeft, width: tab.offsetWidth });
+  }, [active]);
+
   return (
-    <section id="features" className="w-full px-4 pt-16">
-      <div className="mx-auto max-w-[1024px]">
-        <Reveal className="relative grid items-end md:grid-cols-2">
-          <div className="relative flex h-full items-center py-10 md:pl-28">
-            <div className="landing-dots pointer-events-none absolute inset-0" />
-            <div className="relative">
+    <section
+      id="features"
+      className="flex w-full flex-col items-center md:items-end md:justify-end"
+    >
+      <Reveal className="mx-auto flex w-full max-w-[1024px] flex-col sm:mt-24 md:h-[400px] md:flex-row md:items-end md:justify-center">
+        <div className="relative md:w-[524px]">
+          <div
+            aria-hidden
+            className="landing-dots pointer-events-none absolute -bottom-6 -right-6 hidden h-[420px] w-[560px] [mask-image:radial-gradient(circle_at_100%_100%,#000_0%,#000_35%,transparent_75%)] md:block"
+          />
+          <div className="relative z-20 mb-12 ml-6 md:mb-36 md:ml-12">
+            <div className="flex h-[140px] w-full flex-col justify-end sm:h-[260px] md:w-[400px]">
               <Eyebrow color="#798498">Adaptability</Eyebrow>
-              <h2 className="mt-2 max-w-[320px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
-                SEO isn’t one-size-fits-all
+              <h2 className="mt-2 w-[300px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+                SEO isn’t
+                <br />
+                one-size-fits-all
               </h2>
             </div>
           </div>
-          <div className="relative z-10 flex h-[340px] flex-col rounded-t-[32px] border border-b-0 border-[#0088ff]/20 bg-black p-8">
-            <div
-              key={lens.name}
-              className="landing-reveal flex flex-1 flex-col justify-center gap-3"
-              data-visible=""
-            >
-              <Bubble tilt="-rotate-2">{question}</Bubble>
-              <div className="flex h-9 w-[104px] items-center gap-1.5 rounded-2xl bg-[#0b2a4a] px-4">
-                {[0, 1, 2, 3].map((i) => (
-                  <span
-                    key={i}
-                    className="h-1 w-4 rounded-full bg-[#5aa6ff]/60"
-                  />
-                ))}
-              </div>
-              <Bubble tilt="rotate-1">{answer}</Bubble>
-            </div>
-            <div className="mt-5 flex justify-center gap-1">
-              {LENSES.map((item, index) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  onClick={() => pick(index)}
-                  className={cn(
-                    "rounded-full px-3 py-1.5 text-[14px] transition-colors",
-                    index === active
-                      ? "bg-[#0088ff]/20 text-[#3da2ff]"
-                      : "text-white/70 hover:text-white",
-                  )}
-                >
-                  {item.name}
-                </button>
-              ))}
+        </div>
+        <div
+          className="relative z-10 flex h-[400px] w-full flex-col items-center overflow-hidden rounded-t-[32px] border-x border-t bg-black px-6 sm:px-10 md:w-[500px]"
+          style={{ borderColor: "#0088ff33" }}
+        >
+          <div key={lens.name} className="flex h-[300px] w-full items-center">
+            <div className="w-full">
+              <Bubble lens={lens} side="you" tilt="-rotate-1" delay={0}>
+                {lens.question}
+              </Bubble>
+              <Bubble lens={lens} side="work" delay={140}>
+                <Redacted text={lens.work} />
+              </Bubble>
+              <Bubble lens={lens} side="you" tilt="rotate-2" delay={280}>
+                {lens.answer}
+              </Bubble>
             </div>
           </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-function Bubble({ children, tilt }: { children: ReactNode; tilt: string }) {
-  return (
-    <div
-      className={cn(
-        "ml-auto w-fit max-w-[260px] rounded-[18px] bg-[#0a84ff] px-4 py-2.5 text-[15px] leading-snug text-white shadow-[0_8px_24px_-8px_rgb(10_132_255/0.6)]",
-        tilt,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-type Card = {
-  title: string;
-  body: string;
-  emphasis: string;
-  color: string;
-  bg: string;
-  icon: Icon;
-  /** Which screenshot to crop, and the region of it to show. */
-  shot: Parameters<typeof ShotCrop>[0]["shot"];
-  focus: string;
-  scale?: number;
-};
-
-const CARDS: Card[] = [
-  {
-    title: "Opportunity engine",
-    body: "Search Console data turned into a ranked to-do list.",
-    emphasis: "Highest-impact fixes first.",
-    color: "#dd55e7",
-    bg: "#1c031f",
-    icon: IconTarget,
-    shot: "opportunities",
-    focus: "22% 78%",
-    scale: 2.1,
-  },
-  {
-    title: "Rank tracking",
-    body: "Weekly positions for every keyword that matters.",
-    emphasis: "See the trend, not a snapshot.",
-    color: "#1cecbb",
-    bg: "#031310",
-    icon: IconChartBar,
-    shot: "rankTracking",
-    focus: "60% 36%",
-    scale: 1.9,
-  },
-  {
-    title: "Keyword research",
-    body: "Volume, difficulty, CPC and intent for every idea.",
-    emphasis: "Save the ones worth writing.",
-    color: "#0088ff",
-    bg: "#030719",
-    icon: IconSearch,
-    shot: "savedKeywords",
-    focus: "55% 40%",
-    scale: 2,
-  },
-  {
-    title: "Experiments",
-    body: "Ship a change and measure it against a baseline.",
-    emphasis: "Know what actually moved.",
-    color: "#ff5252",
-    bg: "#200401",
-    icon: IconFlask,
-    shot: "opportunities",
-    focus: "78% 62%",
-    scale: 2.4,
-  },
-  {
-    title: "Search Console",
-    body: "Queries, pages and positions, always in sync.",
-    emphasis: "Read-only and private.",
-    color: "#17c253",
-    bg: "#02160b",
-    icon: IconBrandGoogle,
-    shot: "opportunities",
-    focus: "50% 22%",
-    scale: 2.2,
-  },
-  {
-    title: "Project context",
-    body: "Goals, audience and competitors, set once.",
-    emphasis: "Every answer follows them.",
-    color: "#ffdd00",
-    bg: "#191303",
-    icon: IconBrain,
-    shot: "rankTracking",
-    focus: "20% 20%",
-    scale: 2.2,
-  },
-];
-
-export function LandingWhatsInside() {
-  return (
-    <section className="w-full px-4">
-      <Reveal className="mx-auto max-w-[1024px] overflow-hidden rounded-b-[32px] rounded-tl-[32px] border border-[#0088ff]/20 bg-black pb-10 pt-8">
-        <div className="px-6 sm:px-8">
-          <Eyebrow color="#dd55e7">What’s inside</Eyebrow>
-          <p className="mt-2 text-[20px] font-medium leading-[24px] tracking-[-0.6px] text-[#fafafa] sm:text-[24px]">
-            Powerful features,
-            <br />
-            seamlessly integrated.
-          </p>
-        </div>
-        <div className="relative">
-          {/* Scrolls horizontally, with a fade at the right edge so a card
-              reads as continuing rather than being sliced by the container. */}
-          <div className="landing-rail landing-no-scrollbar mt-8 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-2 sm:px-8">
-            {CARDS.map((card) => (
-              <FeatureCard key={card.title} card={card} />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-16 bg-gradient-to-t from-black via-black/95 to-transparent" />
+          <div className="relative z-30 mb-6 mt-auto flex items-center gap-x-1 sm:gap-x-4">
+            <span
+              aria-hidden
+              className="absolute h-8 rounded-full transition-all duration-300"
+              style={{
+                left: pill.left,
+                width: pill.width,
+                background: `color-mix(in srgb, ${lens.color} 18%, #000)`,
+              }}
+            />
+            {LENSES.map((item, index) => (
+              <button
+                key={item.name}
+                ref={(node) => {
+                  tabs.current[index] = node;
+                }}
+                type="button"
+                aria-pressed={index === active}
+                onClick={() => pick(index)}
+                className={cn(
+                  "relative z-10 select-none whitespace-nowrap px-4 py-1 text-sm transition-colors duration-200",
+                  index !== active && "text-[#c4c5c9] hover:text-[#fafafa]",
+                )}
+                style={{ color: index === active ? item.color : undefined }}
+              >
+                {item.name}
+              </button>
             ))}
-            <span aria-hidden className="w-2 flex-none" />
           </div>
-        </div>
-        <div className="mt-14 grid gap-10 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
-          {SMALL_FEATURES.map(({ icon: Icon, title, body, badge }) => (
-            <div key={title}>
-              <Icon className="size-5 text-white" stroke={1.6} />
-              <p className="mt-3 flex items-center gap-2 text-[16px] leading-[22.4px] text-[#fafafa]">
-                {title}
-                {badge ? (
-                  <span className="rounded-full bg-[#ffdd00] px-1.5 text-[10px] font-semibold leading-4 text-black">
-                    {badge}
-                  </span>
-                ) : null}
-              </p>
-              <p className="mt-2 max-w-[180px] text-[13px] leading-[20px] text-white/55">
-                {body}
-              </p>
-            </div>
-          ))}
         </div>
       </Reveal>
     </section>
   );
 }
 
-function FeatureCard({ card }: { card: Card }) {
-  const Icon = card.icon;
+function Bubble({
+  lens,
+  side,
+  tilt,
+  delay,
+  children,
+}: {
+  lens: (typeof LENSES)[number];
+  side: "you" | "work";
+  tilt?: string;
+  delay: number;
+  children: ReactNode;
+}) {
+  const you = side === "you";
   return (
     <div
-      className="landing-card-border relative flex h-[400px] w-[300px] flex-none snap-start flex-col justify-end rounded-3xl p-6 sm:w-80"
-      style={{ background: card.bg }}
+      className={cn("landing-arrive mb-4 flex", you ? "justify-end" : "")}
+      style={{ animationDelay: `${delay}ms` }}
     >
-      <div className="absolute inset-x-0 top-0 h-64 overflow-hidden rounded-t-3xl">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(120% 80% at 50% -10%, ${card.color}2e, transparent 65%)`,
-          }}
-        />
-        <div className="absolute inset-0 grid place-items-center">
-          <ShotCrop
-            shot={card.shot}
-            width={250}
-            aspect={0.62}
-            focus={card.focus}
-            scale={card.scale}
-          />
-        </div>
-        <div
-          className="absolute inset-x-0 bottom-0 h-16"
-          style={{
-            background: `linear-gradient(to bottom, transparent, ${card.bg})`,
-          }}
-        />
+      <div
+        className={cn(
+          "max-w-80 px-6 py-4 text-[15px] leading-snug",
+          you
+            ? "rounded-t-[24px] rounded-bl-[24px] rounded-br-[10px] border border-white/35"
+            : "rounded-t-[24px] rounded-bl-[10px] rounded-br-[24px]",
+          tilt,
+        )}
+        style={
+          you
+            ? { background: lens.color, color: lens.ink }
+            : {
+                background: `color-mix(in srgb, ${lens.color} 20%, transparent)`,
+                color: lens.color,
+              }
+        }
+      >
+        {children}
       </div>
-      <div className="relative mb-2 flex items-center">
-        <span
-          className="mr-2 grid size-6 shrink-0 place-items-center rounded-md"
-          style={{ background: card.color }}
-        >
-          <Icon className="size-4 text-black/80" stroke={2} />
-        </span>
-        <h3
-          className="text-[16px] font-medium leading-[140%] tracking-[0.16px]"
-          style={{ color: card.color }}
-        >
-          {card.title}
-        </h3>
-      </div>
-      <p className="relative text-sm leading-relaxed text-white/50">
-        {card.body}
-        <br />
-        <span className="text-white">{card.emphasis}</span>
-      </p>
     </div>
   );
 }
 
-const SMALL_FEATURES: {
-  icon: Icon;
-  title: string;
-  body: string;
-  badge?: string;
-}[] = [
-  {
-    icon: IconWorld,
-    title: "Domain overview",
-    body: "Traffic, keywords and competitors for any domain.",
-  },
-  {
-    icon: IconLink,
-    title: "Backlinks",
-    body: "Referring domains, anchors, new and lost links.",
-  },
-  {
-    icon: IconClipboardCheck,
-    title: "Site audit",
-    body: "Crawl issues and Lighthouse scores, prioritized.",
-    badge: "New",
-  },
-  {
-    icon: IconFileText,
-    title: "Reports",
-    body: "Client-ready reports you can share in one click.",
-  },
-];
+/** Words drawn as rounded blobs, superwhisper's "Flow" redaction look. */
+function Redacted({ text }: { text: string }) {
+  return (
+    <span className="flex flex-wrap gap-x-1.5 gap-y-2 py-1 opacity-60">
+      <span className="sr-only">{text}</span>
+      {text.split(" ").map((word, index) => (
+        <span
+          key={`${word}-${index}`}
+          aria-hidden
+          className="inline-block h-[9px] rounded-full bg-current"
+          style={{ width: `${Math.max(2, word.length) * 6}px` }}
+        />
+      ))}
+    </span>
+  );
+}

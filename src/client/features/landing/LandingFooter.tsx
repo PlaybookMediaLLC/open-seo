@@ -6,7 +6,7 @@ import { Reveal } from "./LandingPrimitives";
 
 const FAQS = [
   [
-    "Can I try OpenSEO for free?",
+    "Can I try Relay for free?",
     "Yes. Every workspace starts on the Free plan with 1,000 data credits a month. Search Console insights, opportunities and experiments use no credits at all.",
   ],
   [
@@ -19,7 +19,7 @@ const FAQS = [
   ],
   [
     "Can my AI agent use it?",
-    "Yes. OpenSEO exposes an MCP server, so Claude Code, Codex, Cursor and other MCP clients can run research and audits for you.",
+    "Yes. Relay exposes an MCP server, so Claude Code, Codex, Cursor and other MCP clients can run research and audits for you.",
   ],
   [
     "Is my data safe?",
@@ -92,9 +92,9 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   {
     title: "Product",
     links: [
-      ["Features", "#features"],
-      ["Agents", "#agents"],
-      ["Pricing", "#pricing"],
+      ["Features", "/#features"],
+      ["Agents", "/#agents"],
+      ["Pricing", "/#pricing"],
       ["Sign in", "/sign-in"],
     ],
   },
@@ -111,7 +111,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
     title: "Support",
     links: [
       ["Email support", "mailto:team@playbookmedia.io"],
-      ["FAQ", "#faq"],
+      ["FAQ", "/#faq"],
     ],
   },
   {
@@ -131,7 +131,7 @@ export function LandingFooter() {
           <p className="flex items-center gap-2.5">
             <BrandMark className="size-5" />
             <span className="text-[17px] font-medium tracking-[-0.3px] text-[#fafafa]">
-              openseo
+              relay
             </span>
             <span className="text-sm text-[#70757c]">
               © {new Date().getFullYear()}
@@ -175,7 +175,7 @@ export function LandingFooter() {
           </p>
           <StayInTouch />
           <p className="mt-10 text-xs text-[#70757c]">
-            OpenSEO is a product of Playbook Media LLC.
+            Relay is a product of Playbook Media LLC.
           </p>
         </div>
       </div>
@@ -188,8 +188,8 @@ function StayInTouch() {
   const [email, setEmail] = useState("");
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const body = encodeURIComponent(`Please add ${email} to OpenSEO updates.`);
-    window.location.href = `mailto:team@playbookmedia.io?subject=OpenSEO%20updates&body=${body}`;
+    const body = encodeURIComponent(`Please add ${email} to Relay updates.`);
+    window.location.href = `mailto:team@playbookmedia.io?subject=Relay%20updates&body=${body}`;
   }
   return (
     <form onSubmit={submit} className="relative mt-4 w-full max-w-[200px]">
