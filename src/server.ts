@@ -27,7 +27,6 @@ import { sweepDubReferredOrganizations } from "@/server/referrals/dub";
 import { maybeSendSelfHostHeartbeat } from "@/server/lib/self-host-telemetry";
 import { handleGdprStorageErasure } from "@/server/gdpr/storage-erasure";
 import { GDPR_STORAGE_ERASURE_PATH } from "@/shared/gdpr-erasure";
-import { withPublicPageCache } from "@/server/lib/publicPageCache"; // playbook-seam
 
 const startHandler = createStartHandler(defaultStreamHandler);
 
@@ -198,7 +197,7 @@ export { SamChatAgent } from "./server/features/sam/SamChatAgent";
 const MCP_OAUTH_PURGE_CRON = "17 3 * * *";
 
 export default {
-  fetch: withPublicPageCache(fetch), // playbook-seam
+  fetch,
   async scheduled(
     controller: ScheduledController,
     env: Env,

@@ -14,8 +14,8 @@ import type { Plugin } from "vite";
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
  * - src/routes/__root.tsx: public pages render on the server too
  *   (src/client/components/RelayClientOnly.tsx).
- * - src/server.ts: public pages' HTML is served from the edge cache
- *   (src/server/lib/publicPageCache.ts).
+ * - vite.config.ts: the Playbook build prerenders the public pages to static
+ *   HTML (vite-relay-start.ts).
  * - src/routes/__root.tsx: unknown URLs get the landing 404
  *   (src/client/features/landing/LandingNotFound.tsx).
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
@@ -56,11 +56,6 @@ export function relayBrand(): Plugin {
   return {
     name: "playbook-relay-brand",
     enforce: "pre",
-    // A per-build ID: the public-page HTML cache keys on it, so a deploy
-    // never serves HTML that points at the previous build's assets.
-    config: () => ({
-      define: { __RELAY_BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
-    }),
     configResolved(config) {
       root = config.root;
     },
