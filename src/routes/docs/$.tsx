@@ -1,4 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
 import { createClientLoader } from "fumadocs-mdx/runtime/vite";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
@@ -12,16 +13,31 @@ import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { BrandMark } from "@/client/components/BrandMark";
 import docsCss from "@/client/features/docs/docs.css?url";
 import { docsMdxComponents } from "@/client/features/docs/docsMdxComponents";
-import { getDocsPage } from "@/serverFunctions/docs";
+import type { DocsPageData } from "@/server/lib/docsPage";
 import { docs } from "../../../.source/index";
 
 const DESCRIPTION =
   "How to use Relay: Search Console opportunities, research, rank tracking, and connecting your AI agent over MCP.";
 
+// Docs are public. Server functions all require a signed-in user, so SSR
+// reads the docs directly and client navigation uses the public /api/docs.
+const getDocsPage = createIsomorphicFn()
+  .server(async (slugs: string[]) => {
+    const { loadDocsPage } = await import("@/server/lib/docsPage");
+    return loadDocsPage(slugs);
+  })
+  .client(async (slugs: string[]): Promise<DocsPageData | null> => {
+    const response = await fetch(`/api/docs/${slugs.join("/")}`);
+    if (response.status === 404) return null;
+    if (!response.ok)
+      throw new Error(`Docs request failed: ${response.status}`);
+    return response.json();
+  });
+
 export const Route = createFileRoute("/docs/$")({
   loader: async ({ params }) => {
     const slugs = (params._splat ?? "").split("/").filter(Boolean);
-    const page = await getDocsPage({ data: slugs });
+    const page = await getDocsPage(slugs);
     if (!page) throw notFound();
     await clientLoader.preload(page.path);
     return page;
