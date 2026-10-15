@@ -4,8 +4,8 @@ import zoomCss from "./appZoom.css?raw";
 /**
  * Playbook fork: renders the signed-in app at 80% on desktop. The authenticated
  * layouts set it while mounted (at `// playbook-seam` lines), so the landing
- * page and docs stay at 100%. On <html>, so menus, tooltips and dialogs that
- * render in portals scale with the page.
+ * page and docs stay at 100%. The attribute on <html> only scopes the rules in
+ * appZoom.css; the zoom itself sits on the shell root and on popup content.
  */
 export function useAppZoom() {
   useLayoutEffect(() => {

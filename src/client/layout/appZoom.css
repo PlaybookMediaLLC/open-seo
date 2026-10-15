@@ -1,11 +1,15 @@
 /* Playbook fork: the signed-in app renders at 80% on desktop (useAppZoom).
-   Zoom scales viewport units too, so full-height layouts divide by it to
-   keep filling the screen. Phones keep 100% for comfortable tap targets. */
+   Phones keep 100% for comfortable tap targets.
+
+   The zoom sits on each authenticated shell's root, not on <html>: menus
+   and tooltips render in portals outside it, so their positioner measures
+   and places them in plain screen pixels. Zooming the whole document made
+   every popup land at 80% of its intended coordinates. */
 @media (min-width: 768px) {
-  html[data-app-zoom] {
-    zoom: 0.8;
-  }
+  /* The app shell and the auth-page shell both root on h-[100dvh]. Zoom
+     scales the root's own height too, so it divides by the zoom. */
   html[data-app-zoom] .h-\[100dvh\] {
+    zoom: 0.8;
     height: calc(100dvh / 0.8);
   }
   html[data-app-zoom] .h-svh {
@@ -13,5 +17,23 @@
   }
   html[data-app-zoom] .min-h-svh {
     min-height: calc(100svh / 0.8);
+  }
+
+  /* Floating popups (menus, comboboxes, selects, tooltips, popovers) keep an
+     unzoomed positioner and scale only their content, to match the app. */
+  html[data-app-zoom] [data-base-ui-portal] > [data-side] > * {
+    zoom: 0.8;
+  }
+  /* Dialogs center on the viewport, so they can zoom as a whole. */
+  html[data-app-zoom] [data-slot="dialog-content"],
+  html[data-app-zoom] [data-slot="alert-dialog-content"] {
+    zoom: 0.8;
+  }
+  /* A popup sized to its trigger: the trigger width is in screen pixels. */
+  html[data-app-zoom]
+    [data-base-ui-portal]
+    > [data-side]
+    > [class*="w-(--anchor-width)"] {
+    width: calc(var(--anchor-width) / 0.8);
   }
 }
