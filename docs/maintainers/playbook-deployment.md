@@ -204,7 +204,16 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
 - **Database:** to query the database, run `wrangler d1 execute open-seo-db-playbook --remote --command "..."` with `CLOUDFLARE_ACCOUNT_ID` set. Migrations are applied only by the deploy; do not hand-edit `d1_migrations`.
 - **Rollback:** redeploy an earlier commit with the workflow's manual dispatch. D1 migrations only move forward, so a code rollback across a schema change needs care. Use D1 Time Travel (`wrangler d1 time-travel restore`) to recover data.
 - **Teardown:** run `pnpm alchemy destroy deploy/alchemy/alchemy.run.ts --env-file .env.playbook --stage playbook`. This deletes the D1 database and all other data for the stage.
-- **Upstream sync:** merge `every-app/open-seo` `main` into this fork's `main`. Upstream's `pr-preview.yml` and `docker-image.yml` are gated to other repositories and stay inactive here.
+- **Upstream sync (weekly):**
+  1. Run `git fetch origin` and merge `origin/main` (every-app/open-seo) into this fork's `main`.
+  2. Run the full check: `pnpm types:check && pnpm lint && pnpm exec knip && pnpm exec prettier --check . && pnpm test:ci`.
+  3. Compare `grep -rn playbook-seam` with the seam list in `vite-plugin-relay-brand.ts`. Conflicts are most likely in `Sidebar.tsx`, `AppShell.tsx`, `ProjectSwitcher.tsx` and `src/routes/__root.tsx`.
+  4. Upstream's `pr-preview.yml` and `docker-image.yml` are gated to other repositories and stay inactive here.
+- **Smoke test and uptime:** each deploy ends with a smoke test of the public site (server-rendered pages, docs search, sitemap, `robots.txt`, favicon). `uptime-playbook.yml` checks `/api/health`, `/` and `/docs` every 15 minutes, and a failed run emails the repository owner.
+- **Edge rules outside the code:** two Response Header Transform Rules on the `playbookmedia.io` zone (Rules, Transform Rules) apply to `relay.playbookmedia.io` only. The Alchemy deploy does not upload `_headers`, so these rules set the headers instead.
+  - "Relay hashed assets: browser cache one year" sets `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` 200 responses.
+  - "Relay security headers" sets `Strict-Transport-Security` (no `includeSubDomains`), `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
+    Zone Cache Rules have no effect on Workers static assets; do not use them for this.
 
 ## Dependency inventory
 

@@ -1,0 +1,28 @@
+name: Uptime (Playbook Media)
+
+# Every 15 minutes, confirm Relay answers. A red run emails the repository
+# owner, so an outage between deploys does not go unnoticed.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check that Relay is up
+        run: |
+          fail=0
+          for path in /api/health / /docs; do
+            code=$(curl -sS -o /dev/null -m 15 --retry 2 --retry-delay 10 -w '%{http_code}' "https://relay.playbookmedia.io$path") || code=000
+            echo "$path -> $code"
+            [ "$code" = 200 ] || { echo "::error::$path answered $code"; fail=1; }
+          done
+          exit $fail
