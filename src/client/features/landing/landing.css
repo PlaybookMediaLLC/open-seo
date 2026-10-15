@@ -1,49 +1,165 @@
-/* Landing page: a dark, cinematic marketing page (modelled on superwhisper.com).
-   Scoped under .landing so none of it leaks into the app. */
+/* Landing page, modelled on superwhisper.com and measured from it: Inter,
+   a 1024px column on black, 48/51 headlines, 9px CTAs, 24px cards, 20px
+   pricing cards. Scoped under .landing so none of it leaks into the app. */
 
 @import "@fontsource-variable/inter";
 
 .landing {
-  --landing-font:
-    "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family:
+    "Inter Variable",
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
-  font-family: var(--landing-font);
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
   background: #000;
   color: #fafafa;
   color-scheme: dark;
-  /* Soft corners here; the app's Eigenn theme sets --radius to 0. */
+  /* The app's Eigenn theme sets --radius to 0. */
   --radius: 0.5rem;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* The page owns its scroll container: the app sets overflow hidden on body. */
 .landing-scroll {
   height: 100dvh;
-  overflow-y: auto;
   overflow-x: hidden;
+  overflow-y: auto;
   scroll-behavior: smooth;
 }
 
-/* Twilight sky behind the hero, fading to black. */
-.landing-sky {
+/* ---- Hero sky ---------------------------------------------------------- */
+
+/* superwhisper's dusk layer, verbatim. */
+.landing-sky-dusk {
   background:
-    radial-gradient(
-      120% 70% at 50% 110%,
-      #c79ab8 0%,
-      rgba(199 154 184 / 0) 55%
+    linear-gradient(
+      90deg,
+      rgb(25 153 232 / 0.15) 2.75%,
+      rgb(164 91 242 / 0.15) 99.26%
     ),
     linear-gradient(
-      180deg,
-      #0b1a3a 0%,
-      #16305f 26%,
-      #2b5288 48%,
-      #5a6d9c 70%,
-      #8f86ad 86%,
-      #b897b5 100%
+      rgb(0 0 0 / 0.5) 0.85%,
+      rgb(0 5 46 / 0.5) 25.81%,
+      rgb(41 40 94 / 0.5) 58.36%,
+      rgb(84 60 123 / 0.5) 79.52%,
+      rgb(133 90 146 / 0.5) 95.8%,
+      rgb(195 134 171 / 0.5) 107.19%
+    ),
+    linear-gradient(
+      #000 0.85%,
+      #112d72 33.4%,
+      #4b52aa 49.68%,
+      #a887dc 70.84%,
+      #e6c4e7 95.8%,
+      #fcdbef 107.19%
     );
 }
+/* Their night layer; it cross-fades over dusk so the sky slowly breathes. */
+.landing-sky-night {
+  background:
+    linear-gradient(
+      90deg,
+      rgb(25 153 232 / 0.1) 2.75%,
+      rgb(164 91 242 / 0.1) 99.26%
+    ),
+    radial-gradient(
+      609.81% 213.79% at 50% -37.73%,
+      rgb(0 0 0 / 0.5) 0,
+      rgb(2 32 68 / 0.5) 21%,
+      rgb(31 93 135 / 0.5) 45.71%,
+      rgb(93 109 142 / 0.5) 61.83%,
+      rgb(159 138 145 / 0.5) 73.67%,
+      rgb(205 155 142 / 0.5) 80.39%,
+      rgb(255 162 97 / 0.5) 88%,
+      rgb(255 126 34 / 0.5) 92.69%,
+      rgb(205 64 21 / 0.5) 97.68%
+    ),
+    linear-gradient(
+      #000 -11.51%,
+      #022044 18.08%,
+      #1f5d87 52.9%,
+      #5d6d8e 75.62%,
+      #9f8a91 92.29%,
+      #cd9b8d 101.77%,
+      #ffa261 112.49%
+    );
+  animation: landing-sky-cycle 16s ease-in-out infinite;
+}
+@keyframes landing-sky-cycle {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
 
-.landing-sky-stars {
+/* Aurora: blurred color fields drifting over the sky. */
+.landing-aurora {
+  position: absolute;
+  inset: -20%;
+  filter: blur(80px) saturate(130%);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+.landing-aurora > span {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+.landing-aurora-a {
+  width: 55%;
+  height: 45%;
+  left: 5%;
+  top: 15%;
+  background: radial-gradient(circle, #3a6dff 0%, transparent 65%);
+  animation: landing-drift-a 18s ease-in-out infinite alternate;
+}
+.landing-aurora-b {
+  width: 50%;
+  height: 50%;
+  right: 0;
+  top: 5%;
+  background: radial-gradient(circle, #9b5cff 0%, transparent 65%);
+  animation: landing-drift-b 22s ease-in-out infinite alternate;
+}
+.landing-aurora-c {
+  width: 60%;
+  height: 40%;
+  left: 20%;
+  bottom: 15%;
+  background: radial-gradient(circle, #ff8fc8 0%, transparent 62%);
+  animation: landing-drift-c 26s ease-in-out infinite alternate;
+}
+@keyframes landing-drift-a {
+  50% {
+    transform: translate(18%, 12%) scale(1.25) rotate(20deg);
+  }
+  100% {
+    transform: translate(-6%, 22%) scale(0.9) rotate(-10deg);
+  }
+}
+@keyframes landing-drift-b {
+  50% {
+    transform: translate(-22%, 18%) scale(0.85);
+  }
+  100% {
+    transform: translate(-8%, -6%) scale(1.3);
+  }
+}
+@keyframes landing-drift-c {
+  50% {
+    transform: translate(-15%, -20%) scale(1.3);
+  }
+  100% {
+    transform: translate(14%, -8%) scale(0.95);
+  }
+}
+
+.landing-stars {
   background-image:
     radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.7), transparent),
     radial-gradient(1px 1px at 28% 8%, rgb(255 255 255 / 0.5), transparent),
@@ -57,163 +173,28 @@
       transparent
     ),
     radial-gradient(1.5px 1.5px at 84% 40%, rgb(255 255 255 / 0.3), transparent);
-}
-
-/* ---- Animated hero sky ------------------------------------------------- */
-
-/* Aurora: four huge blurred color fields drifting and morphing. */
-.landing-aurora {
-  position: absolute;
-  inset: -20%;
-  filter: blur(70px) saturate(140%);
-  mix-blend-mode: screen;
-  opacity: 0.85;
-}
-.landing-aurora > span {
-  position: absolute;
-  border-radius: 50%;
-  will-change: transform;
-}
-.landing-aurora-a {
-  width: 55%;
-  height: 45%;
-  left: 5%;
-  top: 10%;
-  background: radial-gradient(circle, #3a6dff 0%, transparent 65%);
-  animation: landing-drift-a 18s ease-in-out infinite alternate;
-}
-.landing-aurora-b {
-  width: 50%;
-  height: 50%;
-  right: 0;
-  top: 0;
-  background: radial-gradient(circle, #9b5cff 0%, transparent 65%);
-  animation: landing-drift-b 22s ease-in-out infinite alternate;
-}
-.landing-aurora-c {
-  width: 60%;
-  height: 40%;
-  left: 20%;
-  bottom: 12%;
-  background: radial-gradient(circle, #ff6fb5 0%, transparent 62%);
-  animation: landing-drift-c 26s ease-in-out infinite alternate;
-}
-.landing-aurora-d {
-  width: 40%;
-  height: 35%;
-  left: 40%;
-  top: 30%;
-  background: radial-gradient(circle, #1cecbb 0%, transparent 60%);
-  opacity: 0.55;
-  animation: landing-drift-d 30s ease-in-out infinite alternate;
-}
-@keyframes landing-drift-a {
-  0% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-  }
-  50% {
-    transform: translate(18%, 12%) scale(1.25) rotate(20deg);
-  }
-  100% {
-    transform: translate(-6%, 22%) scale(0.9) rotate(-10deg);
-  }
-}
-@keyframes landing-drift-b {
-  0% {
-    transform: translate(0, 0) scale(1.1);
-  }
-  50% {
-    transform: translate(-22%, 18%) scale(0.85);
-  }
-  100% {
-    transform: translate(-8%, -6%) scale(1.3);
-  }
-}
-@keyframes landing-drift-c {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-15%, -20%) scale(1.3);
-  }
-  100% {
-    transform: translate(14%, -8%) scale(0.95);
-  }
-}
-@keyframes landing-drift-d {
-  0% {
-    transform: translate(0, 0) scale(0.8);
-    opacity: 0.25;
-  }
-  50% {
-    transform: translate(-25%, 15%) scale(1.4);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(20%, -10%) scale(1);
-    opacity: 0.35;
-  }
-}
-
-/* Two star layers twinkling out of phase. */
-.landing-twinkle {
   animation: landing-twinkle 4s ease-in-out infinite;
 }
-.landing-twinkle-alt {
+.landing-stars-alt {
   transform: translate(7%, 11%) scale(1.15);
   animation-duration: 5.5s;
   animation-delay: -2s;
 }
 @keyframes landing-twinkle {
-  0%,
-  100% {
-    opacity: 1;
-  }
   50% {
     opacity: 0.25;
   }
 }
 
-/* Shooting stars streaking down-left at staggered intervals. */
 .landing-shooting {
   position: absolute;
-  top: 0;
   width: 140px;
   height: 1.5px;
   border-radius: 999px;
   background: linear-gradient(90deg, #fff, rgb(255 255 255 / 0));
   filter: drop-shadow(0 0 6px #fff);
   opacity: 0;
-  transform: rotate(-35deg);
   animation: landing-shoot 7s linear infinite;
-}
-.landing-shooting-0 {
-  left: 78%;
-  top: 6%;
-  animation-delay: 0.4s;
-}
-.landing-shooting-1 {
-  left: 52%;
-  top: 2%;
-  animation-delay: 2.1s;
-  animation-duration: 9s;
-}
-.landing-shooting-2 {
-  left: 92%;
-  top: 22%;
-  animation-delay: 3.6s;
-}
-.landing-shooting-3 {
-  left: 34%;
-  top: 10%;
-  animation-delay: 5.2s;
-  animation-duration: 8s;
-}
-.landing-shooting-4 {
-  left: 66%;
-  top: 30%;
-  animation-delay: 6.5s;
-  animation-duration: 10s;
 }
 @keyframes landing-shoot {
   0% {
@@ -223,58 +204,38 @@
   2% {
     opacity: 1;
   }
-  10% {
-    opacity: 0;
-    transform: rotate(-35deg) translateX(-520px);
-  }
+  10%,
   100% {
     opacity: 0;
     transform: rotate(-35deg) translateX(-520px);
   }
 }
 
-/* A breathing glow on the horizon. */
-.landing-horizon {
+/* Rim-lit silhouettes framing the hero, like superwhisper's side art. */
+.landing-silhouette {
   position: absolute;
-  left: 50%;
-  bottom: -30%;
-  width: 140%;
-  height: 70%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    rgb(255 182 220 / 0.55) 0%,
-    rgb(155 120 255 / 0.25) 35%,
-    transparent 70%
-  );
-  animation: landing-breathe 8s ease-in-out infinite;
+  pointer-events: none;
+  animation: landing-float 12s ease-in-out infinite;
 }
-@keyframes landing-breathe {
-  0%,
-  100% {
-    opacity: 0.6;
-    transform: translateX(-50%) scale(1);
-  }
+@keyframes landing-float {
   50% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.08);
+    transform: translateY(-10px);
   }
 }
 
-/* Pointer-following spotlight (position set from JS via --spot-x/y). */
 .landing-spotlight {
   position: absolute;
   inset: 0;
   background: radial-gradient(
     600px circle at var(--spot-x, 50%) var(--spot-y, 40%),
-    rgb(255 255 255 / 0.09),
+    rgb(255 255 255 / 0.07),
     transparent 60%
   );
-  transition: background 0.15s ease-out;
 }
 
-/* Floating glass pill nav. */
+/* ---- Chrome ------------------------------------------------------------ */
+
+/* Floating glass pill nav (superwhisper's .floating-nav). */
 .landing-nav {
   position: fixed;
   top: 24px;
@@ -284,6 +245,7 @@
   display: flex;
   align-items: center;
   gap: 18px;
+  overflow: hidden;
   padding: 4px 4px 4px 15px;
   border-radius: 1000px;
   background:
@@ -292,8 +254,7 @@
   backdrop-filter: blur(5px);
   box-shadow: 0 0 0 1px rgb(0 0 0 / 0.8);
 }
-.landing-nav::before,
-.landing-hairline::before {
+.landing-nav::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -313,8 +274,10 @@
 }
 .landing-nav-link {
   font-size: 14px;
+  line-height: 1.5;
   letter-spacing: -0.14px;
   color: rgb(255 255 255 / 0.35);
+  text-shadow: 0 0.15px 0.1px rgb(0 0 0 / 0.5);
   transition: color 0.2s ease-out;
 }
 .landing-nav-link:hover {
@@ -323,8 +286,24 @@
 .landing-nav-link[data-active] {
   color: rgb(255 255 255 / 0.8);
 }
+.landing-nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 1000px;
+  background: #fff;
+  color: #000;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.14px;
+  transition: background 0.2s ease-out;
+}
+.landing-nav-cta:hover {
+  background: rgb(255 255 255 / 0.9);
+}
 
-/* The two hero CTAs: a light pressed-paper button and a dark glass one. */
+/* The hero CTAs (.download-cta-mac / .download-cta-windows). */
 .landing-cta-light,
 .landing-cta-dark {
   position: relative;
@@ -332,16 +311,15 @@
   height: 42px;
   align-items: center;
   gap: 8px;
-  border-radius: 10px;
-  padding: 0 16px;
-  font-size: 14px;
+  border-radius: 9px;
+  padding: 0 12px;
+  font-size: 15px;
   font-weight: 500;
-  letter-spacing: -0.14px;
   border: 1px solid transparent;
   transition: all 0.2s ease-in-out;
 }
 .landing-cta-light {
-  color: #000;
+  color: #1a1a1a;
   background: linear-gradient(180deg, #fff, #f0f0f0);
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
 }
@@ -353,20 +331,73 @@
   color: #fff;
   background: linear-gradient(180deg, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.95));
   backdrop-filter: blur(8px);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.08);
 }
 .landing-cta-dark:hover {
   background: linear-gradient(180deg, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.85));
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.12),
-    0 4px 12px rgb(0 0 0 / 0.15);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+}
+.landing-cta-light::before,
+.landing-cta-dark::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgb(0 0 0 / 0.12),
+    rgb(0 0 0 / 0.08) 50%,
+    rgb(0 0 0 / 0.04)
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.landing-cta-dark::before {
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.1),
+    rgb(255 255 255 / 0.08) 50%,
+    rgb(255 255 255 / 0.05)
+  );
 }
 
-/* Logo marquee. */
+/* ---- Sections ---------------------------------------------------------- */
+
+/* Gradient hairline on the feature cards (.whats-inside-card-border). */
+.landing-card-border::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 1.5rem;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.4),
+    rgb(255 255 255 / 0.1) 25%,
+    rgb(255 255 255 / 0.2) 50%,
+    rgb(255 255 255 / 0.1) 75%,
+    rgb(255 255 255 / 0.5)
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.35;
+}
+
+.landing-no-scrollbar {
+  scrollbar-width: none;
+}
+.landing-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes landing-marquee {
-  from {
-    transform: translateX(0);
-  }
   to {
     transform: translateX(-50%);
   }
@@ -385,21 +416,17 @@
   width: max-content;
   animation: landing-marquee 40s linear infinite;
 }
-.landing-marquee-track[data-reverse] {
-  animation-direction: reverse;
-}
 
-/* Dotted grid behind sections. */
 .landing-dots {
   background-image: radial-gradient(
-    rgb(255 255 255 / 0.09) 1px,
+    rgb(255 255 255 / 0.12) 1px,
     transparent 1px
   );
-  background-size: 18px 18px;
-  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
 }
 
-/* Testimonials band: night sky to dusk. */
+/* Testimonials band (.bg-testimonial-gradient). */
 .landing-dusk {
   background: linear-gradient(
     180deg,
@@ -412,7 +439,24 @@
   );
 }
 
-/* Reveal sections as they scroll in. */
+/* Featured pricing card (.hover-gradient). */
+.landing-price-featured {
+  background-image: linear-gradient(
+    #050116 0,
+    #112d72 30%,
+    #4b68aa 45%,
+    #87a7dc 64%,
+    #9cacd0 88%,
+    #fcdbef 98%
+  );
+  background-size: 200% 200%;
+  background-position: 0 0;
+  transition: background-position 0.8s;
+}
+.landing-price-featured:hover {
+  background-position: 0 50%;
+}
+
 .landing-reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -435,19 +479,30 @@
   }
 }
 .landing-bar {
-  transform-origin: bottom;
-  animation: landing-bar 1.6s ease-in-out infinite;
+  transform-origin: center;
+  animation: landing-bar 1.2s ease-in-out infinite;
+}
+
+@keyframes landing-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.landing-caret {
+  animation: landing-blink 1s steps(1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .landing-scroll {
     scroll-behavior: auto;
   }
+  .landing-sky-night,
+  .landing-aurora > span,
+  .landing-stars,
+  .landing-silhouette,
   .landing-marquee-track,
   .landing-bar,
-  .landing-aurora > span,
-  .landing-twinkle,
-  .landing-horizon {
+  .landing-caret {
     animation: none;
   }
   .landing-shooting {

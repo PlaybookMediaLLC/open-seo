@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "cn";
 
 /** Fades and lifts its children in the first time they scroll into view. */
@@ -39,36 +39,46 @@ export function Reveal({
   );
 }
 
-/** The small colored kicker above a section title. */
+/** The small colored kicker above a section title (14/500, +0.14px). */
 export function Eyebrow({
   children,
+  color,
   className,
 }: {
   children: ReactNode;
+  color: string;
   className?: string;
 }) {
   return (
-    <p className={cn("text-sm font-medium text-[#79a8ff]", className)}>
+    <p
+      className={cn(
+        "text-[14px] font-medium leading-[21px] tracking-[0.14px]",
+        className,
+      )}
+      style={{ color }}
+    >
       {children}
     </p>
   );
 }
 
-export function SectionTitle({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <h2
-      className={cn(
-        "text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[36px]",
-        className,
-      )}
-    >
-      {children}
-    </h2>
-  );
+/** Cycles through options on a timer until the user picks one. */
+export function useAutoCycle(length: number, ms: number) {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused) return;
+    const timer = window.setInterval(
+      () => setIndex((current) => (current + 1) % length),
+      ms,
+    );
+    return () => window.clearInterval(timer);
+  }, [length, ms, paused]);
+  return [
+    index,
+    (next: number) => {
+      setPaused(true);
+      setIndex(next);
+    },
+  ] as const;
 }
