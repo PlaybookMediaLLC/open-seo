@@ -9,18 +9,25 @@ import { cn } from "cn";
 export function AppWindow({ className }: { className?: string }) {
   const video = useRef<HTMLVideoElement>(null);
 
-  // React renders `muted` as a property, not into the server HTML, so the
-  // browser blocks the autoplay; start it once mounted. Motion-sensitive
-  // visitors get the still poster instead.
+  // The video (1.4 MB) waits for the first scroll, so it never competes
+  // with the first paint; the poster shows until then. Only a visible copy
+  // loads: the hero's desktop frame is hidden on phones. React renders
+  // `muted` as a property, so set it before playing. Motion-sensitive
+  // visitors keep the still poster.
   useEffect(() => {
     const node = video.current;
-    if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      node.pause();
-      return;
-    }
-    node.muted = true;
-    node.play().catch(() => {});
+    const scroller = document.querySelector(".landing-scroll");
+    if (!node || !scroller) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const start = () => {
+      if (node.offsetParent === null) return;
+      scroller.removeEventListener("scroll", start);
+      node.muted = true;
+      node.preload = "auto";
+      node.play().catch(() => {});
+    };
+    scroller.addEventListener("scroll", start, { passive: true });
+    return () => scroller.removeEventListener("scroll", start);
   }, []);
 
   return (
@@ -42,11 +49,10 @@ export function AppWindow({ className }: { className?: string }) {
         ref={video}
         className="block aspect-[1.6] w-full bg-black"
         poster="/media/app-demo.webp"
-        autoPlay
         muted
         loop
         playsInline
-        preload="metadata"
+        preload="none"
         aria-label="A walkthrough of Relay: ranked opportunities, rank tracking for a domain, and saved keywords."
       >
         <source src="/media/app-demo.webm" type="video/webm; codecs=vp9" />

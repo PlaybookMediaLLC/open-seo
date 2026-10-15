@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingPage } from "@/client/features/landing/LandingPage";
 import landingCss from "@/client/features/landing/landing.css?url";
+import { landingFontPreload } from "@/client/features/landing/landingFont";
 import { publicPageHead, RELAY_ORIGIN } from "@/lib/relay-seo";
 
 const TITLE = "Relay · Rank higher on Google. Your agent ships the SEO fixes.";
@@ -34,7 +35,11 @@ export const Route = createFileRoute("/")({
     });
     return {
       meta: [...seo.meta, { name: "theme-color", content: "#000000" }],
-      links: [...seo.links, { rel: "stylesheet", href: landingCss }],
+      links: [
+        ...seo.links,
+        landingFontPreload,
+        { rel: "stylesheet", href: landingCss },
+      ],
       scripts: [
         {
           type: "application/ld+json",

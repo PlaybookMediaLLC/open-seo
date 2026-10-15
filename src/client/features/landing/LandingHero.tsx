@@ -165,7 +165,7 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
             <div
               ref={desk}
               aria-hidden
-              className="landing-desk pointer-events-none absolute opacity-0"
+              className="landing-desk pointer-events-none absolute hidden opacity-0 min-[800px]:block"
             >
               <MenuBar />
               <div className="absolute inset-0 flex items-center justify-center pb-16 pt-[34px]">
