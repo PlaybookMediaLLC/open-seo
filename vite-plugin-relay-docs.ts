@@ -8,7 +8,7 @@ import type { Plugin } from "vite";
  *
  * Mounted from vite.config.ts at a `// playbook-seam` line.
  */
-export async function relayDocs(): Promise<Plugin> {
+export async function relayDocs(): Promise<Plugin[]> {
   const plugin = await mdx(await import("./source.config"));
   const transform = plugin.transform;
   if (typeof transform === "function") {
@@ -17,5 +17,21 @@ export async function relayDocs(): Promise<Plugin> {
       return transform.call(this, code, id, options);
     };
   }
-  return plugin;
+  return [
+    plugin,
+    {
+      name: "playbook-relay-docs-deps",
+      // The plugin above keeps Fumadocs out of dev pre-bundling, so the search
+      // dialog's markdown stack loads raw and hits CommonJS (debug, style-to-js).
+      // Pre-bundle that stack; production builds handle CommonJS already.
+      config: () => ({
+        optimizeDeps: {
+          include: [
+            "fumadocs-core > remark",
+            "fumadocs-core > hast-util-to-jsx-runtime",
+          ],
+        },
+      }),
+    },
+  ];
 }

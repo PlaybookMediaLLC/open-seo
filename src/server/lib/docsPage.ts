@@ -1,3 +1,4 @@
+import { createFromSource } from "fumadocs-core/search/server";
 import { docsSource } from "@/lib/docs-source";
 
 /**
@@ -20,3 +21,6 @@ export async function loadDocsPage(slugs: string[]) {
 export type DocsPageData = NonNullable<
   Awaited<ReturnType<typeof loadDocsPage>>
 >;
+
+/** Full-text search over the docs, served publicly at /api/search. */
+export const docsSearch = createFromSource(docsSource);
