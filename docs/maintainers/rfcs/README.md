@@ -17,6 +17,8 @@ The audit behind them is in `docs/maintainers/organic-growth-audit.md` and `docs
 | F. Portfolio operations                                              | Deferred by the brief                        | [RFC-0007](0007-portfolio-operations.md)       |
 | 9. Automation and scheduling                                         | Missing                                      | [RFC-0008](0008-growth-automation.md)          |
 | 10. Costs, limits and audit log                                      | Partial                                      | [RFC-0009](0009-spend-limits-and-audit-log.md) |
+| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                      | [RFC-0010](0010-seo-checks-in-ci.md)           |
+| Controlled page-group split tests (beyond the brief)                 | Missing                                      | [RFC-0011](0011-page-group-split-tests.md)     |
 
 ## Order of work
 
@@ -31,10 +33,12 @@ Each step depends on the steps before it.
 7. **RFC-0005, phase 1b.** Add the title change, deployment signals, repository checks and revert proposals.
 8. **RFC-0009.** Add spending limits and the audit log. Automation must not run before this.
 9. **RFC-0008.** Add scheduled jobs on Trigger.dev.
-10. **RFC-0006.** Add GA4 outcomes and scheduled measurement.
-11. **RFC-0002, phases 2 and 3.** Add the remaining detectors.
-12. **RFC-0005, phase 2.** Add the GitHub App and the remaining change types.
-13. **RFC-0007.** Start only when its entry criteria are met.
+10. **RFC-0010, phase 1.** Add SEO checks on pull requests. Install them on Relay and the monorepo first.
+11. **RFC-0006.** Add GA4 outcomes and scheduled measurement.
+12. **RFC-0011, phase 1.** Add page-group split tests, starting with the backtests on real data.
+13. **RFC-0002, phases 2 and 3.** Add the remaining detectors.
+14. **RFC-0005, phase 2.** Add the GitHub App and the remaining change types. Then RFC-0010 phase 2 (App mode).
+15. **RFC-0007.** Start only when its entry criteria are met.
 
 ## Real-site test sites
 
