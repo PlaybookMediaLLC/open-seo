@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AppBanner } from "@/client/layout/AppBanner";
+import { DismissibleBanner } from "@/client/layout/DismissibleBanner"; // playbook-seam
 import { BASE_PLAN_OFFER } from "@/client/features/billing/plan-offers";
 import { useCreditBalance } from "@/client/features/billing/useCreditBalance";
 import { useCanManageBilling } from "@/client/features/team/organizationQueries";
@@ -74,7 +75,9 @@ export function FreePlanBanner() {
 
   if (isFreePlan) {
     return (
-      <AppBanner variant="info">
+      <DismissibleBanner
+        storageKey="relay-free-plan-banner" /* playbook-seam */
+      >
         We hope you&rsquo;re enjoying OpenSEO!{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
@@ -91,7 +94,7 @@ export function FreePlanBanner() {
           reach out with questions
         </Link>
         .
-      </AppBanner>
+      </DismissibleBanner>
     );
   }
 
