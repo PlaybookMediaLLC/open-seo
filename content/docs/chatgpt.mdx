@@ -1,0 +1,65 @@
+---
+title: "Use Relay with ChatGPT"
+description: "Connect Relay on chatgpt.com or in the ChatGPT desktop app, and check the connection."
+---
+
+**This connection works on ChatGPT Free and paid plans.** On Business, Enterprise, and Edu, workspace settings can limit custom connections.
+
+Connect Relay before you ask ChatGPT for SEO research. ChatGPT cannot add the connection by itself. If you paste the setup prompt into a chat, it gives you these steps.
+
+## ChatGPT on the web
+
+1. Sign in to [chatgpt.com](https://chatgpt.com).
+2. If you see it, open **Settings → Security and login** and turn on **Developer mode**.
+3. Open **Plugins**, select **+**, then **Create MCP App**. In older versions, look for **Settings → Apps → Advanced settings → Developer mode**, then **Create**.
+4. Enter these details:
+
+   | Field          | Value                                |
+   | -------------- | ------------------------------------ |
+   | Name           | `Relay`                              |
+   | Server URL     | `https://relay.playbookmedia.io/mcp` |
+   | Authentication | `OAuth`                              |
+
+   Type the full address, including `https://`.
+
+5. Create the connection, sign in to Relay in the window that opens, and approve. If the new app needs installing, open it under **Personal** and select **Install**.
+6. Start a **new chat**, open the **+** menu, and select **Relay**.
+7. Send the connection check below.
+
+You do not need an API key for ChatGPT; sign-in handles it. A custom connection gives ChatGPT Relay's tools. It does not install skill files, but you can still ask for audits or keyword research in plain language.
+
+## ChatGPT desktop and Codex
+
+To use Relay in **Codex** inside the desktop app, start a new Codex chat and paste the [setup prompt](/docs/agent-setup). Or follow the [Codex guide](/docs/codex-plugin). Codex and ChatGPT on the web use separate connections.
+
+## Check the connection
+
+Send this in a new chat with Relay selected:
+
+```text
+Use Relay to check my connection and list my projects. Do not run SEO research or create anything.
+```
+
+ChatGPT should call Relay and list your projects. An empty list still means it works. These reads are free.
+
+Then try:
+
+```text
+Use Relay to help me choose one SEO task for my website. Ask about my goal before starting paid research.
+```
+
+## Troubleshooting
+
+| What you see                                        | What to do                                                                                                                             |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| No Developer mode or Create MCP App option          | Check **Settings → Security and login**. On a workspace plan, ask your admin whether custom connections are allowed.                   |
+| "Error fetching OAuth configuration: Unsafe URL"    | Enter `https://relay.playbookmedia.io/mcp` in full, with no spaces.                                                                    |
+| ChatGPT asks for a client ID or secret              | Keep OAuth selected and wait for discovery. If asked, choose Dynamic Client Registration. You do not need your own client credentials. |
+| The sign-in window never appears                    | Allow pop-ups for chatgpt.com, then retry authentication from the connection's details.                                                |
+| ChatGPT gives general advice instead of using Relay | Select Relay in the **+** menu and resend the connection check.                                                                        |
+
+Still stuck? Email [team@playbookmedia.io](mailto:team@playbookmedia.io) with your plan, web or desktop, the step that failed, and the error. Never include passwords, API keys, or sign-in codes.
+
+## Update Relay [#update-openseo]
+
+For a custom connection, open its details under **Plugins**, select **Refresh** to reload the tools, and start a new chat. If sign-in has expired, sign in again.

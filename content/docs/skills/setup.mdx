@@ -1,0 +1,50 @@
+---
+title: "Install Agent Skills"
+description: "Add Relay's SEO skill files to your AI agent after you connect Relay MCP."
+---
+
+Skills are separate from the MCP connection. MCP gives your agent Relay's data; each skill is a `SKILL.md` file that tells it how to run one SEO workflow.
+
+First, [connect Relay MCP](/docs/mcp). Then add the skills you want.
+
+## Install with the skills CLI
+
+Choose skills and agents interactively:
+
+```bash
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills
+```
+
+Install every skill:
+
+```bash
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills --skill '*'
+```
+
+Install every skill for one agent only:
+
+```bash
+# Claude Code
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills --skill '*' --agent claude-code
+
+# Codex
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills --skill '*' --agent codex
+```
+
+## Copy the files by hand
+
+```bash
+git clone https://github.com/PlaybookMediaLLC/open-seo.git
+```
+
+Copy the folders you want from `plugins/openseo/skills/` into your agent's skills folder, for example `~/.claude/skills/` for Claude Code. Copy whole folders: some skills include supporting files.
+
+## ChatGPT
+
+A custom ChatGPT connection gives ChatGPT Relay's tools but not skill files. You can still ask for any workflow in plain language. See the [ChatGPT guide](/docs/chatgpt).
+
+## Check that it worked
+
+Restart your agent or start a new session, then ask it to list the Relay skills it can see. Start with [SEO Coach](/docs/skills/seo-coach) or [SEO Project Setup](/docs/skills/seo-project-setup).
+
+To update installed skills later, see [Update your skills](/docs/agent-setup#update-your-skills).

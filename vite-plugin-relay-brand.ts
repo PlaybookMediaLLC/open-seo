@@ -9,10 +9,14 @@ import type { Plugin } from "vite";
  * Unit tests run without app plugins, so they keep upstream's strings.
  *
  * Fork seams that keep the rename complete (audit: `grep -rn playbook-seam`):
- * - vite.config.ts: mounts this plugin.
+ * - vite.config.ts: mounts this plugin and the docs plugin.
+ * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
  *   brand, because static files skip the module pipeline.
+ * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.
  */
+const RELAY = "https://relay.playbookmedia.io";
+
 const REPLACEMENTS: [RegExp, string][] = [
   // Whole word only, so identifiers like isOpenSEOHost stay intact. The `\n`
   // escape case covers `?raw` markdown, which arrives as a JSON string.
@@ -21,21 +25,43 @@ const REPLACEMENTS: [RegExp, string][] = [
   [/support@openseo\.so/g, "team@playbookmedia.io"],
   // Upstream's hosted app is the fallback origin (SSR, the AI assistant's MCP
   // URL); ours must point users at this deployment, not at app.openseo.so.
-  [/https:\/\/app\.openseo\.so/g, "https://relay.playbookmedia.io"],
+  [/https:\/\/app\.openseo\.so/g, RELAY],
+  // Help links go to Relay's own docs (content/docs, served at /docs).
   [
-    /https:\/\/openseo\.so\/pricing/g,
-    "https://relay.playbookmedia.io/#pricing",
+    /https:\/\/openseo\.so\/blogs\/google-search-console-setup/g,
+    `${RELAY}/docs/google-search-console`,
   ],
+  [/https:\/\/openseo\.so\/docs/g, `${RELAY}/docs`],
+  [/https:\/\/openseo\.so\/blog\b/g, `${RELAY}/docs`],
+  // Pricing is a section of the landing page; keep any query string.
+  [/https:\/\/openseo\.so\/pricing(\?[^"'`\s)\]#]*)?/g, `${RELAY}/$1#pricing`],
+  [/https:\/\/(?:www\.)?openseo\.so/g, RELAY],
+  // Source links (skills, self-hosting notes) point at this fork.
+  [/github\.com\/every-app\/open-seo/g, "github.com/PlaybookMediaLLC/open-seo"],
 ];
 
-const APP_MODULE = /\/src\/[^?]*\.(?:[cm]?[jt]sx?|md)(?:\?|$)/;
+const BRANDED_FILE = /\.(?:[cm]?[jt]sx?|mdx?)$/;
 
 export function relayBrand(): Plugin {
+  let root = process.cwd();
   return {
     name: "playbook-relay-brand",
     enforce: "pre",
+    configResolved(config) {
+      root = config.root;
+    },
     transform(code, id) {
-      if (!APP_MODULE.test(id) || id.includes("/node_modules/")) return null;
+      // Any project file, not just src/: the agent setup prompt is imported
+      // from .agents/. Matching on a "/src/" path segment only worked on
+      // machines whose checkout path happened to contain one.
+      const file = id.split("?")[0] ?? id;
+      if (
+        !file.startsWith(`${root}/`) ||
+        file.includes("/node_modules/") ||
+        !BRANDED_FILE.test(file)
+      ) {
+        return null;
+      }
       const next = REPLACEMENTS.reduce(
         (text, [pattern, value]) => text.replace(pattern, value),
         code,

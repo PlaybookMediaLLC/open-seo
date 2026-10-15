@@ -1,5 +1,5 @@
 import { getAuth, getHostedBaseUrl } from "@/lib/auth";
-import { API_KEY_PREFIX } from "@/lib/auth-api-key";
+import { isApiKeyCredential } from "@/lib/auth-api-key"; // playbook-seam
 import { MCP_OAUTH_SCOPES } from "@/lib/oauth-resource";
 import { resolveExistingActiveHostedOrganization } from "@/server/auth/default-hosted-organization";
 import { AuthRepository } from "@/server/auth/repositories/AuthRepository";
@@ -11,12 +11,12 @@ function getApiKey(request: Request) {
   // access token, a stray foreign x-api-key header) falls through to the
   // OAuth provider instead of being consumed here.
   const headerKey = request.headers.get("x-api-key");
-  if (headerKey?.startsWith(API_KEY_PREFIX)) return headerKey;
+  if (isApiKeyCredential(headerKey)) return headerKey; // playbook-seam
 
   const bearerToken = request.headers
     .get("Authorization")
     ?.replace(/^Bearer /i, "");
-  if (bearerToken?.startsWith(API_KEY_PREFIX)) return bearerToken;
+  if (isApiKeyCredential(bearerToken)) return bearerToken; // playbook-seam
 
   return null;
 }

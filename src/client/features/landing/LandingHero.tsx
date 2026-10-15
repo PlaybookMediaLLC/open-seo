@@ -51,8 +51,8 @@ export function LandingNav({
       <a href="/#features" className="landing-nav-link hidden sm:inline">
         Features
       </a>
-      <a href="/#agents" className="landing-nav-link hidden sm:inline">
-        Agents
+      <a href="/docs" className="landing-nav-link hidden sm:inline">
+        Docs
       </a>
       <a href="/#pricing" className="landing-nav-link">
         Pricing

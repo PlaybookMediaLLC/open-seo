@@ -1,0 +1,51 @@
+---
+title: "Claude Code and Claude desktop"
+description: "Add Relay's MCP connection and SEO skills to Claude Code, Claude Cowork, and the Claude desktop app."
+---
+
+## Claude Code
+
+Run these two steps in your terminal.
+
+**1. Connect Relay:**
+
+```bash
+claude mcp add --transport http --scope user relay https://relay.playbookmedia.io/mcp
+```
+
+**2. Add the SEO skills:**
+
+```bash
+npx skills add https://github.com/PlaybookMediaLLC/open-seo/tree/main/plugins/openseo/skills --skill '*' --agent claude-code
+```
+
+Restart Claude Code, approve the Relay sign-in when it asks, then try:
+
+```text
+Use Relay to check my connection and list my projects.
+```
+
+Then ask for **SEO Coach**, or run `/seo-coach`.
+
+Prefer a single install? Claude Code can also install the bundle from Relay's repository. It adds the same connection and skills, under the name `openseo`:
+
+```text
+/plugin marketplace add PlaybookMediaLLC/open-seo
+/plugin install openseo@openseo
+```
+
+## Claude Cowork and the Claude desktop app
+
+On a paid Claude plan:
+
+1. Open **Customize** (in Cowork, open the **Cowork** tab first) → **Plugins** → **Add marketplace** → **Add from a repository**.
+2. Enter `https://github.com/PlaybookMediaLLC/open-seo` and install the plugin it offers. It adds the Relay connection and the SEO skills.
+3. Approve the Relay sign-in.
+
+On the Free plan, add Relay as a [custom connector](/docs/mcp#claude-desktop-and-claudeai) instead. Free plans allow one custom connector.
+
+## Troubleshooting
+
+- **Tools do not appear:** restart Claude Code, or run `/mcp` to check that `relay` is connected.
+- **Sign-in loops:** run `claude mcp remove relay`, add it again, and sign in again.
+- **Skills do not appear:** run `npx skills list` to check where they were installed, then restart Claude Code.

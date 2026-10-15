@@ -1,0 +1,68 @@
+/* Relay docs (/docs): Fumadocs on its own Tailwind build, loaded only on docs
+   pages. Always dark and on pure black, to match the landing page. */
+
+@import "tailwindcss" source(none);
+@import "@fontsource-variable/inter";
+@import "fumadocs-ui/css/black.css";
+@import "fumadocs-ui/css/preset.css";
+
+@source "../../../../node_modules/fumadocs-ui/dist";
+@source "../../../../content/docs";
+@source "../../../routes/docs";
+@source "./";
+
+/* The black theme's dark values, applied without a .dark class. */
+:root {
+  color-scheme: dark;
+  --color-fd-background: #000;
+  --color-fd-foreground: hsl(0, 0%, 98%);
+  --color-fd-muted: hsl(0, 0%, 8%);
+  --color-fd-muted-foreground: hsl(0, 0%, 60%);
+  --color-fd-popover: hsl(0, 0%, 4%);
+  --color-fd-popover-foreground: hsl(0, 0%, 98%);
+  --color-fd-card: hsl(0, 0%, 4%);
+  --color-fd-card-foreground: hsl(0, 0%, 98%);
+  --color-fd-border: hsl(0, 0%, 50%, 0.2);
+  --color-fd-primary: hsl(0, 0%, 98%);
+  --color-fd-primary-foreground: hsl(0, 0%, 9%);
+  --color-fd-secondary: hsl(0, 0%, 12.9%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 98%);
+  --color-fd-accent: hsl(0, 0%, 15%);
+  --color-fd-accent-foreground: hsl(0, 0%, 100%);
+  --color-fd-ring: hsl(0, 0%, 34.9%);
+  --font-sans:
+    "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* The app shell locks the page and scrolls inside its frame. Docs scroll the
+   window, which Fumadocs' sticky sidebar and table of contents rely on: only
+   <html> may scroll. A scrolling <body> would become the sticky container and,
+   never scrolling itself, let both side panels slide away with the page. */
+html {
+  height: auto !important;
+  overflow: visible auto !important;
+}
+body {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* The app's own stylesheet also loads, and styles body for the app's light
+   theme and square corners. Give docs their own text, font and radius. */
+:root {
+  --radius: 0.5rem;
+}
+body {
+  background: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-family: var(--font-sans);
+  letter-spacing: normal;
+}
+
+/* Code blocks: Fumadocs picks the light or dark Shiki colors by a .dark class
+   that the docs don't use, so always take the dark colors. */
+.shiki,
+.shiki span {
+  color: var(--shiki-dark) !important;
+}

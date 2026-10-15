@@ -1,0 +1,18 @@
+{
+  "title": "Relay",
+  "pages": [
+    "---Get started---",
+    "index",
+    "getting-started",
+    "google-search-console",
+    "plans-and-credits",
+    "---Use Relay with AI---",
+    "agent-setup",
+    "mcp",
+    "chatgpt",
+    "claude-code-plugin",
+    "codex-plugin",
+    "ai-visibility",
+    "skills"
+  ]
+}
