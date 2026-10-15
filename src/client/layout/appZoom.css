@@ -1,0 +1,17 @@
+/* Playbook fork: the signed-in app renders at 80% on desktop (useAppZoom).
+   Zoom scales viewport units too, so full-height layouts divide by it to
+   keep filling the screen. Phones keep 100% for comfortable tap targets. */
+@media (min-width: 768px) {
+  html[data-app-zoom] {
+    zoom: 0.8;
+  }
+  html[data-app-zoom] .h-\[100dvh\] {
+    height: calc(100dvh / 0.8);
+  }
+  html[data-app-zoom] .h-svh {
+    height: calc(100svh / 0.8);
+  }
+  html[data-app-zoom] .min-h-svh {
+    min-height: calc(100svh / 0.8);
+  }
+}

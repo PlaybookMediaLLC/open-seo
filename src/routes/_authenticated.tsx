@@ -3,6 +3,7 @@ import { AuthPageCard, AuthPageShell } from "@/client/features/auth/AuthPage";
 import { useHostedAuthRouteGuard } from "@/client/features/auth/useHostedAuthRouteGuard";
 import { PageLoading } from "@/client/components/Spinner";
 import { Button } from "@/client/components/ui/button";
+import { useAppZoom } from "@/client/layout/useAppZoom"; // playbook-seam
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedShellLayout,
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedShellLayout() {
   const authGate = useHostedAuthRouteGuard();
+  useAppZoom(); // playbook-seam
 
   // Every page under this layout is hosted-only.
   if (!authGate.isHostedMode) {
