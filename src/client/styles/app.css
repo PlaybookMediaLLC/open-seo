@@ -64,6 +64,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-active: var(--sidebar-active);
   /* At --radius 0.5rem this scale equals Tailwind's defaults, so existing
      rounded-* classes do not change. Fields (rounded-lg) are 0.5rem and cards
      (rounded-xl) are 0.75rem. */
@@ -112,14 +113,16 @@
   --chart-3: hsl(38 92% 50%);
   --chart-4: hsl(359 100% 61%);
   --chart-5: hsl(0 0% 40%);
-  --sidebar: hsl(0 0% 96.5%);
+  --sidebar: hsl(0 0% 97.5%);
   --sidebar-foreground: hsl(0 0% 0%);
   --sidebar-primary: hsl(221.2 83.2% 53.3%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(0 0% 94%);
+  --sidebar-accent: hsl(0 0% 93%);
   --sidebar-accent-foreground: hsl(0 0% 0%);
   --sidebar-border: hsl(0 0% 88%);
   --sidebar-ring: hsl(0 0% 75%);
+  /* The raised pill behind the active nav row and the account card. */
+  --sidebar-active: hsl(0 0% 100%);
 }
 
 [data-theme="openseo-dark"] {
@@ -153,14 +156,15 @@
   --chart-3: hsl(38 92% 55%);
   --chart-4: hsl(359 100% 66%);
   --chart-5: hsl(0 0% 60%);
-  --sidebar: hsl(0 0% 0%);
+  --sidebar: hsl(0 0% 2.5%);
   --sidebar-foreground: hsl(0 0% 96%);
   --sidebar-primary: hsl(221.2 83.2% 53.3%);
   --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(0 0% 9%);
+  --sidebar-accent: hsl(0 0% 7%);
   --sidebar-accent-foreground: hsl(0 0% 96%);
   --sidebar-border: hsl(0 0% 13%);
   --sidebar-ring: hsl(0 0% 30%);
+  --sidebar-active: hsl(0 0% 8%);
 }
 
 :root {
@@ -208,6 +212,15 @@ select:not([data-slot]) {
   }
 }
 
+/* Shell chrome (sidebar, top bar, the inset frame) uses soft corners, while
+   page content keeps Eigenn's square ones. Radius utilities read --radius, so
+   re-scoping it here changes only the chrome. */
+[data-slot="sidebar-inner"],
+[data-slot="sidebar"][data-mobile="true"],
+[data-shell-chrome] {
+  --radius: 0.625rem;
+}
+
 /* Icons: every @tabler/icons-react glyph renders <svg class="tabler-icon ...">.
    Change the tokens below to restyle all icons at once. Size utilities on an
    icon (size-4, size-5...) still win because they sit in the utilities layer.
@@ -236,6 +249,15 @@ select:not([data-slot]) {
 @utility icon-card {
   width: var(--icon-card);
   height: var(--icon-card);
+}
+
+/* The page shell's gutter. Every app page's outer container uses it, so page
+   spacing is tuned here, once. The bottom clears the mobile toolbar. */
+@utility page-pad {
+  padding: 1.25rem 1rem 6rem;
+  @media (width >= 48rem) {
+    padding: 2rem 2.5rem 3rem;
+  }
 }
 
 /* Row actions that appear on hover. Keyboard focus inside the row and touch

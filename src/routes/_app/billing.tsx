@@ -141,7 +141,7 @@ function BillingPage() {
   }
 
   return (
-    <div className="mx-auto box-content max-w-7xl space-y-5 px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+    <div className="mx-auto box-content max-w-7xl space-y-5 page-pad">
       <PageHeader title="Billing" />
 
       {accountQuery.isPending ? (

@@ -16,7 +16,9 @@ import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/client/components/ui/sidebar";
+import { BrandMark } from "@/client/components/BrandMark";
 
 export function AuthenticatedAppLayout({
   children,
@@ -117,14 +119,21 @@ export function AuthenticatedAppLayout({
         projectPending={sidebarProjectPending}
         ready={ready}
       />
-      <SidebarInset className="min-h-0 overflow-hidden md:!m-0 md:!mt-2 md:!rounded-none md:!rounded-tl-lg md:border-l md:border-t md:border-sidebar-border md:!shadow-none">
-        <MobileTopBar />
+      {/* A floating frame on desktop: soft corners, a hairline edge and a
+          whisper of depth, so the page reads as one sheet on the sidebar. */}
+      <SidebarInset
+        data-shell-chrome
+        className="min-h-0 overflow-hidden md:!m-2 md:!ml-0 md:!rounded-xl md:border md:border-sidebar-border md:!shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)] md:peer-data-[state=collapsed]:!ml-2"
+      >
+        <TopBar />
         <SeoApiStatusBanners
           shouldShowSeoApiWarning={shouldShowSeoApiWarning}
           seoApiKeyStatusError={seoApiKeyStatusError}
         />
         {banner}
-        <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+        <div className="min-h-0 flex-1 overflow-auto [--radius:0rem]">
+          {children}
+        </div>
       </SidebarInset>
 
       {showMissingSeoApiKeyModal ? (
@@ -143,11 +152,22 @@ export function AuthenticatedAppLayout({
   );
 }
 
-function MobileTopBar() {
+// Mobile: the drawer button and brand. Desktop: only when the sidebar is
+// collapsed, a slim strip with the button to bring it back.
+function TopBar() {
+  const { state, isMobile } = useSidebar();
+  if (!isMobile && state === "expanded") return null;
   return (
-    <div className="flex shrink-0 items-center gap-1 border-b border-border bg-card px-2 py-1.5 md:hidden">
-      <SidebarTrigger aria-label="Toggle sidebar" />
-      <Link to="/" className="ml-1 font-semibold text-foreground">
+    <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border/70 bg-background/80 px-2 backdrop-blur-md">
+      <SidebarTrigger
+        aria-label="Toggle sidebar"
+        className="text-muted-foreground hover:text-foreground"
+      />
+      <Link
+        to="/app"
+        className="flex items-center gap-2 text-sm font-semibold tracking-tight text-foreground"
+      >
+        <BrandMark className="size-5" />
         OpenSEO
       </Link>
     </div>

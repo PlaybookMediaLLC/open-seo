@@ -225,7 +225,7 @@ function FixPaymentPage() {
 
 function Page({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="mx-auto box-content max-w-7xl space-y-5 px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+    <div className="mx-auto box-content max-w-7xl space-y-5 page-pad">
       <div>
         <p className="text-sm font-medium text-muted-foreground">Billing</p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">{title}</h1>

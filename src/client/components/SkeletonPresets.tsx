@@ -79,7 +79,7 @@ export function SkeletonCard({ className }: { className?: string }) {
  */
 export function SkeletonPage() {
   return (
-    <div className="px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-8">
+    <div className="page-pad">
       <SkeletonPageContent className="mx-auto max-w-7xl" />
     </div>
   );
