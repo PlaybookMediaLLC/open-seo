@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import landingCss from "@/client/features/landing/landing.css?url";
+import { landingFontPreload } from "@/client/features/landing/landingFont";
 import { LegalPage } from "@/client/features/legal/LegalPage";
 import { publicPageHead } from "@/lib/relay-seo";
 import { TERMS } from "@/client/features/legal/terms";
@@ -14,7 +15,11 @@ export const Route = createFileRoute("/terms")({
     });
     return {
       meta: [...seo.meta, { name: "theme-color", content: "#000000" }],
-      links: [...seo.links, { rel: "stylesheet", href: landingCss }],
+      links: [
+        ...seo.links,
+        landingFontPreload,
+        { rel: "stylesheet", href: landingCss },
+      ],
     };
   },
   component: () => <LegalPage document={TERMS} />,

@@ -1,22 +1,14 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createIsomorphicFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
-import { createClientLoader } from "fumadocs-mdx/runtime/vite";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
-import {
-  DocsBody,
-  DocsDescription,
-  DocsPage,
-  DocsTitle,
-} from "fumadocs-ui/layouts/docs/page";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { BrandMark } from "@/client/components/BrandMark";
 import docsCss from "@/client/features/docs/docs.css?url";
-import { docsMdxComponents } from "@/client/features/docs/docsMdxComponents";
+import { docsClientLoader } from "@/client/features/docs/docsClientLoader";
 import { LandingNotFound } from "@/client/features/landing/LandingNotFound";
 import { publicPageHead } from "@/lib/relay-seo";
 import type { DocsPageData } from "@/server/lib/docsPage";
-import { docs } from "../../../.source/index";
 
 const DESCRIPTION =
   "How to use Relay: Search Console opportunities, research, rank tracking, and connecting your AI agent over MCP.";
@@ -41,7 +33,10 @@ export const Route = createFileRoute("/docs/$")({
     const slugs = (params._splat ?? "").split("/").filter(Boolean);
     const page = await getDocsPage(slugs);
     if (!page) throw notFound();
-    await clientLoader.preload(page.path);
+    // Lazy, so the MDX runtime stays out of the bundle other pages load.
+    const { docsClientLoader: mdx } =
+      await import("@/client/features/docs/docsClientLoader");
+    await mdx.preload(page.path);
     return page;
   },
   head: ({ loaderData }) => {
@@ -59,25 +54,6 @@ export const Route = createFileRoute("/docs/$")({
   },
   component: DocsRoute,
   notFoundComponent: LandingNotFound,
-});
-
-const clientLoader = createClientLoader(docs, {
-  id: "docs",
-  component({ toc, frontmatter, default: MDX }) {
-    return (
-      <DocsPage
-        toc={toc}
-        tableOfContent={{ style: "clerk" }}
-        breadcrumb={{ enabled: false }}
-      >
-        <DocsTitle>{frontmatter.title}</DocsTitle>
-        <DocsDescription>{frontmatter.description}</DocsDescription>
-        <DocsBody>
-          <MDX components={docsMdxComponents} />
-        </DocsBody>
-      </DocsPage>
-    );
-  },
 });
 
 // The site tabs across the top of the docs (desktop). Phones get the same
@@ -111,7 +87,7 @@ function DocsTabBar() {
 
 function DocsRoute() {
   const page = useFumadocsLoader(Route.useLoaderData());
-  const Content = clientLoader.getComponent(page.path);
+  const Content = docsClientLoader.getComponent(page.path);
   return (
     // Docs are always light, so the theme switch and the class-based theme
     // are off. Search reads the public /api/search.
