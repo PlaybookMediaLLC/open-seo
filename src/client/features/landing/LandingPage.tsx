@@ -1,17 +1,16 @@
 import { useSession } from "@/lib/auth-client";
-import { LandingAgents, LandingIntegrations } from "./LandingIntegrations";
 import {
   LandingAdaptability,
-  LandingBuildIt,
+  LandingLogos,
   LandingWhatsInside,
 } from "./LandingFeatures";
 import { LandingFaq, LandingFooter } from "./LandingFooter";
+import { LandingHero, LandingNav } from "./LandingHero";
 import {
-  LandingDemo,
-  LandingHero,
-  LandingLogos,
-  LandingNav,
-} from "./LandingHero";
+  LandingAgents,
+  LandingBuildIt,
+  LandingIntegrations,
+} from "./LandingIntegrations";
 import { LandingAudiences, LandingPricing } from "./LandingSections";
 
 /** The public marketing page at "/". Signed-in visitors get "Open app" CTAs. */
@@ -21,9 +20,8 @@ export function LandingPage() {
   return (
     <div className="landing landing-scroll">
       <LandingNav signedIn={signedIn} />
-      <main>
+      <main className="flex flex-col items-center">
         <LandingHero signedIn={signedIn} />
-        <LandingDemo />
         <LandingLogos />
         <LandingAdaptability />
         <LandingWhatsInside />

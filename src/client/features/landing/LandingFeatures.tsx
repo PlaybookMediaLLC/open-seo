@@ -1,116 +1,163 @@
-import { useState, type ComponentType } from "react";
+import type { ReactNode } from "react";
 import {
-  IconAdjustmentsHorizontal,
+  IconBrandGoogle,
   IconBrain,
-  IconChartLine,
+  IconChartBar,
   IconClipboardCheck,
-  IconCpu,
   IconFileText,
   IconFlask,
   IconGitPullRequest,
   IconLink,
-  IconRepeat,
-  IconSparkles,
   IconTarget,
   IconWorld,
+  type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
-import { Eyebrow, Reveal, SectionTitle } from "./LandingPrimitives";
+import { Eyebrow, Reveal, useAutoCycle } from "./LandingPrimitives";
+import { LandingSeeAll } from "./LandingHero";
 
-const LENSES = {
-  Opportunities: [
-    ["/pricing", "CTR 1.1% at position 4", "Rewrite title"],
-    ["/blog/seo-audit", "Rising query, no H2", "Add section"],
-    ["/features", "Cannibalizing /home", "Consolidate"],
-  ],
-  Keywords: [
-    ["seo audit checklist", "6.6k · KD 22", "Target"],
-    ["free rank tracker", "2.9k · KD 31", "Target"],
-    ["open source seo tool", "1.3k · KD 18", "Target"],
-  ],
-  Backlinks: [
-    ["indiehackers.com", "DR 82 · links to rivals", "Pitch"],
-    ["dev.to", "DR 91 · 3 rival mentions", "Pitch"],
-    ["producthunt.com", "DR 90 · listing gap", "Submit"],
-  ],
-  "AI answers": [
-    ["best seo tools 2026", "ChatGPT cites 2 rivals", "Get cited"],
-    ["semrush alternative", "Perplexity cites you", "Defend"],
-    ["track ai visibility", "Claude cites nobody", "Get cited"],
-  ],
-} as const;
+const SOURCES = [
+  "Search Console",
+  "Analytics 4",
+  "DataForSEO",
+  "Claude",
+  "ChatGPT",
+  "Perplexity",
+  "Cursor",
+  "Codex",
+  "Cloudflare",
+  "Stripe",
+  "WordPress",
+  "Webflow",
+];
 
-type Lens = keyof typeof LENSES;
-
-const LENS_NAMES = Object.keys(LENSES).filter(
-  (name): name is Lens => name in LENSES,
-);
-
-export function LandingAdaptability() {
-  const [lens, setLens] = useState<Lens>("Opportunities");
+export function LandingLogos() {
   return (
-    <section id="features" className="px-4 py-16">
-      <Reveal className="mx-auto grid max-w-[880px] items-center gap-10 md:grid-cols-[1fr_1.15fr]">
-        <div className="relative">
-          <div className="landing-dots pointer-events-none absolute -inset-10" />
-          <p className="relative text-sm font-medium text-[#798498]">
-            One workspace
-          </p>
-          <SectionTitle className="relative mt-2 max-w-[320px]">
-            SEO isn’t one-size-fits-all
-          </SectionTitle>
-          <p className="relative mt-3 max-w-[320px] text-sm leading-relaxed text-white/50">
-            Switch lenses on the same site. Every view ends in a concrete next
-            step, not another chart.
-          </p>
-        </div>
-        <div className="rounded-3xl border border-white/[0.07] bg-gradient-to-b from-[#0d1220] to-black p-5">
-          <div className="space-y-2.5">
-            {LENSES[lens].map(([subject, signal, action], index) => (
-              <div
-                key={`${lens}-${subject}`}
-                className="landing-reveal flex items-center gap-3 rounded-2xl bg-[#2f7cf6] px-4 py-3 text-white shadow-[0_8px_24px_-12px_rgb(47_124_246/0.8)] data-[visible]:opacity-100"
-                data-visible=""
-                style={{
-                  marginLeft: index === 1 ? 0 : "auto",
-                  width: "92%",
-                  background: index === 1 ? "#1c2333" : undefined,
-                }}
-              >
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">
-                    {subject}
-                  </span>
-                  <span className="block truncate text-xs text-white/70">
-                    {signal}
-                  </span>
-                </span>
-                <span className="shrink-0 rounded-full bg-white/15 px-2.5 py-0.5 text-[11px]">
-                  {action}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-6 flex flex-wrap justify-center gap-1">
-            {LENS_NAMES.map((name) => (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setLens(name)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs transition-colors",
-                  lens === name
-                    ? "bg-[#2f7cf6]/25 text-[#9cc0ff]"
-                    : "text-white/60 hover:text-white",
-                )}
+    <section className="w-full px-4 pb-10 pt-24">
+      <Reveal className="mx-auto max-w-[760px]">
+        <div className="landing-marquee overflow-hidden">
+          <div className="landing-marquee-track py-1">
+            {[...SOURCES, ...SOURCES].map((name, i) => (
+              <span
+                key={i}
+                className="mx-7 flex h-8 items-center whitespace-nowrap text-[17px] font-semibold tracking-[-0.4px] text-white/45"
               >
                 {name}
-              </button>
+              </span>
             ))}
           </div>
         </div>
+        <h2 className="mt-12 text-center text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+          Built for those who ship fast
+        </h2>
+        <p className="mt-2 text-center text-[16px] leading-[22.4px] text-[#888b91]">
+          Your real Google data, live search research,
+          <br />
+          and{" "}
+          <span className="text-[#fafafa]">the AI agents you already use</span>.
+        </p>
+        <p className="mt-4 text-center">
+          <LandingSeeAll />
+        </p>
       </Reveal>
     </section>
+  );
+}
+
+const LENSES = [
+  {
+    name: "Pages",
+    question: "/pricing gets 18k views but only 1% click",
+    answer: "Rewrite the title and description to lift clicks by ~640 a month.",
+  },
+  {
+    name: "Keywords",
+    question: "Which keywords can we win this month?",
+    answer:
+      "“seo audit checklist”: 6.6k searches, difficulty 22, you rank #14.",
+  },
+  {
+    name: "Links",
+    question: "Who links to competitors but not us?",
+    answer:
+      "dev.to and indiehackers.com, 3 rival mentions each. Draft pitches?",
+  },
+  {
+    name: "AI answers",
+    question: "Does ChatGPT recommend us?",
+    answer:
+      "Not yet: it cites two rivals for “best seo tools”. Here’s the gap.",
+  },
+] as const;
+
+export function LandingAdaptability() {
+  const [active, pick] = useAutoCycle(LENSES.length, 3600);
+  const lens = LENSES[active] ?? LENSES[0];
+  const { question, answer } = lens;
+  return (
+    <section id="features" className="w-full px-4 pt-16">
+      <div className="mx-auto max-w-[1024px]">
+        <Reveal className="relative grid items-end md:grid-cols-2">
+          <div className="relative flex h-full items-center py-10 md:pl-28">
+            <div className="landing-dots pointer-events-none absolute inset-0" />
+            <div className="relative">
+              <Eyebrow color="#798498">Adaptability</Eyebrow>
+              <h2 className="mt-2 w-[300px] text-[27px] font-semibold leading-[120%] tracking-[-1.24px] text-[#fafafa] sm:text-[31px]">
+                SEO isn’t one-size-fits-all
+              </h2>
+            </div>
+          </div>
+          <div className="relative z-10 flex h-[400px] flex-col justify-between rounded-t-[32px] border border-b-0 border-[#0088ff]/20 bg-black p-8">
+            <div
+              key={lens.name}
+              className="landing-reveal space-y-4"
+              data-visible=""
+            >
+              <Bubble tilt="-rotate-2">{question}</Bubble>
+              <div className="flex h-10 w-[120px] items-center gap-1.5 rounded-2xl bg-[#0b2a4a] px-4">
+                {[0, 1, 2, 3].map((i) => (
+                  <span
+                    key={i}
+                    className="h-1 w-5 rounded-full bg-[#5aa6ff]/60"
+                  />
+                ))}
+              </div>
+              <Bubble tilt="rotate-1">{answer}</Bubble>
+            </div>
+            <div className="flex justify-center gap-1">
+              {LENSES.map((item, index) => (
+                <button
+                  key={item.name}
+                  type="button"
+                  onClick={() => pick(index)}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-[14px] transition-colors",
+                    index === active
+                      ? "bg-[#0088ff]/20 text-[#3da2ff]"
+                      : "text-white/70 hover:text-white",
+                  )}
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function Bubble({ children, tilt }: { children: ReactNode; tilt: string }) {
+  return (
+    <div
+      className={cn(
+        "ml-auto w-fit max-w-[260px] rounded-[18px] bg-[#0a84ff] px-4 py-2.5 text-[15px] leading-snug text-white shadow-[0_8px_24px_-8px_rgb(10_132_255/0.6)]",
+        tilt,
+      )}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -119,8 +166,9 @@ type Card = {
   body: string;
   emphasis: string;
   color: string;
-  glow: string;
-  icon: ComponentType<{ className?: string }>;
+  bg: string;
+  icon: Icon;
+  art: ReactNode;
 };
 
 const CARDS: Card[] = [
@@ -128,66 +176,88 @@ const CARDS: Card[] = [
     title: "Opportunity engine",
     body: "Search Console data turned into a ranked to-do list.",
     emphasis: "Highest-impact fixes first.",
-    color: "#b46cff",
-    glow: "from-[#3a1d5c] to-[#12081f]",
+    color: "#dd55e7",
+    bg: "#1c031f",
     icon: IconTarget,
+    art: <ScoreArt />,
   },
   {
     title: "Experiments",
-    body: "Ship a change, then measure it against a baseline.",
+    body: "Ship a change and measure it against a baseline.",
     emphasis: "Know what actually moved.",
     color: "#1cecbb",
-    glow: "from-[#0c3b33] to-[#04130f]",
+    bg: "#031310",
     icon: IconFlask,
+    art: <ChartArt color="#1cecbb" />,
   },
   {
     title: "Pull requests",
     body: "Approved metadata fixes open as PRs in your repo.",
     emphasis: "Review, merge, done.",
     color: "#ff5252",
-    glow: "from-[#4a1414] to-[#160505]",
+    bg: "#200401",
     icon: IconGitPullRequest,
+    art: <DiffArt />,
   },
   {
     title: "AI visibility",
-    body: "Track how ChatGPT, Claude and Perplexity answer about you.",
-    emphasis: "See who gets cited.",
+    body: "See how ChatGPT, Claude and Perplexity answer about you.",
+    emphasis: "Know who gets cited.",
     color: "#0088ff",
-    glow: "from-[#0b2a52] to-[#040c18]",
-    icon: IconChartLine,
+    bg: "#030719",
+    icon: IconChartBar,
+    art: <ChartArt color="#0088ff" bars />,
+  },
+  {
+    title: "Search Console",
+    body: "Queries, pages and positions, always in sync.",
+    emphasis: "Read-only and private.",
+    color: "#17c253",
+    bg: "#02160b",
+    icon: IconBrandGoogle,
+    art: <ScoreArt label="Clicks" value="+38%" />,
+  },
+  {
+    title: "Project context",
+    body: "Goals, audience and competitors, set once.",
+    emphasis: "Every answer follows them.",
+    color: "#ffdd00",
+    bg: "#191303",
+    icon: IconBrain,
+    art: <ScoreArt label="Context" value="4/4" />,
   },
 ];
 
 export function LandingWhatsInside() {
   return (
-    <section className="px-4 py-16">
-      <Reveal className="mx-auto max-w-[880px] rounded-[28px] border border-white/[0.07] bg-[#050507] p-6 sm:p-8">
-        <Eyebrow className="text-[#d36be0]">What’s inside</Eyebrow>
-        <p className="mt-2 text-[20px] font-medium tracking-tight text-[#e5e5e5] sm:text-[24px]">
-          Powerful features,
-          <br />
-          seamlessly integrated.
-        </p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {CARDS.map((card, index) => (
-            <Reveal key={card.title} delay={index * 90}>
-              <FeatureCard card={card} />
-            </Reveal>
+    <section className="w-full px-4">
+      <Reveal className="mx-auto max-w-[1024px] overflow-hidden rounded-b-[32px] rounded-tl-[32px] border border-[#0088ff]/20 bg-black pb-10 pt-8">
+        <div className="px-6 sm:px-8">
+          <Eyebrow color="#dd55e7">What’s inside</Eyebrow>
+          <p className="mt-2 text-[20px] font-medium leading-[24px] tracking-[-0.6px] text-[#fafafa] sm:text-[24px]">
+            Powerful features,
+            <br />
+            seamlessly integrated.
+          </p>
+        </div>
+        <div className="landing-no-scrollbar mt-8 flex gap-8 overflow-x-auto px-6 pb-2 sm:px-8">
+          {CARDS.map((card) => (
+            <FeatureCard key={card.title} card={card} />
           ))}
         </div>
-        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-10 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
           {SMALL_FEATURES.map(({ icon: Icon, title, body, badge }) => (
             <div key={title}>
-              <Icon className="size-5 text-white/80" />
-              <p className="mt-3 flex items-center gap-2 text-[15px] text-white">
+              <Icon className="size-5 text-white" stroke={1.6} />
+              <p className="mt-3 flex items-center gap-2 text-[16px] leading-[22.4px] text-[#fafafa]">
                 {title}
                 {badge ? (
-                  <span className="rounded-full bg-[#e8ff47] px-1.5 py-px text-[10px] font-semibold text-black">
+                  <span className="rounded-full bg-[#ffdd00] px-1.5 text-[10px] font-semibold leading-4 text-black">
                     {badge}
                   </span>
                 ) : null}
               </p>
-              <p className="mt-1.5 text-xs leading-relaxed text-white/45">
+              <p className="mt-2 max-w-[180px] text-[13px] leading-[20px] text-white/55">
                 {body}
               </p>
             </div>
@@ -202,37 +272,105 @@ function FeatureCard({ card }: { card: Card }) {
   const Icon = card.icon;
   return (
     <div
-      className={cn(
-        "flex h-full flex-col overflow-hidden rounded-3xl bg-gradient-to-b",
-        card.glow,
-      )}
+      className="landing-card-border relative flex h-[400px] w-[300px] flex-none flex-col justify-end rounded-3xl p-6 sm:w-80"
+      style={{ background: card.bg }}
     >
-      <div className="relative grid h-36 place-items-center">
-        <span
-          className="absolute size-24 rounded-full opacity-40 blur-2xl"
-          style={{ background: card.color }}
+      <div className="absolute inset-x-0 top-0 h-64 overflow-hidden rounded-t-3xl">
+        <div
+          className="absolute inset-0 opacity-60"
+          style={{
+            background: `radial-gradient(120% 90% at 50% 0%, ${card.color}55, transparent 70%)`,
+          }}
         />
-        <span className="relative grid size-14 place-items-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur">
-          <Icon className="size-7 text-white" />
-        </span>
+        <div className="absolute inset-0 grid place-items-center">
+          {card.art}
+        </div>
       </div>
-      <div className="flex-1 p-5 pt-2">
+      <div className="relative mb-2 flex items-center">
+        <span
+          className="mr-2 grid size-6 shrink-0 place-items-center rounded-md"
+          style={{ background: card.color }}
+        >
+          <Icon className="size-4 text-black/80" stroke={2} />
+        </span>
         <h3
-          className="flex items-center gap-2 text-base font-medium leading-[140%]"
+          className="text-[16px] font-medium leading-[140%] tracking-[0.16px]"
           style={{ color: card.color }}
         >
           {card.title}
         </h3>
-        <p className="mt-1.5 text-sm leading-relaxed text-white/50">
-          {card.body} <span className="text-white">{card.emphasis}</span>
-        </p>
       </div>
+      <p className="relative text-sm leading-relaxed text-white/50">
+        {card.body}
+        <br />
+        <span className="text-white">{card.emphasis}</span>
+      </p>
+    </div>
+  );
+}
+
+function ScoreArt({
+  label = "Priority",
+  value = "92",
+}: {
+  label?: string;
+  value?: string;
+}) {
+  return (
+    <div className="rounded-[32px] bg-[#3a3a3c]/50 px-8 py-6 shadow-2xl backdrop-blur">
+      <p className="text-[15px] text-white/60">{label}</p>
+      <p className="text-[44px] font-semibold leading-none tracking-[-1.5px] text-white">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function ChartArt({ color, bars = false }: { color: string; bars?: boolean }) {
+  const points = [30, 34, 31, 42, 40, 55, 52, 66, 70, 84];
+  const path = points
+    .map((h, i) => `${i === 0 ? "M" : "L"}${i * 22} ${100 - h}`)
+    .join(" ");
+  return (
+    <div className="w-[230px] rounded-2xl bg-white/[0.06] p-4 backdrop-blur">
+      {bars ? (
+        <div className="flex h-24 items-end gap-1.5">
+          {points.map((h, i) => (
+            <span
+              key={i}
+              className="flex-1 rounded-sm"
+              style={{
+                height: `${h}%`,
+                background: color,
+                opacity: 0.4 + i * 0.06,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <svg viewBox="0 0 198 100" className="h-24 w-full" aria-hidden>
+          <path d={`${path} L198 100 L0 100Z`} fill={color} opacity="0.15" />
+          <path d={path} fill="none" stroke={color} strokeWidth="2.5" />
+          <circle cx="198" cy="16" r="4" fill={color} />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function DiffArt() {
+  return (
+    <div className="w-[240px] rounded-2xl bg-black/40 p-3 font-mono text-[11px] leading-5 backdrop-blur">
+      <p className="text-[#ff7b72]">- title: Pricing</p>
+      <p className="text-[#3fb950]">+ title: Pricing · Plans from $0</p>
+      <p className="text-[#ff7b72]">- description: (missing)</p>
+      <p className="text-[#3fb950]">+ description: Rank tracking…</p>
     </div>
   );
 }
 
 const SMALL_FEATURES: {
-  icon: ComponentType<{ className?: string }>;
+  icon: Icon;
   title: string;
   body: string;
   badge?: string;
@@ -245,7 +383,7 @@ const SMALL_FEATURES: {
   {
     icon: IconLink,
     title: "Backlinks",
-    body: "Referring domains, anchors and new or lost links.",
+    body: "Referring domains, anchors, new and lost links.",
   },
   {
     icon: IconClipboardCheck,
@@ -256,102 +394,6 @@ const SMALL_FEATURES: {
   {
     icon: IconFileText,
     title: "Reports",
-    body: "Shareable client-ready reports in one click.",
+    body: "Client-ready reports you can share in one click.",
   },
 ];
-
-export function LandingBuildIt() {
-  return (
-    <section className="px-4 py-24">
-      <Reveal className="mx-auto grid max-w-[960px] items-center gap-12 md:grid-cols-2">
-        <ContextMock />
-        <div>
-          <Eyebrow>Project context</Eyebrow>
-          <h2 className="mt-3 text-[40px] font-semibold leading-[1.05] tracking-[-1.6px] text-white sm:text-[52px]">
-            Tune it yourself
-          </h2>
-          <p className="mt-3 max-w-[380px] text-sm leading-relaxed text-white/50">
-            Tell OpenSEO who you are, who you compete with and what matters.
-            Every recommendation follows. Down to the finest detail.
-          </p>
-          <div className="mt-8 space-y-7">
-            {BUILD_POINTS.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="flex gap-4">
-                <Icon className="mt-0.5 size-5 shrink-0 text-[#3d8bff]" />
-                <div>
-                  <p className="text-[15px] text-white">{title}</p>
-                  <p className="mt-1 max-w-[340px] text-sm leading-relaxed text-white/45">
-                    {body}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-const BUILD_POINTS = [
-  {
-    icon: IconAdjustmentsHorizontal,
-    title: "Beyond keywords: positioning",
-    body: "Set goals, audiences and competitors once. Research and reports adapt to them.",
-  },
-  {
-    icon: IconCpu,
-    title: "Pick the right model for the job",
-    body: "Bring Claude, GPT or Gemini through your own agent, or use the built-in assistant.",
-  },
-  {
-    icon: IconRepeat,
-    title: "Consistent every week",
-    body: "Saved keywords, tracked ranks and recurring audits keep the signal steady.",
-  },
-];
-
-function ContextMock() {
-  const rows = [
-    ["Site", "playbookmedia.io"],
-    ["Goal", "Grow demo signups"],
-    ["Audience", "B2B marketing leads"],
-    ["Competitors", "semrush.com, ahrefs.com"],
-  ];
-  return (
-    <div className="relative mx-auto w-full max-w-[420px] [perspective:1200px]">
-      <div className="rotate-x-[8deg] -rotate-y-[14deg] rounded-2xl border border-white/10 bg-[#121317]/90 p-4 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.9)] [transform-style:preserve-3d]">
-        <div className="flex items-center gap-2 border-b border-white/5 pb-3 text-xs text-white/60">
-          <IconBrain className="size-4" /> Context
-        </div>
-        <div className="mt-3 space-y-2">
-          {rows.map(([key, value]) => (
-            <div
-              key={key}
-              className="flex items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2 text-xs"
-            >
-              <span className="text-white/45">{key}</span>
-              <span className="text-white">{value}</span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 rounded-xl border border-white/10 bg-black/60 p-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
-            Assistant
-          </p>
-          {["Claude Sonnet", "GPT-5", "Gemini 3 Flash"].map((model, index) => (
-            <p
-              key={model}
-              className={cn(
-                "mt-1.5 flex items-center gap-2 rounded-md px-2 py-1 text-xs",
-                index === 0 ? "bg-white/10 text-white" : "text-white/55",
-              )}
-            >
-              <IconSparkles className="size-3" /> {model}
-            </p>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
