@@ -41,7 +41,7 @@ export function AppWindow({ className }: { className?: string }) {
       <video
         ref={video}
         className="block aspect-[1.6] w-full bg-black"
-        poster="/product/app-demo.webp"
+        poster="/media/app-demo.webp"
         autoPlay
         muted
         loop
@@ -49,8 +49,8 @@ export function AppWindow({ className }: { className?: string }) {
         preload="metadata"
         aria-label="A walkthrough of Relay: ranked opportunities, rank tracking for a domain, and saved keywords."
       >
-        <source src="/product/app-demo.webm" type="video/webm; codecs=vp9" />
-        <source src="/product/app-demo.mp4" type="video/mp4" />
+        <source src="/media/app-demo.webm" type="video/webm; codecs=vp9" />
+        <source src="/media/app-demo.mp4" type="video/mp4" />
       </video>
     </div>
   );
