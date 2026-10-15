@@ -1,24 +1,30 @@
 # Relay growth platform RFCs
 
-These RFCs close the gaps between the current code and the organic growth platform brief. Each RFC states what exists, what to build, a checklist that defines "ready for other users", and a real-site acceptance test that proves the work gives value.
+These RFCs close the gaps between the current code and the organic growth platform brief, then extend the same loop beyond SEO. Each RFC states what exists, what to build, a checklist that defines "ready for other users", and a real-site acceptance test that proves the work gives value.
 
 The audit behind them is in `docs/maintainers/organic-growth-audit.md` and `docs/maintainers/organic-growth-handoff.md`. The design records for shipped work are in `docs/maintainers/specs/approved-github-metadata.md` and `docs/maintainers/specs/search-outcome-measurement.md`.
 
 ## Status of the brief on October 15, 2026
 
-| Brief area                                                           | Status                                       | RFC                                            |
-| -------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
-| Launch readiness (credentials, Google verification, live acceptance) | Blocking                                     | [RFC-0001](0001-launch-readiness.md)           |
-| A. Opportunity engine                                                | Partial: 2 of 7 types, Search Console only   | [RFC-0002](0002-opportunity-detectors.md)      |
-| B. Opportunities queue                                               | Mostly done                                  | [RFC-0003](0003-opportunity-queue.md)          |
-| C. AI SEO engineer                                                   | Missing                                      | [RFC-0004](0004-ai-seo-engineer.md)            |
-| D. GitHub execution                                                  | Partial: one change type                     | [RFC-0005](0005-github-execution.md)           |
-| E. Experiments and results                                           | Partial: Search Console only, manual refresh | [RFC-0006](0006-outcome-measurement.md)        |
-| F. Portfolio operations                                              | Deferred by the brief                        | [RFC-0007](0007-portfolio-operations.md)       |
-| 9. Automation and scheduling                                         | Missing                                      | [RFC-0008](0008-growth-automation.md)          |
-| 10. Costs, limits and audit log                                      | Partial                                      | [RFC-0009](0009-spend-limits-and-audit-log.md) |
-| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                      | [RFC-0010](0010-seo-checks-in-ci.md)           |
-| Controlled page-group split tests (beyond the brief)                 | Missing                                      | [RFC-0011](0011-page-group-split-tests.md)     |
+| Brief area                                                           | Status                                       | RFC                                             |
+| -------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| Launch readiness (credentials, Google verification, live acceptance) | Blocking                                     | [RFC-0001](0001-launch-readiness.md)            |
+| A. Opportunity engine                                                | Partial: 2 of 7 types, Search Console only   | [RFC-0002](0002-opportunity-detectors.md)       |
+| B. Opportunities queue                                               | Mostly done                                  | [RFC-0003](0003-opportunity-queue.md)           |
+| C. AI SEO engineer                                                   | Missing                                      | [RFC-0004](0004-ai-seo-engineer.md)             |
+| D. GitHub execution                                                  | Partial: one change type                     | [RFC-0005](0005-github-execution.md)            |
+| E. Experiments and results                                           | Partial: Search Console only, manual refresh | [RFC-0006](0006-outcome-measurement.md)         |
+| F. Portfolio operations                                              | Deferred by the brief                        | [RFC-0007](0007-portfolio-operations.md)        |
+| 9. Automation and scheduling                                         | Missing                                      | [RFC-0008](0008-growth-automation.md)           |
+| 10. Costs, limits and audit log                                      | Partial                                      | [RFC-0009](0009-spend-limits-and-audit-log.md)  |
+| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                      | [RFC-0010](0010-seo-checks-in-ci.md)            |
+| Controlled page-group split tests (beyond the brief)                 | Missing                                      | [RFC-0011](0011-page-group-split-tests.md)      |
+| Beyond SEO: conversion optimization                                  | Missing                                      | [RFC-0012](0012-conversion-optimization.md)     |
+| Beyond SEO: accessibility fixes in code                              | Missing                                      | [RFC-0013](0013-accessibility-fixes.md)         |
+| Beyond SEO: web performance                                          | Missing                                      | [RFC-0014](0014-web-performance.md)             |
+| Beyond SEO: release quality gate                                     | Missing                                      | [RFC-0015](0015-release-quality-gate.md)        |
+| Beyond SEO: revenue attribution                                      | Missing                                      | [RFC-0016](0016-revenue-attribution.md)         |
+| Beyond SEO: docs and support deflection                              | Missing                                      | [RFC-0017](0017-docs-and-support-deflection.md) |
 
 ## Order of work
 
@@ -39,6 +45,15 @@ Each step depends on the steps before it.
 13. **RFC-0002, phases 2 and 3.** Add the remaining detectors.
 14. **RFC-0005, phase 2.** Add the GitHub App and the remaining change types. Then RFC-0010 phase 2 (App mode).
 15. **RFC-0007.** Start only when its entry criteria are met.
+
+**Beyond SEO**, after the SEO core is live. Each one reuses the same loop: evidence, a reviewed pull request, a verified deploy and a measured result.
+
+16. **RFC-0012, phase 1.** Conversion opportunities and copy changes. It reuses GA4, drafting, publishing and split tests.
+17. **RFC-0013, phase 1.** Accessibility detection, clusters, and alt-text and language fixes.
+18. **RFC-0015, phase 1.** Grow the SEO check into the release gate with the accessibility, links and security packs.
+19. **RFC-0014.** Field data, causes, then performance fixes.
+20. **RFC-0016.** Revenue attribution. Start with Relay's own billing.
+21. **RFC-0017.** Docs signals, then support topics.
 
 ## Real-site test sites
 
