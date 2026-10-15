@@ -12,7 +12,8 @@ import type { Plugin } from "vite";
  * - vite.config.ts: mounts this plugin and the docs plugin.
  * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
- * - src/public/_headers: the web manifest gets its JSON content type.
+ * - src/routes/__root.tsx: public pages render on the server too
+ *   (src/client/components/RelayClientOnly.tsx).
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
  *   brand, because static files skip the module pipeline.
  * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.

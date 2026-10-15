@@ -12,6 +12,7 @@ import {
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import docsCss from "@/client/features/docs/docs.css?url";
 import { docsMdxComponents } from "@/client/features/docs/docsMdxComponents";
+import { publicPageHead } from "@/lib/relay-seo";
 import type { DocsPageData } from "@/server/lib/docsPage";
 import { docs } from "../../../.source/index";
 
@@ -41,18 +42,19 @@ export const Route = createFileRoute("/docs/$")({
     await clientLoader.preload(page.path);
     return page;
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData?.title
-          ? `${loaderData.title} · Relay Docs`
-          : "Relay Docs",
-      },
-      { name: "description", content: loaderData?.description ?? DESCRIPTION },
-      { name: "theme-color", content: "#ffffff" },
-    ],
-    links: [{ rel: "stylesheet", href: docsCss }],
-  }),
+  head: ({ loaderData }) => {
+    const seo = publicPageHead({
+      path: loaderData?.url ?? "/docs",
+      title: loaderData?.title
+        ? `${loaderData.title} · Relay Docs`
+        : "Relay Docs",
+      description: loaderData?.description ?? DESCRIPTION,
+    });
+    return {
+      meta: [...seo.meta, { name: "theme-color", content: "#ffffff" }],
+      links: [...seo.links, { rel: "stylesheet", href: docsCss }],
+    };
+  },
   component: DocsRoute,
 });
 

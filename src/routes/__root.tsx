@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 import {
-  ClientOnly,
   HeadContent,
   Outlet,
   Scripts,
@@ -29,6 +28,7 @@ import { Toaster } from "sonner";
 import { queryClient } from "@/client/tanstack-db";
 import { getActiveOrganizationId } from "@/lib/auth-session";
 import { relayIconLinks } from "@/lib/relay-icons"; // playbook-seam
+import { RelayClientOnly } from "@/client/components/RelayClientOnly"; // playbook-seam
 
 // Capture Google link error params before the router starts — a route loader
 // redirect would otherwise replace the URL and lose them. See googleLinkError.ts.
@@ -122,7 +122,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <ClientOnly>
+        <RelayClientOnly /* playbook-seam */>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
               <PostHogBootstrap />
@@ -144,7 +144,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               ) : null}
             </TooltipProvider>
           </QueryClientProvider>
-        </ClientOnly>
+        </RelayClientOnly>
         <Scripts />
       </body>
     </html>
