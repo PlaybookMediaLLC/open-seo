@@ -8,9 +8,9 @@ const DESCRIPTION =
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "OpenSEO · Just ship. Rank faster." },
+      { title: "Relay · Just ship. Rank faster." },
       { name: "description", content: DESCRIPTION },
-      { property: "og:title", content: "OpenSEO · Just ship. Rank faster." },
+      { property: "og:title", content: "Relay · Just ship. Rank faster." },
       { property: "og:description", content: DESCRIPTION },
       { name: "theme-color", content: "#000000" },
     ],

@@ -1,358 +1,315 @@
+import { useEffect, useRef } from "react";
 import {
   IconAdjustmentsHorizontal,
-  IconBrandChrome,
-  IconBrandFigma,
-  IconBrandFramer,
-  IconBrandGmail,
-  IconBrandGoogle,
-  IconBrandLinkedin,
-  IconBrandNotion,
-  IconBrandOpenai,
-  IconBrandReddit,
-  IconBrandSlack,
-  IconBrandStripe,
-  IconBrandVercel,
-  IconBrandVscode,
-  IconBrandWebflow,
-  IconBrandWordpress,
-  IconBrandX,
-  IconBrandYoutube,
-  IconChartBar,
-  IconCloud,
   IconCpu,
-  IconMessageChatbot,
-  IconRepeat,
-  IconShoppingBag,
-  IconSparkles,
-  IconTerminal2,
   type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
-import { Eyebrow, Reveal } from "./LandingPrimitives";
+import { Logo, Reveal } from "./LandingPrimitives";
 
-function Point({
-  icon: Icon,
-  color,
-  title,
-  body,
-}: {
-  icon: Icon;
-  color: string;
-  title: string;
-  body: string;
-}) {
-  return (
-    <div className="flex gap-4">
-      <Icon className="mt-0.5 size-6 shrink-0" style={{ color }} stroke={1.5} />
-      <div>
-        <p className="text-[16px] font-medium leading-6 text-[#fafafa]">
-          {title}
-        </p>
-        <p className="mt-0.5 max-w-[330px] text-[15px] leading-[22px] text-[#888b91]">
-          {body}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export function LandingBuildIt() {
-  return (
-    <section className="w-full overflow-hidden px-4 py-28">
-      <Reveal className="mx-auto grid max-w-[1024px] items-center gap-10 md:grid-cols-2">
-        <SettingsMock />
-        <div>
-          <Eyebrow color="#0088ff">Project context</Eyebrow>
-          <h2 className="mt-4 text-[40px] font-medium leading-[44px] tracking-[-1px] text-[#fafafa] sm:text-[48px] sm:leading-[51px]">
-            Tune it yourself
-          </h2>
-          <p className="mt-3 max-w-[380px] text-[16px] leading-[22.4px] text-[#888b91]">
-            Context lets you define how OpenSEO researches, prioritizes and
-            reports. Down to the finest detail.
-          </p>
-          <div className="mt-10 space-y-8">
-            <Point
-              icon={IconAdjustmentsHorizontal}
-              color="#0088ff"
-              title="Beyond keywords: positioning"
-              body="Set goals, audiences and competitors once. Research and reports follow them."
-            />
-            <Point
-              icon={IconCpu}
-              color="#0088ff"
-              title="Pick the right model for the job"
-              body="Use Claude, GPT or Gemini through your own agent, or the built-in assistant."
-            />
-            <Point
-              icon={IconRepeat}
-              color="#0088ff"
-              title="Consistent every week"
-              body="Saved keywords, tracked ranks and recurring audits keep the signal steady."
-            />
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-/** The tilted settings window from superwhisper's "Build it yourself". */
-function SettingsMock() {
-  const nav = ["Dashboard", "Opportunities", "Keywords", "Context"];
-  return (
-    <div className="relative h-[300px] [perspective:1400px]">
-      <div className="absolute left-0 top-0 w-[400px] rounded-[14px] border border-white/10 bg-[#141416] p-3 shadow-[0_40px_100px_-20px_#000] [transform:rotateX(12deg)_rotateY(-16deg)_rotateZ(5deg)]">
-        <div className="mb-3 flex gap-1.5">
-          <span className="size-2 rounded-full bg-[#ff5f57]" />
-          <span className="size-2 rounded-full bg-[#febc2e]" />
-          <span className="size-2 rounded-full bg-[#28c840]" />
-        </div>
-        <div className="grid grid-cols-[110px_1fr] gap-3">
-          <div className="space-y-1">
-            {nav.map((item) => (
-              <p
-                key={item}
-                className={cn(
-                  "rounded-md px-2 py-1 text-[11px]",
-                  item === "Context"
-                    ? "bg-white/10 text-white"
-                    : "text-white/45",
-                )}
-              >
-                {item}
-              </p>
-            ))}
-          </div>
-          <div className="space-y-2">
-            {[
-              ["Site", "playbookmedia.io"],
-              ["Goal", "Grow demo signups"],
-              ["Audience", "B2B marketers"],
-              ["Rivals", "semrush, ahrefs"],
-            ].map(([key, value]) => (
-              <div
-                key={key}
-                className="flex justify-between rounded-md bg-white/[0.05] px-2 py-1.5 text-[11px]"
-              >
-                <span className="text-white/45">{key}</span>
-                <span className="text-white/90">{value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="absolute left-52 top-36 w-[180px] rounded-[12px] border border-white/10 bg-[#1c1c1f] p-2 shadow-[0_30px_60px_-10px_#000] [transform:rotateX(12deg)_rotateY(-16deg)_rotateZ(5deg)]">
-        <p className="px-1.5 pb-1 text-[10px] font-semibold text-white/50">
-          Assistant
-        </p>
-        {["Claude Sonnet 4.5", "GPT-5", "Gemini 3 Flash", "Llama 4"].map(
-          (model, index) => (
-            <p
-              key={model}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[11px]",
-                index === 0 ? "bg-white/10 text-white" : "text-white/70",
-              )}
-            >
-              <IconSparkles className="size-3 text-[#0088ff]" /> {model}
-            </p>
-          ),
-        )}
-      </div>
-    </div>
-  );
-}
-
-const KEYS: { icon: Icon; color: string; bg: string }[][] = [
+const APPS: [string, string, string][][] = [
   [
-    { icon: IconBrandGoogle, color: "#4285f4", bg: "#fff" },
-    { icon: IconChartBar, color: "#fff", bg: "#f9ab00" },
-    { icon: IconBrandSlack, color: "#fff", bg: "#4a154b" },
-    { icon: IconBrandNotion, color: "#000", bg: "#fff" },
-    { icon: IconBrandVscode, color: "#fff", bg: "#0065a9" },
-    { icon: IconBrandOpenai, color: "#fff", bg: "#10a37f" },
-    { icon: IconBrandWordpress, color: "#fff", bg: "#21759b" },
-    { icon: IconBrandWebflow, color: "#fff", bg: "#4353ff" },
-    { icon: IconBrandFramer, color: "#fff", bg: "#000" },
+    ["googlesearchconsole", "#fff", "#458cf5"],
+    ["googleanalytics", "#fff", "#e37400"],
+    ["claude", "#d97757", "#fff"],
+    ["openai", "#000", "#fff"],
+    ["cursor", "#1b1b1b", "#fff"],
+    ["perplexity", "#0f2324", "#1fb8cd"],
+    ["googlegemini", "#fff", "#4f7df3"],
+    ["notion", "#fff", "#000"],
+    ["github", "#181717", "#fff"],
+    ["wordpress", "#21759b", "#fff"],
+    ["webflow", "#146ef5", "#fff"],
+    ["shopify", "#7ab55c", "#fff"],
   ],
   [
-    { icon: IconShoppingBag, color: "#fff", bg: "#5e8e3e" },
-    { icon: IconBrandGmail, color: "#ea4335", bg: "#fff" },
-    { icon: IconBrandVercel, color: "#fff", bg: "#000" },
-    { icon: IconCloud, color: "#fff", bg: "#f38020" },
-    { icon: IconBrandStripe, color: "#fff", bg: "#635bff" },
-    { icon: IconBrandFigma, color: "#fff", bg: "#1e1e1e" },
-    { icon: IconBrandChrome, color: "#fbbc04", bg: "#fff" },
-    { icon: IconMessageChatbot, color: "#fff", bg: "#d97757" },
+    ["wix", "#0c6efc", "#fff"],
+    ["squarespace", "#fff", "#000"],
+    ["ghost", "#15171a", "#fff"],
+    ["framer", "#0055ff", "#fff"],
+    ["nextdotjs", "#000", "#fff"],
+    ["vercel", "#fff", "#000"],
+    ["netlify", "#0e1e25", "#00c7b7"],
+    ["cloudflare", "#fff", "#f38020"],
+    ["astro", "#bc52ee", "#fff"],
+    ["linear", "#5e6ad2", "#fff"],
+    ["figma", "#1e1e1e", "#f24e1e"],
   ],
   [
-    { icon: IconBrandLinkedin, color: "#fff", bg: "#0a66c2" },
-    { icon: IconBrandX, color: "#fff", bg: "#000" },
-    { icon: IconBrandYoutube, color: "#fff", bg: "#ff0000" },
-    { icon: IconBrandReddit, color: "#fff", bg: "#ff4500" },
-    { icon: IconTerminal2, color: "#fff", bg: "#1e1e1e" },
+    ["zapier", "#ff4f00", "#fff"],
+    ["n8n", "#ea4b71", "#fff"],
+    ["hubspot", "#ff7a59", "#fff"],
+    ["gmail", "#fff", "#ea4335"],
+    ["googlesheets", "#34a853", "#fff"],
+    ["googledocs", "#4285f4", "#fff"],
+    ["googletagmanager", "#fff", "#246fdb"],
+    ["youtube", "#ff0000", "#fff"],
+    ["reddit", "#ff4500", "#fff"],
+    ["x", "#000", "#fff"],
+    ["substack", "#ff6719", "#fff"],
   ],
 ];
 
-export function LandingIntegrations() {
+function Key({ className }: { className?: string }) {
   return (
-    <section className="w-full overflow-hidden px-4 pb-20 pt-32 text-center">
-      <Reveal>
-        <Eyebrow color="#83c9ff">Integrations</Eyebrow>
-        <h2 className="mt-3 text-[36px] font-semibold leading-[38px] text-[#70757c] sm:text-[48px] sm:leading-[51px]">
+    <span className={cn("landing-key", className)}>
+      <span className="landing-key-inner" />
+    </span>
+  );
+}
+
+function AppKey({ app: [slug, bg, fg] }: { app: [string, string, string] }) {
+  return (
+    <span className="landing-key">
+      <span
+        className="landing-key-inner landing-key-app"
+        style={{ backgroundColor: bg }}
+      >
+        <Logo slug={slug} color={fg} className="size-[22px]" />
+      </span>
+    </span>
+  );
+}
+
+export function LandingIntegrations() {
+  const section = useRef<HTMLElement>(null);
+  const keyboard = useRef<HTMLDivElement>(null);
+
+  // The keyboard rises and turns with the scroll, as on superwhisper.
+  useEffect(() => {
+    const scroller = document.querySelector(".landing-scroll");
+    const node = section.current;
+    if (!scroller || !node) return;
+    let queued = false;
+    const apply = () => {
+      queued = false;
+      const top = node.getBoundingClientRect().top;
+      // Rises into place, then drifts slowly so it never covers the title.
+      const lift = Math.min(400, (top - 57) * (top > 57 ? 0.92 : 0.2));
+      const turn = Math.max(-20, Math.min(8, -2.5 + (59 - top) * 0.027));
+      const fit = Math.min(1, (window.innerWidth - 24) / 748);
+      if (keyboard.current) {
+        keyboard.current.style.transform = `translateX(-50%) translateY(${lift}px) rotate(${turn}deg) scale(${fit})`;
+      }
+    };
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(apply);
+    };
+    apply();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  const [top, middle, bottom] = APPS;
+  return (
+    <section
+      id="integrations"
+      ref={section}
+      className="relative h-[766px] w-full overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0 z-10 hidden bg-[radial-gradient(circle_at_center,transparent_0,#000_50%)] md:block" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black to-transparent to-15%" />
+      <div className="absolute top-[100px] z-20 flex w-full flex-col items-center px-4 text-center">
+        <p className="text-[14px] text-[#83c9ff]">Integrations</p>
+        <h2 className="mt-4 max-w-[530px] px-8 text-[40px] font-semibold leading-[44px] text-[#70757c] sm:text-[48px] sm:leading-[51px]">
           Works <span className="text-[#fafafa]">anywhere</span>
           <br />
           you publish
         </h2>
-        <p className="mt-5 text-[16px] leading-[22.4px] text-[#fafafa]">
+        <p className="mt-6 w-[380px] max-w-full text-[16px] leading-[22.4px] text-[#fafafa]">
           WordPress, Webflow, Next.js…
+          <br />
+          <span className="text-[#888b90]">
+            You approve it, Relay ships it.
+          </span>
         </p>
-        <p className="text-[16px] leading-[22.4px] text-[#888b91]">
-          You approve it, OpenSEO ships it.
-        </p>
-      </Reveal>
-      <div className="relative mx-auto mt-14 h-[300px] max-w-[900px] overflow-hidden">
-        <div className="absolute left-1/2 top-4 w-[700px] -translate-x-1/2 rotate-[3deg] rounded-[13px] border-[1.5px] border-[#999] bg-gradient-to-b from-[#7e7e7e] to-[#4e4e4e] p-2 shadow-[0_0_45px_0_#000]">
-          {KEYS.map((row, rowIndex) => (
-            <div
-              key={rowIndex}
-              className="mb-1 flex gap-1"
-              style={{ paddingLeft: 14 + rowIndex * 18 }}
-            >
-              <Blank wide />
-              {row.map(({ icon: KeyIcon, color, bg }, i) => (
-                <span
-                  key={i}
-                  className="grid size-[42px] shrink-0 place-items-center rounded-[8px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.25),0_1px_0_rgb(255_255_255/0.25)]"
-                  style={{ background: bg }}
-                >
-                  <KeyIcon className="size-6" style={{ color }} stroke={1.8} />
-                </span>
-              ))}
-              <Blank grow />
-            </div>
+      </div>
+      <div ref={keyboard} aria-hidden className="landing-keyboard">
+        <div className="landing-keyboard-row">
+          {Array.from({ length: 13 }, (_, i) => (
+            <Key key={i} />
           ))}
-          <div className="flex gap-1">
-            {[1, 1, 1, 7, 1, 1].map((w, i) => (
-              <span
-                key={i}
-                className="h-[42px] rounded-[8px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]"
-                style={{ flex: w }}
-              />
-            ))}
-          </div>
+          <Key className="landing-key-tab" />
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-black" />
+        <div className="landing-keyboard-row">
+          <Key className="landing-key-tab" />
+          {top?.map((app) => (
+            <AppKey key={app[0]} app={app} />
+          ))}
+          <Key className="landing-key-enter" />
+        </div>
+        <div className="landing-keyboard-row">
+          <Key className="landing-key-caps" />
+          {middle?.map((app) => (
+            <AppKey key={app[0]} app={app} />
+          ))}
+          <Key className="landing-key-return" />
+        </div>
+        <div className="landing-keyboard-row">
+          <Key className="landing-key-cmd" />
+          {bottom?.map((app) => (
+            <AppKey key={app[0]} app={app} />
+          ))}
+          <Key className="landing-key-shift" />
+        </div>
+        <div className="landing-keyboard-row">
+          <Key />
+          <Key />
+          <Key />
+          <Key className="landing-key-cmd" />
+          <Key className="landing-key-space" />
+          <Key className="landing-key-cmd" />
+          <Key />
+          <Key className="landing-key-half landing-key-side" />
+          <span className="flex flex-col">
+            <Key className="landing-key-half landing-key-up" />
+            <Key className="landing-key-half landing-key-down" />
+          </span>
+          <Key className="landing-key-half landing-key-side" />
+        </div>
       </div>
     </section>
-  );
-}
-
-function Blank({ wide, grow }: { wide?: boolean; grow?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "h-[42px] shrink-0 rounded-[8px] bg-[#2a2a2c] shadow-[inset_0_-3px_0_#111]",
-        wide && "w-[42px]",
-        grow && "flex-1",
-      )}
-    />
   );
 }
 
 export function LandingAgents() {
   return (
-    <section id="agents" className="w-full px-4 pb-32 pt-10">
-      <Reveal className="mx-auto grid max-w-[1024px] items-center gap-12 md:grid-cols-[1fr_1.45fr]">
-        <div>
-          <Eyebrow color="#ffdd00" className="font-normal tracking-normal">
-            Beep boop
-          </Eyebrow>
-          <h2 className="mt-3 text-[30px] font-normal leading-9 tracking-[-0.75px] text-[#fafafa]">
-            Faster agentic SEO
-          </h2>
-          <p className="mt-2 max-w-[360px] text-[16px] leading-[22.4px] text-[#c4c5c9]">
-            Use OpenSEO with Claude Code, Codex, Cursor or any other MCP client,
-            without opening a dashboard.
-          </p>
-          <div className="mt-12 space-y-10">
-            <Point
-              icon={IconAdjustmentsHorizontal}
-              color="#ffdd00"
-              title="Works where you code"
-              body="One MCP URL gives your agent keyword, SERP, backlink and audit tools."
-            />
-            <Point
-              icon={IconCpu}
-              color="#ffdd00"
-              title="Less clicking, more shipping"
-              body="Ask for a competitor gap analysis and get the report back in minutes."
-            />
-          </div>
-        </div>
+    <section
+      id="agents"
+      className="flex w-full flex-col items-center gap-y-12 px-6 pb-32 pt-32 md:flex-row md:justify-center md:gap-x-12 md:gap-y-0 md:px-0"
+    >
+      <Reveal className="flex w-full max-w-[350px] flex-col md:z-40">
+        <p className="text-sm text-[#ffdd00]">Beep boop</p>
+        <h2 className="mt-4 text-3xl tracking-tight text-[#fafafa]">
+          Faster agentic SEO
+        </h2>
+        <p className="mt-2 text-sm text-[#c4c5c9]">
+          Use Relay with Claude Code, Codex, Cursor, ChatGPT or any other MCP
+          client, without opening a dashboard.
+        </p>
+        <AgentPoint
+          icon={IconAdjustmentsHorizontal}
+          title="Works where you code"
+          body="One MCP URL gives your agent 76 tools: keywords, SERPs, backlinks, audits and your Search Console data."
+        />
+        <AgentPoint
+          icon={IconCpu}
+          title="Less clicking, more shipping"
+          body="Ask for a competitor gap analysis and get the fix as a pull request, not a spreadsheet."
+        />
+      </Reveal>
+      <Reveal delay={120} className="w-full max-w-[582px]">
         <Terminal />
       </Reveal>
     </section>
   );
 }
 
+function AgentPoint({
+  icon: Icon,
+  title,
+  body,
+}: {
+  icon: Icon;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="mt-12 flex items-center">
+      <Icon className="mr-4 size-6 shrink-0 text-[#ffdd00]" stroke={1.5} />
+      <div>
+        <p className="text-base font-medium text-[#fafafa]">{title}</p>
+        <p className="text-sm text-[#888b91]">{body}</p>
+      </div>
+    </div>
+  );
+}
+
+const SESSION: [string, string][] = [
+  ["tool", "relay - get_search_console_performance (MCP)"],
+  ["dim", "  ⎿  14 queries rank between 8 and 20"],
+  ["tool", "relay - get_serp_results (MCP)"],
+  ["dim", "  ⎿  Top 10 for “seo audit checklist”"],
+  ["text", "The /pricing title hides the price. I’ll rewrite it."],
+  ["edit", "Update(app/pricing/page.tsx)"],
+  ["del", "  12 -   title: “Pricing”,"],
+  ["add", "  12 +   title: “Pricing: plans from $0 · Relay”,"],
+];
+
+const SESSION_STYLE: Record<string, string> = {
+  tool: "text-white/90",
+  dim: "text-white/45",
+  text: "text-white/80",
+  edit: "text-white/90",
+  del: "text-[#ff6b6b]",
+  add: "text-[#27c93f]",
+};
+
+/** A Claude Code session that runs Relay tools, line by line. */
 function Terminal() {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0d0d0d]">
-      <div className="flex items-center gap-2 border-b border-white/5 px-3 py-2.5">
-        <span className="size-3 rounded-full bg-[#ff5f57]" />
-        <span className="size-3 rounded-full bg-[#febc2e]" />
-        <span className="size-3 rounded-full bg-[#28c840]" />
+    <div className="relative h-[399px] overflow-hidden rounded-[11px] border border-[#2d2d2d] bg-[#0b0b0b] shadow-[0_3px_20px_0_rgb(0_0_0/0.25)]">
+      <div className="flex gap-[7px] border-b border-[#2d2d2d] p-[10px]">
+        <span className="size-[11px] rounded-full bg-[#ff5f56]" />
+        <span className="size-[11px] rounded-full bg-[#ffbd2e]" />
+        <span className="size-[11px] rounded-full bg-[#27c93f]" />
       </div>
-      <div className="relative h-[340px] p-4 font-mono text-[11.5px] leading-[1.5]">
-        <div className="grid grid-cols-[1.6fr_1fr] border border-[#e6714f]/70 p-3">
-          <div className="text-center text-white/70">
-            <p className="-mt-6 mb-2 w-fit bg-[#0d0d0d] px-1 text-left text-[#e6714f]">
-              Claude Code
-            </p>
+      <div className="px-4 py-3 font-mono text-[11px] text-white">
+        <div className="relative grid grid-cols-[1.7fr_1fr] rounded-[3px] border border-[#e6714f] px-3 pb-2.5 pt-3.5">
+          <p className="absolute -top-[8px] left-3 bg-[#0b0b0b] px-1 text-[#e6714f]">
+            Claude Code <span className="text-white/50">v2.1.12</span>
+          </p>
+          <div className="text-center leading-[1.25]">
             <p>Welcome back!</p>
-            <p className="my-2 text-[22px] leading-none text-[#e6714f]">▟█▙</p>
-            <p className="text-white/45">openseo MCP · 24 tools</p>
+            <pre className="my-2 font-mono leading-none text-[#e6714f]">
+              {" ▐▛███▜▌\n▝▜█████▛▘\n  ▘▘ ▝▝  "}
+            </pre>
+            <p className="text-white/50">Opus 4.5 · relay MCP</p>
+            <p className="text-white/50">~/Dev/acme-site</p>
           </div>
-          <div className="border-l border-[#e6714f]/70 pl-3 text-white/45">
-            <p className="text-[#e6714f]">Tips</p>
-            <p>Ask for a keyword gap…</p>
-            <p className="mt-1 text-[#e6714f]">Recent</p>
-            <p>No recent activity</p>
+          <div className="border-l border-[#e6714f] pl-3 leading-[1.3]">
+            <p className="text-[#e6714f]">Tips for getting started</p>
+            <p className="truncate text-white/50">Run /mcp to list tools…</p>
+            <p className="my-1 border-t border-[#e6714f]/50" />
+            <p className="text-[#e6714f]">Recent activity</p>
+            <p className="text-white/50">No recent activity</p>
           </div>
         </div>
-        <div className="mt-4 space-y-1 text-white/60">
-          <p>
-            <span className="text-[#7b61ff]">❯</span>{" "}
-            <span className="text-white">
-              find keywords where we rank 8-20 and fix the titles
-            </span>
-          </p>
-          <p>
-            <span className="text-[#27c93f]">●</span> openseo.search_performance
-          </p>
-          <p>
-            <span className="text-[#27c93f]">●</span> openseo.keyword_research
-          </p>
-          <p>
-            <span className="text-[#ffd700]">●</span> Update{" "}
-            <span className="text-white/80">app/pricing/page.tsx</span>
-          </p>
-          <p className="text-[#27c93f]">
-            + title: “Pricing · The SEO toolkit for builders”
-          </p>
-        </div>
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#0d0d0d]" />
-        <div className="absolute bottom-6 left-1/2 flex h-9 -translate-x-1/2 items-center gap-[3px] rounded-full border border-white/30 bg-black px-4">
-          {[0.5, 0.8, 1, 0.7, 0.4].map((h, i) => (
-            <span
-              key={i}
-              className="landing-bar block w-[2px] rounded-full bg-white"
-              style={{ height: `${h * 12}px`, animationDelay: `${i * 0.12}s` }}
-            />
+        <p className="landing-arrive mt-3 leading-[1.4] text-white/90">
+          <span className="text-[#7b61ff]">❯ </span>
+          Find keywords where we rank 8 to 20 and fix the titles on those pages.
+        </p>
+        <div className="mt-3 space-y-[3px] leading-[1.35]">
+          {SESSION.map(([kind, line], index) => (
+            <p
+              key={line}
+              className={cn(
+                "landing-arrive whitespace-pre-wrap",
+                SESSION_STYLE[kind],
+              )}
+              style={{ animationDelay: `${600 + index * 260}ms` }}
+            >
+              {kind === "tool" || kind === "edit" ? (
+                <span
+                  className={
+                    kind === "edit" ? "text-[#ffd700]" : "text-[#27c93f]"
+                  }
+                >
+                  ●{" "}
+                </span>
+              ) : null}
+              {line}
+            </p>
           ))}
         </div>
       </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-black/90" />
     </div>
   );
 }

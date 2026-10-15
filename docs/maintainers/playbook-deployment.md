@@ -13,9 +13,9 @@ This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://seo
 
 ## Current status
 
-`https://seo.playbookmedia.io` is public. It runs `AUTH_MODE=hosted` with `AUTH_GOOGLE_ONLY=true`: anyone can sign up and sign in with Google, and the email/password sign-in, sign-up and reset endpoints are disabled server-side. `/privacy` and `/terms` are public Playbook Media LLC pages, with contact `team@playbookmedia.io`. `/` is a public, dark marketing landing page (modelled on superwhisper.com: floating pill nav, animated aurora hero, product demo, pricing and FAQ). It has no GitHub or self-hosting links. Signed-in users land on `/app`, which opens their last project, and every sign-in redirect defaults there. Inside the app the shell is a floating inset frame on a soft sidebar, and every page shares the `page-pad` gutter defined in `app.css`. Deploys run automatically from `main`. The verify step checks that the public privacy page and the landing page are served.
+`https://seo.playbookmedia.io` is public. It runs `AUTH_MODE=hosted` with `AUTH_GOOGLE_ONLY=true`: anyone can sign up and sign in with Google, and the email/password sign-in, sign-up and reset endpoints are disabled server-side. The product is branded **Relay** (see [Relay brand](#relay-brand)). `/privacy` and `/terms` are public Playbook Media LLC pages under Delaware law, with contact `team@playbookmedia.io`. `/` is a public, dark marketing landing page modelled on superwhisper.com: a floating pill nav, a sky hero that shrinks into a framed desktop showing the product, feature cards, pricing and an FAQ. It has no GitHub or self-hosting links. Signed-in users land on `/app`, which opens their last project, and every sign-in redirect defaults there. Inside the app the shell is a floating inset frame on a soft sidebar, and every page shares the `page-pad` gutter defined in `app.css`. Deploys run automatically from `main`. The verify step checks that the public privacy page and the landing page are served.
 
-Google OAuth uses a Web client in project `playbook-openseo-prod` (organization solomon-ai.co). The consent screen is External and In production, with the home, privacy and terms URLs and the authorized domain `playbookmedia.io`. The redirect URIs are `/api/auth/callback/google` (sign-in), `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback`. The client ID and secret live only in `ENV_PLAYBOOK`.
+Google OAuth uses a Web client in project `playbook-openseo-prod` (organization solomon-ai.co). The consent screen is External and In production, with the app name `Relay`, the home, privacy and terms URLs and the authorized domain `playbookmedia.io`. Google shows the app name only after brand verification, which is not done yet. The redirect URIs are `/api/auth/callback/google` (sign-in), `/api/gsc/oauth/callback` and `/api/ga4/oauth/callback`. The client ID and secret live only in `ENV_PLAYBOOK`.
 
 Open items:
 
@@ -24,6 +24,18 @@ Open items:
 - **Icons:** `@tabler/icons-react`. Every icon's default size and stroke come from `--icon-size` and `--icon-stroke` in `src/client/styles/app.css`. Use `icon-nav` and `icon-card` for Eigenn's 14px and 20px sizes.
 - **DataForSEO:** pay-as-you-go account with API credentials (Base64 `login:password`) in `ENV_PLAYBOOK` as `DATAFORSEO_API_KEY`. Calls fail with DataForSEO code 40104 until the account's email/phone verification is completed in the DataForSEO panel. Paid use needs a $50 minimum deposit. Users are billed through Autumn credits at the 1.28x markup in `src/shared/billing.ts`.
 - **Turnstile:** a widget exists for `seo.playbookmedia.io`. Its keys are in `ENV_PLAYBOOK`, but Google-only mode does not use them.
+
+## Relay brand
+
+The upstream code says "OpenSEO". This fork ships the product as Relay without editing upstream files, so upstream merges stay clean:
+
+- `vite-plugin-relay-brand.ts` rewrites "OpenSEO" to "Relay" in every app module at dev and build time. It also points `support@openseo.so`, `https://app.openseo.so` and the upstream pricing link at Playbook Media.
+- Unit tests run without the plugin and keep upstream's strings.
+- Static files skip the plugin. `src/public/site.webmanifest` and the icon PNGs carry the Relay name and mark directly.
+- Seams are marked `// playbook-seam`. Audit them with `grep -rn playbook-seam vite.config.ts`.
+- After an upstream merge, run `pnpm vite build` and confirm that `grep -rao OpenSEO dist` finds nothing.
+
+Known gaps: in-app help links still open the upstream docs at `openseo.so/docs`, API keys keep the `oseo_` prefix, and `plugins/`, `docs/` and `web/` are upstream content that this deployment does not serve.
 
 ## System context
 
