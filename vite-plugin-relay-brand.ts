@@ -14,6 +14,8 @@ import type { Plugin } from "vite";
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
  *   brand, because static files skip the module pipeline.
  * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.
+ * - plugins/openseo/assets/icon.png and the Cursor manifest's logo URL: the
+ *   agent plugin shows the Relay mark.
  */
 const RELAY = "https://relay.playbookmedia.io";
 
