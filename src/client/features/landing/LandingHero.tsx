@@ -11,7 +11,7 @@ import {
   IconWifi,
 } from "@tabler/icons-react";
 import { BrandMark } from "@/client/components/BrandMark";
-import { AppWindow, type ShotKey } from "./AppWindow";
+import { AppWindow } from "./AppWindow";
 import { Logo } from "./LandingPrimitives";
 
 /** The floating pill nav. Like superwhisper's, it stays out of the way until
@@ -72,27 +72,21 @@ const SKIES = [
 ] as const;
 type Sky = (typeof SKIES)[number]["id"];
 
-/** The screens the framed desktop steps through while the hero is pinned. */
-const SHOTS: ShotKey[] = ["opportunities", "rankTracking", "savedKeywords"];
-
 /**
  * The hero, built like superwhisper's: a pinned full-bleed sky that shrinks
  * into a 1024 x 627 rounded frame as the page scrolls. The intro fades out,
- * and the frame becomes a small desktop showing the product. One
+ * and the frame becomes a small desktop playing a walkthrough of the app. One
  * rAF-throttled scroll handler drives it all. Phones get a static hero.
  */
 export function LandingHero({ signedIn }: { signedIn: boolean }) {
   const [sky, setSky] = useState<Sky>("night");
-  const [shot, setShot] = useState(0);
-  const stage = useRef<HTMLElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const intro = useRef<HTMLDivElement>(null);
   const desk = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const scroller = document.querySelector(".landing-scroll");
-    const node = stage.current;
-    if (!scroller || !node) return;
+    if (!scroller) return;
     const wide = window.matchMedia("(min-width: 800px)");
     let queued = false;
 
@@ -121,10 +115,6 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
         desk.current.style.opacity = String(show);
         desk.current.style.transform = `translateY(${(1 - show) * 24}px)`;
       }
-      // Once framed, the rest of the pinned scroll steps through the app.
-      const rest = node.offsetHeight - vh - shrinkEnd;
-      const t = rest > 0 ? clamp((scroll - shrinkEnd) / rest) : 0;
-      setShot(Math.min(SHOTS.length - 1, Math.floor(t * SHOTS.length)));
     };
 
     const onScroll = () => {
@@ -144,7 +134,7 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
 
   return (
     <>
-      <section id="top" ref={stage} className="landing-hero relative w-full">
+      <section id="top" className="landing-hero relative w-full">
         <div className="sticky top-0 h-[100svh] overflow-hidden bg-black">
           <div ref={frame} className="landing-frame">
             {SKIES.map(({ id }) => (
@@ -200,7 +190,7 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
             >
               <MenuBar />
               <div className="absolute inset-0 flex items-center justify-center pb-16 pt-[34px]">
-                <AppWindow shot={SHOTS[shot]} className="landing-desk-window" />
+                <AppWindow className="landing-desk-window" />
               </div>
               <Dock />
             </div>
