@@ -20,6 +20,7 @@ import {
 } from "@/client/components/ui/sidebar";
 import { BrandMark } from "@/client/components/BrandMark";
 import { useAppDocumentTitle } from "@/client/layout/useAppDocumentTitle"; // playbook-seam
+import { useAppZoom } from "@/client/layout/useAppZoom"; // playbook-seam
 
 export function AuthenticatedAppLayout({
   children,
@@ -66,6 +67,7 @@ export function AuthenticatedAppLayout({
   const sidebarProjectPending =
     sidebarProjectId === null && projectsQuery.isPending;
   useAppDocumentTitle(sidebarProjectId, ready); // playbook-seam
+  useAppZoom(); // playbook-seam
   // GSC opportunities, experiments and publishing setup do not use DataForSEO. Do not
   // interrupt their review/approval flow with an unrelated paid-research modal.
   const isGrowthWorkflow =
