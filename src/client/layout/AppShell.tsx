@@ -113,7 +113,11 @@ export function AuthenticatedAppLayout({
     !showMissingSeoApiKeyModal;
 
   return (
-    <SidebarProvider className="h-[100dvh] min-h-0 overflow-hidden">
+    <SidebarProvider
+      // The sidebar remembers its rail or open state across reloads.
+      defaultOpen={!document.cookie.split("; ").includes("sidebar_state=false")}
+      className="h-[100dvh] min-h-0 overflow-hidden"
+    >
       <Sidebar
         projectId={sidebarProjectId}
         projectPending={sidebarProjectPending}
@@ -123,7 +127,7 @@ export function AuthenticatedAppLayout({
           whisper of depth, so the page reads as one sheet on the sidebar. */}
       <SidebarInset
         data-shell-chrome
-        className="min-h-0 overflow-hidden md:!m-2 md:!ml-0 md:!rounded-xl md:border md:border-sidebar-border md:!shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)] md:peer-data-[state=collapsed]:!ml-2"
+        className="min-h-0 overflow-hidden md:!m-2 md:!ml-0 md:!rounded-xl md:border md:border-sidebar-border md:!shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)]"
       >
         <TopBar />
         <SeoApiStatusBanners
@@ -152,11 +156,11 @@ export function AuthenticatedAppLayout({
   );
 }
 
-// Mobile: the drawer button and brand. Desktop: only when the sidebar is
-// collapsed, a slim strip with the button to bring it back.
+// Mobile: the drawer button and brand. Desktop has the sidebar's icon rail
+// when collapsed, so it needs no strip.
 function TopBar() {
-  const { state, isMobile } = useSidebar();
-  if (!isMobile && state === "expanded") return null;
+  const { isMobile } = useSidebar();
+  if (!isMobile) return null;
   return (
     <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border/70 bg-background/80 px-2 backdrop-blur-md">
       <SidebarTrigger
