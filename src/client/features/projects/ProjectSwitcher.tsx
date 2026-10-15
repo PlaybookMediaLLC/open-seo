@@ -37,11 +37,15 @@ function matchesProject(project: ProjectSummary, query: string) {
 export function ProjectSwitcher({
   activeProjectId,
   ready,
+  compact = false,
   onCloseDrawer,
 }: {
   activeProjectId: string | null;
   /** The session is confirmed, so the projects list can load. */
   ready: boolean;
+  /** The collapsed sidebar rail: just the project's initial, the list opens
+   *  to the side. */
+  compact?: boolean;
   onCloseDrawer?: () => void;
 }) {
   const router = useRouter();
@@ -52,6 +56,9 @@ export function ProjectSwitcher({
   const activeProject =
     projects.find((project) => project.id === activeProjectId) ?? null;
 
+  if (projectsQuery.isPending && compact) {
+    return <Skeleton className="size-8 rounded-lg" aria-busy />;
+  }
   if (projectsQuery.isPending) {
     // The loaded switcher's box: a name line, a domain line and the settings
     // button's slot, so nothing moves when the projects arrive.
@@ -107,52 +114,65 @@ export function ProjectSwitcher({
           if (project) handleSelect(project);
         }}
       >
-        <div className="group/switcher flex h-12 items-center rounded-xl border border-sidebar-border bg-sidebar-active shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+        {compact ? (
           <ComboboxTrigger
-            aria-label="Switch project"
-            className="flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-l-xl pl-2 pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            aria-label={`Switch project${activeProject ? ` (${activeProject.name})` : ""}`}
+            title={activeProject?.name}
+            className="grid size-8 place-items-center rounded-lg bg-foreground text-[12px] font-semibold text-background outline-none ring-offset-2 ring-offset-sidebar transition-opacity hover:opacity-85 focus-visible:ring-2 focus-visible:ring-sidebar-ring [&>svg]:hidden"
           >
-            <span
-              aria-hidden
-              className="grid size-7 shrink-0 place-items-center rounded-lg bg-foreground text-[12px] font-semibold text-background"
-            >
-              {(activeProject?.name ?? "?").trim().charAt(0).toUpperCase()}
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col leading-tight">
-              <span className="truncate text-[13px] font-medium">
-                {activeProject?.name ?? "Select project"}
-              </span>
-              {activeProject?.domain ? (
-                <span className="truncate text-[11px] text-muted-foreground">
-                  {activeProject.domain}
-                </span>
-              ) : null}
-            </span>
+            {(activeProject?.name ?? "?").trim().charAt(0).toUpperCase()}
           </ComboboxTrigger>
-          {activeProject ? (
-            <Button
-              nativeButton={false}
-              render={
-                <Link
-                  to="/p/$projectId/settings"
-                  params={{ projectId: activeProject.id }}
-                  aria-label="Project settings"
-                  title="Project settings"
-                  onClick={() => {
-                    setOpen(false);
-                    onCloseDrawer?.();
-                  }}
-                />
-              }
-              variant="ghost"
-              size="icon-sm"
-              className="mr-1.5 text-muted-foreground hover:text-foreground"
+        ) : (
+          <div className="group/switcher flex h-12 items-center rounded-xl border border-sidebar-border bg-sidebar-active shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+            <ComboboxTrigger
+              aria-label="Switch project"
+              className="flex h-full min-w-0 flex-1 items-center gap-2.5 rounded-l-xl pl-[9px] pr-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              <Settings className="size-4" />
-            </Button>
-          ) : null}
-        </div>
-        <ComboboxContent className="w-(--anchor-width)">
+              <span
+                aria-hidden
+                className="grid size-7 shrink-0 place-items-center rounded-lg bg-foreground text-[12px] font-semibold text-background"
+              >
+                {(activeProject?.name ?? "?").trim().charAt(0).toUpperCase()}
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col leading-tight">
+                <span className="truncate text-[13px] font-medium">
+                  {activeProject?.name ?? "Select project"}
+                </span>
+                {activeProject?.domain ? (
+                  <span className="truncate text-[11px] text-muted-foreground">
+                    {activeProject.domain}
+                  </span>
+                ) : null}
+              </span>
+            </ComboboxTrigger>
+            {activeProject ? (
+              <Button
+                nativeButton={false}
+                render={
+                  <Link
+                    to="/p/$projectId/settings"
+                    params={{ projectId: activeProject.id }}
+                    aria-label="Project settings"
+                    title="Project settings"
+                    onClick={() => {
+                      setOpen(false);
+                      onCloseDrawer?.();
+                    }}
+                  />
+                }
+                variant="ghost"
+                size="icon-sm"
+                className="mr-1.5 text-muted-foreground hover:text-foreground"
+              >
+                <Settings className="size-4" />
+              </Button>
+            ) : null}
+          </div>
+        )}
+        <ComboboxContent
+          side={compact ? "right" : "bottom"}
+          className={compact ? "w-64" : "w-(--anchor-width)"}
+        >
           {projects.length >= SEARCH_THRESHOLD ? (
             <ComboboxInput
               className="w-auto"

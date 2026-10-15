@@ -12,7 +12,6 @@ import {
   IconSettings as Settings,
   IconSelector as Selector,
 } from "@tabler/icons-react";
-import { BrandMark } from "@/client/components/BrandMark";
 import { organizationContextQueryOptions } from "@/client/features/team/organizationQueries";
 import { switchOrganization } from "@/serverFunctions/organization";
 import { clearLastProjectId } from "@/client/lib/active-project";
@@ -41,9 +40,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSkeleton,
-  SidebarTrigger,
+  SidebarRail,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import {
+  SidebarBrand,
+  useDesktopShortcut,
+  useRail,
+} from "@/client/components/SidebarChrome";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,8 +59,9 @@ import {
 } from "@/client/components/ui/dropdown-menu";
 
 // Quiet rows that brighten on hover; the active row is a soft raised pill.
+// In the collapsed rail the same rows become 32px icon buttons.
 const navButtonClass =
-  "h-8 rounded-lg px-2.5 text-[13px] text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4 [&_svg]:opacity-70 data-active:[&_svg]:opacity-100";
+  "h-8 gap-2.5 rounded-lg px-2.5 text-[13px] text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4 [&_svg]:opacity-70 data-active:[&_svg]:opacity-100 hover:[&_svg]:opacity-100";
 
 function SidebarNavLink({
   icon: Icon,
@@ -84,6 +89,7 @@ function SidebarNavLink({
     <SidebarMenuButton
       render={<span />}
       isActive={isActive}
+      tooltip={label}
       aria-disabled={placeholder || undefined}
       className={navButtonClass}
     >
@@ -139,27 +145,17 @@ export function Sidebar({
   // SAM is hidden from navigation: the chat route is only reachable by URL,
   // and while it is open its chat list takes the nav's place.
   const onSamRoute = pathname.includes("/sam");
+  const rail = useRail();
+  useDesktopShortcut();
 
   return (
-    <UiSidebar variant="inset" collapsible="offcanvas" className="md:!p-0">
-      <SidebarHeader className="gap-3 px-3 pb-2 pt-3.5">
-        <div className="flex items-center justify-between px-1">
-          <Link
-            to="/app"
-            onClick={() => setOpenMobile(false)}
-            className="flex items-center gap-2 text-[15px] font-semibold tracking-tight text-sidebar-foreground"
-          >
-            <BrandMark className="size-5" />
-            OpenSEO
-          </Link>
-          <SidebarTrigger
-            aria-label="Collapse sidebar"
-            className="hidden size-7 text-sidebar-foreground/50 hover:text-sidebar-foreground md:inline-flex"
-          />
-        </div>
+    <UiSidebar variant="inset" collapsible="icon" className="md:!p-0">
+      <SidebarHeader className="gap-3 px-3 pb-2 pt-3.5 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
+        <SidebarBrand />
         <ProjectSwitcher
           activeProjectId={projectId}
           ready={ready}
+          compact={rail}
           onCloseDrawer={() => setOpenMobile(false)}
         />
       </SidebarHeader>
@@ -182,12 +178,16 @@ export function Sidebar({
             aria-busy={navPlaceholder || undefined}
           >
             {navGroups.map((group) => (
-              <SidebarGroup key={group.label} className="px-3 py-1.5">
+              <SidebarGroup
+                key={group.label}
+                // In the rail, a hairline replaces each group's label.
+                className="px-3 py-1.5 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:not-first:mt-1 group-data-[collapsible=icon]:not-first:pt-2.5 group-data-[collapsible=icon]:not-first:before:absolute group-data-[collapsible=icon]:not-first:before:inset-x-4 group-data-[collapsible=icon]:not-first:before:top-0 group-data-[collapsible=icon]:not-first:before:h-px group-data-[collapsible=icon]:not-first:before:bg-sidebar-border"
+              >
                 <SidebarGroupLabel className="h-7 px-2.5 text-[11px] font-medium text-sidebar-foreground/40">
                   {group.label}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SidebarMenu className="gap-px">
+                  <SidebarMenu className="gap-px group-data-[collapsible=icon]:items-center">
                     {group.items.map((item) => {
                       const { icon, label, ...linkProps } = item;
                       return (
@@ -207,12 +207,13 @@ export function Sidebar({
           </nav>
         )}
       </SidebarContent>
-      <AccountFooter ready={ready} />
+      <AccountFooter ready={ready} rail={rail} />
+      <SidebarRail />
     </UiSidebar>
   );
 }
 
-function AccountFooter({ ready }: { ready: boolean }) {
+function AccountFooter({ ready, rail }: { ready: boolean; rail: boolean }) {
   const { data: session } = useSession();
   const { setOpenMobile } = useSidebar();
   const email = session?.user?.email;
@@ -240,8 +241,8 @@ function AccountFooter({ ready }: { ready: boolean }) {
   }
 
   return (
-    <UiSidebarFooter className="gap-0 px-3 pb-safe pt-2">
-      <SidebarMenu className="gap-px">
+    <UiSidebarFooter className="gap-0 px-3 pb-safe pt-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pb-3">
+      <SidebarMenu className="gap-px group-data-[collapsible=icon]:items-center">
         <SidebarNavLink
           icon={CircleHelp}
           label="Help & Community"
@@ -253,7 +254,7 @@ function AccountFooter({ ready }: { ready: boolean }) {
               <DropdownMenuTrigger
                 render={
                   <SidebarMenuButton
-                    className="mt-1 h-12 gap-2.5 rounded-xl border border-sidebar-border bg-sidebar-active px-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)] hover:bg-sidebar-active data-popup-open:bg-sidebar-active"
+                    className="mt-1 h-12 gap-2.5 rounded-xl border border-sidebar-border bg-sidebar-active px-2 shadow-[0_1px_2px_rgb(0_0_0/0.04)] hover:bg-sidebar-active data-popup-open:bg-sidebar-active group-data-[collapsible=icon]:mt-2 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:border-0 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0! group-data-[collapsible=icon]:shadow-none"
                     aria-label="Open account menu"
                   />
                 }
@@ -278,7 +279,11 @@ function AccountFooter({ ready }: { ready: boolean }) {
                 </span>
                 <Selector className="!size-3.5 text-sidebar-foreground/40" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" className="w-56">
+              <DropdownMenuContent
+                side={rail ? "right" : "top"}
+                align={rail ? "end" : "center"}
+                className="w-56"
+              >
                 {organizations.length > 1 ? (
                   <>
                     <DropdownMenuGroup>
