@@ -52,5 +52,8 @@
     "shadcn",
     // Imported by the landing page's landing.css
     "@fontsource-variable/inter",
+    // Imported by the docs' docs.css
+    "@fontsource-variable/geist",
+    "@fontsource-variable/geist-mono",
   ],
 }

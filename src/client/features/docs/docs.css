@@ -1,9 +1,12 @@
 /* Relay docs (/docs): Fumadocs on its own Tailwind build, loaded only on docs
-   pages. Always dark and on pure black, to match the landing page. */
+   pages. A light, flat, square-cornered look: Geist for the chrome, Geist Mono
+   for labels, Inter for the article. */
 
 @import "tailwindcss" source(none);
 @import "@fontsource-variable/inter";
-@import "fumadocs-ui/css/black.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
 
 @source "../../../../node_modules/fumadocs-ui/dist";
@@ -11,28 +14,34 @@
 @source "../../../routes/docs";
 @source "./";
 
-/* The black theme's dark values, applied without a .dark class. */
 :root {
-  color-scheme: dark;
-  --color-fd-background: #000;
-  --color-fd-foreground: hsl(0, 0%, 98%);
-  --color-fd-muted: hsl(0, 0%, 8%);
-  --color-fd-muted-foreground: hsl(0, 0%, 60%);
-  --color-fd-popover: hsl(0, 0%, 4%);
-  --color-fd-popover-foreground: hsl(0, 0%, 98%);
-  --color-fd-card: hsl(0, 0%, 4%);
-  --color-fd-card-foreground: hsl(0, 0%, 98%);
-  --color-fd-border: hsl(0, 0%, 50%, 0.2);
-  --color-fd-primary: hsl(0, 0%, 98%);
-  --color-fd-primary-foreground: hsl(0, 0%, 9%);
-  --color-fd-secondary: hsl(0, 0%, 12.9%);
-  --color-fd-secondary-foreground: hsl(0, 0%, 98%);
-  --color-fd-accent: hsl(0, 0%, 15%);
-  --color-fd-accent-foreground: hsl(0, 0%, 100%);
-  --color-fd-ring: hsl(0, 0%, 34.9%);
+  color-scheme: light;
+  --color-fd-background: #fff;
+  --color-fd-foreground: #181c24;
+  --color-fd-muted: #f7f7f8;
+  --color-fd-muted-foreground: #686e80;
+  --color-fd-popover: #fff;
+  --color-fd-popover-foreground: #181c24;
+  --color-fd-card: #fff;
+  --color-fd-card-foreground: #181c24;
+  --color-fd-border: #ececec;
+  --color-fd-primary: #111;
+  --color-fd-primary-foreground: #fff;
+  --color-fd-secondary: #f7f7f8;
+  --color-fd-secondary-foreground: #111;
+  --color-fd-accent: rgb(0 0 0 / 0.04);
+  --color-fd-accent-foreground: #111;
+  --color-fd-ring: #111;
   --font-sans:
+    "Geist Variable", Geist, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono:
+    "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+  --relay-article-font:
     "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+  --relay-row-border: #f1f1f1;
 }
 
 /* The app shell locks the page and scrolls inside its frame. Docs scroll the
@@ -48,10 +57,10 @@ body {
   overflow: visible !important;
 }
 
-/* The app's own stylesheet also loads, and styles body for the app's light
-   theme and square corners. Give docs their own text, font and radius. */
+/* The app's own stylesheet also loads, and styles body for the app's theme
+   and square corners. Give docs their own text, font and radius. */
 :root {
-  --radius: 0.5rem;
+  --radius: 0.375rem;
 }
 body {
   background: var(--color-fd-background);
@@ -60,9 +69,234 @@ body {
   letter-spacing: normal;
 }
 
-/* Code blocks: Fumadocs picks the light or dark Shiki colors by a .dark class
-   that the docs don't use, so always take the dark colors. */
-.shiki,
-.shiki span {
-  color: var(--shiki-dark) !important;
+/* Layout: the sidebar sits on the left edge at every width, and a 44px row
+   on top holds the site tabs. */
+#nd-docs-layout {
+  --fd-layout-width: 100%;
+}
+@media (min-width: 768px) {
+  #nd-docs-layout {
+    --fd-sidebar-width: 300px;
+    --fd-header-height: 44px;
+  }
+}
+@media (min-width: 1280px) {
+  #nd-docs-layout {
+    --fd-toc-width: 280px;
+  }
+}
+
+/* Site tabs: equal cells across the content area, a black call to action. */
+.relay-docs-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  grid-row: 1;
+  /* Main and table-of-contents columns only. Spanning the outer gutter would
+     let the tabs' width grow that gutter and squeeze the article. */
+  grid-column: 3 / 5;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  height: var(--fd-header-height);
+  border-bottom: 1px solid var(--color-fd-border);
+  background: var(--color-fd-background);
+  font: 400 12px/1 var(--font-mono);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.relay-docs-tabs a {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-right: 1px solid var(--color-fd-border);
+  color: var(--color-fd-muted-foreground);
+  white-space: nowrap;
+}
+.relay-docs-tabs a:hover {
+  color: var(--color-fd-foreground);
+}
+.relay-docs-tabs a[aria-current="page"] {
+  color: var(--color-fd-foreground);
+  box-shadow: inset 0 -2px 0 var(--color-fd-primary);
+}
+.relay-docs-tabs .relay-docs-tabs-cta {
+  flex: none;
+  padding: 0 20px;
+  border-right: 0;
+  background: var(--color-fd-primary);
+  color: var(--color-fd-primary-foreground);
+}
+.relay-docs-tabs .relay-docs-tabs-cta:hover {
+  color: var(--color-fd-primary-foreground);
+  background: #333;
+}
+@media (max-width: 767px) {
+  .relay-docs-tabs {
+    display: none;
+  }
+}
+
+/* Sidebar: flush rows, no rounded corners. The rules cover the desktop
+   sidebar and the phone drawer. */
+.relay-docs-logo {
+  font: 500 18px/1 var(--font-mono);
+  letter-spacing: -0.2px;
+  text-transform: uppercase;
+  color: var(--color-fd-foreground);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) > div:first-child {
+  gap: 0;
+  padding: 0;
+}
+#nd-sidebar > div:first-child > div:first-child {
+  height: var(--fd-header-height);
+  align-items: center;
+  padding: 0 16px;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-search-full] {
+  padding: 10px 16px;
+  border: 0;
+  border-top: 1px solid var(--relay-row-border);
+  border-bottom: 1px solid var(--relay-row-border);
+  border-radius: 0;
+  background: none;
+  color: rgb(0 0 0 / 0.55);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-search-full]:hover {
+  background: rgb(0 0 0 / 0.03);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-search-full] kbd {
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-radix-scroll-area-viewport] {
+  padding: 0 0 16px;
+  mask-image: none;
+}
+/* Separators, such as "Get started". */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-radix-scroll-area-viewport] p {
+  margin: 0;
+  padding: 16px 16px 4px !important;
+  font: 400 10px/1.4 var(--font-mono);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgb(0 0 0 / 0.45);
+}
+/* Page links. Inline styles indent nested links; keep them flush. */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-radix-scroll-area-viewport] a {
+  padding: 6px 16px !important;
+  border-radius: 0;
+  color: rgb(0 0 0 / 0.65);
+  font-size: 14px;
+  line-height: 20px;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-radix-scroll-area-viewport]
+  a::before,
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-radix-scroll-area-viewport]
+  [data-state]::before {
+  content: none !important;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-radix-scroll-area-viewport] a:hover {
+  background: rgb(0 0 0 / 0.03);
+  color: var(--color-fd-foreground);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-radix-scroll-area-viewport]
+  a[data-active="true"] {
+  background: rgb(0 0 0 / 0.06);
+  color: #000;
+}
+/* Folders, such as "Agent Skills": a full row with a rule under it. */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-radix-scroll-area-viewport] button {
+  margin-top: 12px;
+  padding: 10px 16px !important;
+  border-top: 1px solid var(--relay-row-border);
+  border-bottom: 1px solid var(--relay-row-border);
+  border-radius: 0;
+  color: var(--color-fd-foreground);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile)
+  [data-radix-scroll-area-viewport]
+  button[data-state="open"] {
+  background: rgb(0 0 0 / 0.03);
+}
+/* On desktop the site tabs carry these links; the drawer keeps them. */
+#nd-sidebar
+  [data-radix-scroll-area-viewport]
+  :is(a[href="/"], a[href^="/#"], a[href^="mailto:"], a[href="/app"]) {
+  display: none;
+}
+
+/* Article: Inter, 16/28 body, tight headings. */
+#nd-page {
+  font-family: var(--relay-article-font);
+}
+@media (min-width: 768px) {
+  #nd-page {
+    padding-top: 28px;
+  }
+}
+#nd-page h1 {
+  font-size: 28px;
+  line-height: 42px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  color: #0a0a0a;
+}
+#nd-page h1 + p {
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--color-fd-foreground);
+}
+#nd-page .prose {
+  --tw-prose-body: rgb(10 10 10 / 0.9);
+  --tw-prose-headings: #0a0a0a;
+  font-size: 16px;
+  line-height: 28px;
+}
+#nd-page .prose h2 {
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.48px;
+}
+#nd-page .prose h3 {
+  font-size: 20px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.4px;
+}
+#nd-page .prose :where(p, li) {
+  font-size: 16px;
+  line-height: 28px;
+}
+#nd-page .prose :not(pre) > code {
+  padding: 2px 6px;
+  border: 1px solid var(--relay-row-border);
+  border-radius: 3px;
+  background: #fff;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+/* Table of contents: Geist, small and quiet. It starts at the top of the
+   page, so it clears the site tabs itself. */
+#nd-toc {
+  padding-top: calc(var(--fd-header-height) + 48px);
+  font-family: var(--font-sans);
+}
+#nd-toc #toc-title {
+  color: var(--color-fd-foreground);
+  font-size: 13px;
 }

@@ -10,7 +10,6 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
-import { BrandMark } from "@/client/components/BrandMark";
 import docsCss from "@/client/features/docs/docs.css?url";
 import { docsMdxComponents } from "@/client/features/docs/docsMdxComponents";
 import type { DocsPageData } from "@/server/lib/docsPage";
@@ -50,7 +49,7 @@ export const Route = createFileRoute("/docs/$")({
           : "Relay Docs",
       },
       { name: "description", content: loaderData?.description ?? DESCRIPTION },
-      { name: "theme-color", content: "#000000" },
+      { name: "theme-color", content: "#ffffff" },
     ],
     links: [{ rel: "stylesheet", href: docsCss }],
   }),
@@ -61,7 +60,11 @@ const clientLoader = createClientLoader(docs, {
   id: "docs",
   component({ toc, frontmatter, default: MDX }) {
     return (
-      <DocsPage toc={toc}>
+      <DocsPage
+        toc={toc}
+        tableOfContent={{ style: "clerk" }}
+        breadcrumb={{ enabled: false }}
+      >
         <DocsTitle>{frontmatter.title}</DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>
         <DocsBody>
@@ -72,33 +75,56 @@ const clientLoader = createClientLoader(docs, {
   },
 });
 
+// The site tabs across the top of the docs (desktop). Phones get the same
+// links in the sidebar drawer instead.
+const SITE_TABS = [
+  { text: "Home", url: "/" },
+  { text: "Features", url: "/#features" },
+  { text: "Docs", url: "/docs" },
+  { text: "Pricing", url: "/#pricing" },
+  { text: "Support", url: "mailto:team@playbookmedia.io" },
+];
+
+function DocsTabBar() {
+  return (
+    <nav aria-label="Site" className="relay-docs-tabs">
+      {SITE_TABS.map((tab) => (
+        <a
+          key={tab.url}
+          href={tab.url}
+          aria-current={tab.url === "/docs" ? "page" : undefined}
+        >
+          {tab.text}
+        </a>
+      ))}
+      <a href="/app" className="relay-docs-tabs-cta">
+        Open app ↗
+      </a>
+    </nav>
+  );
+}
+
 function DocsRoute() {
   const page = useFumadocsLoader(Route.useLoaderData());
   const Content = clientLoader.getComponent(page.path);
   return (
-    // Docs are always dark, like the landing page, so the theme switch and
-    // the class-based theme are off. Search is off until the docs outgrow
-    // the sidebar.
-    <RootProvider theme={{ enabled: false }} search={{ enabled: false }}>
+    // Docs are always light, so the theme switch and the class-based theme
+    // are off. Search reads the public /api/search.
+    <RootProvider theme={{ enabled: false }}>
       <DocsLayout
         tree={page.pageTree}
         nav={{
-          title: (
-            <span className="flex items-center gap-2 font-semibold">
-              <BrandMark className="size-5" />
-              Relay
-            </span>
-          ),
-          url: "/",
+          title: <span className="relay-docs-logo">Relay.</span>,
+          url: "/docs",
         }}
         links={[
-          { text: "Home", url: "/" },
-          { text: "Pricing", url: "/#pricing" },
+          ...SITE_TABS.filter((tab) => tab.url !== "/docs"),
           { text: "Open app", url: "/app" },
         ]}
+        sidebar={{ collapsible: false }}
         themeSwitch={{ enabled: false }}
-        searchToggle={{ enabled: false }}
       >
+        <DocsTabBar />
         <Content />
       </DocsLayout>
     </RootProvider>
