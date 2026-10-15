@@ -2,7 +2,14 @@ import { apiKey } from "@better-auth/api-key";
 
 // Also the routing discriminator on /mcp: a credential starting with this
 // prefix is treated as an API key, anything else flows to the OAuth provider.
-export const API_KEY_PREFIX = "oseo_";
+const API_KEY_PREFIX = "relay_"; // playbook-seam: upstream uses "oseo_"
+
+// playbook-seam: Relay keys, and keys made before the rename (`oseo_`).
+export function isApiKeyCredential(value: string | null | undefined) {
+  return Boolean(
+    value?.startsWith(API_KEY_PREFIX) || value?.startsWith("oseo_"),
+  );
+}
 
 export function createApiKeyPlugin() {
   return apiKey({
