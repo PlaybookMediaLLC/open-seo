@@ -3,11 +3,11 @@
   "version": "1.0.21",
   "description": "Research keywords and competitors, audit sites, track rankings and AI visibility, and use connected Search Console data from your AI assistant.",
   "author": {
-    "name": "Every App, Inc",
-    "email": "support@openseo.so"
+    "name": "Playbook Media LLC",
+    "email": "team@playbookmedia.io"
   },
-  "homepage": "https://openseo.so",
-  "repository": "https://github.com/every-app/open-seo",
+  "homepage": "https://relay.playbookmedia.io",
+  "repository": "https://github.com/PlaybookMediaLLC/open-seo",
   "license": "MIT",
   "keywords": [
     "seo",

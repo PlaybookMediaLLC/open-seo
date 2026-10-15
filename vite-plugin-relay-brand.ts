@@ -11,6 +11,8 @@ import type { Plugin } from "vite";
  * Fork seams that keep the rename complete (audit: `grep -rn playbook-seam`):
  * - vite.config.ts: mounts this plugin and the docs plugin.
  * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
+ * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
+ * - src/public/_headers: the web manifest gets its JSON content type.
  * - src/public/: site.webmanifest names and the icon PNGs carry the Relay
  *   brand, because static files skip the module pipeline.
  * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { IconArrowRight, IconChevronDown, IconMail } from "@tabler/icons-react";
 import { cn } from "cn";
 import { BrandMark } from "@/client/components/BrandMark";
@@ -168,48 +168,11 @@ export function LandingFooter() {
           ))}
         </nav>
         <div className="mt-12 border-t border-white/[0.07] pt-8">
-          <p className="text-[14px] font-semibold leading-[14px] text-[#b8babf]">
-            Let’s stay in touch!
-          </p>
-          <p className="mt-5 max-w-[290px] text-sm leading-6 text-[#70757c]">
-            Product updates and SEO playbooks, a couple of times a month.
-          </p>
-          <StayInTouch />
-          <p className="mt-10 text-xs text-[#70757c]">
+          <p className="text-xs text-[#70757c]">
             Relay is a product of Playbook Media LLC.
           </p>
         </div>
       </div>
     </footer>
-  );
-}
-
-/** Opens a pre-filled email: there is no mailing-list backend. */
-function StayInTouch() {
-  const [email, setEmail] = useState("");
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const body = encodeURIComponent(`Please add ${email} to Relay updates.`);
-    window.location.href = `mailto:team@playbookmedia.io?subject=Relay%20updates&body=${body}`;
-  }
-  return (
-    <form onSubmit={submit} className="relative mt-4 w-full max-w-[200px]">
-      <input
-        type="email"
-        required
-        value={email}
-        onChange={(event) => setEmail(event.target.value)}
-        placeholder="Email"
-        aria-label="Email"
-        className="h-10 w-full rounded-full bg-[#1c1d1f] pl-3 pr-10 text-sm text-white ring-1 ring-white/10 placeholder:text-[#70757c] focus:outline-none focus:ring-white/30"
-      />
-      <button
-        type="submit"
-        aria-label="Subscribe"
-        className="absolute right-1.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-[#70757c] transition-colors hover:bg-white/10 hover:text-white"
-      >
-        <IconArrowRight className="size-4" />
-      </button>
-    </form>
   );
 }
