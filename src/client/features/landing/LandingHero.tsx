@@ -133,6 +133,13 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
                 className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_42%_at_50%_52%,#000_45%,transparent_100%)]"
               />
               <div className="relative w-[672px] max-w-full">
+                <p className="mb-5 inline-flex items-center gap-2 text-[15px] font-medium tracking-[-0.2px] text-white/80">
+                  <BrandMark className="size-5" />
+                  Relay
+                  <span className="text-white/45">
+                    · SEO for you and your AI agent
+                  </span>
+                </p>
                 <h1 className="m-0 mb-6 text-[36px] font-semibold leading-[38.5px] tracking-[-1.8px] text-(--l-text) sm:text-[48px] sm:leading-[51px] sm:tracking-[-1.92px]">
                   <span className="block">Rank higher on Google.</span>
                   <span className="block">Your agent ships the fixes.</span>

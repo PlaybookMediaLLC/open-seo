@@ -1,4 +1,5 @@
 import { useSession } from "@/lib/auth-client";
+import { LandingAbout } from "./LandingAbout";
 import { LandingBuildIt } from "./LandingBuildIt";
 import { LandingAdaptability, LandingLogos } from "./LandingFeatures";
 import { LandingFaq, LandingFooter } from "./LandingFooter";
@@ -18,6 +19,7 @@ export function LandingPage() {
       <main className="flex flex-col items-center">
         <LandingHero signedIn={signedIn} />
         <LandingLogos />
+        <LandingAbout />
         <LandingAdaptability />
         <LandingWhatsInside />
         <LandingBuildIt />
