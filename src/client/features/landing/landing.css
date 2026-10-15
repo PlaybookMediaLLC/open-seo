@@ -397,6 +397,12 @@
   display: none;
 }
 
+/* Fades the last card out at the right edge, so the rail reads as scrollable
+   instead of looking like a card was cut in half. */
+.landing-rail {
+  mask-image: linear-gradient(90deg, #000 85%, transparent 100%);
+}
+
 @keyframes landing-marquee {
   to {
     transform: translateX(-50%);

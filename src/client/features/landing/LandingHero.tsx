@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   IconBrandGoogle,
   IconChevronRight,
@@ -40,7 +40,6 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
   const stage = useRef<HTMLDivElement>(null);
   const intro = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
-  const [lifted, setLifted] = useState(false);
 
   useEffect(() => {
     const scroller = document.querySelector(".landing-scroll");
@@ -65,7 +64,6 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
         frame.current.style.opacity = String(Math.min(1, rise * 2));
         frame.current.style.transform = `translateY(${(1 - eased) * 46}vh) scale(${0.82 + eased * 0.18})`;
       }
-      setLifted(progress > 0.35);
     };
 
     const onScroll = () => {
@@ -131,7 +129,7 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
             ref={frame}
             className="w-full max-w-[1100px] origin-bottom opacity-0 will-change-transform"
           >
-            <AppWindow lifted={lifted} />
+            <AppWindow priority />
           </div>
         </div>
 
