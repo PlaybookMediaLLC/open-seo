@@ -67,15 +67,27 @@ export function Reveal({
   );
 }
 
-/** The small mono kicker above a section title. */
+/** The small colored kicker above a section title (14/500, +0.14px). */
 export function Eyebrow({
   children,
+  color = "var(--l-text-3)",
   className,
 }: {
   children: ReactNode;
+  color?: string;
   className?: string;
 }) {
-  return <p className={cn("landing-eyebrow", className)}>{children}</p>;
+  return (
+    <p
+      className={cn(
+        "text-[14px] font-medium leading-[21px] tracking-[0.14px]",
+        className,
+      )}
+      style={{ color }}
+    >
+      {children}
+    </p>
+  );
 }
 
 /** Cycles through options on a timer until the user picks one. */

@@ -1,11 +1,10 @@
 /* Landing page, modelled on superwhisper.com and measured from it: Inter on
    black, a 1024px column, 48/51 headlines, a hero that shrinks into a framed
-   desktop, 24px feature cards and 20px pricing cards. Monochrome, like the R
-   mark: black, white and grays; only real brand logos keep their colors.
-   Scoped under .landing so none of it leaks into the app. */
+   desktop, 24px feature cards and 20px pricing cards. The hero is pure black
+   with a self-playing Tetris; the sections below carry the color. Scoped
+   under .landing so none of it leaks into the app. */
 
 @import "@fontsource-variable/inter";
-@import "@fontsource-variable/geist-mono";
 
 .landing {
   font-family:
@@ -25,24 +24,12 @@
 
   /* Surfaces, lines and text, darkest to lightest. */
   --l-surface: #0a0a0a;
-  --l-raised: #121212;
   --l-control: #1c1c1c;
   --l-line: rgb(255 255 255 / 0.08);
   --l-line-strong: rgb(255 255 255 / 0.16);
   --l-text: #fafafa;
   --l-text-2: #a3a3a3;
   --l-text-3: #858585;
-  --l-mono:
-    "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo,
-    monospace;
-}
-
-/* The small kicker above a section title, the same as the docs' labels. */
-.landing-eyebrow {
-  font: 400 12px/18px var(--l-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--l-text-3);
 }
 
 /* The page owns its scroll container: the app sets overflow hidden on body. */
@@ -66,31 +53,13 @@
 }
 
 /* The hero field, clipped by JS from full bleed to a 1024 x 627 rounded
-   frame: near-black, a soft light from the top, and a grid that fades out. */
+   frame: pure black, with a self-playing Tetris (LandingTetris) inside. */
 .landing-frame {
   position: absolute;
   inset: 0;
   overflow: hidden;
   will-change: clip-path;
-  background:
-    radial-gradient(70% 55% at 50% 0%, rgb(255 255 255 / 0.1), transparent 70%),
-    #0b0b0b;
-}
-.landing-frame::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-  background-position: center;
-  mask-image: radial-gradient(
-    ellipse 70% 60% at 50% 45%,
-    #000 25%,
-    transparent 80%
-  );
-  pointer-events: none;
+  background: #000;
 }
 
 /* The framed "desktop" the hero becomes: a menu bar, a window and a dock.
@@ -204,9 +173,8 @@
   background: rgb(255 255 255 / 0.9);
 }
 
-/* The hero CTAs (.download-cta-mac / .download-cta-windows). */
-.landing-cta-light,
-.landing-cta-dark {
+/* The hero CTA (.download-cta-mac). */
+.landing-cta-light {
   position: relative;
   display: inline-flex;
   height: 42px;
@@ -218,8 +186,6 @@
   font-weight: 500;
   border: 1px solid transparent;
   transition: all 0.2s ease-in-out;
-}
-.landing-cta-light {
   color: #1a1a1a;
   background: linear-gradient(180deg, #fff, #f0f0f0);
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
@@ -228,17 +194,7 @@
   background: linear-gradient(180deg, #f0f0f0, #d6d6d6);
   box-shadow: 0 4px 8px rgb(0 0 0 / 0.12);
 }
-.landing-cta-dark {
-  color: #fff;
-  background: linear-gradient(180deg, rgb(0 0 0 / 0.85), rgb(0 0 0 / 0.95));
-  backdrop-filter: blur(8px);
-}
-.landing-cta-dark:hover {
-  background: linear-gradient(180deg, rgb(0 0 0 / 0.8), rgb(0 0 0 / 0.85));
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
-}
-.landing-cta-light::before,
-.landing-cta-dark::before {
+.landing-cta-light::before {
   content: "";
   position: absolute;
   inset: -1px;
@@ -255,14 +211,6 @@
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
-}
-.landing-cta-dark::before {
-  background: linear-gradient(
-    135deg,
-    rgb(255 255 255 / 0.1),
-    rgb(255 255 255 / 0.08) 50%,
-    rgb(255 255 255 / 0.05)
-  );
 }
 
 /* ---- Brand marks -------------------------------------------------------- */
@@ -522,11 +470,31 @@
 /* ---- Testimonial-style folders ------------------------------------------ */
 
 .landing-testimonials {
-  background: radial-gradient(
-    60% 45% at 50% 62%,
-    rgb(255 255 255 / 0.07),
-    transparent 70%
+  background: linear-gradient(
+    180deg,
+    #000 0,
+    #00052e 23%,
+    #29285e 53%,
+    #543c7b 73%,
+    #855a92 88%,
+    #c386ab 98%
   );
+}
+.landing-testimonials::before,
+.landing-testimonials::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.landing-testimonials::before {
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+  background: linear-gradient(90deg, #1999e8 0, #a45bf2);
+}
+.landing-testimonials::after {
+  opacity: 0.2;
+  background: linear-gradient(90deg, #000 0, rgb(0 0 0 / 0.5));
 }
 .landing-folder {
   backdrop-filter: blur(10px);
@@ -592,10 +560,23 @@
 
 /* ---- Pricing ------------------------------------------------------------ */
 
-/* Featured pricing card: inverted, white on the black page. */
+/* Featured pricing card (.hover-gradient). */
 .landing-price-featured {
-  background: #fafafa;
-  color: #0a0a0a;
+  background-image: linear-gradient(
+    180deg,
+    #050116 0,
+    #112d72 30%,
+    #4b68aa 45%,
+    #87a7dc 64%,
+    #9cacd0 88%,
+    #fcdbef 98%
+  );
+  background-size: 200% 200%;
+  background-position: 0 0;
+  transition: background-position 0.8s ease;
+}
+.landing-price-featured:hover {
+  background-position: 0 50%;
 }
 
 /* The selected billing pill's gradient rim (.bg-pricing-selector). */

@@ -12,7 +12,7 @@ export function LandingPricing({ signedIn }: { signedIn: boolean }) {
   return (
     <section id="pricing" className="w-full px-4 pb-16 pt-32">
       <Reveal className="mb-12 flex justify-center">
-        <div className="relative flex items-center rounded-full bg-(--l-surface) p-1.5 ring-1 ring-(--l-line)">
+        <div className="relative flex items-center rounded-full bg-[#0f0f10] p-1.5">
           {(
             [
               ["monthly", "Monthly", null],
@@ -26,13 +26,13 @@ export function LandingPricing({ signedIn }: { signedIn: boolean }) {
               className={cn(
                 "relative rounded-full px-4 py-2.5 text-sm font-medium transition-colors duration-300",
                 billing === value
-                  ? "landing-pill-rim bg-(--l-control) text-(--l-text)"
-                  : "text-(--l-text-2) hover:text-(--l-text)",
+                  ? "landing-pill-rim bg-[#1c1d1f] text-[#fafafa]"
+                  : "text-[#888b91] hover:text-[#c4c5c9]",
               )}
             >
               {label}
               {hint ? (
-                <span className="ml-1.5 text-xs font-normal text-(--l-text-3)">
+                <span className="ml-1.5 text-xs font-normal text-[#70757c]">
                   {hint}
                 </span>
               ) : null}
@@ -122,13 +122,11 @@ function PlanCard({
   featured?: boolean;
 }) {
   const numeric = /^\d/.test(price);
-  const ink = featured ? "text-black" : "text-(--l-text)";
-  const soft = featured ? "text-black/60" : "text-(--l-text-2)";
   const ctaClass = cn(
     "group mt-8 flex w-full items-center justify-between rounded-full px-5 py-3.5 text-[16px] font-medium transition-colors",
     featured
-      ? "bg-black text-white hover:bg-black/85"
-      : "bg-(--l-control) text-(--l-text-2) hover:text-(--l-text)",
+      ? "bg-black text-[#fafafa]"
+      : "bg-[#1c1d1f] text-white/60 hover:text-white",
   );
   const arrow = (
     <IconArrowRight className="size-[18px] transition-transform group-hover:translate-x-0.5" />
@@ -139,11 +137,11 @@ function PlanCard({
         "flex w-full flex-col rounded-[20px] p-8 lg:w-[384px]",
         featured
           ? "landing-price-featured"
-          : "border border-(--l-line) bg-(--l-surface)",
+          : "border border-[#1c1d1f] bg-[#0f0f10]",
       )}
     >
-      <p className={cn("text-[20px] font-medium leading-7", ink)}>{name}</p>
-      <div className={cn("mt-4 flex items-start gap-1", ink)}>
+      <p className="text-[20px] font-medium leading-7 text-[#fafafa]">{name}</p>
+      <div className="mt-4 flex items-start gap-1 text-[#fafafa]">
         {numeric ? (
           <span className="mt-1 text-[24px] font-semibold leading-8">$</span>
         ) : null}
@@ -152,24 +150,24 @@ function PlanCard({
         </span>
         <span className="ml-1 flex flex-col items-start justify-end self-stretch">
           {badge ? (
-            <span className="mb-1 rounded bg-black px-2 py-1 text-xs font-medium text-white">
+            <span className="mb-1 rounded px-2 py-1 text-xs font-medium text-white [background:#7c3aed]">
               {badge}
             </span>
           ) : null}
-          {unit ? <span className={cn("text-sm", soft)}>{unit}</span> : null}
+          {unit ? <span className="text-sm text-white/60">{unit}</span> : null}
         </span>
       </div>
-      <p className={cn("mt-4 text-[15px] leading-[22.5px]", soft)}>{tagline}</p>
-      <div
-        className={cn("my-6 h-px", featured ? "bg-black/10" : "bg-white/10")}
-      />
+      <p className="mt-4 text-[15px] leading-[22.5px] text-[#888b91]">
+        {tagline}
+      </p>
+      <div className="my-6 h-px bg-white/10" />
       {lead ? (
-        <p className={cn("mb-4 text-[15px] font-medium", ink)}>{lead}</p>
+        <p className="mb-4 text-[15px] font-medium text-[#fafafa]">{lead}</p>
       ) : null}
       <ul
         className={cn(
           "flex-1 space-y-3 text-[15px] leading-[22.5px]",
-          featured ? "text-black/80" : "text-(--l-text-2)",
+          featured ? "text-[#fafafa]" : "text-[#888b91]",
         )}
       >
         {features.map((feature) => (
@@ -190,7 +188,7 @@ function PlanCard({
       <p
         className={cn(
           "mt-3 text-center text-sm",
-          featured ? "text-black/55" : "text-(--l-text-3)",
+          featured ? "text-black/50" : "text-[#70757c]",
         )}
       >
         {note}

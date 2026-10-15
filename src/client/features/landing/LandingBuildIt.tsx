@@ -12,23 +12,25 @@ import {
   type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
-import { Eyebrow, Logo, Reveal } from "./LandingPrimitives";
+import { Logo, Reveal } from "./LandingPrimitives";
 
 function Point({
   icon: Icon,
+  color,
   title,
   body,
 }: {
   icon: Icon;
+  color: string;
   title: string;
   body: string;
 }) {
   return (
     <div className="flex items-center gap-[14px]">
-      <Icon className="size-[30px] shrink-0 text-(--l-text-2)" stroke={1.4} />
+      <Icon className="size-[30px] shrink-0" style={{ color }} stroke={1.4} />
       <div className="flex flex-col gap-1">
-        <p className="text-[16px] leading-[22.4px] text-(--l-text)">{title}</p>
-        <p className="text-[14px] leading-[21px] text-(--l-text-2)">{body}</p>
+        <p className="text-[16px] leading-[22.4px] text-[#fafafa]">{title}</p>
+        <p className="text-[14px] leading-[21px] text-[#888b91]">{body}</p>
       </div>
     </div>
   );
@@ -41,27 +43,32 @@ export function LandingBuildIt() {
         <CustomArt />
         <div className="z-10 flex w-full max-w-[374px] shrink-0 flex-col gap-12 md:h-full">
           <div className="flex flex-col gap-2">
-            <Eyebrow className="mb-4">Project context</Eyebrow>
-            <h2 className="text-[40px] font-medium leading-[44px] text-(--l-text) sm:text-[48px] sm:leading-[51px]">
+            <p className="mb-4 text-[14px] leading-[21px] text-[#0088ff]">
+              Project context
+            </p>
+            <h2 className="text-[40px] font-medium leading-[44px] text-[#fafafa] sm:text-[48px] sm:leading-[51px]">
               Tune it yourself
             </h2>
-            <p className="text-[14px] leading-[21px] text-(--l-text-2)">
+            <p className="text-[14px] leading-[21px] text-[#888b91]">
               Context lets you define how Relay researches, prioritizes and
               reports. Down to the finest detail.
             </p>
           </div>
           <Point
             icon={IconAdjustmentsHorizontal}
+            color="#0088ff"
             title="Beyond keywords: positioning"
             body="Set goals, audiences and competitors once. Research and reports follow them."
           />
           <Point
             icon={IconCpu}
+            color="#0088ff"
             title="Pick the right model for the job"
             body="Use Claude, GPT or Gemini through your own agent, or the built-in assistant."
           />
           <Point
             icon={IconRepeat}
+            color="#0088ff"
             title="Consistent every week"
             body="Saved keywords, tracked ranks and recurring audits keep the signal steady."
           />
@@ -73,27 +80,27 @@ export function LandingBuildIt() {
 
 const SIDEBAR: { label: string; icon: Icon; tile: string; active?: boolean }[] =
   [
-    { label: "Home", icon: IconHome, tile: "from-[#3a3a3c] to-[#2c2c2e]" },
+    { label: "Home", icon: IconHome, tile: "from-[#fd9426] to-[#f26f24]" },
     {
       label: "Context",
       icon: IconSparkles,
-      tile: "from-[#3a3a3c] to-[#2c2c2e]",
+      tile: "from-[#0fb7fa] to-[#0072fb]",
       active: true,
     },
     {
       label: "Keywords",
       icon: IconSearch,
-      tile: "from-[#3a3a3c] to-[#2c2c2e]",
+      tile: "from-[#0fb7fa] to-[#0072fb]",
     },
     {
       label: "Reports",
       icon: IconFileText,
-      tile: "from-[#3a3a3c] to-[#2c2c2e]",
+      tile: "from-[#34c759] to-[#248a3d]",
     },
     {
       label: "Settings",
       icon: IconSettings,
-      tile: "from-[#3a3a3c] to-[#2c2c2e]",
+      tile: "from-[#8e8e93] to-[#636366]",
     },
   ];
 
@@ -136,9 +143,9 @@ function CustomArt() {
         <div className="absolute inset-0 rounded-[18px] bg-gradient-to-l from-black/50 to-transparent" />
         <div className="absolute bottom-px left-0 top-px w-[140px] border-r border-white/[0.08] opacity-20">
           <div className="flex h-9 items-center gap-1.5 px-3">
-            <span className="size-2.5 rounded-full bg-white/20" />
-            <span className="size-2.5 rounded-full bg-white/20" />
-            <span className="size-2.5 rounded-full bg-white/20" />
+            <span className="size-2.5 rounded-full bg-[#ff5f57]" />
+            <span className="size-2.5 rounded-full bg-[#febc2e]" />
+            <span className="size-2.5 rounded-full bg-[#28c840]" />
           </div>
           <div className="flex flex-col gap-0.5 p-1.5">
             {SIDEBAR.map(({ label, icon: ItemIcon, tile, active }) => (

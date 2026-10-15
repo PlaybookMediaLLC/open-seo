@@ -9,12 +9,13 @@ import {
   type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
-import { Eyebrow, Reveal, useAutoCycle } from "./LandingPrimitives";
+import { Reveal, useAutoCycle } from "./LandingPrimitives";
 
 const AUDIENCES: {
   name: string;
   role: string;
   icon: Icon;
+  tint: string;
   headline: string;
   body: string;
 }[] = [
@@ -22,6 +23,7 @@ const AUDIENCES: {
     name: "Founders",
     role: "Ship SEO without hiring",
     icon: IconRocket,
+    tint: "#ffb764",
     headline: "The weekly SEO meeting, in one screen",
     body: "Connect Search Console and Relay ranks this week’s opportunities by impact. Approve the top three and get back to building.",
   },
@@ -29,6 +31,7 @@ const AUDIENCES: {
     name: "Agencies",
     role: "One workspace per client",
     icon: IconBriefcase,
+    tint: "#7fb2ff",
     headline: "Every client, one login",
     body: "Projects, rank tracking and shareable reports for each client, billed at data cost instead of per seat.",
   },
@@ -36,6 +39,7 @@ const AUDIENCES: {
     name: "Developers",
     role: "SEO from the terminal",
     icon: IconTerminal2,
+    tint: "#1cecbb",
     headline: "Your agent does the research",
     body: "Point Claude Code or Cursor at the Relay MCP server. It audits, researches keywords and opens the pull request.",
   },
@@ -43,6 +47,7 @@ const AUDIENCES: {
     name: "Content teams",
     role: "Write what will rank",
     icon: IconPencil,
+    tint: "#dd55e7",
     headline: "Briefs backed by real data",
     body: "Keyword clusters, SERP checks and AI-answer tracking in one place, tied to the pages you already have.",
   },
@@ -62,8 +67,10 @@ export function LandingAudiences() {
     <section className="landing-testimonials relative w-full overflow-hidden py-24 md:h-[900px] md:py-0">
       <div className="relative z-10 flex h-full flex-col items-center justify-center px-4">
         <Reveal className="flex flex-col items-center">
-          <Eyebrow>Who it’s for</Eyebrow>
-          <h2 className="mb-[76px] mt-4 text-center text-[36px] font-semibold leading-[107%] tracking-[-1.8px] text-(--l-text) md:mb-24 md:text-[48px]">
+          <p className="text-sm font-medium leading-5 tracking-wide text-[#ff9dc4]">
+            Who it’s for
+          </p>
+          <h2 className="mb-[76px] mt-4 text-center text-[36px] font-semibold leading-[107%] tracking-[-1.8px] text-[#e9feff] md:mb-24 md:text-[48px]">
             Made for builders,
             <br />
             built for how you work
@@ -95,8 +102,8 @@ export function LandingAudiences() {
             })}
           </button>
           <div className="ml-16 mt-16 hidden md:block">
-            <p className="text-xl font-medium text-(--l-text)">Use cases</p>
-            <p className="mb-4 text-xs text-(--l-text-2)">Pick yours</p>
+            <p className="text-xl font-medium text-[#fafafa]">Use cases</p>
+            <p className="mb-4 text-xs text-[#c4c5c9]">Pick yours</p>
             <div className="flex flex-col gap-y-2">
               {AUDIENCES.map((audience, index) => (
                 <button
@@ -111,16 +118,16 @@ export function LandingAudiences() {
                 >
                   <span
                     className={cn(
-                      "mb-2 mr-1.5 size-[10px] rounded-full bg-(--l-text)",
+                      "mb-2 mr-1.5 size-[10px] rounded-full bg-[#0088ff]",
                       index === active && "opacity-0",
                     )}
                   />
                   <Avatar audience={audience} className="mr-3 size-8" />
                   <span>
-                    <span className="block text-sm font-medium text-(--l-text)">
+                    <span className="block text-sm font-medium text-[#fafafa]">
                       {audience.name}
                     </span>
-                    <span className="block text-xs text-(--l-text-2)">
+                    <span className="block text-xs text-[#888b91]">
                       {audience.role}
                     </span>
                   </span>
@@ -145,11 +152,12 @@ function Avatar({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center rounded-full bg-[#171717] ring-2 ring-inset ring-white/20",
+        "grid shrink-0 place-items-center rounded-full ring-2 ring-inset ring-white/20",
         className,
       )}
+      style={{ background: audience.tint }}
     >
-      <Icon className="size-1/2 text-white/85" stroke={1.8} />
+      <Icon className="size-1/2 text-black/75" stroke={1.8} />
     </span>
   );
 }
@@ -204,7 +212,7 @@ function Folder({
           <span className="mt-4 block text-[14px] leading-[21px] tracking-[-0.2px] text-[#3c3c3b]">
             {audience.body}
           </span>
-          <span className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-black">
+          <span className="mt-4 flex items-center gap-1.5 text-[13px] font-medium text-[#0088ff]">
             <IconArrowRight className="size-3.5" /> Try it on the Free plan
           </span>
           <IconPaperclip

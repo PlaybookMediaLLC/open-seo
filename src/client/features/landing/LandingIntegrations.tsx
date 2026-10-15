@@ -5,7 +5,7 @@ import {
   type Icon,
 } from "@tabler/icons-react";
 import { cn } from "cn";
-import { Eyebrow, Logo, Reveal } from "./LandingPrimitives";
+import { Logo, Reveal } from "./LandingPrimitives";
 
 const APPS: [string, string, string][][] = [
   [
@@ -116,16 +116,16 @@ export function LandingIntegrations() {
       <div className="pointer-events-none absolute inset-0 z-10 hidden bg-[radial-gradient(circle_at_center,transparent_0,#000_50%)] md:block" />
       <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-t from-black to-transparent to-15%" />
       <div className="absolute top-[100px] z-20 flex w-full flex-col items-center px-4 text-center">
-        <Eyebrow>Integrations</Eyebrow>
-        <h2 className="mt-4 max-w-[530px] px-8 text-[40px] font-semibold leading-[44px] text-(--l-text-3) sm:text-[48px] sm:leading-[51px]">
-          Works <span className="text-(--l-text)">anywhere</span>
+        <p className="text-[14px] text-[#83c9ff]">Integrations</p>
+        <h2 className="mt-4 max-w-[530px] px-8 text-[40px] font-semibold leading-[44px] text-[#70757c] sm:text-[48px] sm:leading-[51px]">
+          Works <span className="text-[#fafafa]">anywhere</span>
           <br />
           you publish
         </h2>
-        <p className="mt-6 w-[380px] max-w-full text-[16px] leading-[22.4px] text-(--l-text)">
+        <p className="mt-6 w-[380px] max-w-full text-[16px] leading-[22.4px] text-[#fafafa]">
           WordPress, Webflow, Next.js…
           <br />
-          <span className="text-(--l-text-2)">
+          <span className="text-[#888b90]">
             You approve it, Relay ships it.
           </span>
         </p>
@@ -185,11 +185,11 @@ export function LandingAgents() {
       className="flex w-full flex-col items-center gap-y-12 px-6 pb-32 pt-32 md:flex-row md:justify-center md:gap-x-12 md:gap-y-0 md:px-0"
     >
       <Reveal className="flex w-full max-w-[350px] flex-col md:z-40">
-        <Eyebrow>Agents</Eyebrow>
-        <h2 className="mt-4 text-3xl tracking-tight text-(--l-text)">
+        <p className="text-sm text-[#ffdd00]">Beep boop</p>
+        <h2 className="mt-4 text-3xl tracking-tight text-[#fafafa]">
           Faster agentic SEO
         </h2>
-        <p className="mt-2 text-sm text-(--l-text-2)">
+        <p className="mt-2 text-sm text-[#c4c5c9]">
           Use Relay with Claude Code, Codex, Cursor, ChatGPT or any other MCP
           client, without opening a dashboard.
         </p>
@@ -222,10 +222,10 @@ function AgentPoint({
 }) {
   return (
     <div className="mt-12 flex items-center">
-      <Icon className="mr-4 size-6 shrink-0 text-(--l-text-2)" stroke={1.5} />
+      <Icon className="mr-4 size-6 shrink-0 text-[#ffdd00]" stroke={1.5} />
       <div>
-        <p className="text-base font-medium text-(--l-text)">{title}</p>
-        <p className="text-sm text-(--l-text-2)">{body}</p>
+        <p className="text-base font-medium text-[#fafafa]">{title}</p>
+        <p className="text-sm text-[#888b91]">{body}</p>
       </div>
     </div>
   );
@@ -247,8 +247,8 @@ const SESSION_STYLE: Record<string, string> = {
   dim: "text-white/45",
   text: "text-white/80",
   edit: "text-white/90",
-  del: "text-white/35",
-  add: "text-white",
+  del: "text-[#ff6b6b]",
+  add: "text-[#27c93f]",
 };
 
 /** A Claude Code session that runs Relay tools, line by line. */
@@ -256,33 +256,33 @@ function Terminal() {
   return (
     <div className="relative h-[399px] overflow-hidden rounded-[11px] border border-[#2d2d2d] bg-[#0b0b0b] shadow-[0_3px_20px_0_rgb(0_0_0/0.25)]">
       <div className="flex gap-[7px] border-b border-[#2d2d2d] p-[10px]">
-        <span className="size-[11px] rounded-full bg-white/15" />
-        <span className="size-[11px] rounded-full bg-white/15" />
-        <span className="size-[11px] rounded-full bg-white/15" />
+        <span className="size-[11px] rounded-full bg-[#ff5f56]" />
+        <span className="size-[11px] rounded-full bg-[#ffbd2e]" />
+        <span className="size-[11px] rounded-full bg-[#27c93f]" />
       </div>
       <div className="px-4 py-3 font-mono text-[11px] text-white">
-        <div className="relative grid grid-cols-[1.7fr_1fr] rounded-[3px] border border-white/25 px-3 pb-2.5 pt-3.5">
-          <p className="absolute -top-[8px] left-3 bg-[#0b0b0b] px-1 text-white/70">
+        <div className="relative grid grid-cols-[1.7fr_1fr] rounded-[3px] border border-[#e6714f] px-3 pb-2.5 pt-3.5">
+          <p className="absolute -top-[8px] left-3 bg-[#0b0b0b] px-1 text-[#e6714f]">
             Claude Code <span className="text-white/50">v2.1.12</span>
           </p>
           <div className="text-center leading-[1.25]">
             <p>Welcome back!</p>
-            <pre className="my-2 font-mono leading-none text-white/70">
+            <pre className="my-2 font-mono leading-none text-[#e6714f]">
               {" ▐▛███▜▌\n▝▜█████▛▘\n  ▘▘ ▝▝  "}
             </pre>
             <p className="text-white/50">Opus 4.5 · relay MCP</p>
             <p className="text-white/50">~/Dev/acme-site</p>
           </div>
-          <div className="border-l border-white/25 pl-3 leading-[1.3]">
-            <p className="text-white/70">Tips for getting started</p>
+          <div className="border-l border-[#e6714f] pl-3 leading-[1.3]">
+            <p className="text-[#e6714f]">Tips for getting started</p>
             <p className="truncate text-white/50">Run /mcp to list tools…</p>
-            <p className="my-1 border-t border-white/15" />
-            <p className="text-white/70">Recent activity</p>
+            <p className="my-1 border-t border-[#e6714f]/50" />
+            <p className="text-[#e6714f]">Recent activity</p>
             <p className="text-white/50">No recent activity</p>
           </div>
         </div>
         <p className="landing-arrive mt-3 leading-[1.4] text-white/90">
-          <span className="text-white/50">❯ </span>
+          <span className="text-[#7b61ff]">❯ </span>
           Find keywords where we rank 8 to 20 and fix the titles on those pages.
         </p>
         <div className="mt-3 space-y-[3px] leading-[1.35]">
@@ -297,7 +297,9 @@ function Terminal() {
             >
               {kind === "tool" || kind === "edit" ? (
                 <span
-                  className={kind === "edit" ? "text-white/50" : "text-white"}
+                  className={
+                    kind === "edit" ? "text-[#ffd700]" : "text-[#27c93f]"
+                  }
                 >
                   ●{" "}
                 </span>
