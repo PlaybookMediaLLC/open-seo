@@ -216,9 +216,12 @@ function Typewriter({ text }: { text: string }) {
   return (
     <span className="block text-white">
       <span className="sr-only">{text}</span>
+      {/* The untyped rest stays in the layout, invisible, so the line keeps
+          its final size and the centered hero never shifts as it types. */}
       <span aria-hidden>
         {text.slice(0, count)}
         <span className="landing-caret ml-px inline-block h-[17px] w-[1.5px] translate-y-[3px] bg-white/80" />
+        <span className="invisible">{text.slice(count)}</span>
       </span>
     </span>
   );

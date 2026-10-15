@@ -19,6 +19,7 @@ import {
   useSidebar,
 } from "@/client/components/ui/sidebar";
 import { BrandMark } from "@/client/components/BrandMark";
+import { useAppDocumentTitle } from "@/client/layout/useAppDocumentTitle"; // playbook-seam
 
 export function AuthenticatedAppLayout({
   children,
@@ -64,6 +65,7 @@ export function AuthenticatedAppLayout({
   // (a first visit to a page without a project in the URL).
   const sidebarProjectPending =
     sidebarProjectId === null && projectsQuery.isPending;
+  useAppDocumentTitle(sidebarProjectId, ready); // playbook-seam
   // GSC opportunities, experiments and publishing setup do not use DataForSEO. Do not
   // interrupt their review/approval flow with an unrelated paid-research modal.
   const isGrowthWorkflow =
