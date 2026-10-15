@@ -31,9 +31,9 @@ export function AppWindow({ className }: { className?: string }) {
       )}
     >
       <div className="flex items-center gap-[7px] border-b border-white/[0.06] bg-[#141416] px-[10px] py-[9px]">
-        <span className="size-[11px] rounded-full bg-white/15" />
-        <span className="size-[11px] rounded-full bg-white/15" />
-        <span className="size-[11px] rounded-full bg-white/15" />
+        <span className="size-[11px] rounded-full bg-[#ff5f57]" />
+        <span className="size-[11px] rounded-full bg-[#febc2e]" />
+        <span className="size-[11px] rounded-full bg-[#28c840]" />
         <span className="mx-auto -translate-x-[27px] rounded-md bg-white/[0.06] px-3 py-0.5 text-[10px] text-white/40">
           relay.playbookmedia.io
         </span>

@@ -4,12 +4,12 @@ import {
   IconBattery3,
   IconBrandGoogle,
   IconChevronRight,
-  IconSparkles,
   IconWifi,
 } from "@tabler/icons-react";
 import { BrandMark } from "@/client/components/BrandMark";
 import { AppWindow } from "./AppWindow";
 import { Logo } from "./LandingPrimitives";
+import { LandingTetris } from "./LandingTetris";
 
 /** The floating pill nav. Like superwhisper's, it stays out of the way until
  *  the visitor scrolls past the hero's own call to action. `pinned` keeps it
@@ -122,14 +122,20 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
       <section id="top" className="landing-hero relative w-full">
         <div className="sticky top-0 h-[100svh] overflow-hidden bg-black">
           <div ref={frame} className="landing-frame">
+            <LandingTetris className="absolute left-0 top-0" />
             <div
               ref={intro}
               className="absolute inset-0 z-20 flex items-center justify-center px-4 text-center"
             >
-              <div className="w-[672px] max-w-full">
+              {/* Keeps the headline legible over the falling pieces. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_46%_42%_at_50%_52%,#000_45%,transparent_100%)]"
+              />
+              <div className="relative w-[672px] max-w-full">
                 <h1 className="m-0 mb-6 text-[36px] font-semibold leading-[38.5px] tracking-[-1.8px] text-(--l-text) sm:text-[48px] sm:leading-[51px] sm:tracking-[-1.92px]">
-                  <span className="block">Just ship.</span>
-                  <span className="block">Rank faster.</span>
+                  <span className="block">Rank higher on Google.</span>
+                  <span className="block">Your agent ships the fixes.</span>
                 </h1>
                 <div className="flex flex-wrap items-center justify-center gap-3">
                   <Link
@@ -139,10 +145,6 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
                     <IconBrandGoogle className="size-[18px]" />
                     {signedIn ? "Open Relay" : "Continue with Google"}
                   </Link>
-                  <a href="#features" className="landing-cta-dark">
-                    <IconSparkles className="size-[18px]" />
-                    See how it works
-                  </a>
                 </div>
                 <a
                   href="#pricing"
@@ -152,9 +154,9 @@ export function LandingHero({ signedIn }: { signedIn: boolean }) {
                   <IconChevronRight className="size-3.5" />
                 </a>
                 <p className="mt-12 text-[16px] leading-[22.4px] tracking-[0.16px]">
-                  <Typewriter text="Turn search data into shipped fixes." />
+                  <Typewriter text="SEO fixes from your Search Console, ranked by clicks." />
                   <span className="block text-white/60">
-                    Works with Search Console, your repo and your AI agent.
+                    Works with Claude Code, Codex, Cursor and ChatGPT.
                   </span>
                 </p>
               </div>

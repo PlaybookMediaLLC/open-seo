@@ -3,7 +3,7 @@ import { LandingPage } from "@/client/features/landing/LandingPage";
 import landingCss from "@/client/features/landing/landing.css?url";
 import { publicPageHead, RELAY_ORIGIN } from "@/lib/relay-seo";
 
-const TITLE = "Relay · Just ship. Rank faster.";
+const TITLE = "Relay · Rank higher on Google. Your agent ships the SEO fixes.";
 const DESCRIPTION =
   "SEO toolkit: Search Console opportunities, keyword research, rank tracking, audits and AI visibility, built for you and your AI agent.";
 
