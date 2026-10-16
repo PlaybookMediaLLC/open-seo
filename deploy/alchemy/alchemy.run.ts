@@ -503,6 +503,7 @@ export default Alchemy.Stack(
         AUDIT_BROWSER_RENDERING: "true",
         TEAM_DOMAIN: access.teamDomain,
         POLICY_AUD: access.policyAud,
+        EMAIL: yield* Cloudflare.Email.SendEmail("EMAIL"), // playbook-seam: Relay team invites (src/server/email/relay-email.ts)
 
         // Prod-only: pooled Postgres via the existing Hyperdrive config.
         ...(prodHyperdrive ? { HYPERDRIVE: prodHyperdrive } : {}),

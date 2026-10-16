@@ -65,14 +65,17 @@ Fix every blocker before you invite users outside the team.
 
 ### B3. Team invitation email
 
-**Problem:** Inviting a teammate calls `sendHostedInvitationEmail`. It throws when the Loops keys are missing, so invitations fail.
+**Problem:** Inviting a teammate calls `sendHostedInvitationEmail`. Upstream sends it through Loops, and it throws when the Loops keys are missing, so invitations fail.
 
-**Steps (choose one):**
+**Decision:** Transactional email (invites) goes through Cloudflare Email Sending. It is part of Workers Paid, with 3,000 emails a month included. Loops holds the customer list for product updates and mass email.
 
-1. **Configure Loops.** Create the invitation transactional template. Set `LOOPS_API_KEY` and `LOOPS_TRANSACTIONAL_INVITATION_ID`. Send a test invitation to a second Google account.
-2. **Or hide invitations.** Add a `// playbook-seam` that hides the invite form while Loops is not configured. Show "Invitations are not available yet."
+**Steps:**
 
-**Done when:** An invitation reaches a second account, or the invite form is hidden with a clear message.
+1. `src/server/email/relay-email.ts` sends the invite through the `EMAIL` binding, from `invites@mail.playbookmedia.io`. The deploy binds `EMAIL` (`deploy/alchemy/alchemy.run.ts`). Without the binding, the upstream Loops path runs.
+2. In Cloudflare Email Service, onboard `mail.playbookmedia.io` as a sending domain. Cloudflare adds the SPF, DKIM and return-path records.
+3. Send a test invitation to a second Google account.
+
+**Done when:** An invitation reaches a second account and passes SPF and DKIM.
 
 ### B4. Billing plans
 
@@ -197,7 +200,7 @@ State these in the docs or the terms. Do not hide them.
 
 - [ ] `OPENROUTER_API_KEY` set, with a provider spend limit.
 - [ ] The assistant answers in production, and the charge settles.
-- [ ] Loops configured and a test invitation delivered, or the invite form hidden.
+- [ ] Sending domain onboarded, and a test invitation delivered.
 - [ ] Autumn products match the landing page pricing.
 - [ ] Autumn webhook reaches production.
 - [ ] A test purchase and a test top-up work.

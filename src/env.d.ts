@@ -50,6 +50,7 @@ declare namespace Cloudflare {
     LOOPS_TRANSACTIONAL_VERIFY_EMAIL_ID?: string;
     LOOPS_TRANSACTIONAL_RESET_PASSWORD_ID?: string;
     LOOPS_TRANSACTIONAL_INVITATION_ID?: string;
+    EMAIL?: SendEmail; // playbook-seam: Relay invites (src/server/email/relay-email.ts)
     AUTUMN_SECRET_KEY?: string;
     AUTUMN_WEBHOOK_SECRET?: string;
     // Dub referral conversion tracking (hosted only); all Dub code no-ops
