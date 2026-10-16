@@ -155,7 +155,9 @@ export function createGithubClient({
         fullName: value.full_name,
         defaultBranch: value.default_branch,
         private: value.private,
-        canPush: value.permissions?.push ?? assumePush,
+        // GitHub reports push: false for App installation tokens. The
+        // installation's permissions decide for them instead.
+        canPush: assumePush || (value.permissions?.push ?? false),
         archived: value.archived,
       };
     },
