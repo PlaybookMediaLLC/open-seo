@@ -1,5 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { IconSearch as Search } from "@tabler/icons-react";
 import { PageHeader } from "@/client/components/PageHeader";
 import { QueryState } from "@/client/components/QueryState";
@@ -43,6 +48,9 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
     queryFn: () =>
       listOpportunities({ data: { projectId, ...filters, limit: PAGE_SIZE } }),
     staleTime: 0,
+    // Keep the filter bar mounted while a new filter loads, so keyboard
+    // and screen-reader focus stays in the control the person is using.
+    placeholderData: keepPreviousData,
     refetchInterval: (state) => {
       const run = state.state.data?.latestRun;
       return run?.status === "running" &&
