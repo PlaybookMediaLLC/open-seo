@@ -17,6 +17,7 @@ import {
   proposalExecutions,
   proposalExecutionEvents,
   publishingConnections,
+  proposalDrafts,
 } from "@/db/schema";
 import type {
   MetadataProposal,
@@ -231,6 +232,27 @@ export async function saveProposal(input: {
             )!,
           ),
         ),
+      // RFC-0004: a draft becomes "used" only with the proposal that used it.
+      ...(proposal.draftId
+        ? [
+            tx
+              .update(proposalDrafts)
+              .set({ status: "used" })
+              .where(
+                and(
+                  eq(proposalDrafts.projectId, proposal.projectId),
+                  eq(proposalDrafts.id, proposal.draftId),
+                  eq(proposalDrafts.opportunityId, proposal.opportunityId),
+                  exists(
+                    tx
+                      .select({ id: opportunityProposals.id })
+                      .from(opportunityProposals)
+                      .where(eq(opportunityProposals.id, proposal.id)),
+                  ),
+                ),
+              ),
+          ]
+        : []),
     ];
   });
   const [saved] = await db

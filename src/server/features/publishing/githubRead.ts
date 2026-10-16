@@ -88,8 +88,40 @@ export function createGithubReader(request: GithubRequest) {
     commits.set(sha, result);
     return { ...result, parents: [...result.parents] };
   }
+  async function readTree(treeSha: string) {
+    let tree = trees.get(treeSha);
+    if (!tree) {
+      tree = await request(`/git/trees/${treeSha}`, treeSchema);
+      if (tree.sha !== treeSha || tree.truncated)
+        throw new AppError(
+          "UPSTREAM_UNAVAILABLE",
+          "GitHub tree cannot be safely read.",
+        );
+      trees.set(treeSha, tree);
+    }
+    return tree;
+  }
   return {
     getCommit,
+    /** The entries of one directory at a commit. "" is the repository root. */
+    async listDirectory(path: string, commitSha: string) {
+      let tree = await readTree((await getCommit(commitSha)).treeSha);
+      for (const part of path ? validateGithubPath(path) : []) {
+        const entries = tree.tree.filter((entry) => entry.path === part);
+        if (
+          entries.length !== 1 ||
+          entries[0].mode !== "040000" ||
+          entries[0].type !== "tree"
+        )
+          throw new AppError("NOT_FOUND", "GitHub directory was not found.");
+        tree = await readTree(entries[0].sha);
+      }
+      return tree.tree.map(({ path: name, mode, type }) => ({
+        name,
+        mode,
+        type,
+      }));
+    },
     async getRef(branch: string) {
       const route = `/git/ref/heads/${validateGithubBranch(branch)}`;
       try {
@@ -110,16 +142,7 @@ export function createGithubReader(request: GithubRequest) {
       const parts = validateGithubPath(path);
       let treeSha = (await getCommit(commitSha)).treeSha;
       for (let index = 0; index < parts.length; index++) {
-        let tree = trees.get(treeSha);
-        if (!tree) {
-          tree = await request(`/git/trees/${treeSha}`, treeSchema);
-          if (tree.sha !== treeSha || tree.truncated)
-            throw new AppError(
-              "UPSTREAM_UNAVAILABLE",
-              "GitHub tree cannot be safely read.",
-            );
-          trees.set(treeSha, tree);
-        }
+        const tree = await readTree(treeSha);
         const entries = tree.tree.filter(
           (entry) => entry.path === parts[index],
         );

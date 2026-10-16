@@ -34,6 +34,7 @@ const v1: Omit<MetadataProposal, "changeHash"> = {
   robotsBeforeSnippet: null,
   robotsAfterSnippet: null,
   revertsProposalId: null,
+  draftId: null,
   adapterId: "app_router_metadata",
   fingerprintVersion: 1,
   reason: "r",

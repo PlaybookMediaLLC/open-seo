@@ -167,6 +167,7 @@ async function prepare(
           adapterId,
           fingerprintVersion: 5,
           revertsProposalId: original.id,
+          draftId: null,
           changeHash: "",
           reason: `Revert of the change from proposal ${original.id}.${outcome}`,
           expectedEffect:

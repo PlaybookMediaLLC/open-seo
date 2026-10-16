@@ -10,6 +10,7 @@ import {
 import { projects } from "./app.schema";
 import { organization } from "./better-auth-schema";
 import { opportunities, opportunityRuns } from "./opportunities.schema";
+import { proposalDrafts } from "./proposal-drafts.schema";
 
 export const publishingConnections = pgTable(
   "publishing_connections",
@@ -104,6 +105,10 @@ export const opportunityProposals = pgTable(
       (): AnyPgColumn => opportunityProposals.id,
       { onDelete: "set null" },
     ),
+    // RFC-0004: the draft the description came from, if any.
+    draftId: text("draft_id").references(() => proposalDrafts.id, {
+      onDelete: "set null",
+    }),
     changeHash: text("change_hash").notNull(),
     reason: text("reason").notNull(),
     expectedEffect: text("expected_effect").notNull(),

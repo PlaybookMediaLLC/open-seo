@@ -5,6 +5,7 @@ import { MetadataExecutionService } from "@/server/features/publishing/MetadataE
 import { MetadataProposalService } from "@/server/features/publishing/MetadataProposalService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
+import { ProposalDraftService } from "@/server/features/publishing/ProposalDraftService";
 import { getRepositoryChecks } from "@/server/features/publishing/repositoryChecks";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
@@ -19,6 +20,11 @@ import {
   publishingProjectInputSchema,
   recoverPublishingInputSchema,
 } from "@/types/schemas/publishing";
+import {
+  discardDraftInputSchema,
+  draftProposalTextInputSchema,
+  opportunityDraftInputSchema,
+} from "@/types/schemas/proposalDrafts";
 
 export const getPublishingConnection = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
@@ -131,6 +137,44 @@ export const connectGithubApp = createServerFn({ method: "POST" })
   .validator(connectGithubAppInputSchema)
   .handler(({ context, data }) =>
     GithubAppService.connect(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0004: find the page file, and draft its description with a model.
+export const locateProposalFile = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDraftInputSchema)
+  .handler(({ context, data }) =>
+    ProposalDraftService.locate(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const draftProposalText = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(draftProposalTextInputSchema)
+  .handler(({ context, data }) =>
+    ProposalDraftService.draft(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const listProposalDrafts = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDraftInputSchema)
+  .handler(({ context, data }) =>
+    ProposalDraftService.list(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const discardProposalDraft = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(discardDraftInputSchema)
+  .handler(({ context, data }) =>
+    ProposalDraftService.discard(context, {
       ...data,
       projectId: context.projectId,
     }),

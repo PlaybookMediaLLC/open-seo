@@ -88,6 +88,7 @@ export async function makePublishingFixture() {
     robotsBeforeSnippet: null,
     robotsAfterSnippet: null,
     revertsProposalId: null,
+    draftId: null,
     adapterId: "app_router_metadata",
     fingerprintVersion: 5,
     changeHash: "",

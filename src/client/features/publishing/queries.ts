@@ -3,6 +3,8 @@ import {
   getProposalRepositoryChecks,
   getPublishingConnection,
   getPublishingOpportunity,
+  listProposalDrafts,
+  locateProposalFile,
 } from "@/serverFunctions/publishing";
 import { opportunityKeys } from "@/client/features/opportunities/shared";
 
@@ -39,6 +41,23 @@ export const repositoryChecksOptions = (
     queryFn: () =>
       getProposalRepositoryChecks({ data: { projectId, proposalId } }),
     staleTime: 60_000,
+  });
+// RFC-0004: the page file for an opportunity. Locating costs up to 12 GitHub
+// requests, so the key stays outside the refreshed publishing keys.
+export const proposalFileOptions = (projectId: string, opportunityId: string) =>
+  queryOptions({
+    queryKey: ["publishing-file", projectId, opportunityId],
+    queryFn: () => locateProposalFile({ data: { projectId, opportunityId } }),
+    staleTime: Infinity,
+    retry: false,
+  });
+export const proposalDraftsOptions = (
+  projectId: string,
+  opportunityId: string,
+) =>
+  queryOptions({
+    queryKey: [...publishingKey(projectId), "drafts", opportunityId],
+    queryFn: () => listProposalDrafts({ data: { projectId, opportunityId } }),
   });
 export function useRefreshPublishing(projectId: string) {
   const client = useQueryClient();

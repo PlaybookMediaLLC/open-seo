@@ -16,29 +16,7 @@ import { PublishingRecovery } from "./PublishingRecovery";
 import { GithubIssueCard } from "./GithubIssueCard";
 import { IndexingFields, type IndexingValues } from "./IndexingFields";
 import { PublishingProposal } from "./PublishingProposal";
-
-function suggestPath(value: string, root: string) {
-  try {
-    const raw = /^https?:\/\/[^/?#\\\s]+(\/[^?#\\\s]*)?$/.exec(value);
-    const url = new URL(value);
-    if (
-      !raw ||
-      url.username ||
-      url.password ||
-      (raw[1] ?? "/") !== url.pathname ||
-      value.includes("//", value.indexOf("://") + 3)
-    )
-      return "";
-    const segments = url.pathname.split("/").filter(Boolean);
-    if (
-      segments.some((segment) => !/^[A-Za-z0-9-][A-Za-z0-9_-]*$/.test(segment))
-    )
-      return "";
-    return [root, "app", ...segments, "page.tsx"].filter(Boolean).join("/");
-  } catch {
-    return "";
-  }
-}
+import { ProposalDrafts, useProposalFilePath } from "./ProposalDrafts";
 
 export function PublishingOpportunityPanel({
   opportunity,
@@ -215,10 +193,12 @@ function PrepareForm({
   >;
   rootDirectory: string;
 }) {
-  const [filePath, setFilePath] = useState(() =>
-    suggestPath(opportunity.url, rootDirectory),
+  const [filePath, setTypedPath, located] = useProposalFilePath(
+    opportunity,
+    rootDirectory,
   );
   const [description, setDescription] = useState("");
+  const [draftId, setDraftId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [indexing, setIndexing] = useState<IndexingValues | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -242,6 +222,7 @@ function PrepareForm({
           : {
               newDescription: description.trim() || undefined,
               newTitle: title.trim() || undefined,
+              draftId: (description.trim() && draftId) || undefined,
             }),
       });
       if (!input.success)
@@ -255,6 +236,7 @@ function PrepareForm({
       if (result.ok) {
         setDescription("");
         setTitle("");
+        setDraftId(null);
       }
     },
     onError: () =>
@@ -282,16 +264,15 @@ function PrepareForm({
           <Input
             id="publishing-file-path"
             value={filePath}
-            onChange={(event) => setFilePath(event.target.value)}
+            onChange={(event) => setTypedPath(event.target.value)}
             required
             maxLength={300}
             placeholder={`${rootDirectory ? `${rootDirectory}/` : ""}app/example/page.tsx`}
           />
           <p className="text-xs text-muted-foreground">
-            The URL-based suggestion is not verified. Confirm the actual file
-            under app/ or src/app/ (page.tsx and similar), or under pages/ or
-            src/pages/ for the Pages Router. Include the configured root
-            directory prefix.
+            {located?.status === "found"
+              ? "Relay found this file in the repository. You can change it."
+              : `${located?.message ?? ""} The URL-based suggestion is not verified. Confirm the actual file under app/ or src/app/ (page.tsx and similar), or under pages/ or src/pages/ for the Pages Router. Include the configured root directory prefix.`}
           </p>
         </div>
         {opportunity.type === "technical_blocker" && (
@@ -356,9 +337,17 @@ function PrepareForm({
               />
               <p className="text-xs text-muted-foreground">
                 {description.length}/320 characters. Write your own factual
-                description. No AI-generated claims are supplied.
+                description, or use a checked draft and edit it.
               </p>
             </div>
+            <ProposalDrafts
+              opportunity={opportunity}
+              filePath={filePath}
+              onUse={(draft) => {
+                setDescription(draft.valueAfter);
+                setDraftId(draft.id);
+              }}
+            />
           </>
         )}
         <p className="text-sm text-muted-foreground">

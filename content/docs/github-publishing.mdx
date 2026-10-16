@@ -47,6 +47,42 @@ Relay changes the plain `<title>` and `<meta name="description">` in a Pages Rou
 
 Next.js adds the nearest layout's `title.template` to a page title. For example, the template `%s | Example` makes the title "Pricing" into "Pricing | Example". Relay reads up to 3 layouts. It shows the final title before you approve. The final title must have 10 to 60 characters.
 
+## Find the page file
+
+When you open an approved opportunity, Relay looks for its page file in the App Router `app/` or `src/app/` directory, including route groups. It reads folder lists only, not file contents. When it finds exactly one file, it fills in the path. You can still change it.
+
+Relay does not find files for dynamic routes or rewrites. Enter the path yourself, or create a GitHub issue instead.
+
+## Draft a description with AI
+
+Click **Draft with AI** to get a description that you can edit. Relay writes the draft from these inputs only:
+
+- The page's Search Console queries.
+- The live page: its title and the first 2,000 characters of its text.
+- The **Business overview**, **Positioning** and **Writing preferences** sections of your project context.
+- The current description in the file, when you entered the file path.
+
+Relay checks each draft before you see it:
+
+1. The description has 70 to 160 characters.
+2. It has no control characters.
+3. It is different from the current description.
+4. Each number in it is in the inputs.
+5. Each claim has an exact quote from its source.
+6. Phrases such as "best", "#1" or "guaranteed" are only allowed when your project context or your current description uses them. Text on the page cannot permit them.
+7. Each query it used is a real query for the page.
+
+When a draft fails a check, Relay tries once more. When the second draft fails too, Relay shows "Relay could not write a safe draft. Write the description yourself." It never shows a draft that failed.
+
+Each draft shows its character count, the reason for the wording, the queries it used, and each claim with the quote that supports it. Click **Use this draft** to copy it into the description field. Edit it, then prepare the proposal as usual. The draft goes into your repository only after you approve the exact change.
+
+**Cost and limits:**
+
+- A draft costs about 1 to 5 credits. Relay bills the cost that the model provider reports, for both tries.
+- Drafting needs usage credits and permission to manage integrations.
+- You can draft 3 times for each opportunity and 30 times for each project in 24 hours.
+- A project writes one draft at a time.
+
 ## Review and approve
 
 Each proposal shows:
