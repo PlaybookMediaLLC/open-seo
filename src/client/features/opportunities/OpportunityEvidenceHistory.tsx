@@ -8,14 +8,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/client/components/ui/table";
-import type { OpportunityEvidence } from "@/types/schemas/opportunities";
+import type {
+  EvidencePeriod,
+  OpportunityEvidence,
+} from "@/types/schemas/opportunities";
+
+const PERIOD_LABELS: Record<EvidencePeriod, string> = {
+  current: "Current",
+  previous: "Previous",
+  year_ago: "Year ago",
+  year_ago_previous: "Year ago, previous",
+};
+const PERIOD_ORDER = Object.keys(PERIOD_LABELS);
 
 export function OpportunityEvidenceHistory({
   evidence,
   latestRunId,
+  query,
 }: {
   evidence: OpportunityEvidence[];
   latestRunId: string;
+  /** The opportunity's own query. Null means the page across all queries. */
+  query: string | null;
 }) {
   const groups = new Map<string, OpportunityEvidence[]>();
   for (const row of evidence)
@@ -30,11 +44,12 @@ export function OpportunityEvidenceHistory({
         </h2>
         <p className="text-sm text-muted-foreground">
           Observed search metrics, not a forecast or proof of causation. Current
-          and comparison periods stay grouped by detection run.
+          and comparison periods stay grouped by detection run. Year-ago periods
+          are the same dates 364 days earlier.
         </p>
       </div>
       {latest.length ? (
-        <EvidenceRun rows={latest} runId={latestRunId} />
+        <EvidenceRun rows={latest} runId={latestRunId} query={query} />
       ) : (
         <p className="text-sm text-muted-foreground">
           No evidence snapshot is available for the latest run.
@@ -47,7 +62,7 @@ export function OpportunityEvidenceHistory({
           </summary>
           <div className="mt-4 space-y-5">
             {historical.map(([id, rows]) => (
-              <EvidenceRun key={id} rows={rows} runId={id} />
+              <EvidenceRun key={id} rows={rows} runId={id} query={query} />
             ))}
           </div>
         </details>
@@ -59,9 +74,11 @@ export function OpportunityEvidenceHistory({
 function EvidenceRun({
   rows,
   runId,
+  query,
 }: {
   rows: OpportunityEvidence[];
   runId: string;
+  query: string | null;
 }) {
   return (
     <div className="space-y-2">
@@ -71,6 +88,7 @@ function EvidenceRun({
           <TableHeader>
             <TableRow>
               <TableHead>Period</TableHead>
+              <TableHead>Page and query</TableHead>
               <TableHead>Date range</TableHead>
               <TableHead>Clicks</TableHead>
               <TableHead>Impressions</TableHead>
@@ -79,22 +97,31 @@ function EvidenceRun({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sort(rows, (a, b) => a.period.localeCompare(b.period)).map(
-              (row) => (
-                <TableRow key={row.id}>
-                  <TableCell>
-                    {row.period === "current" ? "Current" : "Previous"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {row.startDate} to {row.endDate}
-                  </TableCell>
-                  <TableCell>{row.clicks.toLocaleString()}</TableCell>
-                  <TableCell>{row.impressions.toLocaleString()}</TableCell>
-                  <TableCell>{(row.ctr * 100).toFixed(2)}%</TableCell>
-                  <TableCell>{row.position.toFixed(1)}</TableCell>
-                </TableRow>
-              ),
-            )}
+            {sort(
+              rows,
+              (a, b) =>
+                PERIOD_ORDER.indexOf(a.period) -
+                  PERIOD_ORDER.indexOf(b.period) ||
+                a.url.localeCompare(b.url) ||
+                a.query.localeCompare(b.query),
+            ).map((row) => (
+              <TableRow key={row.id}>
+                <TableCell>{PERIOD_LABELS[row.period]}</TableCell>
+                <TableCell className="max-w-xs whitespace-normal text-xs">
+                  <p className="break-all">{row.url || "This page"}</p>
+                  <p className="text-muted-foreground">
+                    {row.query || query || "All queries"}
+                  </p>
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {row.startDate} to {row.endDate}
+                </TableCell>
+                <TableCell>{row.clicks.toLocaleString()}</TableCell>
+                <TableCell>{row.impressions.toLocaleString()}</TableCell>
+                <TableCell>{(row.ctr * 100).toFixed(2)}%</TableCell>
+                <TableCell>{row.position.toFixed(1)}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableCard>

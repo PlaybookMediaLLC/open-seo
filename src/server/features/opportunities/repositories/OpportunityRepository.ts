@@ -3,32 +3,28 @@ import {
   count,
   desc,
   eq,
-  exists,
   getTableColumns,
-  gt,
   gte,
+  isNotNull,
   isNull,
   lte,
   or,
-  sql,
-  SQL,
-  type Table,
 } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
+import { completeRun } from "./opportunityCompletion";
 import { review } from "./opportunityReview";
 import {
-  dataRefreshClaims,
-  gscConnections,
+  keywordMetrics,
   opportunities,
   opportunityDecisions,
   opportunityEvidence,
+  opportunityGa4Evidence,
   opportunityRuns,
-  projects,
+  opportunityUrls,
 } from "@/db/schema";
 import type {
   Opportunity,
-  OpportunityCandidate,
   OpportunityDetail,
   OpportunityListInput,
   OpportunityRun,
@@ -42,22 +38,11 @@ const { projectId: _evidenceProjectId, ...evidenceColumns } =
   getTableColumns(opportunityEvidence);
 const { projectId: _decisionProjectId, ...decisionColumns } =
   getTableColumns(opportunityDecisions);
-
-// INSERT SELECT keeps each write conditional inside the same D1 batch / PG
-// transaction. Column encoders preserve dialect-native booleans and numbers.
-function selectedValues(
-  table: Table,
-  values: Record<string, unknown>,
-  condition: SQL,
-) {
-  const fields = Object.entries(getTableColumns(table)).map(([key, column]) => {
-    const value = values[key];
-    if (value === undefined) throw new Error(`Missing inserted field: ${key}`);
-    return value instanceof SQL ? value : sql`${sql.param(value, column)}`;
-  });
-  return sql`select ${sql.join(fields, sql`, `)} where ${condition}`;
-}
-
+const { projectId: _urlProjectId, ...urlColumns } =
+  getTableColumns(opportunityUrls);
+const { projectId: _ga4ProjectId, ...ga4Columns } = getTableColumns(
+  opportunityGa4Evidence,
+);
 async function list(
   input: OpportunityListInput,
 ): Promise<{ rows: Opportunity[]; total: number }> {
@@ -101,7 +86,7 @@ async function getDetail(
       and(eq(opportunities.projectId, projectId), eq(opportunities.id, id)),
     );
   if (!opportunity) return null;
-  const [evidence, decisions] = await Promise.all([
+  const [evidence, urls, ga4Evidence, decisions] = await Promise.all([
     db
       .select(evidenceColumns)
       .from(opportunityEvidence)
@@ -112,6 +97,29 @@ async function getDetail(
         ),
       )
       .orderBy(desc(opportunityEvidence.endDate), desc(opportunityEvidence.id)),
+    db
+      .select(urlColumns)
+      .from(opportunityUrls)
+      .where(
+        and(
+          eq(opportunityUrls.projectId, projectId),
+          eq(opportunityUrls.opportunityId, id),
+        ),
+      )
+      .orderBy(opportunityUrls.role, opportunityUrls.url),
+    db
+      .select(ga4Columns)
+      .from(opportunityGa4Evidence)
+      .where(
+        and(
+          eq(opportunityGa4Evidence.projectId, projectId),
+          eq(opportunityGa4Evidence.opportunityId, id),
+        ),
+      )
+      .orderBy(
+        desc(opportunityGa4Evidence.runId),
+        opportunityGa4Evidence.period,
+      ),
     db
       .select(decisionColumns)
       .from(opportunityDecisions)
@@ -126,7 +134,7 @@ async function getDetail(
         desc(opportunityDecisions.id),
       ),
   ]);
-  return { opportunity, evidence, decisions };
+  return { opportunity, evidence, urls, ga4Evidence, decisions };
 }
 
 async function latestRun(
@@ -213,169 +221,35 @@ async function failRun(
     );
 }
 
-async function completeRun(input: {
-  run: OpportunityRun;
-  claimKey: string;
-  candidates: Array<OpportunityCandidate & { identityKey: string }>;
-}): Promise<boolean> {
-  if (input.candidates.length > 50)
-    throw new Error("A detection run may persist at most 50 opportunities.");
-  if (
-    new Set(input.candidates.map((candidate) => candidate.identityKey)).size !==
-    input.candidates.length
-  )
-    throw new Error("Duplicate opportunity identities in a detection run.");
-  const { run, claimKey, candidates } = input;
-  const completionToken = crypto.randomUUID();
-  const finishedAt = run.finishedAt ?? new Date().toISOString();
-  await runBatch((tx) => {
-    const claim = and(
-      eq(dataRefreshClaims.key, claimKey),
-      eq(dataRefreshClaims.token, run.id),
-      gt(dataRefreshClaims.nextAttemptAt, Date.now()),
-      exists(
-        tx
-          .select({ id: projects.id })
-          .from(projects)
-          .where(
-            and(
-              eq(projects.id, run.projectId),
-              eq(projects.organizationId, dataRefreshClaims.organizationId),
-              isNull(projects.archivedAt),
-            ),
-          ),
-      ),
-    );
-    const property = and(
-      eq(gscConnections.projectId, run.projectId),
-      eq(gscConnections.siteUrl, run.siteUrl),
-    );
-    const accepted = exists(
-      tx
-        .select({ id: opportunityRuns.id })
-        .from(opportunityRuns)
-        .where(
-          and(
-            eq(opportunityRuns.projectId, run.projectId),
-            eq(opportunityRuns.id, run.id),
-            eq(opportunityRuns.completionToken, completionToken),
-          ),
-        ),
-    );
-    const statements: Promise<unknown>[] = [
-      // Lock the lease and selected property on Postgres so a replacement owner
-      // or property switch cannot slip between admission and the child writes.
-      tx
-        .update(dataRefreshClaims)
-        .set({ token: sql`${dataRefreshClaims.token}` })
-        .where(claim),
-      tx
-        .update(gscConnections)
-        .set({ siteUrl: sql`${gscConnections.siteUrl}` })
-        .where(property),
-      tx
-        .update(opportunityRuns)
-        .set({
-          ...run,
-          status: "completed",
-          finishedAt,
-          opportunityCount: candidates.length,
-          error: null,
-          completionToken,
-        })
-        .where(
-          and(
-            eq(opportunityRuns.projectId, run.projectId),
-            eq(opportunityRuns.id, run.id),
-            eq(opportunityRuns.status, "running"),
-            eq(opportunityRuns.siteUrl, run.siteUrl),
-            exists(
-              tx
-                .select({ key: dataRefreshClaims.key })
-                .from(dataRefreshClaims)
-                .where(claim),
-            ),
-            exists(
-              tx
-                .select({ id: gscConnections.id })
-                .from(gscConnections)
-                .where(property),
-            ),
-          ),
-        ),
-    ];
-    for (const candidate of candidates) {
-      const { current, previous, ...fields } = candidate;
-      const refreshed = {
-        ...fields,
-        siteUrl: run.siteUrl,
-        evidenceRunId: run.id,
-        lastDetectedAt: finishedAt,
-      };
-      const row = {
-        ...refreshed,
-        id: crypto.randomUUID(),
-        projectId: run.projectId,
-        status: "discovered",
-        ownerUserId: null,
-        firstDetectedAt: finishedAt,
-        deferredUntil: null,
-        version: 1,
-        lastDecisionId: null,
-      } satisfies typeof opportunities.$inferSelect;
-      statements.push(
-        tx
-          .insert(opportunities)
-          .select(selectedValues(opportunities, row, accepted))
-          .onConflictDoUpdate({
-            target: [opportunities.projectId, opportunities.identityKey],
-            // Deliberately preserve human status, owner, defer and decision history.
-            set: { ...refreshed, version: sql`${opportunities.version} + 1` },
-          }),
-      );
-      const opportunityId = sql<string>`(select ${opportunities.id} from ${opportunities} where ${opportunities.projectId} = ${run.projectId} and ${opportunities.identityKey} = ${candidate.identityKey})`;
-      for (const period of ["current", "previous"] as const) {
-        const metrics = period === "current" ? current : previous;
-        if (!metrics) continue;
-        statements.push(
-          tx.insert(opportunityEvidence).select(
-            selectedValues(
-              opportunityEvidence,
-              {
-                id: crypto.randomUUID(),
-                projectId: run.projectId,
-                opportunityId,
-                runId: run.id,
-                source: "google_search_console",
-                period,
-                startDate:
-                  period === "current" ? run.startDate : run.previousStartDate,
-                endDate:
-                  period === "current" ? run.endDate : run.previousEndDate,
-                ...metrics,
-              },
-              accepted,
-            ),
-          ),
-        );
-      }
-    }
-    return statements;
-  });
-  const [completed] = await db
-    .select({ id: opportunityRuns.id })
-    .from(opportunityRuns)
+/** Lowercase keyword to cached difficulty. Reads only; it buys nothing. */
+async function cachedKeywordDifficulty(input: {
+  projectId: string;
+  locationCode: number;
+  languageCode: string;
+  since: string;
+}): Promise<Map<string, number>> {
+  const rows = await db
+    .select({
+      keyword: keywordMetrics.keyword,
+      difficulty: keywordMetrics.keywordDifficulty,
+    })
+    .from(keywordMetrics)
     .where(
       and(
-        eq(opportunityRuns.projectId, run.projectId),
-        eq(opportunityRuns.id, run.id),
-        eq(opportunityRuns.completionToken, completionToken),
+        eq(keywordMetrics.projectId, input.projectId),
+        eq(keywordMetrics.locationCode, input.locationCode),
+        eq(keywordMetrics.languageCode, input.languageCode),
+        isNotNull(keywordMetrics.keywordDifficulty),
+        gte(keywordMetrics.fetchedAt, input.since),
       ),
     );
-  return Boolean(completed);
+  return new Map(
+    rows.map((row) => [row.keyword.toLowerCase(), row.difficulty ?? 0]),
+  );
 }
 
 export const OpportunityRepository = {
+  cachedKeywordDifficulty,
   list,
   getDetail,
   latestRun,

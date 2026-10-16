@@ -1,34 +1,7 @@
 import { reverse, sort } from "remeda";
 import { describe, expect, it } from "vitest";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import { detectOpportunities } from "./detectOpportunities";
-
-const page = (path: string) => `https://example.com/${path}`;
-function row(
-  keys: string[],
-  overrides: Partial<GscSearchAnalyticsRow> = {},
-): GscSearchAnalyticsRow {
-  return {
-    keys,
-    clicks: 10,
-    impressions: 1_000,
-    ctr: 0.01,
-    position: 10,
-    ...overrides,
-  };
-}
-function input(
-  overrides: Partial<Parameters<typeof detectOpportunities>[0]> = {},
-): Parameters<typeof detectOpportunities>[0] {
-  return {
-    queryPages: [],
-    currentPages: [],
-    previousPages: [],
-    keyPages: [],
-    truncated: false,
-    ...overrides,
-  };
-}
+import { input, page, row } from "./detectionTestSupport";
 
 // Each case owns a detector output invariant, using real shaping helpers and no mocks.
 describe("detectOpportunities", () => {
@@ -61,8 +34,10 @@ describe("detectOpportunities", () => {
     expect(
       results.find((result) => result.url === page("product")),
     ).toMatchObject({
-      current: { clicks: 10 },
-      previous: { clicks: 40 },
+      evidence: [
+        { period: "current", metrics: { clicks: 10 } },
+        { period: "previous", metrics: { clicks: 40 } },
+      ],
       confidence: 0.5,
       effortHours: 4,
     });
@@ -72,7 +47,7 @@ describe("detectOpportunities", () => {
       commercialScore: 1,
       confidence: 0.65,
       effortHours: 2,
-      previous: null,
+      evidence: [{ period: "current" }],
     });
     for (const result of results) {
       expect(result.searchIntent).toBe("Unverified; review query and SERP");

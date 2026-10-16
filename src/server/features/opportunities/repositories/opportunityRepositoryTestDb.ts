@@ -87,9 +87,13 @@ export function createOpportunityTestDatabase(
         CREATE TABLE data_refresh_claims (key TEXT PRIMARY KEY, organization_id TEXT NOT NULL, token TEXT NOT NULL, next_attempt_at INTEGER NOT NULL);
         CREATE TABLE gsc_connections (id TEXT PRIMARY KEY, project_id TEXT NOT NULL UNIQUE, site_url TEXT NOT NULL, organization_id TEXT, connected_by_user_id TEXT);
       `);
-      await sqlite.executeMultiple(
-        readFileSync("drizzle/sqlite/0056_careless_the_watchers.sql", "utf8"),
-      );
+      for (const migration of [
+        "0056_careless_the_watchers.sql",
+        "0068_unusual_princess_powerful.sql",
+      ])
+        await sqlite.executeMultiple(
+          readFileSync(`drizzle/sqlite/${migration}`, "utf8"),
+        );
     },
     rejectEvidence: async () => {
       await sqlite.execute(

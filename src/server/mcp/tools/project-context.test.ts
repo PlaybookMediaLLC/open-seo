@@ -36,6 +36,13 @@ vi.mock(
   "@/server/features/project-context/repositories/ProjectContextRepository",
   () => ({ ProjectContextRepository: mocks }),
 );
+// playbook-seam: the digest adds brand terms (RFC-0002) from their own store.
+vi.mock(
+  "@/server/features/opportunities/repositories/BrandTermRepository",
+  () => ({
+    BrandTermRepository: { list: async () => ({ terms: [], domain: null }) },
+  }),
+);
 // The digest lists the project's report templates, which live in the reports
 // feature's own store.
 vi.mock(

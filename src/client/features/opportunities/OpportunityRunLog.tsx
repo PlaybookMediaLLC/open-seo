@@ -69,13 +69,20 @@ export function OpportunityRunLog({ runs }: { runs: OpportunityRun[] }) {
                     <p className="text-muted-foreground">
                       Previous: {run.previousStartDate} to {run.previousEndDate}
                     </p>
+                    <p className="text-muted-foreground">
+                      Year ago: both periods, 364 days earlier
+                    </p>
                   </TableCell>
                   <TableCell className="min-w-36 text-xs">
                     <p>Query: {run.queryRows}</p>
                     <p>Pages: {run.currentPageRows}</p>
                     <p>Previous pages: {run.previousPageRows}</p>
+                    <p>Year-ago pages: {run.yearAgoPageRows}</p>
+                    <p className="text-muted-foreground">
+                      {run.ga4PropertyId ? "GA4 used" : "No GA4 data"}
+                    </p>
                   </TableCell>
-                  <TableCell>{run.requestCount} / 3</TableCell>
+                  <TableCell>{run.requestCount}</TableCell>
                   <TableCell className="max-w-sm whitespace-normal text-xs">
                     <p>{run.opportunityCount} opportunities</p>
                     {run.truncated ? (

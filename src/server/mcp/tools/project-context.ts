@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { ProjectContextService } from "@/server/features/project-context/services/ProjectContextService";
+import {
+  BrandTermService, // playbook-seam
+  brandTermsToolField, // playbook-seam
+} from "@/server/features/opportunities/services/BrandTermService";
 import { buildProjectMeta } from "@/server/mcp/context";
 import { mcpResponse } from "@/server/mcp/formatters";
 import {
@@ -54,16 +58,17 @@ export const getProjectContextTool = {
       const projectContext = await ProjectContextService.getProjectContext(
         args.projectId,
       );
+      const brandTerms = await BrandTermService.get(args.projectId); // playbook-seam
       return mcpResponse({
-        text: ProjectContextService.renderProjectContextMarkdown(
-          projectContext,
-        ),
+        text:
+          ProjectContextService.renderProjectContextMarkdown(projectContext) +
+          BrandTermService.render(brandTerms), // playbook-seam
         meta: buildProjectMeta(
           context,
           args.projectId,
           contextPath(args.projectId),
         ),
-        structuredContent: projectContext,
+        structuredContent: { ...projectContext, brandTerms }, // playbook-seam
       });
     },
   ),
@@ -73,9 +78,13 @@ const updateInputSchema = {
   projectId: projectIdSchema,
   // The batch cap lives with the server function's schema so both entry points
   // accept exactly the same patch list.
-  updates: updateProjectContextSchema.shape.updates.describe(
-    'Patch ops, applied in order. Clear a standard section with {section: "current_goal", content: ""}; delete a custom section with {deleteCustomSection: "slug"}; removeCompetitors takes domains, removeKeyPages takes URLs, and removeResearchLog takes entry IDs from the project context. Adds upsert by domain/url; research-log entries are date-stamped by the server.',
-  ),
+  // playbook-seam: optional, so one call can change only the brand terms.
+  updates: updateProjectContextSchema.shape.updates
+    .optional()
+    .describe(
+      'Patch ops, applied in order. Clear a standard section with {section: "current_goal", content: ""}; delete a custom section with {deleteCustomSection: "slug"}; removeCompetitors takes domains, removeKeyPages takes URLs, and removeResearchLog takes entry IDs from the project context. Adds upsert by domain/url; research-log entries are date-stamped by the server.',
+    ),
+  brandTerms: brandTermsToolField, // playbook-seam
 } as const;
 
 /**
@@ -101,26 +110,30 @@ export function buildUpdateProjectContextTool(author: ContextAuthor) {
     },
     handler: withMcpProjectAuth(
       async (args: z.infer<z.ZodObject<typeof updateInputSchema>>, context) => {
+        const updates = args.updates ?? []; // playbook-seam
+        await BrandTermService.save(args.projectId, args.brandTerms, author); // playbook-seam
         const projectContext = await ProjectContextService.applyContextUpdates(
           args.projectId,
-          args.updates,
+          updates,
           author,
         );
+        const brandTerms = await BrandTermService.get(args.projectId); // playbook-seam
         return mcpResponse({
           // Echoing the whole context back — the same digest the read tool
           // returns — is both the confirmation and the caller's next read, so
           // there is no second description of the patch ops to drift from them.
           text: [
-            `Updated project context (${args.updates.length} change(s)).`,
+            `Updated project context (${updates.length} change(s)).`,
             "",
-            ProjectContextService.renderProjectContextMarkdown(projectContext),
+            ProjectContextService.renderProjectContextMarkdown(projectContext) +
+              BrandTermService.render(brandTerms), // playbook-seam
           ].join("\n"),
           meta: buildProjectMeta(
             context,
             args.projectId,
             contextPath(args.projectId),
           ),
-          structuredContent: projectContext,
+          structuredContent: { ...projectContext, brandTerms }, // playbook-seam
         });
       },
     ),

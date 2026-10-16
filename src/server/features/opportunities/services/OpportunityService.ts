@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { sort } from "remeda";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { requireOrgPermission } from "@/server/auth/org-gate";
@@ -7,6 +7,7 @@ import {
   ga4DateInTimeZone,
   shiftGa4Date,
 } from "@/server/features/ga4/services/Ga4Dates";
+import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { previousPeriod } from "@/server/features/gsc/searchPerformanceReport";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
@@ -18,6 +19,7 @@ import {
   GscTokenError,
 } from "@/server/lib/gscErrors";
 import type {
+  OpportunityCandidate,
   OpportunityDetectionResult,
   OpportunityListInput,
   OpportunityReviewInput,
@@ -25,29 +27,21 @@ import type {
   OpportunityStatus,
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
+import { BrandTermService } from "./BrandTermService";
 import { detectOpportunities } from "./detectOpportunities";
+import { requestDetectionData } from "./detectionRequests";
 
 type Context = Pick<EnsuredUserContext, "organizationId" | "userId" | "role">;
 const DAY_MS = 86_400_000;
-const ROW_LIMIT = 1000;
-const providerRows = z
-  .array(
-    z.object({
-      keys: z.array(z.string()).optional(),
-      clicks: z.number().nonnegative(),
-      impressions: z.number().nonnegative(),
-      ctr: z.number().min(0).max(1),
-      position: z.number().nonnegative(),
-    }),
-  )
-  .max(ROW_LIMIT);
-
+const DIFFICULTY_MAX_AGE_DAYS = 90;
+const DEADLINE_MS = 120_000;
 async function authorize(context: Context, projectId: string) {
   const project = await ProjectRepository.getProjectForOrganization(
     projectId,
     context.organizationId,
   );
   if (!project) throw new AppError("NOT_FOUND", "Project not found.");
+  return project;
 }
 
 async function list(context: Context, input: OpportunityListInput) {
@@ -98,15 +92,24 @@ function failureMessage(error: unknown): string {
 async function identityKey(
   projectId: string,
   siteUrl: string,
-  type: string,
-  url: string,
-  query: string | null,
+  candidate: OpportunityCandidate,
 ) {
   // Structured tuple prevents ambiguous delimiters. This is an identity hash,
   // not a store of relational data; evidence lives in separate normalized rows.
-  const bytes = new TextEncoder().encode(
-    JSON.stringify([projectId, siteUrl, type, url, query]),
-  );
+  // Single-URL types keep the original tuple, so their hashes never change.
+  const tuple =
+    candidate.type === "cannibalization"
+      ? [
+          projectId,
+          siteUrl,
+          candidate.type,
+          sort(
+            candidate.urls.map((item) => item.url),
+            (a, b) => (a < b ? -1 : a > b ? 1 : 0),
+          ),
+        ]
+      : [projectId, siteUrl, candidate.type, candidate.url, candidate.query];
+  const bytes = new TextEncoder().encode(JSON.stringify(tuple));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) =>
     byte.toString(16).padStart(2, "0"),
@@ -117,7 +120,7 @@ async function detect(
   context: Context,
   projectId: string,
 ): Promise<OpportunityDetectionResult> {
-  await authorize(context, projectId);
+  const project = await authorize(context, projectId);
   const connection = await GscService.getConnection(projectId);
   if (!connection)
     return {
@@ -167,6 +170,7 @@ async function detect(
     id: token,
     projectId,
     siteUrl: connection.siteUrl,
+    kind: "search_console",
     status: "running",
     requestedBy: context.userId,
     startDate,
@@ -178,6 +182,8 @@ async function detect(
     queryRows: 0,
     currentPageRows: 0,
     previousPageRows: 0,
+    yearAgoPageRows: 0,
+    ga4PropertyId: null,
     requestCount: 0,
     opportunityCount: 0,
     truncated: false,
@@ -187,24 +193,33 @@ async function detect(
   const controller = new AbortController();
   const signal = AbortSignal.any([
     controller.signal,
-    AbortSignal.timeout(90_000),
+    AbortSignal.timeout(DEADLINE_MS),
   ]);
   let rejectTimeout: (() => void) | undefined;
   try {
-    const keyPages = await ProjectContextRepository.listKeyPages(projectId);
-    // Reserve the entire bounded request allowance before starting network work.
-    run.requestCount = 3;
+    const [keyPages, brandTerms, ga4Connection, keywordDifficulty] =
+      await Promise.all([
+        ProjectContextRepository.listKeyPages(projectId),
+        BrandTermService.get(projectId),
+        Ga4ConnectionRepository.getByProjectId(projectId),
+        OpportunityRepository.cachedKeywordDifficulty({
+          projectId,
+          locationCode: project.locationCode,
+          languageCode: project.languageCode,
+          since: new Date(
+            Date.now() - DIFFICULTY_MAX_AGE_DAYS * DAY_MS,
+          ).toISOString(),
+        }),
+      ]);
+    // Reserve the entire bounded request allowance before starting network work:
+    // five Search Console reports, plus one GA4 report when GA4 is connected.
+    run.requestCount = ga4Connection ? 6 : 5;
+    run.ga4PropertyId = ga4Connection?.propertyId ?? null;
     await OpportunityRepository.setRequestCount(
       projectId,
       run.id,
       run.requestCount,
     );
-    const base = {
-      projectId,
-      rowLimit: ROW_LIMIT,
-      type: "web" as const,
-      dataState: "final" as const,
-    };
     // Attach the rejection only when the race is ready to handle it. Database
     // setup may take time, so check cancellation before starting any query.
     signal.throwIfAborted();
@@ -213,53 +228,39 @@ async function detect(
         reject(new Error("Opportunity analysis deadline reached"));
       signal.addEventListener("abort", rejectTimeout, { once: true });
     });
-    const results = await Promise.race([
-      Promise.all([
-        GscService.getPerformance(
-          { ...base, startDate, endDate, dimensions: ["query", "page"] },
-          { signal },
-        ),
-        GscService.getPerformance(
-          { ...base, startDate, endDate, dimensions: ["page"] },
-          { signal },
-        ),
-        GscService.getPerformance(
-          { ...base, ...previous, dimensions: ["page"] },
-          { signal },
-        ),
-      ]),
+    const data = await Promise.race([
+      requestDetectionData({
+        projectId,
+        siteUrl: run.siteUrl,
+        current: { startDate, endDate },
+        previous,
+        ga4Connection,
+        signal,
+      }),
       timeout,
     ]);
-    if (results.some((result) => result.siteUrl !== run.siteUrl)) {
-      throw new AppError(
-        "CONFLICT",
-        "Search Console property changed during analysis.",
-      );
-    }
-    const [queryPages, currentPages, previousPages] = results.map((result) =>
-      providerRows.parse(result.rows),
-    );
-    run.queryRows = queryPages.length;
-    run.currentPageRows = currentPages.length;
-    run.previousPageRows = previousPages.length;
-    run.truncated = results.some((result) => result.rows.length >= ROW_LIMIT);
+    const { ga4Rows, ...searchConsole } = data;
+    run.queryRows = data.queryPages.length;
+    run.currentPageRows = data.currentPages.length;
+    run.previousPageRows = data.previousPages.length;
+    run.yearAgoPageRows =
+      data.yearAgoPages.length + data.yearAgoPreviousPages.length;
+    run.truncated = data.truncated;
+    if (!ga4Rows) run.ga4PropertyId = null;
     const candidates = detectOpportunities({
-      queryPages,
-      currentPages,
-      previousPages,
+      ...searchConsole,
       keyPages,
-      truncated: run.truncated,
+      brandTerms: brandTerms.terms,
+      ga4:
+        ga4Connection && ga4Rows
+          ? { rows: ga4Rows, currency: ga4Connection.propertyCurrencyCode }
+          : null,
+      keywordDifficulty,
     });
     const identified = await Promise.all(
       candidates.map(async (candidate) => ({
         ...candidate,
-        identityKey: await identityKey(
-          projectId,
-          run.siteUrl,
-          candidate.type,
-          candidate.url,
-          candidate.query,
-        ),
+        identityKey: await identityKey(projectId, run.siteUrl, candidate),
       })),
     );
     run.opportunityCount = candidates.length;
@@ -287,13 +288,19 @@ async function detect(
         );
       },
     );
+    const ga4Note = !ga4Connection
+      ? " GA4 is not connected, so commercial value uses page roles only."
+      : !ga4Rows
+        ? " The GA4 report failed, so commercial value uses page roles only."
+        : "";
     return {
       outcome: "completed",
       run,
       message:
-        candidates.length > 0
+        (candidates.length > 0
           ? `Saved ${candidates.length} evidence-backed investigation opportunities. No website changes were made.`
-          : "No qualifying opportunities were found in the returned data. This is not a complete assessment of the site.",
+          : "No qualifying opportunities were found in the returned data. This is not a complete assessment of the site.") +
+        ga4Note,
     };
   } catch (error) {
     const message = failureMessage(error);

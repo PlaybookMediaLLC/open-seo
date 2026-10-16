@@ -31,6 +31,12 @@ import type { Plugin } from "vite";
  * - src/server.ts: loads the growth E2E provider fake
  *   (src/server/e2e/growthFixtures.ts), inert outside E2E builds.
  * - knip.jsonc: lists the growth E2E spec (tests/growth-workflow.e2e.ts).
+ * - src/server/mcp/tools/project-context.ts: get_project_context and
+ *   update_project_context read and save brand terms (RFC-0002), and an
+ *   update may change only the brand terms. Its upstream test mocks the
+ *   brand-term store (src/server/mcp/tools/project-context.test.ts).
+ * - src/routes/_app/p/$projectId/context.tsx: mounts the brand-terms editor
+ *   (src/client/features/opportunities/BrandTermsSection.tsx).
  */
 const RELAY = "https://relay.playbookmedia.io";
 
