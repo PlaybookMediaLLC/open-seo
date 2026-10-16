@@ -3,7 +3,17 @@ import { AppError } from "@/server/lib/errors";
 import type { PublishingConnectionRecord } from "@/types/schemas/publishing";
 import type { GithubClient } from "./githubClient";
 import { metadataHelperCandidates } from "./metadataHelper";
-import { metadataHelperImport } from "./nextMetadata";
+import { readTitleTemplate } from "./layoutTitle";
+import {
+  metadataHelperImport,
+  prepareMetadataChange,
+  validateMetadataTarget,
+} from "./nextMetadata";
+import {
+  isPagesRouterFile,
+  preparePagesHeadChange,
+  validatePagesTarget,
+} from "./pagesRouterHead";
 import { gitBlobHash } from "./proposalFingerprint";
 
 const manifestSchema = z.object({
@@ -36,7 +46,7 @@ function verifyNextManifest(source: string) {
 // Tries each candidate in order. A missing file in a folder that was already
 // read costs no extra GitHub request.
 async function readMetadataHelper(
-  client: GithubClient,
+  client: Pick<GithubClient, "readFile">,
   sha: string,
   candidates: string[],
 ) {
@@ -57,26 +67,68 @@ async function readMetadataHelper(
   );
 }
 
+type AdapterId = "app_router_metadata" | "pages_router_head";
+
+/** Checks the page path and URL before any GitHub request. */
+export function validateTarget(
+  path: string,
+  url: string,
+  rootDirectory: string,
+): AdapterId {
+  if (isPagesRouterFile(path, rootDirectory)) {
+    validatePagesTarget(path, url, rootDirectory);
+    return "pages_router_head";
+  }
+  validateMetadataTarget({ path, url, rootDirectory });
+  return "app_router_metadata";
+}
+
 /**
- * Reads what a metadata change needs at one commit: the package manifest
- * (Next.js 13.2 or later), the page file, and the helper module when the page
- * sets metadata through a helper call.
+ * Reads the page at one commit and prepares the change with the adapter for
+ * its router: App Router metadata (with its helper module and layout title
+ * template) or Pages Router next/head (RFC-0005 5.8).
  */
-export async function readPublishingTarget(
-  client: GithubClient,
-  connection: PublishingConnectionRecord,
-  filePath: string,
-  sha: string,
+export async function prepareChangeAt(
+  client: Pick<GithubClient, "readFile">,
+  connection: Pick<PublishingConnectionRecord, "rootDirectory">,
+  input: {
+    filePath: string;
+    url: string;
+    sha: string;
+    newDescription?: string;
+    newTitle?: string;
+    restore?: boolean;
+    // Execution skips it: the base commit is pinned, and prepare checked it.
+    verifyManifest?: boolean;
+  },
 ) {
-  const rootPrefix = connection.rootDirectory
-    ? `${connection.rootDirectory}/`
-    : "";
-  verifyNextManifest(
-    (await client.readFile(`${rootPrefix}package.json`, sha)).source,
-  );
+  const { filePath, sha, url } = input;
+  const rootDirectory = connection.rootDirectory;
+  const rootPrefix = rootDirectory ? `${rootDirectory}/` : "";
+  const adapterId = validateTarget(filePath, url, rootDirectory);
+  if (input.verifyManifest ?? true)
+    verifyNextManifest(
+      (await client.readFile(`${rootPrefix}package.json`, sha)).source,
+    );
   const file = await client.readFile(filePath, sha);
   if ((await gitBlobHash(file.source)) !== file.blobSha)
     throw new AppError("CONFLICT");
+  const change = {
+    path: filePath,
+    url,
+    rootDirectory,
+    source: file.source,
+    newDescription: input.newDescription,
+    newTitle: input.newTitle,
+    restore: input.restore,
+  };
+  if (adapterId === "pages_router_head")
+    return {
+      adapterId,
+      file,
+      helper: undefined,
+      patch: preparePagesHeadChange(change),
+    };
   const helperImport = metadataHelperImport(file.source, filePath);
   const helper = helperImport
     ? await readMetadataHelper(
@@ -85,12 +137,20 @@ export async function readPublishingTarget(
         metadataHelperCandidates({
           specifier: helperImport.specifier,
           pagePath: filePath,
-          rootDirectory: connection.rootDirectory,
+          rootDirectory,
           tsconfig: helperImport.specifier.startsWith(".")
             ? undefined
             : (await client.readFile(`${rootPrefix}tsconfig.json`, sha)).source,
         }),
       )
     : undefined;
-  return { file, helper };
+  const patch = prepareMetadataChange({
+    ...change,
+    helper,
+    titleTemplate:
+      input.newTitle === undefined
+        ? null
+        : await readTitleTemplate(client, sha, filePath, rootDirectory),
+  });
+  return { adapterId, file, helper, patch };
 }

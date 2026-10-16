@@ -1,6 +1,4 @@
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
-import { readTitleTemplate } from "@/server/features/publishing/layoutTitle";
-import { prepareMetadataChange } from "@/server/features/publishing/nextMetadata";
 import {
   gitBlobHash,
   proposalFingerprint,
@@ -12,7 +10,7 @@ import {
   withPublishingClaim,
   type PublishingContext,
 } from "@/server/features/publishing/publishingAccess";
-import { readPublishingTarget } from "@/server/features/publishing/publishingTarget";
+import { prepareChangeAt } from "@/server/features/publishing/publishingTarget";
 import { PublishingRepository } from "@/server/features/publishing/repositories/PublishingRepository";
 import { AppError } from "@/server/lib/errors";
 import {
@@ -88,38 +86,22 @@ async function prepare(
           throw new AppError("CONFLICT");
         const head = await client.getRef(connection.baseBranch);
         if (!head) throw new AppError("NOT_FOUND");
-        // Read the file as it is now, at the head of the base branch.
-        const { file, helper } = await readPublishingTarget(
-          client,
-          connection,
-          original.filePath,
-          head.sha,
-        );
         const descriptionChanged =
           original.descriptionAfter !== original.descriptionBefore;
         const titleChanged = original.titleAfter !== null;
-        let patch: ReturnType<typeof prepareMetadataChange>;
+        // Read the file as it is now, at the head of the base branch.
+        let change: Awaited<ReturnType<typeof prepareChangeAt>>;
         try {
-          patch = prepareMetadataChange({
-            source: file.source,
-            path: original.filePath,
+          change = await prepareChangeAt(client, connection, {
+            filePath: original.filePath,
             url: original.targetUrl,
-            rootDirectory: connection.rootDirectory,
-            helper,
+            sha: head.sha,
             newDescription: descriptionChanged
               ? original.descriptionBefore
               : undefined,
             newTitle: titleChanged
               ? (original.titleBefore ?? undefined)
               : undefined,
-            titleTemplate: titleChanged
-              ? await readTitleTemplate(
-                  client,
-                  head.sha,
-                  original.filePath,
-                  connection.rootDirectory,
-                )
-              : null,
             restore: true,
           });
         } catch (error) {
@@ -127,6 +109,7 @@ async function prepare(
             return { ok: false, message: PAGE_CHANGED };
           throw error;
         }
+        const { adapterId, file, helper, patch } = change;
         // The page must still show what the original proposal shipped.
         if (
           (descriptionChanged &&
@@ -160,7 +143,8 @@ async function prepare(
           titleAfter: patch.afterTitle,
           titleBeforeSnippet: patch.titleBeforeSnippet,
           titleAfterSnippet: patch.titleAfterSnippet,
-          fingerprintVersion: 3,
+          adapterId,
+          fingerprintVersion: 4,
           revertsProposalId: original.id,
           changeHash: "",
           reason: `Revert of the change from proposal ${original.id}.${outcome}`,

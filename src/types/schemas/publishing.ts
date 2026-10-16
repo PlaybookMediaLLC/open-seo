@@ -155,6 +155,7 @@ export type MetadataProposal = {
   titleAfter: string | null;
   titleBeforeSnippet: string | null;
   titleAfterSnippet: string | null;
+  adapterId: "app_router_metadata" | "pages_router_head";
   fingerprintVersion: number;
   revertsProposalId: string | null;
   changeHash: string;

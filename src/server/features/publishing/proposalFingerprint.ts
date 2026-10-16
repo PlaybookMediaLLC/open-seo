@@ -59,9 +59,10 @@ export function proposalFingerprint(
             proposal.titleAfter,
             proposal.titleBeforeSnippet,
             proposal.titleAfterSnippet,
-            ...(proposal.fingerprintVersion === 3
+            ...(proposal.fingerprintVersion >= 3
               ? [proposal.revertsProposalId]
               : []),
+            ...(proposal.fingerprintVersion >= 4 ? [proposal.adapterId] : []),
           ]
         : proposal.metadataSource === "helper_call"
           ? [

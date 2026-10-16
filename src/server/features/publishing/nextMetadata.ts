@@ -27,7 +27,8 @@ function safeSegments(value: string): boolean {
 }
 
 function rejectUnsupportedSegments(path: string) {
-  for (const segment of path.split("/")) {
+  // A Pages Router file name is a segment too, as in pages/[slug].tsx.
+  for (const segment of path.replace(/\.(?:tsx|ts|jsx|js)$/, "").split("/")) {
     if (/^\[.+\]$/.test(segment))
       invalid(
         `The dynamic route segment ${segment} is not supported. Relay changes static pages only. Track this page as a ticket instead.`,
@@ -42,11 +43,8 @@ function rejectUnsupportedSegments(path: string) {
 // Deliberately narrower than Next routing: no rewrites, basePath, private folders,
 // dynamic routes, encoded paths, or filesystem normalization. Two route groups
 // that map to one URL fail the Next.js build, so no deployed site has them.
-export function validateMetadataTarget({
-  path,
-  url,
-  rootDirectory = "",
-}: Target): void {
+/** The file path relative to the root directory, after the shared path checks. */
+export function relativeTarget(path: string, rootDirectory: string) {
   rejectUnsupportedSegments(path);
   if (
     !safeSegments(path) ||
@@ -57,18 +55,11 @@ export function validateMetadataTarget({
   const prefix = rootDirectory ? `${rootDirectory}/` : "";
   if (!path.startsWith(prefix))
     invalid("Metadata target is outside the configured root directory.");
-  const relative = path.slice(prefix.length);
-  const match = /^(?:src\/)?app\/(.*\/)?page\.(?:ts|tsx|js|jsx)$/.exec(
-    relative,
-  );
-  if (!match) invalid("Metadata target must be an App Router page file.");
-  const folders = match[1]?.slice(0, -1).split("/") ?? [];
-  if (folders.some((segment) => segment.startsWith("_"))) {
-    invalid("Private route folders are not supported.");
-  }
-  const route = folders
-    .filter((segment) => !ROUTE_GROUP.test(segment))
-    .join("/");
+  return path.slice(prefix.length);
+}
+
+/** Checks that the page URL is plain and that its pathname is the route. */
+export function matchRoutePath(url: string, route: string) {
   const raw = /^https?:\/\/[^/?#\\\s]+(\/[^?#\\\s]*)?$/.exec(url);
   if (!raw || url.includes("%"))
     invalid(
@@ -90,6 +81,26 @@ export function validateMetadataTarget({
   if (pathname !== expected && !(route && pathname === `${expected}/`)) {
     invalid("Metadata URL pathname does not match the page file.");
   }
+}
+
+export function validateMetadataTarget({
+  path,
+  url,
+  rootDirectory = "",
+}: Target): void {
+  const relative = relativeTarget(path, rootDirectory);
+  const match = /^(?:src\/)?app\/(.*\/)?page\.(?:ts|tsx|js|jsx)$/.exec(
+    relative,
+  );
+  if (!match) invalid("Metadata target must be an App Router page file.");
+  const folders = match[1]?.slice(0, -1).split("/") ?? [];
+  if (folders.some((segment) => segment.startsWith("_"))) {
+    invalid("Private route folders are not supported.");
+  }
+  matchRoutePath(
+    url,
+    folders.filter((segment) => !ROUTE_GROUP.test(segment)).join("/"),
+  );
 }
 
 // The page's `export const metadata = ...` initializer, after page-level checks.

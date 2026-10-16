@@ -8,8 +8,7 @@ import {
   type ProposalExecution,
   type PublishingMutationResult,
 } from "@/types/schemas/publishing";
-import { readTitleTemplate } from "./layoutTitle";
-import { prepareMetadataChange } from "./nextMetadata";
+import { prepareChangeAt } from "./publishingTarget";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   authorizePublishing,
@@ -139,53 +138,33 @@ async function execute(
             !repository.canPush
           )
             throw new AppError("CONFLICT");
-          const before = await client.readFile(
-            proposal.filePath,
-            proposal.baseSha,
+          const { adapterId, file, helper, patch } = await prepareChangeAt(
+            client,
+            connection,
+            {
+              filePath: proposal.filePath,
+              url: proposal.targetUrl,
+              sha: proposal.baseSha,
+              newDescription:
+                proposal.descriptionAfter === proposal.descriptionBefore
+                  ? undefined
+                  : proposal.descriptionAfter,
+              newTitle: proposal.titleAfter ?? undefined,
+              restore: revert,
+              verifyManifest: false,
+            },
           );
           if (
-            before.blobSha !== proposal.beforeBlobSha ||
-            (await gitBlobHash(before.source)) !== proposal.beforeBlobSha
-          )
-            throw new AppError("CONFLICT");
-          const helperPath = proposal.helperPath;
-          const helper = helperPath
-            ? {
-                path: helperPath,
-                ...(await client.readFile(helperPath, proposal.baseSha)),
-              }
-            : undefined;
-          if (
-            helper &&
-            (helper.blobSha !== proposal.helperBlobSha ||
-              (await gitBlobHash(helper.source)) !== proposal.helperBlobSha)
+            (helper?.path ?? null) !== proposal.helperPath ||
+            (helper?.blobSha ?? null) !== proposal.helperBlobSha
           )
             throw new AppError(
               "CONFLICT",
               "The metadata helper changed. Prepare the proposal again.",
             );
-          const patch = prepareMetadataChange({
-            source: before.source,
-            path: proposal.filePath,
-            url: proposal.targetUrl,
-            newDescription:
-              proposal.descriptionAfter === proposal.descriptionBefore
-                ? undefined
-                : proposal.descriptionAfter,
-            newTitle: proposal.titleAfter ?? undefined,
-            titleTemplate:
-              proposal.titleAfter === null
-                ? null
-                : await readTitleTemplate(
-                    client,
-                    proposal.baseSha,
-                    proposal.filePath,
-                    connection.rootDirectory,
-                  ),
-            rootDirectory: connection.rootDirectory,
-            helper,
-          });
           if (
+            adapterId !== proposal.adapterId ||
+            file.blobSha !== proposal.beforeBlobSha ||
             patch.beforeDescription !== proposal.descriptionBefore ||
             patch.beforeSnippet !== proposal.beforeSnippet ||
             patch.afterSnippet !== proposal.afterSnippet ||
