@@ -248,7 +248,7 @@ For `striking_distance` and `declining_page`, when the query is a tracked keywor
 10. URL: the site page with the most impressions on any query that shares a token with the topic. If none exists, use the property root.
 11. Identity: type and topic key.
 12. Store `opportunity_keyword_evidence`: `id`, the three FKs, `keyword`, `location_code`, `language_code`, `search_volume`, `keyword_difficulty`, `intent`, `competitor_domain`, `competitor_url`, `competitor_position`, `fetched_at`.
-13. Action: "Write a brief for a new or refreshed page about this topic." Never generate pages.
+13. Action: "Write a brief for a new or refreshed page about this topic." Create a page only through RFC-0021, from verified facts, with a person's approval.
 
 #### AI visibility evidence (phase 3)
 

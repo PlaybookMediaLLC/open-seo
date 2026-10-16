@@ -38,7 +38,7 @@ The existing upstream cron jobs stay on Cloudflare cron. Moving them would creat
 ## 4. Non-goals
 
 1. No paid jobs. Content gaps, SERP checks and AI drafting never run on a schedule in this RFC.
-2. No repository writes, merges, deployments or reverts.
+2. No repository writes, merges, deployments or reverts in this RFC. RFC-0018 standing approvals add limited writes later.
 3. No direct database access from Trigger.dev.
 4. No move of the existing upstream cron jobs.
 5. No email in phase 1. Phase 2 adds an opt-in digest.
@@ -80,6 +80,8 @@ Trigger.dev tasks run on Trigger.dev machines, outside Cloudflare. D1, KV, R2 an
 | `growth-retention`       | Scheduled | `30 3 * * *`              | 1 global                                   | 2 attempts                             | 120 s        |
 
 `spend-reconcile` belongs to RFC-0009. `growth-retention` deletes runs, logs and notifications older than 180 days, and audit events older than 1 year.
+
+Later RFCs add tasks with the same rules: `weekly-cycle` (RFC-0018), `deployment-watch` and the monitoring checks (RFC-0019), `revenue-sync` (RFC-0016), and the competitor page fetch (RFC-0022).
 
 ### 5.4 Internal endpoints
 

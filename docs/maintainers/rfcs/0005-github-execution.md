@@ -37,7 +37,7 @@ Relay can open a pull request that changes one meta description in a static Next
 
 ## 4. Non-goals
 
-1. No merge, deploy or revert without a person.
+1. No deployment by Relay. No merge or revert without a person, except a restore merge under an opt-in RFC-0018 standing approval, inside branch protection.
 2. No dynamic metadata (`generateMetadata`), dynamic route segments, rewrites or CMS content.
 3. No structured-data or body-content edits in this RFC. They stay tickets.
 4. No other frameworks. The adapter interface allows them later.

@@ -40,7 +40,7 @@ Preview deployments differ by host. Vercel adds `X-Robots-Tag: noindex` to previ
 1. No performance scoring. Lighthouse CI covers it.
 2. No content quality scoring.
 3. No full-site crawl. The site audit covers it.
-4. No automatic fixes. Findings link to Relay, where a person can create a ticket or a proposal.
+4. No automatic fixes on the pull request. Findings link to Relay, where a person can create a ticket or a proposal. RFC-0019 repairs regressions that reach production, and shares this RFC's rules through `compareSnapshots`.
 
 ## 5. Design
 
