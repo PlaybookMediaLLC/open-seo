@@ -1,4 +1,12 @@
-import { and, desc, eq, exists, getTableColumns, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  exists,
+  getTableColumns,
+  inArray,
+  sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -19,6 +27,7 @@ import {
   claimExists,
   lockClaim,
   selectedValues,
+  type Executor,
 } from "./publishingSql";
 
 const {
@@ -130,6 +139,65 @@ export async function getProposal(
   return proposal ? history(proposal) : null;
 }
 
+// A new change needs the current evidence approved and the opportunity
+// approved at the proposal's version.
+function approvalEligible(tx: Executor, proposal: MetadataProposal) {
+  const opportunity = and(
+    eq(opportunities.projectId, proposal.projectId),
+    eq(opportunities.id, proposal.opportunityId),
+  );
+  return and(
+    exists(
+      tx
+        .select({ id: opportunityDecisions.id })
+        .from(opportunityDecisions)
+        .where(
+          and(
+            eq(opportunityDecisions.projectId, proposal.projectId),
+            eq(opportunityDecisions.opportunityId, proposal.opportunityId),
+            eq(opportunityDecisions.evidenceRunId, proposal.evidenceRunId),
+            eq(opportunityDecisions.decision, "approved"),
+          ),
+        ),
+    ),
+    exists(
+      tx
+        .select({ id: opportunities.id })
+        .from(opportunities)
+        .where(
+          and(
+            opportunity,
+            eq(opportunities.status, "approved"),
+            eq(opportunities.version, proposal.opportunityVersion),
+            eq(opportunities.evidenceRunId, proposal.evidenceRunId),
+          ),
+        ),
+    ),
+  );
+}
+
+// A revert needs the reverted proposal on the same opportunity, with a
+// succeeded pull request, and the opportunity still implemented or in progress.
+function revertEligible(tx: Executor, proposal: MetadataProposal) {
+  return and(
+    sql`exists (select 1 from ${opportunityProposals} reverted join ${proposalExecutions} execution on execution.proposal_id = reverted.id and execution.project_id = reverted.project_id where reverted.project_id = ${proposal.projectId} and reverted.id = ${proposal.revertsProposalId} and reverted.opportunity_id = ${proposal.opportunityId} and reverted.reverts_proposal_id is null and execution.status = 'succeeded')`,
+    exists(
+      tx
+        .select({ id: opportunities.id })
+        .from(opportunities)
+        .where(
+          and(
+            eq(opportunities.projectId, proposal.projectId),
+            eq(opportunities.id, proposal.opportunityId),
+            inArray(opportunities.status, ["in_progress", "implemented"]),
+            eq(opportunities.version, proposal.opportunityVersion),
+            eq(opportunities.evidenceRunId, proposal.evidenceRunId),
+          ),
+        ),
+    ),
+  );
+}
+
 export async function saveProposal(input: {
   proposal: MetadataProposal;
   claimToken: string;
@@ -148,48 +216,21 @@ export async function saveProposal(input: {
         .update(opportunities)
         .set({ version: sql`${opportunities.version}` })
         .where(and(opportunity, claimExists(tx, scope))),
-      tx.insert(opportunityProposals).select(
-        selectedValues(
-          opportunityProposals,
-          proposal,
-          and(
-            claimExists(tx, scope),
-            activeConnection(tx, proposal.projectId, proposal.connectionId),
-            exists(
-              tx
-                .select({ id: opportunityDecisions.id })
-                .from(opportunityDecisions)
-                .where(
-                  and(
-                    eq(opportunityDecisions.projectId, proposal.projectId),
-                    eq(
-                      opportunityDecisions.opportunityId,
-                      proposal.opportunityId,
-                    ),
-                    eq(
-                      opportunityDecisions.evidenceRunId,
-                      proposal.evidenceRunId,
-                    ),
-                    eq(opportunityDecisions.decision, "approved"),
-                  ),
-                ),
-            ),
-            exists(
-              tx
-                .select({ id: opportunities.id })
-                .from(opportunities)
-                .where(
-                  and(
-                    opportunity,
-                    eq(opportunities.status, "approved"),
-                    eq(opportunities.version, proposal.opportunityVersion),
-                    eq(opportunities.evidenceRunId, proposal.evidenceRunId),
-                  ),
-                ),
-            ),
-          )!,
+      tx
+        .insert(opportunityProposals)
+        .select(
+          selectedValues(
+            opportunityProposals,
+            proposal,
+            and(
+              claimExists(tx, scope),
+              activeConnection(tx, proposal.projectId, proposal.connectionId),
+              proposal.revertsProposalId
+                ? revertEligible(tx, proposal)
+                : approvalEligible(tx, proposal),
+            )!,
+          ),
         ),
-      ),
     ];
   });
   const [saved] = await db

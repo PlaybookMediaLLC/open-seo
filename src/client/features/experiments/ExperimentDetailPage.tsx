@@ -9,6 +9,7 @@ import { dateLabel } from "@/client/features/opportunities/shared";
 import { experimentDetailOptions } from "./queries";
 import { ExperimentActions } from "./ExperimentActions";
 import { MeasurementResults } from "./MeasurementResults";
+import { PrepareRevert } from "./PrepareRevert";
 
 export function ExperimentDetailPage({
   projectId,
@@ -123,6 +124,16 @@ export function ExperimentDetailPage({
           githubConnected={detail.githubConnected}
         />
         <MeasurementResults detail={detail} assessment={detail.assessment} />
+        {detail.canManage &&
+          experiment.pullRequestState === "merged" &&
+          !detail.publishing.proposal.revertsProposalId && (
+            <PrepareRevert
+              projectId={projectId}
+              experimentId={experiment.id}
+              opportunityId={experiment.opportunityId}
+              negative={detail.assessment.outcome === "negative"}
+            />
+          )}
         <section className="space-y-3" aria-label="Measurement run history">
           <h2 className="text-lg font-semibold">Measurement run history</h2>
           {!runs.length ? (

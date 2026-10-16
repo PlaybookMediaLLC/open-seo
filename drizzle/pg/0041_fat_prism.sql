@@ -1,0 +1,2 @@
+ALTER TABLE "opportunity_proposals" ADD COLUMN "reverts_proposal_id" text;--> statement-breakpoint
+ALTER TABLE "opportunity_proposals" ADD CONSTRAINT "opportunity_proposals_reverts_proposal_id_opportunity_proposals_id_fk" FOREIGN KEY ("reverts_proposal_id") REFERENCES "public"."opportunity_proposals"("id") ON DELETE set null ON UPDATE no action;

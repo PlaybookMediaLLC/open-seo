@@ -256,6 +256,8 @@ export function prepareMetadataChange(
     newDescription?: string;
     newTitle?: string;
     titleTemplate?: string | null;
+    // A revert restores the earlier text exactly, even outside the length rule.
+    restore?: boolean;
   },
 ) {
   validateMetadataTarget(input);
@@ -274,7 +276,7 @@ export function prepareMetadataChange(
     finalTitle = input.titleTemplate
       ? input.titleTemplate.replace("%s", after)
       : after;
-    if (finalTitle.length < 10 || finalTitle.length > 60)
+    if (!input.restore && (finalTitle.length < 10 || finalTitle.length > 60))
       invalid(
         `The final title "${finalTitle}" has ${finalTitle.length} characters. Use 10 to 60.`,
       );

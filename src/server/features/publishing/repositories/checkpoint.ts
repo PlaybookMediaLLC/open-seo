@@ -95,6 +95,8 @@ export async function checkpoint(input: {
           accepted,
         ),
       ),
+      // A failed revert leaves the shipped change in place, so the
+      // opportunity keeps its status.
       ...(phase === "failed"
         ? [
             tx
@@ -107,7 +109,7 @@ export async function checkpoint(input: {
                 and(
                   eq(opportunities.projectId, projectId),
                   accepted,
-                  sql`exists (select 1 from ${opportunityProposals} proposal join ${proposalExecutions} execution on execution.proposal_id = proposal.id and execution.project_id = proposal.project_id where execution.project_id = ${projectId} and execution.id = ${executionId} and proposal.opportunity_id = ${opportunities.id})`,
+                  sql`exists (select 1 from ${opportunityProposals} proposal join ${proposalExecutions} execution on execution.proposal_id = proposal.id and execution.project_id = proposal.project_id where execution.project_id = ${projectId} and execution.id = ${executionId} and proposal.opportunity_id = ${opportunities.id} and proposal.reverts_proposal_id is null)`,
                 ),
               ),
           ]

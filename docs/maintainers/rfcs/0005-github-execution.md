@@ -160,7 +160,7 @@ Unique index on (`experiment_id`, `kind`, `external_id`).
 1. On an experiment with a merged change, show "Prepare revert". Show it first on a `negative` result.
 2. The service reads the current file at the base branch head. It requires that the file still contains the approved "after" values. Otherwise it stops with "The page changed after this proposal. Prepare a new proposal instead."
 3. It creates a new proposal with before and after swapped. Add `reverts_proposal_id` to `opportunity_proposals`: text, nullable, FK `opportunity_proposals.id`, set null.
-4. The revert uses the same exact-change approval and execution path.
+4. The revert uses the same exact-change approval and execution path. The execution gate has a revert branch: it skips the 14-day evidence age, keeps the opportunity status, allows the original's succeeded execution, and allows at most one succeeded revert. A failed revert leaves the opportunity status unchanged. A revert restores the earlier title even outside the 10 to 60 character rule.
 5. After the revert merges and deployment is confirmed, set the opportunity status to `reverted`. Record a decision row with the actor.
 
 ### 5.7 GitHub App (phase 2)
@@ -280,12 +280,12 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Live content signal with tests for match, mismatch and SSRF refusal.
 - [x] `deployment_basis` and the verified-start rule, with a test that a single signal is not enough.
 - [x] Repository checks view with tests for each state and for 403.
-- [ ] Revert proposal with the "file changed" refusal test.
-- [ ] Opportunity becomes `reverted` after the revert is confirmed (test).
+- [x] Revert proposal with the "file changed" refusal test.
+- [x] Opportunity becomes `reverted` after the revert is confirmed (test).
 - [x] Token instructions list the new read permissions.
 - [ ] Live check on S1: the GitHub deployment signal (environment `production`) and the live content signal appear after merge and deploy.
 - [ ] Live check: prepare and open a revert pull request. Do not merge it unless the owner approves.
-- [ ] `content/docs/github-publishing.mdx` covers titles, deployment signals, checks and reverts.
+- [x] `content/docs/github-publishing.mdx` covers titles, deployment signals, checks and reverts.
 
 ### Phase 2
 

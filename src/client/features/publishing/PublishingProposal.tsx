@@ -11,17 +11,20 @@ import { TrackResultsButton } from "@/client/features/experiments/TrackResultsBu
 import { executeMetadataProposal } from "@/serverFunctions/publishing";
 import type { ProposalWithHistory } from "@/types/schemas/publishing";
 import { useRefreshPublishing } from "./queries";
+import { ConfirmRevertForm } from "./ConfirmRevertForm";
 import { RepositoryChecks } from "./RepositoryChecks";
 
 export function PublishingProposal({
   history,
   canExecute,
   canTrack,
+  canConfirmRevert,
   blockedReason,
 }: {
   history: ProposalWithHistory;
   canExecute: boolean;
   canTrack: boolean;
+  canConfirmRevert: boolean;
   blockedReason: string | null;
 }) {
   const { proposal, connection, executions } = history;
@@ -89,6 +92,7 @@ export function PublishingProposal({
           </div>
           <Badge variant={succeeded ? "success" : "outline"}>
             {succeeded ? "Pull request created" : "Review required"}
+            {proposal.revertsProposalId ? " · Revert" : ""}
           </Badge>
         </div>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
@@ -171,6 +175,12 @@ export function PublishingProposal({
               projectId={proposal.projectId}
               proposalId={proposal.id}
             />
+            {canConfirmRevert && (
+              <ConfirmRevertForm
+                projectId={proposal.projectId}
+                proposalId={proposal.id}
+              />
+            )}
             <p className="text-sm">
               The opportunity is in progress, not implemented. Review and merge
               the pull request through your own process.

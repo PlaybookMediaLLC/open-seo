@@ -5,6 +5,7 @@ import {
   pgTable,
   text,
   uniqueIndex,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { projects } from "./app.schema";
 import { opportunities, opportunityRuns } from "./opportunities.schema";
@@ -75,6 +76,11 @@ export const opportunityProposals = pgTable(
     titleBeforeSnippet: text("title_before_snippet"),
     titleAfterSnippet: text("title_after_snippet"),
     fingerprintVersion: integer("fingerprint_version").notNull().default(1),
+    // A revert proposal points at the proposal whose change it undoes.
+    revertsProposalId: text("reverts_proposal_id").references(
+      (): AnyPgColumn => opportunityProposals.id,
+      { onDelete: "set null" },
+    ),
     changeHash: text("change_hash").notNull(),
     reason: text("reason").notNull(),
     expectedEffect: text("expected_effect").notNull(),

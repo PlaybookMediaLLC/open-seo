@@ -13,6 +13,7 @@ import {
 import { beginExecution } from "./beginExecution";
 import { checkpoint } from "./checkpoint";
 import { getLatestExecution, recoverOpportunity } from "./recoverOpportunity";
+import { markReverted } from "./markReverted";
 
 export const PublishingRepository = {
   getConnection,
@@ -27,4 +28,5 @@ export const PublishingRepository = {
   checkpoint,
   getLatestExecution,
   recoverOpportunity,
+  markReverted,
 };
