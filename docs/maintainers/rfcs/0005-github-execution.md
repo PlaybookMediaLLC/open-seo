@@ -1,6 +1,6 @@
 # RFC-0005: GitHub execution, more change types and deployment signals
 
-- **Status:** Draft
+- **Status:** Implemented on 2026-10-16 (PRs #37 to #45). Live acceptance waits for the owner actions in section 12.
 - **Date:** 2026-10-15
 - **Brief section:** 6 (Feature D)
 - **Depends on:** RFC-0001 configuration. Phase 1a has no other dependency. Phase 1b uses the RFC-0004 file locator.
@@ -260,8 +260,8 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] `metadata_source`, `helper_path` and `helper_blob_sha` columns in D1 and Postgres.
 - [x] Test: a changed helper blob at execution fails closed.
 - [x] Diff view names the helper and lists other uses of the parameter (risk text).
-- [ ] S1 repository CI passes on a real test pull request.
-- [ ] Phase 1a acceptance test run in production (section 10).
+- [ ] S1 repository CI passes on a real test pull request. Draft PlaybookMediaLLC/monorepo#32 holds Relay's exact `/approach` diff. Its CI could not start because of a GitHub Actions billing block on the monorepo. Prettier with S1's `.prettierrc.json` passes on the changed file.
+- [ ] Phase 1a acceptance test run in production (section 10). Needs a Relay project for S1 with Search Console and a GitHub connection (section 12).
 
 ### Phase 1b
 
@@ -279,14 +279,14 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Revert proposal with the "file changed" refusal test.
 - [x] Opportunity becomes `reverted` after the revert is confirmed (test).
 - [x] Token instructions list the new read permissions.
-- [ ] Live check on S1: the GitHub deployment signal (environment `production`) and the live content signal appear after merge and deploy.
+- [ ] Live check on S1: the GitHub deployment signal (environment `production`) and the live content signal appear after merge and deploy. S1 reports deployments to `production`, and the live parser reads `/approach` correctly. The latest S1 production deployment failed, so it records no signal yet.
 - [ ] Live check: prepare and open a revert pull request. Do not merge it unless the owner approves.
 - [x] `content/docs/github-publishing.mdx` covers titles, deployment signals, checks and reverts.
 
 ### Phase 2
 
-- [ ] GitHub App registered with the listed permissions only.
-- [ ] Secrets set. The PKCS#8 conversion is documented in `docs/maintainers/playbook-deployment.md`.
+- [ ] GitHub App registered with the listed permissions only (owner action, section 12).
+- [ ] Secrets set (owner action). The PKCS#8 conversion is documented in `docs/maintainers/playbook-deployment.md`.
 - [x] Setup callback with state, user-token check and repository picker.
 - [x] Test: a forged `installation_id` that the user cannot access is refused.
 - [x] Installation tokens limited to one repository and the needed permissions (test of the request body).
@@ -402,3 +402,19 @@ Dry run on 2026-10-16, parser only, no pull request:
 - A canonical change cannot proceed without the typed path. URL Inspection shows the expected canonical within 7 days of deploy.
 - One approval creates exactly one GitHub issue, whose text hash matches the approval.
 - A second person reviews the install flow security before release.
+
+### Evidence on 2026-10-16
+
+- **Phase 1a:** a dry run prepared 9 of 9 S1 static pages, each with a one-line diff. All 19 S4 pages were refused with their reasons. Relay's `/approach` diff changes only the two `pageMetadata` arguments and keeps single quotes. Prettier with S1's config passes on it.
+- **Phase 1b:** the S1 title template `'%s | Playbook Media'` was read from the root layout. The final title "How we own software | Playbook Media" has 36 characters. S1's GitHub deployments use the environment `production`. The live parser reads the `/approach` title (with the template) and description exactly.
+- **Phase 2:** the setup callback redirects a forged state to `/` and writes nothing, in production. Unit tests cover the token request body (one repository, the operation's permissions, RS256), the forged `installation_id`, and revocation.
+
+## 12. Owner actions to finish live acceptance
+
+1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging.
+2. **S1 project in Relay.** Create a project for `playbookmedia.io`. Connect Search Console with the Google consent screen. Run opportunity detection, and approve one opportunity for `/approach`, `/company` or `/`.
+3. **GitHub connection.** Either:
+   - create a fine-grained token for `PlaybookMediaLLC/monorepo` with the permissions in `content/docs/github-publishing.mdx`, and connect it with root `apps/www`; or
+   - register the "Relay SEO" GitHub App (steps in `docs/maintainers/playbook-deployment.md`), add the five secrets to `ENV_PLAYBOOK`, deploy, and install the App on the monorepo only.
+4. **Run section 10.** Prepare the three S1 proposals, and check the S4 refusal for `[product]`. For phase 1b, approve one title and description change, and merge it when you choose. Then check the deployment and live signals, and open a revert pull request without merging it.
+5. **Phase 2 live check.** With the App: open one S1 pull request, create one issue, uninstall the App, and confirm "Reconnect the GitHub App".
