@@ -8,7 +8,7 @@ import * as Effect from "effect/Effect";
 import { Redacted } from "effect";
 import { unstable_readConfig } from "wrangler";
 import { z } from "zod";
-import { relayDataEnv } from "./relay-env"; // playbook-seam
+import { relayDataEnv } from "./relay-env.ts"; // playbook-seam
 import {
   emailAccessGate,
   HOSTED_PROD_STAGE,
