@@ -412,7 +412,7 @@ Dry run on 2026-10-16, parser only, no pull request:
 ## 12. Owner actions to finish live acceptance
 
 1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging.
-2. **S1 project in Relay.** Create a project for `playbookmedia.io`. Connect Search Console with the Google consent screen. Run opportunity detection, and approve one opportunity for `/approach`, `/company` or `/`.
+2. **S1 project in Relay.** The project "Playbook Media" for `playbookmedia.io` exists (created on 2026-10-16). Connect Search Console in its Integrations with the Google consent screen. Then run opportunity detection, and approve one opportunity for `/approach`, `/company` or `/`.
 3. **GitHub connection.** Either:
    - create a fine-grained token for `PlaybookMediaLLC/monorepo` with the permissions in `content/docs/github-publishing.mdx`, and connect it with root `apps/www`; or
    - register the "Relay SEO" GitHub App (steps in `docs/maintainers/playbook-deployment.md`), add the five secrets to `ENV_PLAYBOOK`, deploy, and install the App on the monorepo only.
