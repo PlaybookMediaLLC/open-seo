@@ -68,7 +68,12 @@ export function useProposalFilePath(
     (located.data?.status === "found"
       ? located.data.filePath
       : suggestPath(opportunity.url, rootDirectory));
-  return [filePath, setTypedPath, located.data] as const;
+  // Null when Relay found the file; otherwise why it did not, if known.
+  const note =
+    located.data?.status === "found"
+      ? null
+      : (located.data?.message ?? located.error?.message ?? "");
+  return [filePath, setTypedPath, note] as const;
 }
 
 /** RFC-0004 5.5: draft the description with a model, then check it. */
