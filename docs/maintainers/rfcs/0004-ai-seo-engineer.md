@@ -37,8 +37,8 @@ Phase 1 closes the main acceptance-test gap: "The system creates a verified chan
 
 ## 4. Non-goals
 
-1. No autonomous execution. Approval and pull request creation stay human actions in the UI.
-2. No generated pages, testimonials, reviews, prices or statistics.
+1. No autonomous execution, except under an RFC-0018 standing approval that an owner grants in advance for one change class. Agents never approve.
+2. No pages without verified facts (RFC-0021). No testimonials, reviews, prices or statistics without a verified fact.
 3. No repository-wide indexing, and no repository code sent to the model.
 4. No change types beyond the description in phase 1. RFC-0005 adds them.
 
