@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => ({
   claim: vi.fn(),
   finish: vi.fn(),
   connection: vi.fn(),
+  installation: vi.fn(),
   replace: vi.fn<typeof PublishingRepository.replaceConnection>(),
   disconnect: vi.fn(),
   client: vi.fn(),
@@ -37,6 +38,7 @@ vi.mock(
 vi.mock("./repositories/PublishingRepository", () => ({
   PublishingRepository: {
     getConnection: mocks.connection,
+    getInstallation: mocks.installation,
     replaceConnection: mocks.replace,
     disconnect: mocks.disconnect,
   },
@@ -118,6 +120,20 @@ describe("PublishingConnectionService", () => {
       fixture.connection.encryptedToken!,
     );
     expect(mocks.client).not.toHaveBeenCalled();
+  });
+
+  it("reports an App connection whose installation was uninstalled", async () => {
+    mocks.connection.mockResolvedValue({
+      ...fixture.connection,
+      transport: "github_app",
+      installationRef: "installation-1",
+      encryptedToken: null,
+    });
+    mocks.installation.mockResolvedValue({ revokedAt: "2026-10-16T12:34:03Z" });
+    await expect(
+      PublishingConnectionService.get(fixture.context, input.projectId),
+    ).resolves.toMatchObject({ appRevoked: true });
+    expect(mocks.installation).toHaveBeenCalledWith("installation-1");
   });
 
   it.each(["connect", "disconnect"] as const)(

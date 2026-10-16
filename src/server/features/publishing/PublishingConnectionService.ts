@@ -24,10 +24,18 @@ async function get(context: PublishingContext, projectId: string) {
     PublishingRepository.getConnection(projectId),
     publishingEncryptionKey(),
   ]);
+  // An uninstall revokes the installation, not the connection.
+  const installation =
+    connection?.transport === "github_app" && connection.installationRef
+      ? await PublishingRepository.getInstallation(connection.installationRef)
+      : null;
   return {
     configured: Boolean(key),
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
     connection: connection ? connectionSummary(connection) : null,
+    appRevoked:
+      connection?.transport === "github_app" &&
+      (!installation || Boolean(installation.revokedAt)),
   };
 }
 
