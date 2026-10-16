@@ -9,12 +9,18 @@ import { getErrorCode } from "@/client/lib/error-messages";
 import { OpportunityEvidenceHistory } from "@/client/features/opportunities/OpportunityEvidenceHistory";
 import { OpportunityReview } from "@/client/features/opportunities/OpportunityReview";
 import {
+  CompetingPages,
+  diagnosisLabels,
+  Ga4Evidence,
+} from "@/client/features/opportunities/OpportunitySignals";
+import {
   ConnectSearchConsole,
   dateLabel,
   opportunityAccessOptions,
   opportunityKeys,
   OpportunityStatusBadge,
   statusLabels,
+  typeHelp,
   typeLabels,
 } from "@/client/features/opportunities/shared";
 import { getOpportunity } from "@/serverFunctions/opportunities";
@@ -57,7 +63,13 @@ function OpportunityDetailPage() {
         />
       </div>
     );
-  const { opportunity: item, evidence, decisions } = query.data;
+  const {
+    opportunity: item,
+    evidence,
+    urls,
+    ga4Evidence,
+    decisions,
+  } = query.data;
   const factors = [
     ["Commercial value", item.commercialScore],
     ["Search demand", item.demandScore],
@@ -103,6 +115,7 @@ function OpportunityDetailPage() {
             </Badge>
           ) : null}
         </div>
+        <p className="text-sm text-muted-foreground">{typeHelp[item.type]}</p>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <section className="rounded-xl border bg-card p-5 space-y-4">
             <h2 className="text-lg font-semibold">Why this matters</h2>
@@ -128,6 +141,12 @@ function OpportunityDetailPage() {
                 <dt className="text-muted-foreground">Search intent</dt>
                 <dd>{item.searchIntent}</dd>
               </div>
+              {item.diagnosis ? (
+                <div>
+                  <dt className="text-muted-foreground">Diagnosis</dt>
+                  <dd>{diagnosisLabels[item.diagnosis]}</dd>
+                </div>
+              ) : null}
             </dl>
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold">Recommended next step</h3>
@@ -175,10 +194,13 @@ function OpportunityDetailPage() {
             </div>
           </section>
         </div>
+        <CompetingPages urls={urls} />
         <OpportunityEvidenceHistory
           evidence={evidence}
           latestRunId={item.evidenceRunId}
+          query={item.query}
         />
+        <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
         {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
         <OpportunityReview
           key={`review-${item.id}`}

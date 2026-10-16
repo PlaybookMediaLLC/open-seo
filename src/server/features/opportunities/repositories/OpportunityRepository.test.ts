@@ -1,11 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { OpportunityRepository as repo } from "./OpportunityRepository";
-import { opportunityRun } from "../services/opportunityTestFixtures";
 import {
-  listOpportunitiesInputSchema,
-  type OpportunityCandidate,
-  type OpportunityRun,
-} from "@/types/schemas/opportunities";
+  candidate,
+  finishRun,
+  pairCandidate,
+  setupRun,
+} from "./opportunityRepositoryTestSupport";
+import { listOpportunitiesInputSchema } from "@/types/schemas/opportunities";
 
 const database = await vi.hoisted(async () => {
   const { createOpportunityTestDatabase } =
@@ -21,76 +22,8 @@ vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 beforeAll(() => database.prepare());
 afterAll(() => database.close());
-
-function candidate(
-  overrides: Partial<OpportunityCandidate & { identityKey: string }> = {},
-) {
-  return {
-    identityKey: "page-query",
-    type: "striking_distance",
-    url: "https://example.com/page",
-    query: "widgets",
-    title: "Improve widgets page",
-    explanation: "Ranks near page one",
-    recommendedAction: "Review the page",
-    searchIntent: "commercial",
-    confidence: 0.8,
-    effortHours: 2,
-    priority: 70,
-    commercialScore: 70,
-    demandScore: 80,
-    visibilityScore: 60,
-    difficultyScore: 50,
-    effortScore: 90,
-    scoreExplanation: "High impressions",
-    uncertainty: "No conversion data",
-    current: { clicks: 20, impressions: 1000, ctr: 0.02, position: 12 },
-    previous: { clicks: 10, impressions: 900, ctr: 0.011, position: 14 },
-    ...overrides,
-  } satisfies OpportunityCandidate & { identityKey: string };
-}
-
-async function setup(): Promise<{ run: OpportunityRun; claimKey: string }> {
-  const projectId = crypto.randomUUID();
-  await client.execute({
-    sql: "INSERT INTO organization (id, name, slug, created_at) VALUES (?, 'test', ?, CURRENT_TIMESTAMP)",
-    args: [projectId, `opportunity-test-${projectId}`],
-  });
-  await client.execute({
-    sql: "INSERT INTO projects (id, organization_id, name) VALUES (?, ?, 'test')",
-    args: [projectId, projectId],
-  });
-  const run = opportunityRun({
-    id: crypto.randomUUID(),
-    projectId,
-    siteUrl: "sc-domain:example.com",
-    status: "running",
-    finishedAt: null,
-  });
-  const claimKey = `opportunities:${projectId}`;
-  await client.execute({
-    sql: "INSERT INTO gsc_connections (id, project_id, site_url, organization_id, connected_by_user_id) VALUES (?, ?, ?, ?, 'test')",
-    args: [projectId, projectId, run.siteUrl, projectId],
-  });
-  await client.execute({
-    sql: "INSERT INTO data_refresh_claims VALUES (?, ?, ?, ?)",
-    args: [claimKey, projectId, run.id, Date.now() + 180_000],
-  });
-  await repo.startRun(run);
-  return { run, claimKey };
-}
-
-async function finish(
-  input: Awaited<ReturnType<typeof setup>>,
-  candidates = [candidate()],
-) {
-  expect(await repo.completeRun({ ...input, candidates })).toBe(true);
-  return (
-    await repo.list(
-      listOpportunitiesInputSchema.parse({ projectId: input.run.projectId }),
-    )
-  ).rows[0];
-}
+const setup = () => setupRun(client);
+const finish = finishRun;
 
 function approval(projectId: string, opportunityId: string) {
   return {
@@ -239,7 +172,7 @@ describe(`OpportunityRepository real ${database.isPostgres ? "Postgres" : "SQLit
   it("scopes resource IDs and run mutations to the project", async () => {
     const own = await setup();
     const foreign = await setup();
-    const opportunity = await finish(own);
+    const opportunity = await finish(own, [pairCandidate()]);
     expect(
       await repo.getDetail(foreign.run.projectId, opportunity.id),
     ).toBeNull();
@@ -394,7 +327,7 @@ describe(`OpportunityRepository real ${database.isPostgres ? "Postgres" : "SQLit
 
   it("cascades project deletion through runs, opportunities, evidence and decisions", async () => {
     const input = await setup();
-    const opportunity = await finish(input);
+    const opportunity = await finish(input, [pairCandidate()]);
     await repo.review(approval(input.run.projectId, opportunity.id));
     await client.execute({
       sql: "DELETE FROM projects WHERE id = ?",
@@ -404,7 +337,12 @@ describe(`OpportunityRepository real ${database.isPostgres ? "Postgres" : "SQLit
     expect(
       await repo.getDetail(input.run.projectId, opportunity.id),
     ).toBeNull();
-    for (const table of ["opportunity_evidence", "opportunity_decisions"]) {
+    for (const table of [
+      "opportunity_evidence",
+      "opportunity_decisions",
+      "opportunity_urls",
+      "opportunity_ga4_evidence",
+    ]) {
       const result = await client.execute({
         sql: `SELECT count(*) AS n FROM ${table} WHERE project_id = ?`,
         args: [input.run.projectId],

@@ -15,16 +15,39 @@ Approving an opportunity only allows Relay to prepare a proposal. It does not ch
 4. Open a result to see the page, the metrics, the score and the uncertainty.
 5. Click **Mark reviewed**. Then approve proposal preparation, reject the opportunity, or defer it for 7 days.
 
-Detection needs no GA4 connection, no credits, no AI model and no GitHub connection. Organization members can read the queue and run detection. Owners and administrators record review decisions.
+Detection needs no credits, no AI model and no GitHub connection. GA4 is optional. When it is connected, Relay uses it to score commercial value. Organization members can read the queue and run detection. Owners and administrators record review decisions.
 
 ## What Relay looks for
 
 - **Striking distance:** the best page for a query has an average position from 5 to 20, with at least 100 impressions in the current window. This is a reason to look at the page and the search results. It is not an automatic request to rewrite the title.
 - **Declining page:** the same URL is in both windows, had at least 30 clicks before, and lost at least 20 clicks and 30% of its clicks. A URL that is missing from a report is unknown, not zero.
+- **Low click-through:** the page gets 60% or less of the clicks that pages on your own site get at the same positions. Relay builds this click-through curve from your data. For each position from 1 to 10 with at least 5 queries of 100 or more impressions, it takes the median click-through rate. A page qualifies when it has at least 500 non-branded impressions in positions 1 to 10 and is at least 20 clicks below the curve.
+- **Competing pages:** two pages each get at least 25% of the impressions for the same non-branded queries, with at least 50 impressions and a position of 20 or better. The pair qualifies when it shares 2 or more queries, or the shared queries have 200 or more impressions. The page with more clicks is the primary page. Two addresses for the same page (for example with and without `www`) do not count. Competing pages can split clicks, but it is not always a problem.
 
-Each run compares two 28-day windows that end 3 days before today, in Google's Pacific reporting time. It reads at most 1,000 rows from each of three reports and saves at most 50 opportunities.
+### Why a page declined
 
-The reports are samples, not a full export. Search Console can leave out anonymized queries. When a report reaches the row limit, Relay marks the coverage as limited and lowers its confidence. Relay does not check search intent, branded queries, seasonality or the layout of the search results. It does not explain why a page declined.
+For a declining page, Relay also reads the same two windows one year earlier (364 days back, so the weekdays match). It then gives one diagnosis:
+
+| Diagnosis           | Rule                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| Possibly seasonal   | One year earlier, the page lost at least 70% as many clicks over the same weeks. Confidence goes down. |
+| Ranking drop        | The average position became worse by 2 or more.                                                        |
+| Click-through drop  | Impressions changed by less than 15%, and the click-through rate fell by 30% or more.                  |
+| Demand drop         | Impressions fell by 30% or more, and the position changed by less than 1.                              |
+| More than one cause | Two or more of the three rules above match.                                                            |
+| Cause unclear       | No rule matches.                                                                                       |
+
+The diagnosis is a rule of thumb from Search Console totals. It does not check page edits or the layout of the search results.
+
+### Brand terms
+
+Searches for your brand are not a sign of a weak page. Low click-through and competing pages leave out every query that contains a brand term as a whole word. Until you save your own terms, Relay uses the first part of your domain, for example `acme` for `acme.com`. Edit the terms at the bottom of the project **Context** page, or ask your AI client to update them. A project can have up to 20 terms.
+
+### Run details
+
+Each run compares two 28-day windows that end 3 days before today, in Google's Pacific reporting time. It reads up to 5,000 query rows and up to 1,000 page rows from each page report. It saves at most 50 opportunities.
+
+The reports are samples, not a full export. Search Console can leave out anonymized queries. When a report reaches its row limit, Relay marks the coverage as limited and lowers its confidence. Relay does not check search intent or the layout of the search results.
 
 When your data has no qualifying pages, Relay says so. It never invents opportunities to fill the queue.
 
@@ -42,7 +65,13 @@ priority = round(100 × confidence × (
 ))
 ```
 
-The detail view shows every value. Commercial relevance comes from the page roles in your project context. An unknown page gets a careful default. Demand uses observed impressions. Average position stands in for difficulty. Effort is 2 hours for striking distance and 4 hours for a decline. Confidence is a fixed rule of thumb, not a probability of success.
+The detail view shows every value and where it came from:
+
+- **Commercial relevance** is the higher of two scores. The page role in your project context gives 1 for a money page, 0.7 for a hub, 0.5 for other roles and 0.25 for an unknown page. When GA4 is connected, organic key events on the page over the current window give 0 for none, 0.7 for 1 to 9, and 1 for 10 or more.
+- **Demand** uses observed impressions.
+- **Difficulty** uses the keyword difficulty that you already researched in Relay, when it is 90 days old or newer. Relay never buys new data for this. Otherwise, the average position stands in for difficulty.
+- **Effort** is 2 hours for striking distance, 4 hours for a decline, 1 hour for low click-through and 4 hours for competing pages.
+- **Confidence** is a fixed rule of thumb for each type, not a probability of success.
 
 ## Review and history
 
@@ -55,7 +84,7 @@ A deferred opportunity leaves the default queue for 7 days. Turn on **Include de
 ## Limits and failures
 
 - A successful run is reused for 24 hours. Filtering the queue reads saved results only.
-- Each run makes at most 3 Search Console requests.
+- Each run makes at most 5 Search Console requests and 1 GA4 request. If the GA4 request fails, the run continues with page roles only.
 - One run at a time can work on a project. A failed run can be retried after 5 minutes.
 - When Google is unavailable, the existing opportunities stay. A run that fails partway publishes nothing new.
 

@@ -38,8 +38,11 @@ export function opportunityDetail(
       effortScore: 0.5,
       scoreExplanation: "Heuristic",
       uncertainty: "Not a forecast",
+      diagnosis: null,
     },
     evidence: [],
+    urls: [],
+    ga4Evidence: [],
     decisions: [],
   };
 }
@@ -52,6 +55,7 @@ export function opportunityRun(
     id: "run-1",
     projectId: "project-1",
     siteUrl: "https://example.com/",
+    kind: "search_console",
     status: "completed",
     requestedBy: "user-1",
     startDate: "2026-09-13",
@@ -63,6 +67,8 @@ export function opportunityRun(
     queryRows: 0,
     currentPageRows: 0,
     previousPageRows: 0,
+    yearAgoPageRows: 0,
+    ga4PropertyId: null,
     requestCount: 3,
     opportunityCount: 0,
     truncated: false,

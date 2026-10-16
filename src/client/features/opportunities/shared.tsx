@@ -35,7 +35,21 @@ export const opportunityAccessOptions = (projectId: string) =>
 export const typeLabels: Record<OpportunityType, string> = {
   striking_distance: "Striking distance",
   declining_page: "Declining page",
+  low_ctr: "Low click-through",
+  cannibalization: "Competing pages",
   technical_blocker: "Technical blocker",
+};
+export const typeHelp: Record<OpportunityType, string> = {
+  striking_distance:
+    "The best page for a query ranks from position 5 to 20 with 100 or more impressions.",
+  declining_page:
+    "The page lost 20 or more clicks and 30% or more of its clicks compared with the previous period.",
+  low_ctr:
+    "The page got 60% or less of the clicks that pages on this site get at the same positions. Brand searches are left out.",
+  cannibalization:
+    "Two pages each get 25% or more of the impressions for the same searches. Brand searches are left out.",
+  technical_blocker:
+    "A site audit found a problem that can stop the page from being indexed or ranked.",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",

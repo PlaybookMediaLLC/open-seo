@@ -1,40 +1,28 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GscService } from "@/server/features/gsc/services/GscService";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
-import type { OpportunityRepository } from "../repositories/OpportunityRepository";
-import { GscApiError } from "@/server/lib/gscErrors";
 import type {
   OpportunityDetail,
   OpportunityListInput,
   OpportunityReviewInput,
 } from "@/types/schemas/opportunities";
 import { OpportunityService } from "./OpportunityService";
+import { opportunityDetail as detail } from "./opportunityTestFixtures";
 import {
-  opportunityDetail as detail,
-  opportunityRun as run,
-} from "./opportunityTestFixtures";
+  context,
+  projectId,
+  setServiceMockDefaults,
+} from "./opportunityServiceTestMocks";
 
-type Performance = (
-  ...args: Parameters<typeof GscService.getPerformance>
-) => Promise<{ siteUrl: string; rows: GscSearchAnalyticsRow[] }>;
-
-const mocks = vi.hoisted(() => ({
-  project: vi.fn(),
-  connection: vi.fn(),
-  performance: vi.fn<Performance>(),
-  keyPages: vi.fn(),
-  claim: vi.fn(),
-  finish: vi.fn(),
-  list: vi.fn(),
-  latestRun: vi.fn(),
-  listRuns: vi.fn(),
-  detail: vi.fn(),
-  startRun: vi.fn(),
-  setRequestCount: vi.fn(),
-  completeRun: vi.fn(),
-  failRun: vi.fn(),
-  review: vi.fn<typeof OpportunityRepository.review>(),
+const mocks = await vi.hoisted(async () => {
+  const { createServiceMocks } = await import("./opportunityServiceTestMocks");
+  return createServiceMocks();
+});
+vi.mock("./BrandTermService", () => ({
+  BrandTermService: { get: mocks.brandTerms },
 }));
+vi.mock("@/server/features/ga4/repositories/Ga4ConnectionRepository", () => ({
+  Ga4ConnectionRepository: { getByProjectId: mocks.ga4Connection },
+}));
+vi.mock("./opportunityGa4", () => ({ fetchGa4LandingPages: mocks.ga4Rows }));
 vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
   ProjectRepository: { getProjectForOrganization: mocks.project },
 }));
@@ -65,12 +53,15 @@ vi.mock("../repositories/OpportunityRepository", () => ({
     completeRun: mocks.completeRun,
     failRun: mocks.failRun,
     review: mocks.review,
+    cachedKeywordDifficulty: mocks.difficulty,
   },
 }));
+beforeEach(() => setServiceMockDefaults(mocks));
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
-const context = { organizationId: "org-1", userId: "user-1", role: "owner" };
-const projectId = "project-1";
-const siteUrl = "https://example.com/";
 const listInput: OpportunityListInput = {
   projectId,
   minPriority: 0,
@@ -101,29 +92,6 @@ function reviewedDetail(): OpportunityDetail {
   });
   return result;
 }
-const response = (rows: GscSearchAnalyticsRow[] = []) => ({ siteUrl, rows });
-
-beforeEach(() => {
-  mocks.project.mockResolvedValue({ id: projectId });
-  mocks.connection.mockResolvedValue({ siteUrl });
-  mocks.performance.mockResolvedValue(response());
-  mocks.keyPages.mockResolvedValue([]);
-  mocks.claim.mockResolvedValue("run-1");
-  mocks.finish.mockResolvedValue(undefined);
-  mocks.list.mockResolvedValue({ rows: [], total: 0 });
-  mocks.latestRun.mockResolvedValue(null);
-  mocks.listRuns.mockResolvedValue([]);
-  mocks.detail.mockResolvedValue(detail());
-  mocks.startRun.mockResolvedValue(undefined);
-  mocks.setRequestCount.mockResolvedValue(undefined);
-  mocks.completeRun.mockResolvedValue(true);
-  mocks.failRun.mockResolvedValue(undefined);
-  mocks.review.mockResolvedValue(true);
-});
-afterEach(() => {
-  vi.useRealTimers();
-  vi.restoreAllMocks();
-});
 
 describe("OpportunityService authorization", () => {
   it.each(["list", "get", "detect", "review"] as const)(
@@ -157,166 +125,6 @@ describe("OpportunityService authorization", () => {
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     expect(mocks.review).not.toHaveBeenCalled();
     expect(mocks.detail).not.toHaveBeenCalled();
-  });
-});
-
-describe("OpportunityService detection", () => {
-  it.each(["not_connected", "cached", "busy"] as const)(
-    "returns %s without starting provider work",
-    async (outcome) => {
-      if (outcome === "not_connected") mocks.connection.mockResolvedValue(null);
-      if (outcome === "cached") mocks.latestRun.mockResolvedValue(run());
-      if (outcome === "busy") mocks.claim.mockResolvedValue(null);
-      expect(await OpportunityService.detect(context, projectId)).toMatchObject(
-        { outcome },
-      );
-      expect(mocks.performance).not.toHaveBeenCalled();
-      expect(mocks.startRun).not.toHaveBeenCalled();
-    },
-  );
-
-  it("uses exactly three bounded final-data requests over consecutive 28-day Pacific windows", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-10-14T01:00:00Z"));
-    const result = await OpportunityService.detect(context, projectId);
-    expect(result).toMatchObject({
-      outcome: "completed",
-      run: {
-        startDate: "2026-09-13",
-        endDate: "2026-10-10",
-        previousStartDate: "2026-08-16",
-        previousEndDate: "2026-09-12",
-        requestCount: 3,
-      },
-    });
-    expect(mocks.performance).toHaveBeenCalledTimes(3);
-    expect(mocks.performance.mock.calls.map(([request]) => request)).toEqual([
-      {
-        projectId,
-        rowLimit: 1000,
-        type: "web",
-        dataState: "final",
-        startDate: "2026-09-13",
-        endDate: "2026-10-10",
-        dimensions: ["query", "page"],
-      },
-      {
-        projectId,
-        rowLimit: 1000,
-        type: "web",
-        dataState: "final",
-        startDate: "2026-09-13",
-        endDate: "2026-10-10",
-        dimensions: ["page"],
-      },
-      {
-        projectId,
-        rowLimit: 1000,
-        type: "web",
-        dataState: "final",
-        startDate: "2026-08-16",
-        endDate: "2026-09-12",
-        dimensions: ["page"],
-      },
-    ]);
-  });
-
-  it("publishes no partial candidates when one upstream request fails and sanitizes the failed run", async () => {
-    mocks.performance
-      .mockResolvedValueOnce(
-        response([
-          {
-            keys: ["software", `${siteUrl}pricing`],
-            clicks: 10,
-            impressions: 1000,
-            ctr: 0.01,
-            position: 10,
-          },
-        ]),
-      )
-      .mockRejectedValueOnce(
-        new GscApiError(503, "Bearer secret-token", "private provider payload"),
-      );
-    const result = await OpportunityService.detect(context, projectId);
-    expect(result).toMatchObject({
-      outcome: "failed",
-      run: { status: "failed" },
-    });
-    expect(mocks.completeRun).not.toHaveBeenCalled();
-    expect(mocks.failRun).toHaveBeenCalledWith(
-      projectId,
-      "run-1",
-      result.message,
-    );
-    expect(JSON.stringify(result)).not.toMatch(
-      /secret-token|private provider payload/,
-    );
-    expect(
-      mocks.performance.mock.calls.every(
-        ([, options]) => options?.signal?.aborted,
-      ),
-    ).toBe(true);
-  });
-
-  it("starts no provider requests when the deadline expires during database setup", async () => {
-    const deadline = new AbortController();
-    vi.spyOn(AbortSignal, "timeout").mockReturnValue(deadline.signal);
-    mocks.keyPages.mockImplementationOnce(async () => {
-      deadline.abort();
-      return [];
-    });
-    expect(await OpportunityService.detect(context, projectId)).toMatchObject({
-      outcome: "failed",
-    });
-    expect(mocks.performance).not.toHaveBeenCalled();
-    expect(mocks.completeRun).not.toHaveBeenCalled();
-  });
-
-  it("fails instead of waiting indefinitely for a stalled provider", async () => {
-    const deadline = new AbortController();
-    vi.spyOn(AbortSignal, "timeout").mockReturnValue(deadline.signal);
-    mocks.performance.mockImplementationOnce(() => {
-      deadline.abort();
-      return new Promise(() => {});
-    });
-    expect(await OpportunityService.detect(context, projectId)).toMatchObject({
-      outcome: "failed",
-    });
-    expect(mocks.completeRun).not.toHaveBeenCalled();
-    expect(mocks.failRun).toHaveBeenCalledOnce();
-  });
-
-  it("rejects changed property responses before publishing evidence", async () => {
-    mocks.performance.mockResolvedValueOnce({
-      siteUrl: "https://different.example/",
-      rows: [],
-    });
-    expect(await OpportunityService.detect(context, projectId)).toMatchObject({
-      outcome: "failed",
-    });
-    expect(mocks.completeRun).not.toHaveBeenCalled();
-  });
-
-  it("reports a failed run when the atomic persistence fence refuses publication", async () => {
-    mocks.completeRun.mockResolvedValue(false);
-    const result = await OpportunityService.detect(context, projectId);
-    expect(result).toMatchObject({ outcome: "failed" });
-    expect(result.message).toContain("No opportunities were published");
-    expect(mocks.failRun).toHaveBeenCalledOnce();
-  });
-
-  it("preserves committed success when only the cooldown update fails", async () => {
-    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
-    mocks.finish.mockRejectedValue(new Error("private billing context"));
-    expect(await OpportunityService.detect(context, projectId)).toMatchObject({
-      outcome: "completed",
-      run: { status: "completed" },
-    });
-    expect(mocks.failRun).not.toHaveBeenCalled();
-    expect(warning).toHaveBeenCalledOnce();
-    expect(JSON.stringify(warning.mock.calls)).not.toContain(
-      "private billing context",
-    );
   });
 });
 

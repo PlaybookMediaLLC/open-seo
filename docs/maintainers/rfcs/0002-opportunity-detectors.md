@@ -1,6 +1,6 @@
 # RFC-0002: Opportunity engine, remaining detectors and signals
 
-- **Status:** Draft
+- **Status:** Phase 1 in progress. The code is done. The live acceptance (section 11) is open.
 - **Date:** 2026-10-15
 - **Brief section:** 3 (Feature A)
 - **Depends on:** RFC-0001. Phase 3 also depends on RFC-0009 (spending limits).
@@ -52,20 +52,20 @@ Enum columns are TypeScript-level `text` enums in both dialects. New enum values
 
 ### 5.2 Shared changes
 
-**Types.** Add `low_ctr`, `cannibalization`, `technical_blocker`, `internal_link` and `content_gap` to `OPPORTUNITY_TYPES`.
+**Types.** Add `low_ctr`, `cannibalization`, `technical_blocker`, `internal_link` and `content_gap` to `OPPORTUNITY_TYPES`. Each phase adds the values it detects. Enum values are TypeScript-level, so a later phase needs no migration for them.
 
 **Detector layout.** Keep `detectOpportunities` as the single pure entry point. Move each type's rule into its own pure function in `src/server/features/opportunities/services/detectors/`. Keep one shared `scoreCandidate` helper for the formula. Each detector receives the same `DetectionInput` and returns candidates.
 
 **Row limit.** Raise the query+page request from 1,000 to 5,000 rows. Keep 1,000 for the page-only requests. The Search Console API allows up to 25,000 rows per request at no cost. Keep the `truncated` flag and its confidence penalty.
 
-**Request budget.** Reserve the full request count before network work, as today. Phase 1 uses 5 requests: query+page, page, previous page, year-ago page, and one GA4 report when GA4 is connected. Raise the deadline from 90 to 120 seconds.
+**Request budget.** Reserve the full request count before network work, as today. Phase 1 uses 6 requests: query+page, page, previous page, the two year-ago page windows (see `declining_page`), and one GA4 report when GA4 is connected. A failed GA4 report does not fail the run. The run continues with page roles only and says so. Raise the deadline from 90 to 120 seconds.
 
 **Run record.** Add to `opportunity_runs`:
 
 | Column               | Type                                                                | Purpose                             |
 | -------------------- | ------------------------------------------------------------------- | ----------------------------------- |
 | `kind`               | text enum `search_console`, `content_gap`, default `search_console` | Paid content-gap runs are separate. |
-| `year_ago_page_rows` | integer, default 0                                                  | Row count of the year-ago request.  |
+| `year_ago_page_rows` | integer, default 0                                                  | Row count of the year-ago requests. |
 | `ga4_property_id`    | text, nullable                                                      | GA4 property used, if any.          |
 | `audit_id`           | text, nullable, FK `audits.id` on delete set null                   | Audit used by phase 2.              |
 
@@ -79,9 +79,9 @@ Enum columns are TypeScript-level `text` enums in both dialects. New enum values
 | `url`            | text, not null                                                 |
 | `role`           | text enum `primary`, `competing`, `link_source`, `link_target` |
 
-Unique index on (`opportunity_id`, `url`, `role`). `opportunities.url` stays the primary target URL, so existing reads keep working.
+Unique index on (`opportunity_id`, `url`, `role`). `opportunities.url` stays the primary target URL, so existing reads keep working. Roles can swap between runs, so a run replaces the URL rows of each opportunity that it refreshes.
 
-**Per-URL and per-query evidence.** Add `url` and `query` to `opportunity_evidence`, both `text not null default ''`. An empty string means "the opportunity's own URL or query". Replace the unique index with (`opportunity_id`, `run_id`, `period`, `url`, `query`). Add `year_ago` to the `period` enum.
+**Per-URL and per-query evidence.** Add `url` and `query` to `opportunity_evidence`, both `text not null default ''`. An empty string means "the opportunity's own URL or query". Replace the unique index with (`opportunity_id`, `run_id`, `period`, `url`, `query`). Add `year_ago` and `year_ago_previous` to the `period` enum.
 
 **Diagnosis.** Add `diagnosis` to `opportunities`: text enum `ranking_drop`, `demand_drop`, `ctr_drop`, `mixed`, `seasonal`, `unknown`, nullable. Only declining pages set it.
 
@@ -95,7 +95,7 @@ Unique index on (`opportunity_id`, `url`, `role`). `opportunities.url` stays the
 | `created_by` | text enum `user`, `sam`, `mcp`               |
 | `created_at` | text                                         |
 
-Unique index on (`project_id`, `term`). Limit 20 terms per project. When a project has no terms, seed one from the first label of the project domain (for example `eigenn` from `eigenn.io`). Show and edit terms on the project context page. Expose them through `get_project_context` and `update_project_context`.
+Unique index on (`project_id`, `term`). Limit 20 terms per project. When a project has no saved terms, use one term from the first label of the project domain (for example `eigenn` from `eigenn.io`). The seed is not stored, so a project always has its domain term until a person saves terms. Show and edit terms on the project context page. Expose them through `get_project_context` and `update_project_context`. An `update_project_context` call can send only `brandTerms`, so its `updates` list becomes optional.
 
 A query is branded when its lowercase text contains any brand term as a whole word.
 
@@ -152,7 +152,7 @@ All thresholds are named constants. Unit tests cover each boundary.
    - `observed` = sum of clicks.
 5. Create a candidate when impressions ≥ 500, `observed / expected` ≤ 0.6, and `expected − observed` ≥ 20.
 6. Identity: type and URL. The query is null.
-7. Evidence: one page-level current row, plus the top 5 queries by impressions as per-query rows.
+7. Evidence: the page report row for the URL, plus the top 5 queries by impressions as per-query rows. These rows match Search Console exactly. The sums in the explanation cover only the non-branded rows at curve positions.
 8. Visibility score: `(expected − observed) / expected`.
 9. Explanation: "This page got {observed} clicks from {impressions} non-branded impressions in positions 1 to 10. Pages on this site at the same positions got about {expected} clicks."
 10. Action: "Check the live search results. Then rewrite the title and description for the main queries."
@@ -161,15 +161,15 @@ All thresholds are named constants. Unit tests cover each boundary.
 #### `declining_page` (phase 1 changes)
 
 1. Keep the current rule: previous clicks ≥ 30, loss ≥ 20, and loss ≥ 30%.
-2. Request the same 28 days one year earlier (start and end minus 364 days, so weekdays match).
+2. Request the current and previous windows one year earlier (start and end minus 364 days, so weekdays match). A year-ago loss needs both windows.
 3. Set `diagnosis`:
-   - `seasonal`: the year-ago period shows a loss of at least 70% of the current loss for the same page. Multiply confidence by 0.6.
+   - `seasonal`: the year-ago windows show a click loss of at least 70% of the current loss for the same page. Multiply confidence by 0.6.
    - `ranking_drop`: average position worsened by 2 or more.
    - `ctr_drop`: impressions changed by less than 15%, and CTR fell by 30% or more.
    - `demand_drop`: impressions fell by 30% or more, and position changed by less than 1.
    - `mixed`: two or more of the last three match.
    - `unknown`: none match.
-4. Store the year-ago page row as evidence with period `year_ago`.
+4. Store the year-ago page rows as evidence with periods `year_ago` and `year_ago_previous`.
 5. Put the diagnosis in the explanation in plain words.
 
 #### `cannibalization` (phase 1)
@@ -182,9 +182,10 @@ All thresholds are named constants. Unit tests cover each boundary.
 6. Create a candidate when the pair shares 2 or more queries, or the shared queries total 200 or more impressions.
 7. Identity: type and the sorted URL pair. Query is null.
 8. URLs: the page with more clicks is `primary`. The other is `competing`.
-9. Evidence: per-URL and per-query current rows for up to 10 shared queries.
-10. Explanation: "Two pages rank for the same {n} queries. This can split clicks, but it is not always a problem."
-11. Action: "Check whether both pages serve the same intent. If they do, merge or differentiate them, and point internal links to one page."
+9. Evidence: the primary URL's page report row, plus one current row for each URL and shared query, for up to 10 shared queries.
+10. Visibility score: twice the smaller URL's share of the shared-query impressions. An even split scores 1.
+11. Explanation: "Two pages rank for the same {n} queries. This can split clicks, but it is not always a problem."
+12. Action: "Check whether both pages serve the same intent. If they do, merge or differentiate them, and point internal links to one page."
 
 #### `technical_blocker` (phase 2)
 
@@ -324,30 +325,30 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 
 ### Phase 1
 
-- [ ] New types added to `OPPORTUNITY_TYPES`, with UI labels and help text.
-- [ ] `project_brand_terms` table, D1 and Postgres migrations, parity test updated.
-- [ ] Brand-term seeding from the project domain, and the editor on the context page.
-- [ ] `get_project_context` and `update_project_context` include brand terms.
-- [ ] `opportunity_urls` table and migrations.
-- [ ] `opportunity_evidence.url`, `.query` and the new unique index, in both dialects.
-- [ ] `opportunities.diagnosis` column.
-- [ ] `opportunity_runs.kind`, `.year_ago_page_rows`, `.ga4_property_id`.
-- [ ] `opportunity_ga4_evidence` table.
-- [ ] Query+page row limit raised to 5,000.
-- [ ] Year-ago request added inside the reserved request count.
-- [ ] GA4 organic landing-page request added when GA4 is connected.
-- [ ] `low_ctr` detector, with boundary tests for each threshold.
-- [ ] `cannibalization` detector, with boundary tests and the URL-variant exclusion test.
-- [ ] `declining_page` diagnosis, with one test per diagnosis value.
-- [ ] Commercial score uses GA4 when connected, with tests for 0, 1 and 10 key events.
-- [ ] Difficulty uses cached keyword metrics when fresh, with a test that no paid call happens.
-- [ ] Identity hashes for the existing two types do not change (regression test).
-- [ ] Real-SQL repository tests pass on D1 and Postgres.
-- [ ] A tenancy test proves that project B cannot read project A's new evidence rows.
-- [ ] Detail view shows every phase 1 evidence kind.
+- [x] New types added to `OPPORTUNITY_TYPES`, with UI labels and help text.
+- [x] `project_brand_terms` table, D1 and Postgres migrations, parity test updated.
+- [x] Brand-term seeding from the project domain, and the editor on the context page.
+- [x] `get_project_context` and `update_project_context` include brand terms.
+- [x] `opportunity_urls` table and migrations.
+- [x] `opportunity_evidence.url`, `.query` and the new unique index, in both dialects.
+- [x] `opportunities.diagnosis` column.
+- [x] `opportunity_runs.kind`, `.year_ago_page_rows`, `.ga4_property_id`.
+- [x] `opportunity_ga4_evidence` table.
+- [x] Query+page row limit raised to 5,000.
+- [x] Year-ago request added inside the reserved request count.
+- [x] GA4 organic landing-page request added when GA4 is connected.
+- [x] `low_ctr` detector, with boundary tests for each threshold.
+- [x] `cannibalization` detector, with boundary tests and the URL-variant exclusion test.
+- [x] `declining_page` diagnosis, with one test per diagnosis value.
+- [x] Commercial score uses GA4 when connected, with tests for 0, 1 and 10 key events.
+- [x] Difficulty uses cached keyword metrics when fresh, with a test that no paid call happens.
+- [x] Identity hashes for the existing two types do not change (regression test).
+- [x] Real-SQL repository tests pass on D1 and Postgres.
+- [x] A tenancy test proves that project B cannot read project A's new evidence rows.
+- [x] Detail view shows every phase 1 evidence kind.
 - [ ] Live run on two real properties. Counts per type recorded.
 - [ ] A person reviews 20 sampled opportunities. At least 14 are judged worth reviewing.
-- [ ] `content/docs/opportunities.mdx` explains each phase 1 type and its rule.
+- [x] `content/docs/opportunities.mdx` explains each phase 1 type and its rule.
 
 ### Phase 2
 
