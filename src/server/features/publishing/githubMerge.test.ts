@@ -51,6 +51,25 @@ describe("GitHub pull request merge metadata", () => {
     });
   });
 
+  it("reads the merge SHA from the merged event when the API version omits it", async () => {
+    const { merge_commit_sha: _omitted, ...current } = pull();
+    fetchMock
+      .mockResolvedValueOnce(Response.json(current))
+      .mockResolvedValueOnce(
+        Response.json([
+          { event: "closed", commit_id: null },
+          { event: "merged", commit_id: mergeSha },
+        ]),
+      );
+    await expect(client().getPullRequest(7)).resolves.toMatchObject({
+      mergeCommitSha: mergeSha,
+      headSha,
+    });
+    expect(fetchMock.mock.calls[1][0]).toBe(
+      "https://api.github.com/repos/acme/site/issues/7/events?per_page=100",
+    );
+  });
+
   it.each([null, undefined])(
     "preserves unknown merge details without substituting the head SHA (%s)",
     async (sha) => {

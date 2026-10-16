@@ -210,6 +210,22 @@ export function createGithubWriter(
           "UPSTREAM_UNAVAILABLE",
           "GitHub pull request number did not match.",
         );
+      // API version 2026-03-10 removed merge_commit_sha. The "merged" issue
+      // event names the merge commit instead.
+      // ponytail: first page only; a PR with over 100 events stays unverified.
+      if (result.merged && result.mergedAt && !result.mergeCommitSha) {
+        const events = await request(
+          `/issues/${number}/events?per_page=100`,
+          z.array(
+            z.object({
+              event: z.string(),
+              commit_id: githubShaSchema.nullish(),
+            }),
+          ),
+        );
+        result.mergeCommitSha =
+          events.find((event) => event.event === "merged")?.commit_id ?? null;
+      }
       return result;
     },
     async createPullRequest({
