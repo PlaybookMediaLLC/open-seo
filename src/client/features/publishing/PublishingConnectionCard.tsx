@@ -355,8 +355,8 @@ function TokenInstructions() {
         <strong>Issues: Read and write</strong>.
       </p>
       <p className="text-muted-foreground">
-        Choose a short expiry, such as 30 days, and rotate when needed. GitHub
-        App connections are planned for a future release.
+        Choose a short expiry, such as 30 days, and rotate when needed. When the
+        server has the GitHub App set up, connect through the App above instead.
       </p>
     </div>
   );
