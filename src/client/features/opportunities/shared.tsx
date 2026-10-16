@@ -39,6 +39,7 @@ export const typeLabels: Record<OpportunityType, string> = {
   cannibalization: "Competing pages",
   technical_blocker: "Technical blocker",
   internal_link: "Internal link",
+  content_gap: "Content gap",
 };
 export const typeHelp: Record<OpportunityType, string> = {
   striking_distance:
@@ -53,6 +54,8 @@ export const typeHelp: Record<OpportunityType, string> = {
     "The latest site audit found a problem on a page with search impressions or on a key page.",
   internal_link:
     "A page that ranks for a key page's searches does not link to it yet.",
+  content_gap:
+    "Competitors rank in the top 10 for these commercial searches, and this site barely appears. Found with paid competitor data.",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",

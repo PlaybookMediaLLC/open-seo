@@ -1,3 +1,4 @@
+import { sort } from "remeda";
 import { describe, expect, it } from "vitest";
 import type { InspectionEvidence } from "@/types/schemas/opportunities";
 import { detectOpportunities } from "./detectOpportunities";
@@ -238,4 +239,50 @@ it("adds rank history to a tracked query without changing the score", () => {
     rankHistory: new Map([["query", [rank]]]),
   });
   expect(tracked).toEqual({ ...plain, rank: [rank] });
+});
+
+it("adds AI answer citations to every candidate, zero included", () => {
+  const [cited, uncited] = sort(
+    detectOpportunities(
+      input({
+        queryPages: [row(["a", page("a")]), row(["b", page("b")])],
+        aiCitations: {
+          trackerId: "tracker-1",
+          answers: 12,
+          periodStart: "2026-09-16",
+          periodEnd: "2026-10-16",
+          citations: new Map([[page("a"), 3]]),
+        },
+      }),
+    ),
+    (x, y) => x.url.localeCompare(y.url),
+  );
+  expect(cited.ai).toMatchObject({ citations: 3, answers: 12 });
+  expect(uncited.ai).toMatchObject({ citations: 0, answers: 12 });
+});
+
+it("applies a live results check from the last 24 hours to low click-through", () => {
+  const curve = Array.from({ length: 5 }, (_, index) =>
+    row([`curve ${index}`, page(`curve-${index}`)], {
+      clicks: 100,
+      ctr: 0.1,
+      position: 3,
+    }),
+  );
+  const value = input({
+    queryPages: [
+      ...curve,
+      row(["target", page("target")], { clicks: 20, ctr: 0.02, position: 3 }),
+    ],
+  });
+  const lowCtr = (checks: typeof value.serpChecks) =>
+    detectOpportunities({ ...value, serpChecks: checks }).find(
+      (result) => result.type === "low_ctr",
+    )!;
+  const checked = lowCtr(
+    new Map([[page("target"), { value: -0.15, reason: "ads were above it" }]]),
+  );
+  expect(lowCtr(new Map()).confidence).toBe(0.55);
+  expect(checked.confidence).toBe(0.4);
+  expect(checked.scoreExplanation).toContain("-0.15 because ads were above it");
 });

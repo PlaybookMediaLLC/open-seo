@@ -15,10 +15,12 @@ import {
   dataRefreshClaims,
   gscConnections,
   opportunities,
+  opportunityAiEvidence,
   opportunityAuditEvidence,
   opportunityEvidence,
   opportunityGa4Evidence,
   opportunityInspectionEvidence,
+  opportunityKeywordEvidence,
   opportunityLinkEvidence,
   opportunityRankEvidence,
   opportunityRuns,
@@ -154,8 +156,19 @@ export async function completeRun(input: {
         ),
     ];
     for (const candidate of candidates) {
-      const { evidence, urls, ga4, audit, inspection, link, rank, ...fields } =
-        candidate;
+      const {
+        evidence,
+        urls,
+        ga4,
+        audit,
+        inspection,
+        link,
+        rank,
+        keywords,
+        ai,
+        topic: _topic,
+        ...fields
+      } = candidate;
       const refreshed = {
         ...fields,
         siteUrl: run.siteUrl,
@@ -260,6 +273,10 @@ export async function completeRun(input: {
         [opportunityInspectionEvidence, inspection],
         [opportunityLinkEvidence, link],
         ...(rank ?? []).map((item) => [opportunityRankEvidence, item] as const),
+        ...(keywords ?? []).map(
+          (item) => [opportunityKeywordEvidence, item] as const,
+        ),
+        [opportunityAiEvidence, ai],
       ] as const;
       for (const [table, item] of singles) {
         if (!item) continue;

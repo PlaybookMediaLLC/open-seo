@@ -91,12 +91,18 @@ export function createOpportunityTestDatabase(
         CREATE TABLE audit_issues (id TEXT PRIMARY KEY, audit_id TEXT NOT NULL REFERENCES audits(id) ON DELETE CASCADE, page_url TEXT NOT NULL, issue_type TEXT NOT NULL, severity TEXT NOT NULL DEFAULT 'info');
         CREATE TABLE rank_tracking_configs (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, domain TEXT NOT NULL, serp_depth INTEGER NOT NULL);
         CREATE TABLE rank_check_runs (id TEXT PRIMARY KEY, config_id TEXT NOT NULL, project_id TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending');
+        CREATE TABLE ai_trackers (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, created_at TEXT NOT NULL);
+        CREATE TABLE ai_prompts (id TEXT PRIMARY KEY, tracker_id TEXT NOT NULL, topic TEXT NOT NULL, text TEXT NOT NULL, created_at TEXT NOT NULL);
+        CREATE TABLE ai_runs (id TEXT PRIMARY KEY, tracker_id TEXT NOT NULL, project_id TEXT NOT NULL, trigger TEXT NOT NULL, status TEXT NOT NULL, location_code INTEGER NOT NULL, language_code TEXT NOT NULL, created_at TEXT NOT NULL);
+        CREATE TABLE ai_observations (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, prompt_id TEXT NOT NULL, engine TEXT NOT NULL, branded INTEGER NOT NULL, status TEXT NOT NULL);
+        CREATE TABLE ai_sources (id TEXT PRIMARY KEY, observation_id TEXT NOT NULL, url TEXT NOT NULL, domain TEXT NOT NULL, position INTEGER NOT NULL);
         CREATE TABLE rank_snapshots (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL, tracking_keyword_id TEXT NOT NULL, keyword TEXT NOT NULL, device TEXT NOT NULL, position INTEGER, checked_at TEXT NOT NULL);
       `);
       for (const migration of [
         "0056_careless_the_watchers.sql",
         "0068_unusual_princess_powerful.sql",
         "0069_colossal_blue_shield.sql",
+        "0070_past_the_phantom.sql",
       ])
         await sqlite.executeMultiple(
           readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

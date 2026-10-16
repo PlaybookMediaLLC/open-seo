@@ -13,6 +13,7 @@ import {
   CompetingPages,
   diagnosisLabels,
   Ga4Evidence,
+  PaidEvidence,
 } from "@/client/features/opportunities/OpportunitySignals";
 import {
   ConnectSearchConsole,
@@ -206,6 +207,7 @@ function OpportunityDetailPage() {
           query={item.query}
         />
         <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
+        <PaidEvidence detail={query.data} projectId={projectId} />
         {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
         <OpportunityReview
           key={`review-${item.id}`}

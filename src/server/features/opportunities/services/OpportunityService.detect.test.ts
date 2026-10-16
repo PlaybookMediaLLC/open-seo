@@ -31,6 +31,12 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
     inspectUrls: mocks.inspect,
   },
 }));
+vi.mock("../repositories/contentGapRepository", () => ({
+  ContentGapRepository: {
+    aiCitations: mocks.aiCitations,
+    recentSerpChecks: mocks.serpChecks,
+  },
+}));
 vi.mock("../repositories/opportunitySignals", () => ({
   OpportunitySignalRepository: {
     latestAudit: mocks.latestAudit,

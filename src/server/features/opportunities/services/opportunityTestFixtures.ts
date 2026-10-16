@@ -47,6 +47,9 @@ export function opportunityDetail(
     inspectionEvidence: [],
     linkEvidence: [],
     rankEvidence: [],
+    keywordEvidence: [],
+    aiEvidence: [],
+    serpChecks: [],
     decisions: [],
   };
 }

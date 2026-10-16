@@ -1,4 +1,5 @@
 import { Badge } from "@/client/components/ui/badge";
+import { LiveSerpCheckSheet } from "./PaidChecks";
 import {
   Table,
   TableBody,
@@ -202,6 +203,110 @@ export function AuditAndLinkEvidence({
             `${rank.firstPosition ?? "not in top results"} on ${rank.firstCheckedAt.slice(0, 10)} → ${rank.lastPosition ?? "not in top results"} on ${rank.lastCheckedAt.slice(0, 10)}`,
           ])}
         />
+      ) : null}
+    </>
+  );
+}
+
+/** Competitor keywords, AI citations and live results checks. */
+export function PaidEvidence({
+  detail,
+  projectId,
+}: {
+  detail: Pick<
+    OpportunityDetail,
+    "opportunity" | "keywordEvidence" | "aiEvidence" | "serpChecks"
+  >;
+  projectId: string;
+}) {
+  const { opportunity } = detail;
+  const latestRunId = opportunity.evidenceRunId;
+  const keywords = detail.keywordEvidence.filter(
+    (row) => row.runId === latestRunId,
+  );
+  const [ai] = detail.aiEvidence.filter((row) => row.runId === latestRunId);
+  const [check] = detail.serpChecks;
+  return (
+    <>
+      {ai ? (
+        <Facts
+          title="AI answers (30 days)"
+          rows={[
+            ["Answers that cite this page", `${ai.citations} of ${ai.answers}`],
+            [
+              "Period",
+              `${ai.periodStart.slice(0, 10)} to ${ai.periodEnd.slice(0, 10)}`,
+            ],
+          ]}
+        />
+      ) : null}
+      {keywords.length ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Competitor keywords</h2>
+          <TableCard>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Keyword</TableHead>
+                  <TableHead>Monthly searches</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Intent</TableHead>
+                  <TableHead>Competitor</TableHead>
+                  <TableHead>Position</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {keywords.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell>{row.keyword}</TableCell>
+                    <TableCell>{row.searchVolume.toLocaleString()}</TableCell>
+                    <TableCell>{row.keywordDifficulty ?? "—"}</TableCell>
+                    <TableCell>{row.intent ?? "—"}</TableCell>
+                    <TableCell className="max-w-xs whitespace-normal break-all">
+                      {row.competitorUrl ?? row.competitorDomain}
+                    </TableCell>
+                    <TableCell>{row.competitorPosition}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableCard>
+          <p className="text-xs text-muted-foreground">
+            DataForSEO estimates, fetched {keywords[0].fetchedAt.slice(0, 10)}.
+          </p>
+        </section>
+      ) : null}
+      {opportunity.type === "low_ctr" ? (
+        <section className="space-y-3 rounded-xl border p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold">Live results</h2>
+            <LiveSerpCheckSheet
+              projectId={projectId}
+              opportunityId={opportunity.id}
+            />
+          </div>
+          {check ? (
+            <p className="text-sm">
+              On {check.checkedAt.slice(0, 10)}, for "{check.keyword}": your
+              page was at position {check.pagePosition ?? "not in the top 20"}.
+              Above it:{" "}
+              {[
+                check.hasAds && "ads",
+                check.hasAiOverview && "an AI overview",
+                check.hasFeaturedSnippet && "a featured snippet",
+              ]
+                .filter(Boolean)
+                .join(", ") || "none of ads, AI overview or featured snippet"}
+              . Confidence changed by {check.confidenceDelta > 0 ? "+" : ""}
+              {check.confidenceDelta}.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Not checked yet. A check shows whether ads or AI answers above
+              your page explain the low click-through.
+            </p>
+          )}
+        </section>
       ) : null}
     </>
   );

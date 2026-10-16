@@ -5,7 +5,14 @@ import type {
   OpportunityMetrics,
 } from "@/types/schemas/opportunities";
 import { scoreCandidate, type ScoringContext } from "./scoreCandidate";
-import { bounded, compareText, metrics, totals } from "./shared";
+import {
+  bounded,
+  compareText,
+  metrics,
+  totals,
+  urlJoinKey,
+  type DetectionInput,
+} from "./shared";
 
 const CURVE_MIN_ROWS = 5;
 const CURVE_MIN_IMPRESSIONS = 100;
@@ -47,6 +54,7 @@ export function lowCtr(
   nonBrandedQueryPages: GscSearchAnalyticsRow[],
   pageMetrics: Map<string, OpportunityMetrics>,
   context: ScoringContext,
+  serpChecks: DetectionInput["serpChecks"],
 ): OpportunityCandidate[] {
   const curve = clickThroughCurve(nonBrandedQueryPages);
   const pages = new Map<string, GscSearchAnalyticsRow[]>();
@@ -93,6 +101,7 @@ export function lowCtr(
         demandImpressions: sum.impressions,
         visibilityScore: bounded((expected - sum.clicks) / expected),
         visibilityRule: `(expected clicks ${Math.round(expected)} - observed clicks ${sum.clicks}) / expected clicks`,
+        confidenceDelta: serpChecks.get(urlJoinKey(url) ?? ""),
         uncertainty:
           "Ads, AI answers, featured snippets and other results can lower clicks. Positions are averages.",
       }),

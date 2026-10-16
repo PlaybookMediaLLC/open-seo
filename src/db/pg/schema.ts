@@ -12,5 +12,6 @@ export * from "./telemetry.schema";
 export * from "./ai-visibility.schema";
 export * from "./opportunities.schema";
 export * from "./opportunity-signals.schema";
+export * from "./opportunity-content-gap.schema";
 export * from "./publishing.schema";
 export * from "./experiments.schema";

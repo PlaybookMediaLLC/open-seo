@@ -47,6 +47,8 @@ export function createServiceMocks() {
     rankHistory: vi.fn(),
     inspectionsToday: vi.fn(),
     inspect: vi.fn(),
+    aiCitations: vi.fn(),
+    serpChecks: vi.fn(),
   };
 }
 
@@ -66,6 +68,8 @@ export function setServiceMockDefaults(
   mocks.rankHistory.mockResolvedValue(new Map());
   mocks.inspectionsToday.mockResolvedValue(0);
   mocks.inspect.mockResolvedValue({ results: [] });
+  mocks.aiCitations.mockResolvedValue(null);
+  mocks.serpChecks.mockResolvedValue(new Map());
   mocks.connection.mockResolvedValue({ siteUrl });
   mocks.performance.mockResolvedValue(response());
   mocks.keyPages.mockResolvedValue([]);

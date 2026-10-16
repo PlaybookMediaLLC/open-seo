@@ -1,6 +1,6 @@
 # RFC-0002: Opportunity engine, remaining detectors and signals
 
-- **Status:** Phases 1 and 2: the code is done. Their live acceptance (section 11) is open, because no connected property has Search Console data yet. Phase 3 waits for RFC-0009.
+- **Status:** The code of all three phases is done. Open: the live acceptance of each phase (section 11), because no connected property has Search Console data yet, and the RFC-0009 spending-limit check in phase 3, which waits for RFC-0009.
 - **Date:** 2026-10-15
 - **Brief section:** 3 (Feature A)
 - **Depends on:** RFC-0001. Phase 3 also depends on RFC-0009 (spending limits).
@@ -243,22 +243,27 @@ For any candidate whose query is a tracked keyword, add rank evidence. Today onl
 1. A user starts it with "Find content gaps". It never runs on a schedule in this RFC.
 2. The user picks up to 3 competitors from `project_competitors`.
 3. The dialog shows the cost estimate from the existing DataForSEO ranked-keywords pricing. The user confirms.
-4. Admission goes through the RFC-0009 spending check, then the existing hold, execute and settle path in `createDataforseoClient`.
+4. Admission goes through the RFC-0009 spending check, then the existing hold, execute and settle path in `createDataforseoClient`. Until RFC-0009 ships, the credit hold is the only admission check: it refuses a call before any provider request when the balance is too low. The run refuses when the estimate is now higher than the credits the person confirmed. Purchases run one competitor at a time, and each is saved before the next starts, so a refusal keeps what was already bought.
 5. Cache competitor data for 30 days in two new tables:
-   - `competitor_keyword_snapshots`: `id`, `project_id` (FK cascade), `domain`, `location_code`, `language_code`, `fetched_at`, `row_count`, `cost_credits`. Unique on (`project_id`, `domain`, `location_code`, `language_code`, `fetched_at`).
-   - `competitor_keyword_rows`: `id`, `snapshot_id` (FK cascade), `keyword`, `position`, `url`, `search_volume`, `keyword_difficulty`, `intent`.
+   - `competitor_keyword_snapshots`: `id`, `project_id` (FK cascade), `domain`, `location_code`, `language_code`, `fetched_at`, `row_count`, `estimated_credits`. Unique on (`project_id`, `domain`, `location_code`, `language_code`, `fetched_at`). The metered client does not return the settled charge to its caller, so the snapshot keeps the reserved estimate; the settlement charges the provider's real cost, which is never higher.
+   - `competitor_keyword_rows`: `id`, `project_id` (FK cascade), `snapshot_id` (FK cascade), `keyword`, `position`, `url`, `search_volume`, `keyword_difficulty`, `intent`.
+
+   The paid request asks for at most 1,000 organic rows per competitor, already filtered to position 10 or better and 50 or more monthly searches, ordered by search volume.
+
 6. Reuse a snapshot younger than 30 days. Do not buy it again.
 7. A keyword is a gap when the competitor position is ≤ 10, search volume ≥ 50, intent is `commercial` or `transactional`, the site has fewer than 10 impressions for that exact query, and no tracked keyword ranks ≤ 20 for it.
-8. Group gap keywords into topics. Remove stop words. Take the two most frequent remaining tokens in sorted order as the topic key.
+8. Group gap keywords into topics. Remove stop words (a short English list). For each keyword, take its two tokens that are most frequent across all gap keywords, in sorted order, as the topic key. A keyword counts once, even when several competitors rank for it.
 9. Create a candidate when a topic has 3 or more keywords, or 500 or more total search volume.
 10. URL: the site page with the most impressions on any query that shares a token with the topic. If none exists, use the property root.
 11. Identity: type and topic key.
 12. Store `opportunity_keyword_evidence`: `id`, the three FKs, `keyword`, `location_code`, `language_code`, `search_volume`, `keyword_difficulty`, `intent`, `competitor_domain`, `competitor_url`, `competitor_position`, `fetched_at`.
 13. Action: "Write a brief for a new or refreshed page about this topic." Create a page only through RFC-0021, from verified facts, with a person's approval.
+14. Score: demand uses the topic's monthly searches, visibility is 1, and difficulty is the mean competitor keyword difficulty. Evidence keeps up to 20 keyword rows per topic.
+15. A content-gap run is a separate run kind (`content_gap`). It has its own claim, so it never ends a running Search Console run, and the Search Console cache ignores it.
 
 #### AI visibility evidence (phase 3)
 
-1. For each opportunity URL, count citations of that URL in AI visibility results from the last 30 days (`ai_sources`, `ai_matches`).
+1. For each opportunity URL, count the AI answers from the last 30 days that cite that URL (`ai_sources`). Use the project's tracker with the most completed answers. `answers` is that tracker's completed answers in the period, so "0 of 24" is also evidence.
 2. Store `opportunity_ai_evidence`: `id`, the three FKs, `tracker_id`, `citations`, `answers`, `period_start`, `period_end`.
 3. Show it in the detail view. It does not change the score in this RFC.
 
@@ -268,6 +273,8 @@ For any candidate whose query is a tracked keyword, add rank evidence. Today onl
 2. Reuse the existing SERP service. Show the cost first. Cache the result for 24 hours.
 3. When the results page has ads, an AI answer or a featured snippet above the page, lower confidence by 0.15 and say why.
 4. When it has none, raise confidence by 0.10.
+5. Store each check in `opportunity_serp_checks`: `id`, `project_id`, `opportunity_id`, `keyword`, `page_position`, `has_ads`, `has_ai_overview`, `has_featured_snippet`, `confidence_delta`, `estimated_credits`, `checked_at`. The check uses the page's top query by impressions. A feature counts as above the page when its rank is lower than the page's, or when the page is not in the first 20 results.
+6. The check updates the opportunity's confidence and priority at once, from the type default plus the change, and says why in the score explanation. A detection run within 24 hours of a check applies the same change.
 
 ### 5.4 Identity
 
@@ -371,16 +378,16 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 
 ### Phase 3
 
-- [ ] RFC-0009 spending limits are live.
-- [ ] Content-gap dialog shows the estimate before any paid request.
-- [ ] Admission refusal shows a clear message and makes no provider call (test).
-- [ ] `competitor_keyword_snapshots` and `competitor_keyword_rows`, with 30-day reuse (test proves no second purchase).
-- [ ] `content_gap` detector and `opportunity_keyword_evidence`.
-- [ ] Settled charge equals the provider-reported cost (test with the metering mock).
-- [ ] `opportunity_ai_evidence` and its detail view section.
-- [ ] Live SERP check with a 24-hour cache and the confidence rule.
+- [ ] RFC-0009 spending limits are live. Until then, the credit hold is the only admission check.
+- [x] Content-gap dialog shows the estimate before any paid request.
+- [x] Admission refusal shows a clear message and makes no provider call (test). The metering tests prove that a refused hold makes no provider call; the content-gap test proves the message and that nothing is saved.
+- [x] `competitor_keyword_snapshots` and `competitor_keyword_rows`, with 30-day reuse (test proves no second purchase).
+- [x] `content_gap` detector and `opportunity_keyword_evidence`.
+- [x] Settled charge equals the provider-reported cost (test with the metering mock). The metering test "holds the estimate, then confirms the hold at the billed cost" covers every metered call, and a content-gap test proves the purchase goes through the metered client.
+- [x] `opportunity_ai_evidence` and its detail view section.
+- [x] Live SERP check with a 24-hour cache and the confidence rule.
 - [ ] Live run with real credits on one project. Cost recorded and checked against the estimate.
-- [ ] Docs explain the paid action and its cost.
+- [x] Docs explain the paid action and its cost.
 
 ## 10. Open questions
 

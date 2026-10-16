@@ -1,9 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 import { BrandTermService } from "@/server/features/opportunities/services/BrandTermService";
+import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
+import { SerpCheckService } from "@/server/features/opportunities/services/SerpCheckService";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   brandTermsInputSchema,
+  contentGapEstimateInputSchema,
+  findContentGapsInputSchema,
+  serpCheckInputSchema,
   detectOpportunitiesInputSchema,
   listOpportunitiesInputSchema,
   opportunityDetailInputSchema,
@@ -55,3 +60,36 @@ export const updateBrandTerms = createServerFn({ method: "POST" })
     await BrandTermService.save(context.projectId, data.terms, "user");
     return BrandTermService.get(context.projectId);
   });
+
+// RFC-0002 phase 3. Each paid action shows its estimate first; the run
+// refuses when the estimate rose above what the person confirmed.
+export const estimateContentGaps = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(contentGapEstimateInputSchema)
+  .handler(({ data, context }) =>
+    ContentGapService.estimate(context, context.projectId, data.domains),
+  );
+
+export const findContentGaps = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(findContentGapsInputSchema)
+  .handler(({ data, context }) =>
+    ContentGapService.detect(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const estimateLiveSerpCheck = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDetailInputSchema)
+  .handler(({ data, context }) =>
+    SerpCheckService.estimate(context, context.projectId, data.opportunityId),
+  );
+
+export const checkLiveSerp = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(serpCheckInputSchema)
+  .handler(({ data, context }) =>
+    SerpCheckService.check(context, { ...data, projectId: context.projectId }),
+  );
