@@ -9,7 +9,7 @@ This note explains how the PlaybookMediaLLC fork of OpenSEO runs at `https://rel
 - **Data:** a dedicated D1 database `open-seo-db-playbook`, plus stage-suffixed KV, R2, Workflows and Durable Objects. Nothing is shared with openseo.so, previews or any other stage.
 - **Hostname:** `relay.playbookmedia.io` is bound as a Worker custom domain on the `playbookmedia.io` zone. The workers.dev URL is disabled.
 - **Access:** public, `AUTH_MODE=hosted` with Google-only sign-in. Each user gets their own organization. Switching back to `cloudflare_access` re-creates an email-gated Access application.
-- **Deploys:** `.github/workflows/deploy-playbook.yml` runs on every push to `main` and on manual dispatch. It runs checks, builds, deploys, applies D1 migrations, then verifies the Access gate.
+- **Deploys:** `.github/workflows/deploy-playbook.yml` runs on every push to `main` and on manual dispatch. It runs checks, builds, deploys, applies D1 migrations, then runs a smoke test of the public site.
 
 ## Current status
 
@@ -45,12 +45,12 @@ Known gaps: the agent plugin and skill folders keep the name `openseo`, and the 
 
 ```mermaid
 flowchart LR
-  user([Team member browser])
+  user([User browser])
   agent([AI agent via MCP])
   subgraph CF[Cloudflare account: playbookmedia.io zone]
-    access[Cloudflare Access<br/>relay.playbookmedia.io]
     app[Worker open-seo-playbook<br/>TanStack Start app, API, MCP, crons]
     audit[Worker open-seo-playbook-audit<br/>site-audit engine]
+    mail[Email Sending<br/>invites@mail.playbookmedia.io]
   end
   subgraph Google
     gsc[Search Console API]
@@ -60,10 +60,13 @@ flowchart LR
   github[GitHub REST API<br/>api.github.com]
   dfs[DataForSEO API]
   llm[OpenRouter LLMs]
-  ph[PostHog, optional]
+  ph[PostHog]
+  autumn[Autumn billing]
 
-  user --> access --> app
-  agent --> access
+  user --> app
+  agent --> app
+  app --> mail
+  app --> autumn
   app -- service binding --> audit
   app --> gsc & ga4 & oauth
   app --> github
@@ -74,7 +77,7 @@ flowchart LR
   audit -.-> ph
 ```
 
-The Autumn (billing), Loops (email), Dub (referrals) and Turnstile integrations exist in the codebase but are used only by `AUTH_MODE=hosted`. They stay unconfigured in this deployment.
+This deployment runs `AUTH_MODE=hosted`, so the hosted integrations apply. Autumn handles billing (see [Current status](#current-status)). Team invitations go through Cloudflare Email Sending: the `EMAIL` binding sends from `invites@mail.playbookmedia.io`, a sending domain onboarded in Cloudflare Email Service (`src/server/email/relay-email.ts`). Loops is not configured, so its fallback path never runs here. Dub (referrals) is not configured. The Turnstile keys are set, but Google-only sign-in does not use them. OpenRouter (AI features) and PostHog keys are set in `ENV_PLAYBOOK`.
 
 ## Cloudflare resources and bindings
 
@@ -115,6 +118,7 @@ flowchart TB
 | `R2`                                  | `open-seo-r2-playbook`       | DataForSEO response cache, reports and audit artifacts                                              |
 | `AUDIT_ENGINE`, `SITE_AUDIT_WORKFLOW` | audit worker                 | Site audits outside the app worker's memory budget                                                  |
 | `SAM_CHAT`                            | Durable Object               | In-app agent chat sessions                                                                          |
+| `EMAIL`                               | Cloudflare Email Sending     | Team invitation emails from `invites@mail.playbookmedia.io`                                         |
 
 Resource names are derived from the stage name in `makeResources`. Changing the stage name creates a new, empty set of resources.
 
@@ -157,7 +161,7 @@ sequenceDiagram
   Note over Admin,GH: Admin merges and deploys the customer site outside OpenSEO
   Admin->>App: Track results, refresh GitHub status
   App->>GH: read PR and merged blob (read-only)
-  Admin->>App: Attest production deployment
+  Admin->>App: Check signals (GitHub deployment + live page), or attest the deployment
   Admin->>App: Refresh measurements
   App->>D1: reserve measurement run
   App->>GSC: 1 exact-page daily query
@@ -175,8 +179,8 @@ flowchart LR
   deploy --> env[Write .env.playbook from ENV_PLAYBOOK secret]
   env --> validate[Validate domain, DB provider, auth mode, secret length]
   validate --> build[vite build --mode playbook]
-  build --> alchemy[alchemy deploy --stage playbook<br/>creates or updates workers, D1 + migrations, KV, R2, Access, custom domain]
-  alchemy --> verify[curl relay.playbookmedia.io<br/>expect Access login redirect]
+  build --> alchemy[alchemy deploy --stage playbook<br/>creates or updates workers, D1 + migrations, KV, R2, custom domain]
+  alchemy --> verify[smoke test<br/>sign-in, privacy, landing, docs, sitemap]
 ```
 
 Deploys never cancel each other, so a D1 migration is never interrupted midway. Alchemy keeps its state in the account's Cloudflare state store, which requires a one-time `pnpm alchemy cloudflare bootstrap`.
@@ -222,15 +226,18 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
 
 ## Dependency inventory
 
-| Dependency                                                                    | Direction    | Required                                                           | Configuration                                                       |
-| ----------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| Cloudflare Workers, D1, KV, R2, Workflows, Durable Objects, Browser Rendering | Runtime      | Yes                                                                | Alchemy stack, `CLOUDFLARE_*` secrets                               |
-| Cloudflare Access (Zero Trust)                                                | Inbound auth | Yes in `cloudflare_access` mode                                    | `ACCESS_ALLOWED_EMAILS`                                             |
-| Google OAuth, Search Console, GA4                                             | Outbound     | Required for opportunities and experiments                         | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                          |
-| GitHub REST API                                                               | Outbound     | Only for publishing proposals                                      | Per-project fine-grained token, encrypted with `BETTER_AUTH_SECRET` |
-| DataForSEO                                                                    | Outbound     | Deploy requires the key; spends credits only for research features | `DATAFORSEO_API_KEY`                                                |
-| OpenRouter                                                                    | Outbound     | Optional, for AI features                                          | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`                            |
-| PostHog                                                                       | Outbound     | Optional                                                           | `POSTHOG_*`, `OPENSEO_TELEMETRY_DISABLED`                           |
-| Autumn, Loops, Dub, Turnstile                                                 | Outbound     | Only in `hosted` mode                                              | Unset here                                                          |
-| GitHub Actions                                                                | CI/CD        | Yes                                                                | `deploy-playbook.yml`, `ci.yml`                                     |
-| Alchemy state store                                                           | Deploy state | Yes                                                                | One-time bootstrap in the account                                   |
+| Dependency                                                                    | Direction    | Required                                                           | Configuration                                                                                                    |
+| ----------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Cloudflare Workers, D1, KV, R2, Workflows, Durable Objects, Browser Rendering | Runtime      | Yes                                                                | Alchemy stack, `CLOUDFLARE_*` secrets                                                                            |
+| Cloudflare Access (Zero Trust)                                                | Inbound auth | Yes in `cloudflare_access` mode                                    | `ACCESS_ALLOWED_EMAILS`                                                                                          |
+| Google OAuth, Search Console, GA4                                             | Outbound     | Required for opportunities and experiments                         | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                                                                       |
+| GitHub REST API                                                               | Outbound     | Only for publishing proposals                                      | GitHub App `relay-seo` (`GITHUB_APP_*`), or a per-project fine-grained token encrypted with `BETTER_AUTH_SECRET` |
+| DataForSEO                                                                    | Outbound     | Deploy requires the key; spends credits only for research features | `DATAFORSEO_API_KEY`                                                                                             |
+| OpenRouter                                                                    | Outbound     | Optional, for AI features                                          | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`                                                                         |
+| PostHog                                                                       | Outbound     | Optional                                                           | `POSTHOG_*`, `OPENSEO_TELEMETRY_DISABLED`                                                                        |
+| Autumn                                                                        | Outbound     | Yes in `hosted` mode                                               | `AUTUMN_SECRET_KEY`, `AUTUMN_WEBHOOK_SECRET`                                                                     |
+| Cloudflare Email Sending                                                      | Outbound     | Yes, for team invitations                                          | `EMAIL` binding, sending domain `mail.playbookmedia.io`                                                          |
+| Loops, Dub                                                                    | Outbound     | Optional in `hosted` mode                                          | Unset here                                                                                                       |
+| Turnstile                                                                     | Inbound      | Not used with Google-only sign-in                                  | `TURNSTILE_*` set, unused                                                                                        |
+| GitHub Actions                                                                | CI/CD        | Yes                                                                | `deploy-playbook.yml`, `ci.yml`                                                                                  |
+| Alchemy state store                                                           | Deploy state | Yes                                                                | One-time bootstrap in the account                                                                                |
