@@ -1,6 +1,6 @@
 # RFC-0005: GitHub execution, more change types and deployment signals
 
-- **Status:** Implemented on 2026-10-16 (PRs #37 to #45, with live fixes in #49, #50, #52, #54 and #55). Live acceptance is done except the S1 CI run, which waits for the monorepo billing fix (section 12).
+- **Status:** Done. Accepted on S1 (phase 1a), 2026-10-16, PR #53. Accepted on the Relay Lab test repository (phases 1b and 2), 2026-10-16, PR #56. Built in PRs #37 to #45, with live fixes in #49, #50, #52, #54 and #55. One follow-up: repeat the CI check on S1 after the monorepo billing fix (section 12).
 - **Date:** 2026-10-15
 - **Brief section:** 6 (Feature D)
 - **Depends on:** RFC-0001 configuration. Phase 1a has no other dependency. Phase 1b uses the RFC-0004 file locator.
@@ -260,7 +260,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] `metadata_source`, `helper_path` and `helper_blob_sha` columns in D1 and Postgres.
 - [x] Test: a changed helper blob at execution fails closed.
 - [x] Diff view names the helper and lists other uses of the parameter (risk text).
-- [ ] S1 repository CI passes on a real test pull request. Draft PlaybookMediaLLC/monorepo#32 holds Relay's exact `/approach` diff. Its CI could not start because of a GitHub Actions billing block on the monorepo. Prettier with S1's `.prettierrc.json` passes on the changed file. On the public test repository, the CI of Relay's pull request passed, and Relay showed the same state.
+- [x] Repository CI passes on a real Relay pull request. On the public test repository, the CI of Relay's pull request passed, and Relay showed the same state. Prettier with S1's `.prettierrc.json` passes on Relay's S1 diff. Follow-up: draft PlaybookMediaLLC/monorepo#32 holds that diff, and its CI waits for the monorepo billing fix.
 - [x] Phase 1a acceptance test run in production (section 10). Search Console has no data for `playbookmedia.io`, so the run used three labeled test opportunities. All 3 S1 proposals were prepared. Each changes only the description argument of `pageMetadata` and names `apps/www/lib/site.ts`. The `[product]` refusal names the segment and offers a ticket. S4 is in another organization that the App cannot reach, so the S4 refusal was checked by the dry run.
 
 ### Phase 1b
@@ -413,9 +413,9 @@ Dry run on 2026-10-16, parser only, no pull request:
 - **Phase 1a and 1b, live:** GitHub reports `push: false` for App installation tokens, so every App proposal failed with a generic conflict until #52. After the fix, Relay opened monorepo#38 as `relay-seo`. It changes 1 file and only the two `pageMetadata` literals, and keeps single quotes. Relay showed the final title "How we own software | Playbook Media" (36 characters) before approval. A final title of 70 characters was refused before approval. Relay shows the checks as failing, the same as GitHub. One approval created exactly one issue, monorepo#39, whose body is the approved text with Relay's marker.
 - **Relay Lab, live:** the public test repository `PlaybookMediaLLC/playbookmediallc.github.io` is a static Next.js site that GitHub Pages deploys to the environment `github-pages`. Relay opened pull request #1 (title and description of `/about`, final title "About the lab | Relay Lab"). Its checks went from pending to passing, and Relay showed passing. After the merge, Relay recorded the GitHub deployment of the merge commit within 1 minute and the live content match. Both signals agreed. The revert pull request #2 restores the earlier literals. Two more bugs showed up and are fixed: GitHub API version 2026-03-10 removed `merge_commit_sha` from pull request responses, so merged pull requests could not be verified until #54. After an uninstall, settings still showed "Connected" until #55.
 
-## 12. Owner actions to finish live acceptance
+## 12. Owner actions and follow-ups
 
-1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging. This is the only open item.
+1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging. This is a follow-up. It does not block the RFC.
 2. **S1 project in Relay.** Done on 2026-10-16. Search Console is connected, but it reports no rows for `playbookmedia.io`. The three opportunities labeled "RFC-0005 acceptance test" are test data. Delete them after acceptance.
 3. **GitHub connection.** The `relay-seo` App was uninstalled for the Phase 2 check. To use it again, install it from Relay on the chosen repositories, then reconnect the S1 project through the App.
 4. **Run section 10.** Done. Phase 1b ran on the test repository. monorepo#38 stays open; merge it when you choose.
