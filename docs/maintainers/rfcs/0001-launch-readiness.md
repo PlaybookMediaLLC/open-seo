@@ -1,6 +1,6 @@
 # RFC-0001: Launch readiness for other users
 
-- **Status:** Draft
+- **Status:** Building. Progress and evidence on 2026-10-16 are in section 9.
 - **Date:** 2026-10-15
 - **Scope:** relay.playbookmedia.io (`AUTH_MODE=hosted`, D1, Google-only sign-in)
 - **Depends on:** nothing. All other RFCs depend on this one.
@@ -198,28 +198,28 @@ State these in the docs or the terms. Do not hide them.
 
 ### Configuration
 
-- [ ] `OPENROUTER_API_KEY` set, with a provider spend limit.
-- [ ] The assistant answers in production, and the charge settles.
+- [x] `OPENROUTER_API_KEY` set, with a provider spend limit.
+- [x] The assistant answers in production, and the charge settles.
 - [ ] Sending domain onboarded, and a test invitation delivered.
-- [ ] Autumn products match the landing page pricing.
-- [ ] Autumn webhook reaches production.
+- [x] Autumn products match the landing page pricing.
+- [x] Autumn webhook reaches production.
 - [ ] A test purchase and a test top-up work.
-- [ ] Error monitoring receives a test error.
-- [ ] `docs/maintainers/playbook-deployment.md` matches the real configuration.
+- [x] Error monitoring receives a test error.
+- [x] `docs/maintainers/playbook-deployment.md` matches the real configuration.
 
 ### Workflow
 
 - [ ] Live acceptance steps 1 to 10 pass on a real property and a real repository.
 - [ ] The evidence is written in `docs/maintainers/organic-growth-audit.md`.
 - [ ] RFC-0004 phase 1 is done, so the system drafts the change.
-- [ ] The Playwright growth-workflow spec runs in CI.
+- [x] The Playwright growth-workflow spec runs in CI.
 
 ### Documentation and support
 
-- [ ] `/docs` has Opportunities, Experiments and GitHub publishing pages.
-- [ ] Empty states link to those pages.
-- [ ] The data deletion runbook exists and was tested on a copy.
-- [ ] The D1 restore runbook exists and was tested.
+- [x] `/docs` has Opportunities, Experiments and GitHub publishing pages.
+- [x] Empty states link to those pages.
+- [x] The data deletion runbook exists and was tested on a copy.
+- [x] The D1 restore runbook exists and was tested.
 - [ ] The support mailbox has an owner and saved replies.
 
 ### Before paid plans
@@ -302,3 +302,26 @@ State these in the docs or the terms. Do not hide them.
 
 - The privacy policy lists every service provider in use: Cloudflare, Google, OpenRouter, DataForSEO, Autumn, Loops, PostHog (if used), Trigger.dev and GitHub.
 - A test email to `team@playbookmedia.io` gets a reply within 1 business day.
+
+## 9. Progress on 2026-10-16
+
+**Done, with evidence:**
+
+- **B2.** The OpenRouter key has a monthly limit of $50 (`GET /api/v1/key`). In the Playbook Media project, the assistant answered "What should I fix first" in two turns. The first turn hit its step limit and said so. The second named `/terms` (61-character description) and `/privacy` (69 characters) from the audit, and said that no third page was flagged. The SAM Agent charge rose from $0.01 to $0.03 on the Billing page.
+- **B4, in part.** The live Autumn products match the landing page: Free has 1,000 credits a month, Base costs $10 a month with 10,000 credits, and a top-up costs $1 for 1,000 credits. The webhook reaches production: on 2026-10-16 at 07:30 UTC, `handleAutumnWebhookRequest` ran for the smoke-test customer `billing-smoke-test-playbook`. Its write failed on the organization foreign key, because that customer has no Relay organization.
+- **B6.** PostHog is the error tool. A test error thrown on `/billing` at 14:42:33 UTC appeared as an `$exception` event about 1 minute later. Server errors arrive in Error tracking too.
+- **B7.** `/docs/opportunities` and `/docs/experiments` are live, and the empty states link to the guides (PR #58).
+- **S2 and S3.** `runbooks/delete-user-data.md` with `scripts/relay-erase-user-d1.ts`, and `runbooks/restore-d1.md`, both tested on a copy of production (PR #59).
+- **S4.** `tests/growth-workflow.e2e.ts` runs in CI against a Google and GitHub fake (PR #60). It found a stuck review dialog, which is fixed.
+- **S5, in part.** Saved replies are in `runbooks/support-replies.md`.
+
+**Open:**
+
+- **B1.** Google still shows "Your branding is currently under review". The five scopes are not declared under Data Access, and the demo video does not exist. The owner records the video, because the consent screen needs the owner's clicks.
+- **B3.** The sending domain is onboarded. A test invitation to a second Google account is not sent yet.
+- **B4.** A test purchase and a test top-up need a payment by the owner. A paid lookup cannot run while DataForSEO has paused the account ("We noticed some unusual activity", PostHog, 2026-10-16). The owner contacts `support@dataforseo.com`.
+- **B5.** `playbookmedia.io` has no Search Console rows, so detection finds nothing to review. The merge and deploy steps need the monorepo GitHub Actions billing fix. RFC-0005 ran the publishing part on its test repository.
+- **S2.** Production use needs `GDPR_ERASURE_SECRET` in `ENV_PLAYBOOK`.
+- **S5.** The owner names who reads `team@playbookmedia.io` every business day.
+- **RFC-0004 phase 1** and **RFC-0009** are their own RFCs. Their checklist items here close when those RFCs are done.
+- **Uptime.** The 7-day green window ends on 2026-10-22 at the earliest. GitHub ran the 15-minute schedule only 7 times between 2026-10-15 13:46 and 2026-10-16 11:40 UTC. All 7 runs passed.
