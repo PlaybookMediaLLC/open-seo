@@ -1,0 +1,1 @@
+ALTER TABLE `opportunity_proposals` ADD `adapter_id` text DEFAULT 'app_router_metadata' NOT NULL;

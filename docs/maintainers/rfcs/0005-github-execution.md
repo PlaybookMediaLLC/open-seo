@@ -208,17 +208,12 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### 5.8 Pages Router adapter (phase 2)
 
-1. Add an adapter interface in `src/server/features/publishing/adapters/`:
-   - `id`
-   - `candidatePaths(urlPath, rootDirectory)`
-   - `validateTarget(path, url)`
-   - `readFields(source)`
-   - `replaceFields(source, changes)`
-2. Move the current App Router logic into `appRouterMetadata.ts` without behavior change.
+1. Choose the adapter by file path. `validateTarget` checks the path and URL before any GitHub request, and `prepareChangeAt` reads the page at a commit and prepares the change with the adapter for its router. Prepare, execution and revert all use it.
+2. The App Router logic stays in `nextMetadata.ts`, without behavior change. A file locator (`candidatePaths`) belongs to RFC-0004 and is not part of this adapter.
 3. Add `pagesRouterHead.ts`: files under `pages/` or `src/pages/`, excluding `_app`, `_document`, `api/` and dynamic segments.
-4. Support only direct literals inside `next/head`: `<title>text</title>` and `<meta name="description" content="text" />`.
+4. Support only direct literals inside `next/head`: `<title>text</title>` and `<meta name="description" content="text" />`. New text uses HTML entities for JSX-special characters, so it reads back exactly. Pages have no title template, so the final title is the title.
 5. Reject expressions, spreads, multiple matches and components that wrap `Head`.
-6. Store `adapter_id` on `opportunity_proposals` (text, not null, default `app_router_metadata`). Include it in fingerprint version 2.
+6. Store `adapter_id` on `opportunity_proposals` (text, not null, default `app_router_metadata`). Fingerprint version 4 binds it.
 
 ### 5.9 Canonical and robots (phase 2)
 
@@ -296,8 +291,8 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [ ] Installation tokens limited to one repository and the needed permissions (test of the request body).
 - [ ] Revoked installation is detected and shown.
 - [ ] Personal tokens still work for self-hosting (regression test).
-- [ ] Adapter interface, with the App Router logic moved and its tests unchanged.
-- [ ] Pages Router adapter with tests for supported and rejected forms.
+- [x] Adapter dispatch (`validateTarget`, `prepareChangeAt`), with the App Router logic and its tests unchanged.
+- [x] Pages Router adapter with tests for supported and rejected forms.
 - [ ] Canonical and robots changes with the typed confirmation and the inspection step.
 - [ ] GitHub issues with exact-text approval, and a test that one approval creates one issue.
 - [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state.

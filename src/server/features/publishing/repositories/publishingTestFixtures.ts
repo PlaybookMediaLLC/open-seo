@@ -128,6 +128,7 @@ export async function fixture(database: TestDatabase) {
     titleBeforeSnippet: null,
     titleAfterSnippet: null,
     revertsProposalId: null,
+    adapterId: "app_router_metadata",
     fingerprintVersion: 1,
     changeHash: "a".repeat(64),
     reason: "Low CTR",

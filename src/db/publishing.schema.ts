@@ -76,6 +76,11 @@ export const opportunityProposals = sqliteTable(
     titleBeforeSnippet: text("title_before_snippet"),
     titleAfterSnippet: text("title_after_snippet"),
     fingerprintVersion: integer("fingerprint_version").notNull().default(1),
+    adapterId: text("adapter_id", {
+      enum: ["app_router_metadata", "pages_router_head"],
+    })
+      .notNull()
+      .default("app_router_metadata"),
     // A revert proposal points at the proposal whose change it undoes.
     revertsProposalId: text("reverts_proposal_id").references(
       (): AnySQLiteColumn => opportunityProposals.id,

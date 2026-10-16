@@ -102,7 +102,7 @@ describe("RevertService.prepare", () => {
     });
     expect(mocks.save.mock.calls[0][0].proposal).toMatchObject({
       revertsProposalId: "proposal-1",
-      fingerprintVersion: 3,
+      fingerprintVersion: 4,
       descriptionBefore: "New pricing copy",
       descriptionAfter: "Old pricing copy",
       opportunityVersion: 4,

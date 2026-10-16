@@ -8,8 +8,6 @@ import {
   type PublishingMutationResult,
   type PublishingOpportunityState,
 } from "@/types/schemas/publishing";
-import { readTitleTemplate } from "./layoutTitle";
-import { prepareMetadataChange, validateMetadataTarget } from "./nextMetadata";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   authorizePublishing,
@@ -19,7 +17,7 @@ import {
   type PublishingContext,
 } from "./publishingAccess";
 import { PublishingConnectionService } from "./PublishingConnectionService";
-import { readPublishingTarget } from "./publishingTarget";
+import { prepareChangeAt, validateTarget } from "./publishingTarget";
 import { PublishingRepository } from "./repositories/PublishingRepository";
 
 async function get(
@@ -73,11 +71,11 @@ async function prepare(
           input.projectId,
         );
         if (!connection) throw new AppError("NOT_FOUND");
-        validateMetadataTarget({
-          path: input.filePath,
-          url: opportunity.url,
-          rootDirectory: connection.rootDirectory,
-        });
+        validateTarget(
+          input.filePath,
+          opportunity.url,
+          connection.rootDirectory,
+        );
         const client = await connectedGithub(connection, signal);
         const repository = await client.getRepository();
         if (
@@ -88,30 +86,17 @@ async function prepare(
           throw new AppError("CONFLICT");
         const base = await client.getRef(connection.baseBranch);
         if (!base) throw new AppError("NOT_FOUND");
-        const { file, helper } = await readPublishingTarget(
+        const { adapterId, file, helper, patch } = await prepareChangeAt(
           client,
           connection,
-          input.filePath,
-          base.sha,
+          {
+            filePath: input.filePath,
+            url: opportunity.url,
+            sha: base.sha,
+            newDescription: input.newDescription,
+            newTitle: input.newTitle,
+          },
         );
-        const patch = prepareMetadataChange({
-          source: file.source,
-          path: input.filePath,
-          url: opportunity.url,
-          newDescription: input.newDescription,
-          newTitle: input.newTitle,
-          titleTemplate:
-            input.newTitle === undefined
-              ? null
-              : await readTitleTemplate(
-                  client,
-                  base.sha,
-                  input.filePath,
-                  connection.rootDirectory,
-                ),
-          rootDirectory: connection.rootDirectory,
-          helper,
-        });
         const changed = [
           patch.afterTitle !== null && "title",
           patch.afterDescription !== patch.beforeDescription && "description",
@@ -141,7 +126,8 @@ async function prepare(
           titleAfter: patch.afterTitle,
           titleBeforeSnippet: patch.titleBeforeSnippet,
           titleAfterSnippet: patch.titleAfterSnippet,
-          fingerprintVersion: 3,
+          adapterId,
+          fingerprintVersion: 4,
           revertsProposalId: null,
           changeHash: "",
           reason: opportunity.explanation,

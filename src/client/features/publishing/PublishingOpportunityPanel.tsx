@@ -92,9 +92,10 @@ export function PublishingOpportunityPanel({
           <p className="text-sm text-muted-foreground">
             Turn an approved opportunity into a small, reviewable GitHub pull
             request. Relay can replace the title, the description, or both, in
-            an existing static Next.js App Router page. Route groups and
-            metadata helper calls work. Dynamic metadata and dynamic routes are
-            not supported.
+            an existing static Next.js page. In the App Router, route groups and
+            metadata helper calls work. In the Pages Router, Relay changes the
+            plain title and description in the page's own next/head. Dynamic
+            metadata and dynamic routes are not supported.
           </p>
           {!configured && (
             <p role="alert" className="rounded-lg border p-3 text-sm">
@@ -265,8 +266,9 @@ function PrepareForm({
           />
           <p className="text-xs text-muted-foreground">
             The URL-based suggestion is not verified. Confirm the actual file
-            under app/ or src/app/, using page.ts, page.tsx, page.js, or
-            page.jsx. Include the configured root directory prefix.
+            under app/ or src/app/ (page.tsx and similar), or under pages/ or
+            src/pages/ for the Pages Router. Include the configured root
+            directory prefix.
           </p>
         </div>
         <div className="space-y-2">

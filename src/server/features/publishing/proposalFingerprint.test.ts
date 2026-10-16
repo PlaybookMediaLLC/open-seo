@@ -26,6 +26,7 @@ const v1: Omit<MetadataProposal, "changeHash"> = {
   titleBeforeSnippet: null,
   titleAfterSnippet: null,
   revertsProposalId: null,
+  adapterId: "app_router_metadata",
   fingerprintVersion: 1,
   reason: "r",
   expectedEffect: "e",
