@@ -1,6 +1,6 @@
 # RFC-0005: GitHub execution, more change types and deployment signals
 
-- **Status:** Implemented on 2026-10-16 (PRs #37 to #45). Live acceptance waits for the owner actions in section 12.
+- **Status:** Implemented on 2026-10-16 (PRs #37 to #45, with Workers fixes in #49 and #50). Live acceptance waits for the owner actions in section 12.
 - **Date:** 2026-10-15
 - **Brief section:** 6 (Feature D)
 - **Depends on:** RFC-0001 configuration. Phase 1a has no other dependency. Phase 1b uses the RFC-0004 file locator.
@@ -285,8 +285,8 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### Phase 2
 
-- [ ] GitHub App registered with the listed permissions only (owner action, section 12).
-- [ ] Secrets set (owner action). The PKCS#8 conversion is documented in `docs/maintainers/playbook-deployment.md`.
+- [x] GitHub App registered with the listed permissions only. The private App `relay-seo` belongs to PlaybookMediaLLC. `GET /app` returns exactly the 7 permissions in 5.7.
+- [x] Secrets set and deployed. The PKCS#8 conversion is documented in `docs/maintainers/playbook-deployment.md`.
 - [x] Setup callback with state, user-token check and repository picker.
 - [x] Test: a forged `installation_id` that the user cannot access is refused.
 - [x] Installation tokens limited to one repository and the needed permissions (test of the request body).
@@ -296,7 +296,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Pages Router adapter with tests for supported and rejected forms.
 - [x] Canonical and robots changes with the typed confirmation and the inspection step. The `technical_blocker` type exists; its detector comes with RFC-0002 phase 2, so no opportunity offers these changes yet.
 - [x] GitHub issues with exact-text approval, and a test that one approval creates one issue.
-- [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state.
+- [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state. The install and the App connection of the S1 project are done. The pull request, the issue and the uninstall remain.
 - [x] Docs cover the App install and permissions.
 
 ## 9. Open questions
@@ -304,6 +304,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 1. Should hosted users still be allowed to use personal tokens after the App ships?
 2. Which deployment environments besides "Production" are common for Netlify and Cloudflare Pages repositories?
 3. Should the live content check run on a schedule after merge (RFC-0008), or only on demand?
+4. GitHub calls the setup URL only for a new install. Saving an existing installation sends no callback. If the first callback fails, the owner must uninstall and install again. Should Relay offer a way to link an existing installation, for example through the installations that the user's token can see?
 
 ## 10. Real-site acceptance test
 
@@ -408,13 +409,12 @@ Dry run on 2026-10-16, parser only, no pull request:
 - **Phase 1a:** a dry run prepared 9 of 9 S1 static pages, each with a one-line diff. All 19 S4 pages were refused with their reasons. Relay's `/approach` diff changes only the two `pageMetadata` arguments and keeps single quotes. Prettier with S1's config passes on it.
 - **Phase 1b:** the S1 title template `'%s | Playbook Media'` was read from the root layout. The final title "How we own software | Playbook Media" has 36 characters. S1's GitHub deployments use the environment `production`. The live parser reads the `/approach` title (with the template) and description exactly.
 - **Phase 2:** the setup callback redirects a forged state to `/` and writes nothing, in production. Unit tests cover the token request body (one repository, the operation's permissions, RS256), the forged `installation_id`, and revocation.
+- **Phase 2, live:** the first install failed. The Workers runtime rejects `fetch` with `redirect: "error"`, so every GitHub call from the worker failed, for tokens and the App. Node accepts the option, so the tests and the dry runs did not show it. `redirect: "manual"` fixes it, and the setup callback now logs why it fails. After the fix, a new install was saved for PlaybookMediaLLC with `monorepo` only. The S1 project connected through the App with root `apps/www`. A token for the monorepo with Contents write gets `403` when it tries to create a branch in another repository of the organization.
 
 ## 12. Owner actions to finish live acceptance
 
 1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging.
 2. **S1 project in Relay.** The project "Playbook Media" for `playbookmedia.io` exists (created on 2026-10-16). Connect Search Console in its Integrations with the Google consent screen. Then run opportunity detection, and approve one opportunity for `/approach`, `/company` or `/`.
-3. **GitHub connection.** Either:
-   - create a fine-grained token for `PlaybookMediaLLC/monorepo` with the permissions in `content/docs/github-publishing.mdx`, and connect it with root `apps/www`; or
-   - register the "Relay SEO" GitHub App (steps in `docs/maintainers/playbook-deployment.md`), add the five secrets to `ENV_PLAYBOOK`, deploy, and install the App on the monorepo only.
+3. **GitHub connection.** Done on 2026-10-16. The `relay-seo` App is installed on the monorepo only, and the S1 project is connected through it.
 4. **Run section 10.** Prepare the three S1 proposals, and check the S4 refusal for `[product]`. For phase 1b, approve one title and description change, and merge it when you choose. Then check the deployment and live signals, and open a revert pull request without merging it.
 5. **Phase 2 live check.** With the App: open one S1 pull request, create one issue, uninstall the App, and confirm "Reconnect the GitHub App".
