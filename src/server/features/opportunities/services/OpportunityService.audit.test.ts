@@ -29,6 +29,12 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
     inspectUrls: mocks.inspect,
   },
 }));
+vi.mock("@/server/auth/repositories/AuthRepository", () => ({
+  AuthRepository: {
+    getMembership: mocks.membership,
+    getHostedUserNames: mocks.userNames,
+  },
+}));
 vi.mock("../repositories/contentGapRepository", () => ({
   ContentGapRepository: {
     aiCitations: mocks.aiCitations,

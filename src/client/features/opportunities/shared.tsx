@@ -3,8 +3,15 @@ import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { Button } from "@/client/components/ui/button";
 import { Badge } from "@/client/components/ui/badge";
-import { listOpportunities } from "@/serverFunctions/opportunities";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/client/components/ui/tooltip";
+import { listOpportunities } from "@/serverFunctions/opportunities";
+import { getTeam } from "@/serverFunctions/organization";
+import {
+  OPPORTUNITY_FRESHNESS,
   OPPORTUNITY_STATUSES,
   OPPORTUNITY_TYPES,
   type OpportunityStatus,
@@ -18,6 +25,9 @@ export const opportunitySearchSchema = z.object({
   sort: z.enum(["priority", "newest"]).default("priority").catch("priority"),
   includeDeferred: z.boolean().default(false).catch(false),
   offset: z.number().int().min(0).max(10000).default(0).catch(0),
+  owner: z.string().trim().min(1).max(64).optional().catch(undefined),
+  q: z.string().trim().min(1).max(200).optional().catch(undefined),
+  freshness: z.enum(OPPORTUNITY_FRESHNESS).default("all").catch("all"),
 });
 export type OpportunityFilters = z.infer<typeof opportunitySearchSchema>;
 export const PAGE_SIZE = 25;
@@ -112,4 +122,52 @@ export function ConnectSearchConsole({ projectId }: { projectId: string }) {
 }
 export function dateLabel(value: string) {
   return new Date(value).toLocaleString();
+}
+
+export type OwnerOption = { userId: string; name: string };
+
+/** Organization members who can own an opportunity (RFC-0003 5.1). */
+export const ownerOptions = (projectId: string) =>
+  queryOptions({
+    queryKey: [...opportunityKeys.all(projectId), "owners"],
+    queryFn: () => getTeam(),
+    select: (team): OwnerOption[] =>
+      team.members.map((member) => ({
+        userId: member.userId,
+        name: member.user.name || member.user.email,
+      })),
+    staleTime: 60_000,
+  });
+
+export function OwnerAvatar({ name }: { name: string | undefined }) {
+  const initials = (name ?? "?")
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-semibold"
+    >
+      {initials}
+    </span>
+  );
+}
+
+export function StaleBadge() {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<span className="cursor-help" />}>
+        <Badge variant="outline" className="text-muted-foreground">
+          Not in latest analysis
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>
+        The latest analysis did not find this opportunity. The issue may be
+        fixed, or the data may have changed.
+      </TooltipContent>
+    </Tooltip>
+  );
 }

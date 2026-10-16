@@ -13,6 +13,7 @@ import {
   dateLabel,
   opportunityKeys,
   opportunitySearchSchema,
+  ownerOptions,
   PAGE_SIZE,
   type OpportunityFilters,
 } from "@/client/features/opportunities/shared";
@@ -64,8 +65,15 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
       replace: true,
     });
   };
+  const owners = useQuery(ownerOptions(projectId));
   const filtered = Boolean(
-    filters.status || filters.type || filters.minPriority || filters.offset,
+    filters.status ||
+    filters.type ||
+    filters.minPriority ||
+    filters.offset ||
+    filters.owner ||
+    filters.q ||
+    filters.freshness !== "all",
   );
   return (
     <div className="overflow-auto page-pad">
@@ -164,11 +172,17 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
               <OpportunityRunLog runs={data.runs} />
               {data.connected || data.rows.length > 0 || filtered ? (
                 <>
-                  <OpportunityFilterBar filters={filters} onChange={update} />
+                  <OpportunityFilterBar
+                    filters={filters}
+                    onChange={update}
+                    statusCounts={data.statusCounts}
+                    owners={owners.data ?? []}
+                  />
                   <OpportunitiesList
                     rows={data.rows}
                     projectId={projectId}
                     filtered={filtered}
+                    owners={owners.data ?? []}
                   />
                   <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                     <p className="text-muted-foreground">

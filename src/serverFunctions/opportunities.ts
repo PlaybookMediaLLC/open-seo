@@ -2,9 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { BrandTermService } from "@/server/features/opportunities/services/BrandTermService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { SerpCheckService } from "@/server/features/opportunities/services/SerpCheckService";
+import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  assignOpportunityInputSchema,
   brandTermsInputSchema,
   contentGapEstimateInputSchema,
   findContentGapsInputSchema,
@@ -92,4 +94,22 @@ export const checkLiveSerp = createServerFn({ method: "POST" })
   .validator(serpCheckInputSchema)
   .handler(({ data, context }) =>
     SerpCheckService.check(context, { ...data, projectId: context.projectId }),
+  );
+
+// RFC-0003: owner assignment and the copyable ticket.
+export const assignOpportunity = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(assignOpportunityInputSchema)
+  .handler(({ data, context }) =>
+    OpportunityService.assign(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const getOpportunityTicket = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDetailInputSchema)
+  .handler(({ data, context }) =>
+    getTicket(context, context.projectId, data.opportunityId),
   );

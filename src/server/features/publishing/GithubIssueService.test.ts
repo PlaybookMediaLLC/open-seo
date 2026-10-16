@@ -39,6 +39,8 @@ vi.mock("./repositories/PublishingRepository", () => ({
   },
 }));
 
+import { opportunityDetail } from "@/server/features/opportunities/services/opportunityTestFixtures";
+
 const context = { organizationId: "org-1", userId: "user-1", role: "owner" };
 const scope = { projectId: "project-1", opportunityId: "opportunity-1" };
 async function approvedHash() {
@@ -48,19 +50,9 @@ async function approvedHash() {
 }
 
 beforeEach(() => {
-  mocks.detail.mockResolvedValue({
-    opportunity: {
-      id: "opportunity-1",
-      status: "approved",
-      title: "Improve the pricing snippet",
-      explanation: "Clicks fell 30% while impressions held.",
-      url: "https://example.com/pricing",
-      query: "pricing plans",
-      recommendedAction: "Rewrite the title and description.",
-      uncertainty: "Seasonal demand may explain part of it.",
-      effortHours: 1,
-    },
-  });
+  const detail = opportunityDetail("approved");
+  detail.opportunity.title = "Improve the pricing snippet";
+  mocks.detail.mockResolvedValue(detail);
   mocks.getTicket.mockResolvedValue(null);
   // A new row comes back with the id that the service generated.
   mocks.claimTicket.mockImplementation(

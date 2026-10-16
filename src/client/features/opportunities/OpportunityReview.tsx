@@ -16,8 +16,9 @@ const labels: Record<Decision, string> = {
   reviewed: "Mark reviewed",
   approved: "Approve proposal preparation",
   rejected: "Reject",
-  deferred: "Defer 7 days",
+  deferred: "Defer",
 };
+const DEFER_DAYS = [7, 30, 90] as const;
 
 export function OpportunityReview({
   opportunity,
@@ -29,6 +30,7 @@ export function OpportunityReview({
   currentEvidenceReviewed: boolean;
 }) {
   const [note, setNote] = useState("");
+  const [deferDays, setDeferDays] = useState<(typeof DEFER_DAYS)[number]>(7);
   const [confirmation, setConfirmation] = useState<{
     decision: Decision;
     version: number;
@@ -49,6 +51,7 @@ export function OpportunityReview({
           expectedVersion: version,
           decision,
           note,
+          ...(decision === "deferred" ? { deferDays } : {}),
         },
       }),
     onSuccess: (detail) => {
@@ -173,11 +176,37 @@ export function OpportunityReview({
           onClose={() => setConfirmation(null)}
           onConfirm={() => mutation.mutate(confirmation)}
         >
-          {confirmation.decision === "approved"
-            ? "Approve preparation of a proposal only. This does not publish or change anything on your site."
-            : confirmation.decision === "deferred"
-              ? "Hide this opportunity from the default queue for seven days. Its evidence and review history are retained."
-              : "This decision will be recorded with your user identity and the current evidence run. No site changes will be made."}
+          {confirmation.decision === "approved" ? (
+            "Approve preparation of a proposal only. This does not publish or change anything on your site."
+          ) : confirmation.decision === "deferred" ? (
+            <span className="space-y-3">
+              <span className="block">
+                Hide this opportunity from the default queue. Its evidence and
+                review history are retained.
+              </span>
+              <span
+                role="radiogroup"
+                aria-label="Defer for"
+                className="flex gap-2"
+              >
+                {DEFER_DAYS.map((days) => (
+                  <Button
+                    key={days}
+                    type="button"
+                    size="sm"
+                    role="radio"
+                    aria-checked={deferDays === days}
+                    variant={deferDays === days ? "default" : "outline"}
+                    onClick={() => setDeferDays(days)}
+                  >
+                    {days} days
+                  </Button>
+                ))}
+              </span>
+            </span>
+          ) : (
+            "This decision will be recorded with your user identity and the current evidence run. No site changes will be made."
+          )}
         </ConfirmDialog>
       ) : null}
     </section>

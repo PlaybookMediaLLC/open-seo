@@ -7,7 +7,7 @@ import {
   opportunityDecisions,
 } from "@/db/schema";
 import type {
-  OpportunityReviewInput,
+  OpportunityDecisionKind,
   OpportunityStatus,
 } from "@/types/schemas/opportunities";
 
@@ -16,7 +16,9 @@ export async function review(input: {
   opportunityId: string;
   expectedVersion: number;
   actorUserId: string;
-  decision: OpportunityReviewInput["decision"];
+  decision: Exclude<OpportunityDecisionKind, "reverted">;
+  /** The new owner of an "assigned" decision. Null unassigns. */
+  ownerUserId?: string | null;
   note: string;
   fromStatus: OpportunityStatus;
   toStatus: OpportunityStatus;
@@ -60,8 +62,14 @@ export async function review(input: {
         ownerUserId:
           input.decision === "approved"
             ? input.actorUserId
-            : sql`${opportunities.ownerUserId}`,
-        deferredUntil: input.deferredUntil,
+            : input.decision === "assigned"
+              ? (input.ownerUserId ?? null)
+              : sql`${opportunities.ownerUserId}`,
+        // An assignment keeps a deferral; every other decision sets it.
+        deferredUntil:
+          input.decision === "assigned"
+            ? sql`${opportunities.deferredUntil}`
+            : input.deferredUntil,
         version: sql`${opportunities.version} + 1`,
         lastDecisionId: decisionId,
       })
@@ -95,9 +103,9 @@ export async function review(input: {
           opportunityId: opportunities.id,
           evidenceRunId: opportunities.evidenceRunId,
           actorUserId: sql<string>`${input.actorUserId}`.as("actor_user_id"),
-          decision: sql<
-            OpportunityReviewInput["decision"]
-          >`${input.decision}`.as("decision"),
+          decision: sql<OpportunityDecisionKind>`${input.decision}`.as(
+            "decision",
+          ),
           fromStatus: sql<OpportunityStatus>`${input.fromStatus}`.as(
             "from_status",
           ),

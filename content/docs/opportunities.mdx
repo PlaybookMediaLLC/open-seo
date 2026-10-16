@@ -99,11 +99,25 @@ The detail view shows every value and where it came from:
 
 ## Review and history
 
-Filter by type, status or minimum priority. Sort by priority or by newest.
+Search by part of a URL or a query. Filter by status, type, owner, freshness or minimum priority. Sort by priority or by newest. The status list shows how many items each status has with your other filters. Every filter stays in the page address, so you can share a filtered list with your team.
 
 A new detection run updates an existing opportunity. It does not make a copy. Each decision records who made it, the note and the evidence it was based on. When new evidence arrives, review it before you approve. You cannot approve evidence that is older than 14 days, or that belongs to a disconnected or changed Search Console property.
 
-A deferred opportunity leaves the default queue for 7 days. Turn on **Include deferred** to see it sooner.
+### Owners
+
+Owners and administrators can give each opportunity to one member of the organization, or leave it unassigned. Approving an opportunity makes you its owner. Each change of owner appears in the review history. Use the **Owner** filter to see **Assigned to me**, unassigned items or one member's items.
+
+### Defer
+
+A deferred opportunity leaves the default queue for 7, 30 or 90 days. You choose the length when you defer. Turn on **Show deferred** to see it sooner. A deferred item shows the date when it comes back.
+
+### Not in latest analysis
+
+When the latest run did not find an opportunity again, it shows **Not in latest analysis**. The issue may be fixed, or the data may have changed. Relay keeps the item and every decision about it. When a later run finds it again, the label goes away. Content gaps count only content-gap runs for this label.
+
+### Tickets
+
+When an opportunity is approved, click **Create ticket** to get plain text for your team's tracker. The ticket has the pages, the evidence numbers, the proposed change, the risk and how to verify the result. Relay writes it from the stored evidence only, with no AI. It never includes review notes. With a GitHub connection, you can also create the same text as a GitHub issue. See [Publish changes to GitHub](/docs/github-publishing).
 
 ## Limits and failures
 

@@ -1,6 +1,4 @@
 import { hasOrgPermission } from "@/lib/org-permissions";
-import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
-import { requireOrgPermission } from "@/server/auth/org-gate";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import {
   ga4DateInTimeZone,
@@ -8,7 +6,6 @@ import {
 } from "@/server/features/ga4/services/Ga4Dates";
 import { previousPeriod } from "@/server/features/gsc/searchPerformanceReport";
 import { GscService } from "@/server/features/gsc/services/GscService";
-import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { AppError } from "@/server/lib/errors";
 import {
   GscApiError,
@@ -18,11 +15,11 @@ import {
 import type {
   OpportunityDetectionResult,
   OpportunityListInput,
-  OpportunityReviewInput,
   OpportunityRun,
-  OpportunityStatus,
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
+import { assign, review } from "./opportunityDecisions";
+import { authorize, get, type OpportunityContext } from "./opportunityAccess";
 import { detectOpportunities } from "./detectOpportunities";
 import { requestDetectionData } from "./detectionRequests";
 import { withIdentityKeys } from "./opportunityIdentity";
@@ -32,22 +29,16 @@ import {
   loadDetectionSignals,
 } from "./detectionSignals";
 
-type Context = Pick<EnsuredUserContext, "organizationId" | "userId" | "role">;
+type Context = OpportunityContext;
 const DAY_MS = 86_400_000;
 const DEADLINE_MS = 120_000;
-async function authorize(context: Context, projectId: string) {
-  const project = await ProjectRepository.getProjectForOrganization(
-    projectId,
-    context.organizationId,
-  );
-  if (!project) throw new AppError("NOT_FOUND", "Project not found.");
-  return project;
-}
-
 async function list(context: Context, input: OpportunityListInput) {
   await authorize(context, input.projectId);
   const [result, latestRun, connection, runs] = await Promise.all([
-    OpportunityRepository.list(input),
+    OpportunityRepository.list({
+      ...input,
+      owner: input.owner === "me" ? context.userId : input.owner,
+    }),
     OpportunityRepository.latestRun(input.projectId),
     GscService.getConnection(input.projectId),
     OpportunityRepository.listRuns(input.projectId),
@@ -59,16 +50,6 @@ async function list(context: Context, input: OpportunityListInput) {
     connected: Boolean(connection),
     canReview: hasOrgPermission(context.role, { integration: ["manage"] }),
   };
-}
-
-async function get(context: Context, projectId: string, opportunityId: string) {
-  await authorize(context, projectId);
-  const detail = await OpportunityRepository.getDetail(
-    projectId,
-    opportunityId,
-  );
-  if (!detail) throw new AppError("NOT_FOUND", "Opportunity not found.");
-  return detail;
 }
 
 function failureMessage(error: unknown): string {
@@ -301,74 +282,4 @@ async function detect(
   }
 }
 
-async function review(context: Context, input: OpportunityReviewInput) {
-  await authorize(context, input.projectId);
-  requireOrgPermission(context, { integration: ["manage"] });
-  const detail = await OpportunityRepository.getDetail(
-    input.projectId,
-    input.opportunityId,
-  );
-  if (!detail) throw new AppError("NOT_FOUND", "Opportunity not found.");
-  const opportunity = detail.opportunity;
-  if (opportunity.version !== input.expectedVersion)
-    throw new AppError(
-      "CONFLICT",
-      "Opportunity changed. Reload before reviewing.",
-    );
-  const allowed: Record<
-    OpportunityReviewInput["decision"],
-    OpportunityStatus[]
-  > = {
-    reviewed: ["discovered", "reviewed", "approved", "rejected"],
-    approved: ["reviewed"],
-    rejected: ["discovered", "reviewed"],
-    deferred: ["discovered", "reviewed"],
-  };
-  if (!allowed[input.decision].includes(opportunity.status)) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      "This review transition is not allowed.",
-    );
-  }
-  if (input.decision === "approved") {
-    const reviewedCurrentEvidence = detail.decisions.some(
-      (decision) =>
-        decision.decision === "reviewed" &&
-        decision.evidenceRunId === opportunity.evidenceRunId,
-    );
-    if (!reviewedCurrentEvidence)
-      throw new AppError(
-        "CONFLICT",
-        "Review the current evidence before approving proposal preparation.",
-      );
-    const connection = await GscService.getConnection(input.projectId);
-    if (
-      connection?.siteUrl !== opportunity.siteUrl ||
-      Date.now() - Date.parse(opportunity.lastDetectedAt) > 14 * DAY_MS
-    ) {
-      throw new AppError(
-        "CONFLICT",
-        "Reconnect and refresh evidence before approving proposal preparation.",
-      );
-    }
-  }
-  const changed = await OpportunityRepository.review({
-    ...input,
-    actorUserId: context.userId,
-    fromStatus: opportunity.status,
-    toStatus:
-      input.decision === "deferred" ? opportunity.status : input.decision,
-    deferredUntil:
-      input.decision === "deferred"
-        ? new Date(Date.now() + 7 * DAY_MS).toISOString()
-        : null,
-  });
-  if (!changed)
-    throw new AppError(
-      "CONFLICT",
-      "Opportunity changed. Reload before reviewing.",
-    );
-  return get(context, input.projectId, input.opportunityId);
-}
-
-export const OpportunityService = { list, get, detect, review };
+export const OpportunityService = { list, get, detect, review, assign };

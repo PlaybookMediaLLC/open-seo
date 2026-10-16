@@ -49,6 +49,18 @@ export const OPPORTUNITY_STATUSES = [
 ] as const;
 export type OpportunityType = (typeof OPPORTUNITY_TYPES)[number];
 export type OpportunityStatus = (typeof OPPORTUNITY_STATUSES)[number];
+export const OPPORTUNITY_FRESHNESS = ["all", "current", "stale"] as const;
+// "reverted" is recorded only when a confirmed revert ships (RFC-0005 5.6).
+// "assigned" changes the owner and keeps the status (RFC-0003 5.1).
+export const OPPORTUNITY_DECISIONS = [
+  "reviewed",
+  "approved",
+  "rejected",
+  "deferred",
+  "reverted",
+  "assigned",
+] as const;
+export type OpportunityDecisionKind = (typeof OPPORTUNITY_DECISIONS)[number];
 export type OpportunityDiagnosis = (typeof OPPORTUNITY_DIAGNOSES)[number];
 export type OpportunityUrlRole = (typeof OPPORTUNITY_URL_ROLES)[number];
 export type EvidencePeriod = (typeof EVIDENCE_PERIODS)[number];
@@ -63,6 +75,11 @@ export const listOpportunitiesInputSchema = projectScope.extend({
   includeDeferred: z.boolean().default(false),
   limit: z.number().int().min(1).max(100).default(50),
   offset: z.number().int().min(0).max(10000).default(0),
+  /** "me", "unassigned" or a user id. */
+  owner: z.string().trim().min(1).max(64).optional(),
+  /** Matches part of the URL or the query, ignoring case. */
+  q: z.string().trim().min(1).max(200).optional(),
+  freshness: z.enum(OPPORTUNITY_FRESHNESS).default("all"),
 });
 export const opportunityDetailInputSchema = projectScope.extend({
   opportunityId: z.string().min(1),
@@ -72,8 +89,20 @@ export const reviewOpportunityInputSchema = opportunityDetailInputSchema.extend(
     expectedVersion: z.number().int().min(1),
     decision: z.enum(["reviewed", "approved", "rejected", "deferred"]),
     note: z.string().trim().max(2000).default(""),
+    /** Only for "deferred". The service uses 7 when it is missing. */
+    deferDays: z.union([z.literal(7), z.literal(30), z.literal(90)]).optional(),
   },
 );
+export const assignOpportunityInputSchema = opportunityDetailInputSchema.extend(
+  {
+    expectedVersion: z.number().int().min(1),
+    /** Null unassigns the opportunity. */
+    ownerUserId: z.string().trim().min(1).max(64).nullable(),
+  },
+);
+export type AssignOpportunityInput = z.infer<
+  typeof assignOpportunityInputSchema
+>;
 export const contentGapEstimateInputSchema = projectScope.extend({
   domains: z.array(z.string().trim().min(1).max(255)).min(1).max(3),
 });
@@ -263,6 +292,8 @@ export type Opportunity = Omit<
   lastDetectedAt: string;
   deferredUntil: string | null;
   version: number;
+  /** The latest completed run of the same kind did not find it again. */
+  stale: boolean;
 };
 
 export type OpportunityRun = {
@@ -322,8 +353,7 @@ export type OpportunityDecision = {
   opportunityId: string;
   evidenceRunId: string;
   actorUserId: string;
-  // "reverted" is recorded only when a confirmed revert ships (RFC-0005 5.6).
-  decision: OpportunityReviewInput["decision"] | "reverted";
+  decision: OpportunityDecisionKind;
   fromStatus: OpportunityStatus;
   toStatus: OpportunityStatus;
   note: string;

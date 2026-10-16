@@ -12,6 +12,7 @@ import { audits } from "./audit.schema";
 import {
   BRAND_TERM_AUTHORS,
   EVIDENCE_PERIODS,
+  OPPORTUNITY_DECISIONS,
   OPPORTUNITY_DIAGNOSES,
   OPPORTUNITY_RUN_KINDS,
   OPPORTUNITY_STATUSES,
@@ -169,9 +170,7 @@ export const opportunityDecisions = pgTable(
       .notNull()
       .references(() => opportunityRuns.id, { onDelete: "cascade" }),
     actorUserId: text("actor_user_id").notNull(),
-    decision: text("decision", {
-      enum: ["reviewed", "approved", "rejected", "deferred", "reverted"],
-    }).notNull(),
+    decision: text("decision", { enum: OPPORTUNITY_DECISIONS }).notNull(),
     fromStatus: text("from_status", { enum: OPPORTUNITY_STATUSES }).notNull(),
     toStatus: text("to_status", { enum: OPPORTUNITY_STATUSES }).notNull(),
     note: text("note").notNull(),

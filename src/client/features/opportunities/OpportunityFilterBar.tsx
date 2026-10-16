@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/client/components/ui/button";
 import { Input } from "@/client/components/ui/input";
 import { Checkbox } from "@/client/components/ui/checkbox";
@@ -11,23 +12,84 @@ import {
 import {
   OPPORTUNITY_STATUSES,
   OPPORTUNITY_TYPES,
+  type OpportunityStatus,
 } from "@/types/schemas/opportunities";
 import {
   opportunitySearchSchema,
   statusLabels,
   typeLabels,
   type OpportunityFilters,
+  type OwnerOption,
 } from "./shared";
+
+const FRESHNESS_LABELS = {
+  all: "All items",
+  current: "In latest analysis",
+  stale: "Not in latest analysis",
+} as const;
+
+/** Keeps typing local and writes the URL 300 ms after the last key. */
+function SearchInput({
+  value,
+  onChange,
+}: {
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+}) {
+  const [text, setText] = useState(value ?? "");
+  useEffect(() => setText(value ?? ""), [value]);
+  useEffect(() => {
+    const next = text.trim() || undefined;
+    if (next === value) return;
+    const timer = setTimeout(() => onChange(next), 300);
+    return () => clearTimeout(timer);
+  }, [text, value, onChange]);
+  return (
+    <Input
+      id="opportunity-search"
+      type="search"
+      className="w-56"
+      maxLength={200}
+      placeholder="Part of a URL or query"
+      value={text}
+      onChange={(event) => setText(event.target.value)}
+    />
+  );
+}
 
 export function OpportunityFilterBar({
   filters,
   onChange,
+  statusCounts,
+  owners,
 }: {
   filters: OpportunityFilters;
   onChange: (patch: Partial<OpportunityFilters>) => void;
+  statusCounts: Partial<Record<OpportunityStatus, number>>;
+  owners: OwnerOption[];
 }) {
+  const statusLabel = (status: OpportunityStatus) =>
+    `${statusLabels[status]} (${statusCounts[status] ?? 0})`;
+  const ownerLabel =
+    filters.owner === "me"
+      ? "Assigned to me"
+      : filters.owner === "unassigned"
+        ? "Unassigned"
+        : filters.owner
+          ? (owners.find((owner) => owner.userId === filters.owner)?.name ??
+            "One member")
+          : "Any owner";
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border p-4">
+      <div className="space-y-1">
+        <label htmlFor="opportunity-search" className="text-xs font-medium">
+          Search
+        </label>
+        <SearchInput
+          value={filters.q}
+          onChange={(q) => onChange({ q, offset: 0 })}
+        />
+      </div>
       <div className="space-y-1">
         <label id="opportunity-status-label" className="text-xs font-medium">
           Status
@@ -48,14 +110,14 @@ export function OpportunityFilterBar({
             className="min-w-36"
           >
             <SelectValue>
-              {filters.status ? statusLabels[filters.status] : "All statuses"}
+              {filters.status ? statusLabel(filters.status) : "All statuses"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {OPPORTUNITY_STATUSES.map((status) => (
               <SelectItem key={status} value={status}>
-                {statusLabels[status]}
+                {statusLabel(status)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -89,6 +151,61 @@ export function OpportunityFilterBar({
             {OPPORTUNITY_TYPES.map((type) => (
               <SelectItem key={type} value={type}>
                 {typeLabels[type]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1">
+        <label id="opportunity-owner-label" className="text-xs font-medium">
+          Owner
+        </label>
+        <Select
+          value={filters.owner ?? "any"}
+          onValueChange={(value) =>
+            onChange({ owner: value === "any" ? undefined : String(value) })
+          }
+        >
+          <SelectTrigger
+            aria-labelledby="opportunity-owner-label"
+            className="min-w-40"
+          >
+            <SelectValue>{ownerLabel}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any owner</SelectItem>
+            <SelectItem value="me">Assigned to me</SelectItem>
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+            {owners.map((owner) => (
+              <SelectItem key={owner.userId} value={owner.userId}>
+                {owner.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-1">
+        <label id="opportunity-freshness-label" className="text-xs font-medium">
+          Freshness
+        </label>
+        <Select
+          value={filters.freshness}
+          onValueChange={(value) =>
+            onChange({
+              freshness: opportunitySearchSchema.shape.freshness.parse(value),
+            })
+          }
+        >
+          <SelectTrigger
+            aria-labelledby="opportunity-freshness-label"
+            className="min-w-44"
+          >
+            <SelectValue>{FRESHNESS_LABELS[filters.freshness]}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(FRESHNESS_LABELS).map(([value, label]) => (
+              <SelectItem key={value} value={value}>
+                {label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -142,13 +259,16 @@ export function OpportunityFilterBar({
           checked={filters.includeDeferred}
           onCheckedChange={(checked) => onChange({ includeDeferred: checked })}
         />
-        Include deferred
+        Show deferred
       </label>
       {filters.status ||
       filters.type ||
       filters.minPriority ||
       filters.offset ||
-      filters.includeDeferred ? (
+      filters.includeDeferred ||
+      filters.owner ||
+      filters.q ||
+      filters.freshness !== "all" ? (
         <Button
           variant="ghost"
           onClick={() =>
@@ -158,6 +278,9 @@ export function OpportunityFilterBar({
               minPriority: 0,
               offset: 0,
               includeDeferred: false,
+              owner: undefined,
+              q: undefined,
+              freshness: "all",
             })
           }
         >

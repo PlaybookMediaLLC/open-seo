@@ -1,6 +1,9 @@
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import { AppError } from "@/server/lib/errors";
-import type { Opportunity } from "@/types/schemas/opportunities";
+import {
+  opportunityTicket,
+  TICKET_STATUSES,
+} from "@/server/features/opportunities/services/opportunityTicket";
 import {
   createIssueInputSchema,
   publishingOpportunityInputSchema,
@@ -16,22 +19,7 @@ import {
 import { PublishingRepository } from "./repositories/PublishingRepository";
 
 // RFC-0005 5.10: a GitHub issue from an approved opportunity, created only
-// after the person approves the exact text.
-const ELIGIBLE = ["approved", "in_progress", "implemented", "failed"];
-
-function ticketText(opportunity: Opportunity) {
-  const query = opportunity.query ? `\nQuery: "${opportunity.query}"` : "";
-  return {
-    title: opportunity.title.slice(0, 200),
-    body: [
-      `## What Relay found\n\n${opportunity.explanation}`,
-      `## Page\n\n${opportunity.url}${query}`,
-      `## Suggested next step\n\n${opportunity.recommendedAction}`,
-      `## Limits\n\n${opportunity.uncertainty} Estimated effort: ${opportunity.effortHours} hours.`,
-    ].join("\n\n"),
-  };
-}
-
+// after the person approves the exact text. The text is the RFC-0003 ticket.
 async function textHash(text: { title: string; body: string }) {
   const hash = await crypto.subtle.digest(
     "SHA-256",
@@ -42,12 +30,13 @@ async function textHash(text: { title: string; body: string }) {
   ).join("");
 }
 
-async function eligibleOpportunity(projectId: string, opportunityId: string) {
-  const opportunity = (
-    await OpportunityRepository.getDetail(projectId, opportunityId)
-  )?.opportunity;
-  if (!opportunity) throw new AppError("NOT_FOUND");
-  return ELIGIBLE.includes(opportunity.status) ? opportunity : null;
+async function eligibleDetail(projectId: string, opportunityId: string) {
+  const detail = await OpportunityRepository.getDetail(
+    projectId,
+    opportunityId,
+  );
+  if (!detail) throw new AppError("NOT_FOUND");
+  return TICKET_STATUSES.includes(detail.opportunity.status) ? detail : null;
 }
 
 async function preview(
@@ -56,12 +45,9 @@ async function preview(
 ) {
   await authorizePublishing(context, raw.projectId);
   const input = publishingOpportunityInputSchema.parse(raw);
-  const opportunity = await eligibleOpportunity(
-    input.projectId,
-    input.opportunityId,
-  );
-  if (!opportunity) return null;
-  const text = ticketText(opportunity);
+  const detail = await eligibleDetail(input.projectId, input.opportunityId);
+  if (!detail) return null;
+  const text = opportunityTicket(detail);
   const hash = await textHash(text);
   return {
     ...text,
@@ -85,16 +71,17 @@ async function create(
       context,
       input.projectId,
       async (claimToken, signal) => {
-        const opportunity = await eligibleOpportunity(
+        const detail = await eligibleDetail(
           input.projectId,
           input.opportunityId,
         );
-        if (!opportunity)
+        if (!detail)
           return {
             ok: false,
             message: "Approve the opportunity before you create an issue.",
           };
-        const text = ticketText(opportunity);
+        const opportunity = detail.opportunity;
+        const text = opportunityTicket(detail);
         if ((await textHash(text)) !== input.textHash)
           return {
             ok: false,
