@@ -10,6 +10,7 @@ import {
   withPublishingClaim,
   type PublishingContext,
 } from "@/server/features/publishing/publishingAccess";
+import { parseRobotsText } from "@/server/features/publishing/indexingMetadata";
 import { prepareChangeAt } from "@/server/features/publishing/publishingTarget";
 import { PublishingRepository } from "@/server/features/publishing/repositories/PublishingRepository";
 import { AppError } from "@/server/lib/errors";
@@ -102,6 +103,13 @@ async function prepare(
             newTitle: titleChanged
               ? (original.titleBefore ?? undefined)
               : undefined,
+            newCanonical:
+              original.canonicalAfter === null
+                ? undefined
+                : (original.canonicalBefore ?? undefined),
+            newRobots: original.robotsBefore
+              ? parseRobotsText(original.robotsBefore)
+              : undefined,
             restore: true,
           });
         } catch (error) {
@@ -114,7 +122,9 @@ async function prepare(
         if (
           (descriptionChanged &&
             patch.beforeDescription !== original.descriptionAfter) ||
-          (titleChanged && patch.beforeTitle !== original.titleAfter)
+          (titleChanged && patch.beforeTitle !== original.titleAfter) ||
+          patch.canonicalBefore !== original.canonicalAfter ||
+          patch.robotsBefore !== original.robotsAfter
         )
           return { ok: false, message: PAGE_CHANGED };
         const outcome = detail.latestRun
@@ -143,8 +153,16 @@ async function prepare(
           titleAfter: patch.afterTitle,
           titleBeforeSnippet: patch.titleBeforeSnippet,
           titleAfterSnippet: patch.titleAfterSnippet,
+          canonicalBefore: patch.canonicalBefore,
+          canonicalAfter: patch.canonicalAfter,
+          canonicalBeforeSnippet: patch.canonicalBeforeSnippet,
+          canonicalAfterSnippet: patch.canonicalAfterSnippet,
+          robotsBefore: patch.robotsBefore,
+          robotsAfter: patch.robotsAfter,
+          robotsBeforeSnippet: patch.robotsBeforeSnippet,
+          robotsAfterSnippet: patch.robotsAfterSnippet,
           adapterId,
-          fingerprintVersion: 4,
+          fingerprintVersion: 5,
           revertsProposalId: original.id,
           changeHash: "",
           reason: `Revert of the change from proposal ${original.id}.${outcome}`,

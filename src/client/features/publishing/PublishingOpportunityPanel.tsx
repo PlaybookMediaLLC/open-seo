@@ -13,6 +13,7 @@ import type { Opportunity } from "@/types/schemas/opportunities";
 import { prepareProposalInputSchema } from "@/types/schemas/publishing";
 import { publishingOpportunityOptions, useRefreshPublishing } from "./queries";
 import { PublishingRecovery } from "./PublishingRecovery";
+import { IndexingFields, type IndexingValues } from "./IndexingFields";
 import { PublishingProposal } from "./PublishingProposal";
 
 function suggestPath(value: string, root: string) {
@@ -44,7 +45,7 @@ export function PublishingOpportunityPanel({
 }: {
   opportunity: Pick<
     Opportunity,
-    "id" | "projectId" | "url" | "status" | "version"
+    "id" | "projectId" | "url" | "status" | "version" | "type"
   >;
   readOnly?: boolean;
 }) {
@@ -199,7 +200,7 @@ function PrepareForm({
 }: {
   opportunity: Pick<
     Opportunity,
-    "id" | "projectId" | "url" | "status" | "version"
+    "id" | "projectId" | "url" | "status" | "version" | "type"
   >;
   rootDirectory: string;
 }) {
@@ -208,6 +209,7 @@ function PrepareForm({
   );
   const [description, setDescription] = useState("");
   const [title, setTitle] = useState("");
+  const [indexing, setIndexing] = useState<IndexingValues | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const refresh = useRefreshPublishing(opportunity.projectId);
   const mutation = useMutation({
@@ -218,8 +220,18 @@ function PrepareForm({
         opportunityId: opportunity.id,
         expectedOpportunityVersion: opportunity.version,
         filePath,
-        newDescription: description.trim() || undefined,
-        newTitle: title.trim() || undefined,
+        ...(indexing
+          ? {
+              newCanonical: indexing.canonical.trim() || undefined,
+              newRobots: indexing.changeRobots
+                ? { index: indexing.index, follow: indexing.follow }
+                : undefined,
+              confirmPath: indexing.confirmPath,
+            }
+          : {
+              newDescription: description.trim() || undefined,
+              newTitle: title.trim() || undefined,
+            }),
       });
       if (!input.success)
         throw new Error(
@@ -271,39 +283,73 @@ function PrepareForm({
             directory prefix.
           </p>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="publishing-title">
-            Your replacement title (optional)
-          </Label>
-          <Input
-            id="publishing-title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={120}
-            placeholder="Write the page title without the site name"
+        {opportunity.type === "technical_blocker" && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setIndexing(
+                indexing
+                  ? null
+                  : {
+                      canonical: "",
+                      changeRobots: false,
+                      index: true,
+                      follow: true,
+                      confirmPath: "",
+                    },
+              )
+            }
+          >
+            {indexing
+              ? "Change the title or description instead"
+              : "Change the canonical URL or robots instead"}
+          </Button>
+        )}
+        {indexing ? (
+          <IndexingFields
+            values={indexing}
+            onChange={setIndexing}
+            pagePath={new URL(opportunity.url).pathname}
           />
-          <p className="text-xs text-muted-foreground">
-            Relay adds your layout's title template, such as "%s | Site", and
-            checks that the final title has 10 to 60 characters.
-          </p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="publishing-description">
-            Your replacement description (optional)
-          </Label>
-          <Textarea
-            id="publishing-description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            maxLength={320}
-            rows={3}
-            placeholder="Write an accurate description supported by this page's content"
-          />
-          <p className="text-xs text-muted-foreground">
-            {description.length}/320 characters. Write your own factual
-            description. No AI-generated claims are supplied.
-          </p>
-        </div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="publishing-title">
+                Your replacement title (optional)
+              </Label>
+              <Input
+                id="publishing-title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                maxLength={120}
+                placeholder="Write the page title without the site name"
+              />
+              <p className="text-xs text-muted-foreground">
+                Relay adds your layout's title template, such as "%s | Site",
+                and checks that the final title has 10 to 60 characters.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="publishing-description">
+                Your replacement description (optional)
+              </Label>
+              <Textarea
+                id="publishing-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                maxLength={320}
+                rows={3}
+                placeholder="Write an accurate description supported by this page's content"
+              />
+              <p className="text-xs text-muted-foreground">
+                {description.length}/320 characters. Write your own factual
+                description. No AI-generated claims are supplied.
+              </p>
+            </div>
+          </>
+        )}
         <p className="text-sm text-muted-foreground">
           Preparation reads the selected file and package.json from the
           connected repository and verifies that only the title and description
@@ -312,7 +358,13 @@ function PrepareForm({
         </p>
         <Button
           type="submit"
-          disabled={(!description.trim() && !title.trim()) || !filePath.trim()}
+          disabled={
+            !filePath.trim() ||
+            (indexing
+              ? (!indexing.canonical.trim() && !indexing.changeRobots) ||
+                !indexing.confirmPath
+              : !description.trim() && !title.trim())
+          }
           pending={mutation.isPending}
         >
           Prepare verified proposal

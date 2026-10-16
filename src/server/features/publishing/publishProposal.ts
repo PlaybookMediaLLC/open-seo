@@ -27,6 +27,8 @@ export async function publishProposal(
   const fields = [
     proposal.titleAfter !== null && "title",
     proposal.descriptionAfter !== proposal.descriptionBefore && "description",
+    proposal.canonicalAfter !== null && "canonical URL",
+    proposal.robotsAfter !== null && "robots",
   ]
     .filter(Boolean)
     .join(" and ");

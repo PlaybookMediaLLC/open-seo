@@ -220,8 +220,9 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 1. App Router only. Support `alternates: { canonical: "literal" }` and `robots: { index: true|false, follow: true|false }` with literal values.
 2. These changes can remove a page from Google. Require a second confirmation: the user types the page path.
 3. The verification plan always includes a URL Inspection check after deployment.
-4. Only `technical_blocker` opportunities for canonical or noindex issues offer these changes.
-5. Store them as fields `canonical` and `robots` with the same before and after columns pattern as the title.
+4. Only `technical_blocker` opportunities offer these changes. The service checks the type. A finer check on the issue type (canonical or noindex) waits for the RFC-0002 detector, which stores it.
+5. Store them as fields `canonical` and `robots` with the same before and after columns pattern as the title. Robots is stored as text such as `noindex, follow`. Fingerprint version 5 binds the eight columns.
+6. A proposal changes either the title and description, or the canonical URL and robots, never both. Reverts restore them like any other field.
 
 ### 5.10 GitHub issues (phase 2)
 
@@ -293,7 +294,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [ ] Personal tokens still work for self-hosting (regression test).
 - [x] Adapter dispatch (`validateTarget`, `prepareChangeAt`), with the App Router logic and its tests unchanged.
 - [x] Pages Router adapter with tests for supported and rejected forms.
-- [ ] Canonical and robots changes with the typed confirmation and the inspection step.
+- [x] Canonical and robots changes with the typed confirmation and the inspection step. The `technical_blocker` type exists; its detector comes with RFC-0002 phase 2, so no opportunity offers these changes yet.
 - [ ] GitHub issues with exact-text approval, and a test that one approval creates one issue.
 - [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state.
 - [ ] Docs cover the App install and permissions.

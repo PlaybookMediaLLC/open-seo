@@ -5,9 +5,11 @@ import {
   executeProposalInputSchema,
   type ExecuteProposalInput,
   type ExecutionPhase,
+  type MetadataProposal,
   type ProposalExecution,
   type PublishingMutationResult,
 } from "@/types/schemas/publishing";
+import { parseRobotsText } from "./indexingMetadata";
 import { prepareChangeAt } from "./publishingTarget";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
@@ -19,6 +21,25 @@ import {
 } from "./publishingAccess";
 import { publishProposal } from "./publishProposal";
 import { PublishingRepository } from "./repositories/PublishingRepository";
+
+// The recomputed change must show exactly what the person approved.
+function matchesProposal(
+  patch: Awaited<ReturnType<typeof prepareChangeAt>>["patch"],
+  proposal: MetadataProposal,
+) {
+  return (
+    patch.beforeDescription === proposal.descriptionBefore &&
+    patch.beforeSnippet === proposal.beforeSnippet &&
+    patch.afterSnippet === proposal.afterSnippet &&
+    patch.beforeTitle === proposal.titleBefore &&
+    patch.titleBeforeSnippet === proposal.titleBeforeSnippet &&
+    patch.titleAfterSnippet === proposal.titleAfterSnippet &&
+    patch.canonicalBeforeSnippet === proposal.canonicalBeforeSnippet &&
+    patch.canonicalAfterSnippet === proposal.canonicalAfterSnippet &&
+    patch.robotsBeforeSnippet === proposal.robotsBeforeSnippet &&
+    patch.robotsAfterSnippet === proposal.robotsAfterSnippet
+  );
+}
 
 async function execute(
   context: PublishingContext,
@@ -150,6 +171,10 @@ async function execute(
                   ? undefined
                   : proposal.descriptionAfter,
               newTitle: proposal.titleAfter ?? undefined,
+              newCanonical: proposal.canonicalAfter ?? undefined,
+              newRobots: proposal.robotsAfter
+                ? parseRobotsText(proposal.robotsAfter)
+                : undefined,
               restore: revert,
               verifyManifest: false,
             },
@@ -165,12 +190,7 @@ async function execute(
           if (
             adapterId !== proposal.adapterId ||
             file.blobSha !== proposal.beforeBlobSha ||
-            patch.beforeDescription !== proposal.descriptionBefore ||
-            patch.beforeSnippet !== proposal.beforeSnippet ||
-            patch.afterSnippet !== proposal.afterSnippet ||
-            patch.beforeTitle !== proposal.titleBefore ||
-            patch.titleBeforeSnippet !== proposal.titleBeforeSnippet ||
-            patch.titleAfterSnippet !== proposal.titleAfterSnippet ||
+            !matchesProposal(patch, proposal) ||
             (await gitBlobHash(patch.afterSource)) !== proposal.afterBlobSha
           )
             throw new AppError("CONFLICT");

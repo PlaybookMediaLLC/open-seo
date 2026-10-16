@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- one spec covers the proposal service, including the canonical and robots gate */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { PrepareProposalInput } from "@/types/schemas/publishing";
 import { MetadataProposalService } from "./MetadataProposalService";
@@ -395,5 +396,59 @@ describe("MetadataProposalService", () => {
     expect(mocks.replaceConnection).not.toHaveBeenCalled();
     expect(mocks.disconnect).not.toHaveBeenCalled();
     expectNoRemoteWrites();
+  });
+});
+
+describe("MetadataProposalService canonical and robots gate", () => {
+  it.each([
+    [
+      "striking_distance",
+      "/pricing",
+      "Only technical blocker opportunities can change the canonical URL or robots.",
+    ],
+    [
+      "technical_blocker",
+      "/pricing/",
+      "Type the page path exactly to confirm a canonical or robots change.",
+    ],
+  ] as const)(
+    "refuses a robots change on a %s opportunity typed as %s before reaching GitHub",
+    async (type, confirmPath, message) => {
+      fixture.detail.opportunity.type = type;
+      const result = await MetadataProposalService.prepare(fixture.context, {
+        ...input,
+        newDescription: undefined,
+        newRobots: { index: false, follow: true },
+        confirmPath,
+      });
+      expect(result).toEqual({ ok: false, message });
+      expect(mocks.client).not.toHaveBeenCalled();
+    },
+  );
+
+  it("prepares a confirmed robots change with a URL Inspection step", async () => {
+    fixture.detail.opportunity.type = "technical_blocker";
+    const page =
+      "export const metadata = { description: 'Old pricing description', robots: { index: true, follow: true } };\n";
+    mocks.readFile.mockImplementation(async (path: string) => {
+      const source =
+        path === "package.json" ? '{"dependencies":{"next":"^15.4.0"}}' : page;
+      return { source, blobSha: await gitBlobHash(source) };
+    });
+    const result = await MetadataProposalService.prepare(fixture.context, {
+      ...input,
+      newDescription: undefined,
+      newRobots: { index: false, follow: true },
+      confirmPath: "/pricing",
+    });
+    expect(result.ok, result.message).toBe(true);
+    const { proposal } = mocks.save.mock.calls[0][0];
+    expect(proposal).toMatchObject({
+      robotsBefore: "index, follow",
+      robotsAfter: "noindex, follow",
+      descriptionBefore: "Old pricing description",
+      descriptionAfter: "Old pricing description",
+    });
+    expect(proposal.verificationPlan).toContain("URL Inspection");
   });
 });

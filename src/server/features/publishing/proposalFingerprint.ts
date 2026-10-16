@@ -63,6 +63,18 @@ export function proposalFingerprint(
               ? [proposal.revertsProposalId]
               : []),
             ...(proposal.fingerprintVersion >= 4 ? [proposal.adapterId] : []),
+            ...(proposal.fingerprintVersion >= 5
+              ? [
+                  proposal.canonicalBefore,
+                  proposal.canonicalAfter,
+                  proposal.canonicalBeforeSnippet,
+                  proposal.canonicalAfterSnippet,
+                  proposal.robotsBefore,
+                  proposal.robotsAfter,
+                  proposal.robotsBeforeSnippet,
+                  proposal.robotsAfterSnippet,
+                ]
+              : []),
           ]
         : proposal.metadataSource === "helper_call"
           ? [
