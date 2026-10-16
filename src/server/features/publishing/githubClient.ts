@@ -76,7 +76,8 @@ export function createGithubClient({
           },
           body: options ? JSON.stringify(options.body) : undefined,
           signal: requestSignal,
-          redirect: "error",
+          // Workers rejects "error". A 3xx response is not ok, so it fails below.
+          redirect: "manual",
         },
       );
       if (!response.ok) {
