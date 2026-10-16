@@ -1,6 +1,6 @@
 # RFC-0002: Opportunity engine, remaining detectors and signals
 
-- **Status:** Phase 1 in progress. The code is done. The live acceptance (section 11) is open.
+- **Status:** Phases 1 and 2: the code is done. Their live acceptance (section 11) is open, because no connected property has Search Console data yet. Phase 3 waits for RFC-0009.
 - **Date:** 2026-10-15
 - **Brief section:** 3 (Feature A)
 - **Depends on:** RFC-0001. Phase 3 also depends on RFC-0009 (spending limits).
@@ -62,12 +62,13 @@ Enum columns are TypeScript-level `text` enums in both dialects. New enum values
 
 **Run record.** Add to `opportunity_runs`:
 
-| Column               | Type                                                                | Purpose                             |
-| -------------------- | ------------------------------------------------------------------- | ----------------------------------- |
-| `kind`               | text enum `search_console`, `content_gap`, default `search_console` | Paid content-gap runs are separate. |
-| `year_ago_page_rows` | integer, default 0                                                  | Row count of the year-ago requests. |
-| `ga4_property_id`    | text, nullable                                                      | GA4 property used, if any.          |
-| `audit_id`           | text, nullable, FK `audits.id` on delete set null                   | Audit used by phase 2.              |
+| Column                | Type                                                                | Purpose                             |
+| --------------------- | ------------------------------------------------------------------- | ----------------------------------- |
+| `kind`                | text enum `search_console`, `content_gap`, default `search_console` | Paid content-gap runs are separate. |
+| `year_ago_page_rows`  | integer, default 0                                                  | Row count of the year-ago requests. |
+| `ga4_property_id`     | text, nullable                                                      | GA4 property used, if any.          |
+| `audit_id`            | text, nullable, FK `audits.id` on delete set null                   | Audit used by phase 2.              |
+| `inspection_requests` | integer, default 0                                                  | URL inspections reserved (phase 2). |
 
 **Multiple URLs.** Cannibalization and internal links involve two or more URLs. Add `opportunity_urls`:
 
@@ -194,7 +195,7 @@ All thresholds are named constants. Unit tests cover each boundary.
 3. Normalize URLs before the join: lowercase host, remove the fragment, remove the default port, remove a trailing slash except on the root.
 4. Create a candidate when the page has ≥ 50 impressions in the current or previous period, or the page is a key page.
 5. Identity: type, URL and issue type (see 5.4). The `query` column stays null.
-6. For the top 10 candidates by priority, call the existing URL Inspection service. It is free, but Google limits it per property per day. Skip inspection when the daily budget for the project is used.
+6. For the top 10 candidates by priority whose issue can stop indexing, call the existing URL Inspection service. It is free, but Google limits it per property per day. A project can use 50 inspections a day. The run reserves its inspections in `opportunity_runs.inspection_requests` before network work, so failed runs count too. Skip inspection when the daily budget for the project is used, and say so in the run result. Inspection confirms an issue when the verdict is not `PASS`. Detection runs again with the results, so confirmed candidates get confidence 0.70.
 7. Store audit evidence in `opportunity_audit_evidence`:
 
    | Column                                   | Type                                           |
@@ -210,13 +211,15 @@ All thresholds are named constants. Unit tests cover each boundary.
 
 8. Store inspection evidence in `opportunity_inspection_evidence`: `id`, the three FKs, `url`, `verdict`, `coverage_state`, `indexing_state`, `robots_txt_state`, `page_fetch_state`, `google_canonical`, `user_canonical`, `last_crawl_time`, `inspected_at`.
 9. Map each issue type to one plain-language action and an effort estimate in a constant table.
+10. Visibility score: 1 for an issue that can stop indexing, 0.5 for the others (`redirect-chain`, `missing-title`, `duplicate-title`, `slow-response`). Difficulty uses the page position, or 0.5 when Search Console has no row for the page.
 
 #### `internal_link` (phase 2)
 
-**New audit data.** The crawler keeps link edges only in the per-audit Durable Object scratchpad (`src/server/features/audit/AuditScratchpad.ts`), which it destroys after success. At finalize time, persist two things:
+**New audit data.** The crawler keeps link edges only in the per-audit Durable Object scratchpad (`src/server/features/audit/AuditScratchpad.ts`), which it destroys after success. A new workflow step between the link checks and finalize persists `audit_page_inlinks`: `id`, `project_id` (FK cascade), `audit_id` (FK cascade), `target_page_id` (FK cascade), `source_page_id` (FK cascade). Unique on (`audit_id`, `target_page_id`, `source_page_id`). Write rows only for targets that are project key pages with role `money` or `hub`. Cap at 100 targets and 2,000 sources per target. A failure is logged and never fails the audit.
 
-1. `audit_pages.inbound_link_count`: integer, default 0, for every page.
-2. `audit_page_inlinks`: `id`, `audit_id` (FK cascade), `target_page_id` (FK cascade), `source_page_id` (FK cascade). Unique on (`audit_id`, `target_page_id`, `source_page_id`). Write rows only for targets that are project key pages with role `money` or `hub`. Cap at 100 targets and 2,000 sources per target.
+The scratchpad gets one generic method that lists the inlinks of given URLs. On a synthetic 5,000-page graph with 500,000 links, the query takes about 1.5 seconds.
+
+An earlier draft also stored `audit_pages.inbound_link_count`. No rule reads it, and it would add a fork column to an upstream table, so it is left out.
 
 **Rule:**
 
@@ -228,10 +231,12 @@ All thresholds are named constants. Unit tests cover each boundary.
 6. Store `opportunity_link_evidence`: `id`, the three FKs, `audit_id`, `source_url`, `target_url`, `shared_query`, `source_impressions`, `source_position`.
 7. Action: "Add a contextual link from the source page to the target page, in text about '{shared_query}'."
 8. Skip this type when the latest audit has no inlink rows. Say so in the run result.
+9. Skip a target that has 2,000 inlinks, the cap. Almost every page links to it, and a missing row there proves nothing.
+10. Visibility score: (target position for the shared query − 1) / 19. Demand uses the source impressions on the shared queries.
 
 #### Rank history evidence (phase 2)
 
-For `striking_distance` and `declining_page`, when the query is a tracked keyword, add rank evidence. Store `opportunity_rank_evidence`: `id`, the three FKs, `tracking_keyword_id`, `device`, `first_position`, `last_position`, `first_checked_at`, `last_checked_at`, over the last 30 days. Rank history does not change the score in this RFC.
+For any candidate whose query is a tracked keyword, add rank evidence. Today only `striking_distance` has a query; a declining page is about all queries of a page. Store `opportunity_rank_evidence`: `id`, the three FKs, `tracking_keyword_id`, `device`, `first_position`, `last_position`, `first_checked_at`, `last_checked_at`, over the last 30 days. Rank history does not change the score in this RFC.
 
 #### `content_gap` (phase 3, paid)
 
@@ -352,17 +357,17 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 
 ### Phase 2
 
-- [ ] `audit_pages.inbound_link_count` and `audit_page_inlinks`, written at audit finalize.
-- [ ] Audit finalize stays inside its current time limits on a 5,000-page site.
-- [ ] `technical_blocker` detector with the URL normalization tests.
-- [ ] `opportunity_audit_evidence` and `opportunity_inspection_evidence` tables.
-- [ ] URL inspection limited per project per day, with a test.
-- [ ] `internal_link` detector, with a test that existing links are excluded.
-- [ ] `opportunity_link_evidence` table.
-- [ ] `opportunity_rank_evidence` table and its detail view section.
-- [ ] Run result names skipped types and the reason.
+- [x] `audit_page_inlinks`, written at audit finalize (`inbound_link_count` is left out; see `internal_link`).
+- [ ] Audit finalize stays inside its current time limits on a 5,000-page site. The inlinks query takes about 1.5 seconds on a synthetic graph of that size; the live write time is not measured yet.
+- [x] `technical_blocker` detector with the URL normalization tests.
+- [x] `opportunity_audit_evidence` and `opportunity_inspection_evidence` tables.
+- [x] URL inspection limited per project per day, with a test.
+- [x] `internal_link` detector, with a test that existing links are excluded.
+- [x] `opportunity_link_evidence` table.
+- [x] `opportunity_rank_evidence` table and its detail view section.
+- [x] Run result names skipped types and the reason.
 - [ ] Live run on a property with a recent audit. A person reviews 10 technical and 10 link opportunities.
-- [ ] Docs updated for phase 2 types.
+- [x] Docs updated for phase 2 types.
 
 ### Phase 3
 

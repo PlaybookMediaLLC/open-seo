@@ -25,6 +25,17 @@ const TYPE_DEFAULTS = {
     truncatedConfidence: 0.3,
     effortHours: 4,
   },
+  // Effort depends on the issue type; URL inspection can raise confidence.
+  technical_blocker: {
+    confidence: 0.5,
+    truncatedConfidence: 0.4,
+    effortHours: 2,
+  },
+  internal_link: {
+    confidence: 0.45,
+    truncatedConfidence: 0.35,
+    effortHours: 0.5,
+  },
 } as const;
 
 type DetectedType = keyof typeof TYPE_DEFAULTS;
@@ -77,12 +88,16 @@ export function scoreCandidate(
     type: DetectedType;
     url: string;
     query: string | null;
-    position: number;
+    /** Null when Search Console has no row for the page. */
+    position: number | null;
     demandImpressions: number;
     visibilityScore: number;
     visibilityRule: string;
     /** Multiplies the default confidence, for example 0.6 for seasonal. */
     confidenceFactor?: number;
+    /** Replaces the default confidence, for example 0.7 when confirmed. */
+    confidence?: number;
+    effortHours?: number;
     uncertainty: string;
   },
 ): Scored {
@@ -109,15 +124,17 @@ export function scoreCandidate(
       ? undefined
       : context.keywordDifficulty.get(input.query.toLowerCase());
   const difficultyScore = bounded(
-    cachedDifficulty === undefined
-      ? (input.position - 1) / 19
-      : cachedDifficulty / 100,
+    cachedDifficulty !== undefined
+      ? cachedDifficulty / 100
+      : input.position === null
+        ? 0.5
+        : (input.position - 1) / 19,
   );
-  const effortHours = defaults.effortHours;
-  const effortScore = 1 / effortHours;
-  const baseConfidence = context.truncated
-    ? defaults.truncatedConfidence
-    : defaults.confidence;
+  const effortHours = input.effortHours ?? defaults.effortHours;
+  const effortScore = bounded(1 / effortHours);
+  const baseConfidence =
+    input.confidence ??
+    (context.truncated ? defaults.truncatedConfidence : defaults.confidence);
   const confidence = bounded(baseConfidence * (input.confidenceFactor ?? 1));
   const priority = Math.round(
     100 *
@@ -132,9 +149,11 @@ export function scoreCandidate(
     ? `the GA4 score ${ga4Score} from ${keyEvents} organic key events in the current period`
     : "no GA4 score, because GA4 is not connected";
   const difficultyText =
-    cachedDifficulty === undefined
-      ? `(position ${input.position} - 1) / 19, clamped to [0,1], an existing-rank proxy`
-      : `cached keyword difficulty ${cachedDifficulty} / 100`;
+    cachedDifficulty !== undefined
+      ? `cached keyword difficulty ${cachedDifficulty} / 100`
+      : input.position === null
+        ? "0.5, because Search Console has no position for this page"
+        : `(position ${input.position} - 1) / 19, clamped to [0,1], an existing-rank proxy`;
   return {
     confidence,
     effortHours,
@@ -144,7 +163,7 @@ export function scoreCandidate(
     visibilityScore: input.visibilityScore,
     difficultyScore,
     effortScore,
-    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}, the default for this type${context.truncated ? " with truncated rows" : ""}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${ga4Text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
+    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}${input.confidence === undefined ? `, the default for this type${context.truncated ? " with truncated rows" : ""}` : ", because URL inspection confirms the problem"}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${ga4Text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
     uncertainty: `${input.uncertainty} Priority is a review heuristic, not a traffic or revenue forecast.${context.ga4 ? "" : " GA4 not connected; commercial value uses page roles only."}${context.truncated ? " Source rows are truncated, so coverage and confidence are limited." : " Bounded source rows may omit queries or pages."}`,
     ga4: ga4Rows.map(({ hostName: _hostName, ...row }) => ({
       ...row,

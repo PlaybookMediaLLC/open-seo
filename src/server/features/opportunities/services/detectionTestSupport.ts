@@ -28,6 +28,9 @@ export function input(
     brandTerms: [],
     ga4: null,
     keywordDifficulty: new Map(),
+    audit: null,
+    inspections: new Map(),
+    rankHistory: new Map(),
     truncated: false,
     ...overrides,
   };

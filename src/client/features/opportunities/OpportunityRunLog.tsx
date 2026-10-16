@@ -81,8 +81,18 @@ export function OpportunityRunLog({ runs }: { runs: OpportunityRun[] }) {
                     <p className="text-muted-foreground">
                       {run.ga4PropertyId ? "GA4 used" : "No GA4 data"}
                     </p>
+                    <p className="text-muted-foreground">
+                      {run.auditId ? "Site audit used" : "No site audit"}
+                    </p>
                   </TableCell>
-                  <TableCell>{run.requestCount}</TableCell>
+                  <TableCell className="text-xs">
+                    <p>{run.requestCount}</p>
+                    {run.inspectionRequests ? (
+                      <p className="text-muted-foreground">
+                        Up to {run.inspectionRequests} URL inspections
+                      </p>
+                    ) : null}
+                  </TableCell>
                   <TableCell className="max-w-sm whitespace-normal text-xs">
                     <p>{run.opportunityCount} opportunities</p>
                     {run.truncated ? (

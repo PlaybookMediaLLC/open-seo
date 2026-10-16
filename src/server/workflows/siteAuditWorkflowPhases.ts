@@ -1,3 +1,5 @@
+// playbook-seam: two fork lines push this upstream file past 400 lines.
+/* oxlint-disable max-lines */
 import type { WorkflowStep } from "cloudflare:workers";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { discoverUrls, parseRobotsTxt } from "@/server/lib/audit/discovery";
@@ -27,6 +29,7 @@ import {
   type CrawlPhaseResult,
 } from "@/server/workflows/siteAuditWorkflowCrawl";
 import { pgStep } from "@/server/workflows/pgStep";
+import { saveKeyPageInlinksStep } from "@/server/features/opportunities/audit/saveKeyPageInlinks"; // playbook-seam
 import {
   DB_STEP,
   DISCOVERY_STEP,
@@ -396,6 +399,7 @@ async function finalizeAudit(args: {
     return { issueCount: issues.length };
   });
 
+  await saveKeyPageInlinksStep(step, auditId, projectId); // playbook-seam
   await pgStep(step, "finalize", DB_STEP, async () => {
     const blockedPages = await AuditRepository.countPagesByFetchClass(
       auditId,

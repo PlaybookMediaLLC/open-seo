@@ -18,6 +18,7 @@ import * as sqliteGsc from "./gsc.schema";
 import * as sqliteTelemetry from "./telemetry.schema";
 import * as sqliteAiVisibility from "./ai-visibility.schema";
 import * as sqliteOpportunities from "./opportunities.schema";
+import * as sqliteOpportunitySignals from "./opportunity-signals.schema";
 import * as sqlitePublishing from "./publishing.schema";
 import * as sqliteExperiments from "./experiments.schema";
 import * as pgApp from "./pg/app.schema";
@@ -33,6 +34,7 @@ import * as pgGsc from "./pg/gsc.schema";
 import * as pgTelemetry from "./pg/telemetry.schema";
 import * as pgAiVisibility from "./pg/ai-visibility.schema";
 import * as pgOpportunities from "./pg/opportunities.schema";
+import * as pgOpportunitySignals from "./pg/opportunity-signals.schema";
 import * as pgPublishing from "./pg/publishing.schema";
 import * as pgExperiments from "./pg/experiments.schema";
 
@@ -169,6 +171,7 @@ const sqliteAppTables = tablesFrom(
   sqliteTelemetry,
   sqliteAiVisibility,
   sqliteOpportunities,
+  sqliteOpportunitySignals,
   sqlitePublishing,
   sqliteExperiments,
 );
@@ -185,6 +188,7 @@ const pgAppTables = tablesFrom(
   pgTelemetry,
   pgAiVisibility,
   pgOpportunities,
+  pgOpportunitySignals,
   pgPublishing,
   pgExperiments,
 );

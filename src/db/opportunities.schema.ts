@@ -7,6 +7,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { projects } from "./app.schema";
+import { audits } from "./audit.schema";
 import {
   BRAND_TERM_AUTHORS,
   EVIDENCE_PERIODS,
@@ -50,6 +51,11 @@ export const opportunityRuns = sqliteTable(
       .default("search_console"),
     yearAgoPageRows: integer("year_ago_page_rows").notNull().default(0),
     ga4PropertyId: text("ga4_property_id"),
+    // RFC-0002 phase 2: the audit used, and URL inspections reserved.
+    auditId: text("audit_id").references(() => audits.id, {
+      onDelete: "set null",
+    }),
+    inspectionRequests: integer("inspection_requests").notNull().default(0),
   },
   (t) => [
     index("opportunity_runs_project_started_idx").on(t.projectId, t.startedAt),

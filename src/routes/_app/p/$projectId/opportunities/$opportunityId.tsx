@@ -9,6 +9,7 @@ import { getErrorCode } from "@/client/lib/error-messages";
 import { OpportunityEvidenceHistory } from "@/client/features/opportunities/OpportunityEvidenceHistory";
 import { OpportunityReview } from "@/client/features/opportunities/OpportunityReview";
 import {
+  AuditAndLinkEvidence,
   CompetingPages,
   diagnosisLabels,
   Ga4Evidence,
@@ -195,6 +196,10 @@ function OpportunityDetailPage() {
           </section>
         </div>
         <CompetingPages urls={urls} />
+        <AuditAndLinkEvidence
+          detail={query.data}
+          latestRunId={item.evidenceRunId}
+        />
         <OpportunityEvidenceHistory
           evidence={evidence}
           latestRunId={item.evidenceRunId}

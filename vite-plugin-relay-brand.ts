@@ -37,6 +37,12 @@ import type { Plugin } from "vite";
  *   brand-term store (src/server/mcp/tools/project-context.test.ts).
  * - src/routes/_app/p/$projectId/context.tsx: mounts the brand-terms editor
  *   (src/client/features/opportunities/BrandTermsSection.tsx).
+ * - src/server/features/audit/AuditScratchpad.ts and
+ *   src/server/workflows/siteAuditWorkflowPhases.ts: an audit saves the pages
+ *   that link to each money or hub key page before finalize destroys the
+ *   scratchpad (RFC-0002 internal links;
+ *   src/server/features/opportunities/audit/). The workflow file was at the
+ *   400-line lint limit, so its seam also turns that rule off for the file.
  */
 const RELAY = "https://relay.playbookmedia.io";
 

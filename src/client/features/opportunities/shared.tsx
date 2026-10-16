@@ -38,6 +38,7 @@ export const typeLabels: Record<OpportunityType, string> = {
   low_ctr: "Low click-through",
   cannibalization: "Competing pages",
   technical_blocker: "Technical blocker",
+  internal_link: "Internal link",
 };
 export const typeHelp: Record<OpportunityType, string> = {
   striking_distance:
@@ -49,7 +50,9 @@ export const typeHelp: Record<OpportunityType, string> = {
   cannibalization:
     "Two pages each get 25% or more of the impressions for the same searches. Brand searches are left out.",
   technical_blocker:
-    "A site audit found a problem that can stop the page from being indexed or ranked.",
+    "The latest site audit found a problem on a page with search impressions or on a key page.",
+  internal_link:
+    "A page that ranks for a key page's searches does not link to it yet.",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",
