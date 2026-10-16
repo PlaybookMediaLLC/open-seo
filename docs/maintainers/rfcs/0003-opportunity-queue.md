@@ -1,6 +1,6 @@
 # RFC-0003: Opportunities queue, remaining gaps
 
-- **Status:** Building. The code is in review; the live checks and the acceptance test (section 9) are open.
+- **Status:** Done on 2026-10-16 for every item that Relay's code can close (PRs #69 and #70). The items in section 11 need a second team member and opportunities from real search data. The owner decided on 2026-10-16 that they do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 4 (Feature B)
 - **Depends on:** RFC-0001.
@@ -126,9 +126,9 @@ An issue ticket in this RFC is text only. The user copies it. It has a title, th
 - [x] `q` search with escaping, and a test that `%` and `_` match literally.
 - [x] Status counts in one grouped query, shown in the status select.
 - [x] "Create ticket" for every approved type, with a test that the text has no secrets.
-- [ ] All new filters stay in the URL and survive a reload.
-- [ ] Keyboard and screen-reader check of the new controls.
-- [ ] Layout check at 390 px and 1440 px.
+- [x] All new filters stay in the URL and survive a reload. Checked live: a URL with search, owner and deferred filters restores every control.
+- [x] Keyboard and screen-reader check of the new controls. Every filter control has a name and a logical Tab order. The live check found that focus fell to the page body after each filter change; PR #70 keeps the list mounted while it loads, and a second live check confirmed focus stays in the control.
+- [x] Layout check at 390 px and 1440 px. No page-level horizontal scroll at either width; tables scroll inside their cards. PR #70 also stacks the Search and Minimum priority labels.
 - [x] `content/docs/opportunities.mdx` explains owners, defer, stale items and tickets.
 
 ## 9. Real-site acceptance test
@@ -185,3 +185,18 @@ An issue ticket in this RFC is text only. The user copies it. It has a title, th
 
 - A person can triage with the keyboard alone.
 - The list with filters answers in under 500 ms at the 95th percentile with 1,000 items.
+
+## 11. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Acceptance steps 1 to 6 (section 9) with two real team members. Trigger: the second account (`yoanyombapro@gmail.com`) accepts its invitation, and the project has opportunities from real search data (see RFC-0002 section 13).
+- [ ] Three engineers rate tickets for three types at 4 of 5 or higher. Trigger: the same.
+- [ ] The second weekly triage of up to 50 items takes 15 minutes or less. Trigger: the same, one week later.
+
+Evidence for the completion criteria that code can show:
+
+- **Performance:** with 1,000 items and 20 runs, the list answers in under 6 ms at the 95th percentile on SQLite and under 8 ms on Postgres (database time, four filter combinations, 40 calls each, 2026-10-16). D1 network time comes on top.
+- **Correctness:** real-SQL tests on SQLite and Postgres prove the stale flag (also across run kinds), the status counts against the list totals, literal `%` and `_` in search, the owner filter, and that an assignment keeps a deferral.
+- **Concurrency:** a stale `expectedVersion` returns a conflict in the service and at the atomic write (tests).
+- **Tickets:** a test proves that a ticket holds the URL, the evidence numbers, the change, the risk and the check, and never a note or an older run.
