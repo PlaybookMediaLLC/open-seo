@@ -7,10 +7,21 @@ Relay can change the title, the description, or both, of a page in your Next.js 
 
 ## Connect a repository
 
+The **GitHub App** is the recommended way. You choose the repositories it can reach, and Relay uses a short-lived token for each step and stores no token:
+
+1. Open your project, then **Project settings → Integrations → GitHub publishing**.
+2. Click **Install GitHub App** and choose the repository on GitHub.
+3. Back in Relay, click **Choose a repository from the App**, pick it, and connect.
+
+If you uninstall the App, Relay shows "Reconnect the GitHub App" and writes nothing.
+
+You can also connect with a personal access token:
+
 1. Open your project, then **Project settings → Integrations → GitHub publishing**.
 2. Create a fine-grained personal access token for **this repository only**. Give it these permissions:
    - **Contents: Read and write** and **Pull requests: Read and write**. Relay needs these to open the pull request.
    - **Deployments: Read**, **Checks: Read** and **Commit statuses: Read**. These are optional and read-only. Relay uses them to show deployment and check status.
+   - **Issues: Read and write** is optional. Relay uses it to create issues from approved tickets.
 3. Enter the repository owner, name, base branch and root directory, for example `apps/www` in a monorepo.
 4. Set the **GitHub production environment**. This is the deployment environment that counts as production, for example `Production`.
 
@@ -29,6 +40,8 @@ Relay does not change these. It tells you why:
 - `generateMetadata`.
 - Computed text.
 - Client components.
+
+Relay changes the plain `<title>` and `<meta name="description">` in a Pages Router page's own `next/head` too.
 
 ## Titles
 
@@ -55,6 +68,14 @@ After you merge, open **Track results** for the change:
 3. When both signals agree, start measurement on the verified basis. The deployment time comes from GitHub. If your repository does not report deployments, confirm the deployment time yourself.
 
 Before measurement starts, tell Relay about other changes or seasonal effects in the same period.
+
+## Canonical URL and robots
+
+For a technical blocker, Relay can change `alternates.canonical` and `robots: { index, follow }` in a literal metadata object. These changes can remove a page from Google, so you must type the page path to confirm. The plan adds a URL Inspection check after deployment.
+
+## GitHub issues
+
+Some fixes are not a text change. On an approved opportunity, Relay can open a GitHub issue. It shows the exact text first, and creates the issue only after you approve that text. One approval creates one issue.
 
 ## Revert a change
 

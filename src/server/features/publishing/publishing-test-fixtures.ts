@@ -46,6 +46,8 @@ export async function makePublishingFixture() {
     baseBranch: "main",
     rootDirectory: "",
     productionEnvironment: "Production",
+    transport: "pat",
+    installationRef: null,
     encryptedToken: await symmetricEncrypt({
       key: publishingTestSecret,
       data: publishingTestToken,

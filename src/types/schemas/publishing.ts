@@ -131,6 +131,8 @@ export type PublishingConnection = {
   baseBranch: string;
   rootDirectory: string;
   productionEnvironment: string;
+  transport: "pat" | "github_app";
+  installationRef: string | null;
   createdBy: string;
   createdAt: string;
   revokedAt: string | null;
@@ -250,3 +252,17 @@ export const createIssueInputSchema = projectScope.extend({
   confirmExactText: z.literal(true),
 });
 export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;
+export const connectGithubAppInputSchema = projectScope.extend({
+  installationRef: z.string().min(1),
+  repositoryId: z.string().regex(/^[1-9][0-9]*$/),
+  baseBranch: branch,
+  rootDirectory,
+  productionEnvironment: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .regex(/^[\x20-\x7e]+$/)
+    .default("Production"),
+});
+export type ConnectGithubAppInput = z.input<typeof connectGithubAppInputSchema>;

@@ -36,6 +36,7 @@ export async function getRepositoryChecks(
     const client = await connectedGithub(
       connection,
       AbortSignal.timeout(20_000),
+      { metadata: "read", checks: "read", statuses: "read" },
     );
     return { state: await client.getChecks(head), message: null };
   } catch (error) {

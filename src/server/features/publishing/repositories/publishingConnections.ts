@@ -53,7 +53,13 @@ export async function replaceConnection(input: {
   organizationId: string;
 }): Promise<boolean> {
   const { connection } = input;
-  if (connection.revokedAt !== null || !connection.encryptedToken) return false;
+  if (
+    connection.revokedAt !== null ||
+    (connection.transport === "pat"
+      ? !connection.encryptedToken
+      : !connection.installationRef || connection.encryptedToken !== null)
+  )
+    return false;
   const scope = { ...input, projectId: connection.projectId };
   const lastEventId = crypto.randomUUID();
   await runBatch((tx) => [

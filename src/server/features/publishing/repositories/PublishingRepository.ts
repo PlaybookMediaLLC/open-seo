@@ -13,6 +13,12 @@ import {
 import { beginExecution } from "./beginExecution";
 import { checkpoint } from "./checkpoint";
 import { getLatestExecution, recoverOpportunity } from "./recoverOpportunity";
+import {
+  getInstallation,
+  listInstallations,
+  revokeInstallation,
+  saveInstallation,
+} from "./githubAppInstallations";
 import { markReverted } from "./markReverted";
 import { claimTicket, completeTicket, getTicket } from "./opportunityTickets";
 
@@ -33,4 +39,8 @@ export const PublishingRepository = {
   claimTicket,
   completeTicket,
   getTicket,
+  saveInstallation,
+  listInstallations,
+  getInstallation,
+  revokeInstallation,
 };
