@@ -23,6 +23,8 @@ Detection needs no credits, no AI model and no GitHub connection. GA4 is optiona
 - **Declining page:** the same URL is in both windows, had at least 30 clicks before, and lost at least 20 clicks and 30% of its clicks. A URL that is missing from a report is unknown, not zero.
 - **Low click-through:** the page gets 60% or less of the clicks that pages on your own site get at the same positions. Relay builds this click-through curve from your data. For each position from 1 to 10 with at least 5 queries of 100 or more impressions, it takes the median click-through rate. A page qualifies when it has at least 500 non-branded impressions in positions 1 to 10 and is at least 20 clicks below the curve.
 - **Competing pages:** two pages each get at least 25% of the impressions for the same non-branded queries, with at least 50 impressions and a position of 20 or better. The pair qualifies when it shares 2 or more queries, or the shared queries have 200 or more impressions. The page with more clicks is the primary page. Two addresses for the same page (for example with and without `www`) do not count. Competing pages can split clicks, but it is not always a problem.
+- **Technical blocker:** the latest site audit, if it finished in the last 30 days, found a problem on a page that has at least 50 impressions in either window, or on a key page. Relay checks these problems: noindex, blocked by robots.txt, canonical to another page, conflicting canonicals, broken page, server error, redirect loop, redirect chain, content that needs JavaScript, missing title, duplicate title and slow response. Each result names the page, its impressions and one fix.
+- **Internal link:** a page that ranks for one of the top 10 queries of a money or hub key page (position 30 or better) does not link to that key page yet. The source page must return status 200 and be indexable in the latest audit. Relay suggests up to 5 source pages for each key page, and it needs at least 3 non-branded queries for the key page. When almost every page already links to a key page, Relay suggests nothing for it.
 
 ### Why a page declined
 
@@ -51,6 +53,14 @@ The reports are samples, not a full export. Search Console can leave out anonymi
 
 When your data has no qualifying pages, Relay says so. It never invents opportunities to fill the queue.
 
+### Site audits and URL inspection
+
+Technical blockers and internal links read your latest site audit. When an audit finishes, Relay saves which pages link to each money or hub key page. Run a new audit after you add key pages or change links. When a run cannot use a check, its result says why, for example "No recent site audit".
+
+For the top 10 technical blockers that can stop indexing, Relay asks Google's URL Inspection tool how Google sees the page. When Google confirms the problem, confidence goes up from 0.50 to 0.70, and the detail view shows Google's answer. URL inspection is free, but Google limits it, so each project can use at most 50 inspections a day.
+
+When a striking-distance query is also a tracked keyword, the detail view shows its rank history over the last 30 days. Rank history does not change the score.
+
 ## How priority works
 
 The score sets the review order. It is not a traffic, conversion or revenue forecast:
@@ -70,7 +80,7 @@ The detail view shows every value and where it came from:
 - **Commercial relevance** is the higher of two scores. The page role in your project context gives 1 for a money page, 0.7 for a hub, 0.5 for other roles and 0.25 for an unknown page. When GA4 is connected, organic key events on the page over the current window give 0 for none, 0.7 for 1 to 9, and 1 for 10 or more.
 - **Demand** uses observed impressions.
 - **Difficulty** uses the keyword difficulty that you already researched in Relay, when it is 90 days old or newer. Relay never buys new data for this. Otherwise, the average position stands in for difficulty.
-- **Effort** is 2 hours for striking distance, 4 hours for a decline, 1 hour for low click-through and 4 hours for competing pages.
+- **Effort** is 2 hours for striking distance, 4 hours for a decline, 1 hour for low click-through, 4 hours for competing pages and 30 minutes for an internal link. For a technical blocker, it is 1 to 8 hours by problem type.
 - **Confidence** is a fixed rule of thumb for each type, not a probability of success.
 
 ## Review and history
@@ -84,7 +94,7 @@ A deferred opportunity leaves the default queue for 7 days. Turn on **Include de
 ## Limits and failures
 
 - A successful run is reused for 24 hours. Filtering the queue reads saved results only.
-- Each run makes at most 5 Search Console requests and 1 GA4 request. If the GA4 request fails, the run continues with page roles only.
+- Each run makes at most 5 Search Console requests, 1 GA4 request and 10 URL inspections. If the GA4 request or an inspection fails, the run continues without it.
 - One run at a time can work on a project. A failed run can be retried after 5 minutes.
 - When Google is unavailable, the existing opportunities stay. A run that fails partway publishes nothing new.
 

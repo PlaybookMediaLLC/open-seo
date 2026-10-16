@@ -1,7 +1,9 @@
 import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type {
   Ga4LandingPageMetrics,
+  InspectionEvidence,
   OpportunityMetrics,
+  RankEvidence,
 } from "@/types/schemas/opportunities";
 
 export type Ga4LandingPageRow = Omit<Ga4LandingPageMetrics, "currency"> & {
@@ -22,6 +24,30 @@ export type DetectionInput = {
   /** Lowercase query to cached keyword difficulty (0 to 100). */
   keywordDifficulty: Map<string, number>;
   truncated: boolean;
+  /** The latest audit that completed in the last 30 days, if any. */
+  audit: AuditSignals | null;
+  /** URL inspection results by URL join key. */
+  inspections: Map<string, InspectionEvidence>;
+  /** Lowercase tracked keyword to its rank history over the last 30 days. */
+  rankHistory: Map<string, RankEvidence[]>;
+};
+
+export type AuditSignals = {
+  auditId: string;
+  completedAt: string;
+  issues: Array<{
+    id: string;
+    issueType: string;
+    severity: "critical" | "warning" | "info";
+    pageUrl: string;
+  }>;
+  pages: Array<{
+    url: string;
+    statusCode: number | null;
+    isIndexable: boolean;
+  }>;
+  /** Target join key to the join keys of the pages that link to it. */
+  inlinks: Map<string, Set<string>>;
 };
 
 export function usableRow(
@@ -107,4 +133,24 @@ export function landingPageKey(hostName: string, path: string): string {
 export function urlLandingPageKey(url: string): string {
   const parsed = new URL(url);
   return landingPageKey(parsed.hostname, parsed.pathname);
+}
+
+/**
+ * Joins audit, Search Console and key-page URLs (RFC-0002 5.3): lowercase
+ * host, no fragment, no default port, sorted query, and no trailing slash
+ * except on the root.
+ */
+export function urlJoinKey(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
+      return null;
+    parsed.hash = "";
+    parsed.searchParams.sort();
+    if (parsed.pathname.length > 1)
+      parsed.pathname = parsed.pathname.replace(/\/+$/, "") || "/";
+    return parsed.toString();
+  } catch {
+    return null;
+  }
 }

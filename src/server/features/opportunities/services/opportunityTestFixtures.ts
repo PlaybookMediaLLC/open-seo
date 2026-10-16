@@ -43,6 +43,10 @@ export function opportunityDetail(
     evidence: [],
     urls: [],
     ga4Evidence: [],
+    auditEvidence: [],
+    inspectionEvidence: [],
+    linkEvidence: [],
+    rankEvidence: [],
     decisions: [],
   };
 }
@@ -69,6 +73,8 @@ export function opportunityRun(
     previousPageRows: 0,
     yearAgoPageRows: 0,
     ga4PropertyId: null,
+    auditId: null,
+    inspectionRequests: 0,
     requestCount: 3,
     opportunityCount: 0,
     truncated: false,

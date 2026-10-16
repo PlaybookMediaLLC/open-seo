@@ -5,8 +5,9 @@ export const OPPORTUNITY_TYPES = [
   "declining_page",
   "low_ctr",
   "cannibalization",
-  // Detected by RFC-0002 phase 2. Only this type may change canonical or robots.
+  // Only this type may change canonical or robots (RFC-0005).
   "technical_blocker",
+  "internal_link",
 ] as const;
 export const OPPORTUNITY_DIAGNOSES = [
   "ranking_drop",
@@ -25,7 +26,12 @@ export const EVIDENCE_PERIODS = [
   "year_ago",
   "year_ago_previous",
 ] as const;
-export const OPPORTUNITY_URL_ROLES = ["primary", "competing"] as const;
+export const OPPORTUNITY_URL_ROLES = [
+  "primary",
+  "competing",
+  "link_source",
+  "link_target",
+] as const;
 export const BRAND_TERM_AUTHORS = ["user", "sam", "mcp"] as const;
 export const OPPORTUNITY_STATUSES = [
   "discovered",
@@ -136,11 +142,56 @@ export type OpportunityCandidate = {
   /** Set only for opportunities about two or more URLs. */
   urls: Array<{ url: string; role: OpportunityUrlRole }>;
   ga4: Ga4LandingPageMetrics[];
+  // Phase 2 evidence. Only the types that read these sources set them.
+  audit?: AuditIssueEvidence;
+  inspection?: InspectionEvidence;
+  link?: LinkEvidence;
+  rank?: RankEvidence[];
+};
+
+export type AuditIssueEvidence = {
+  auditId: string;
+  auditIssueId: string | null;
+  issueType: string;
+  severity: "critical" | "warning" | "info";
+  pageUrl: string;
+  auditCompletedAt: string;
+};
+
+export type InspectionEvidence = {
+  url: string;
+  verdict: string | null;
+  coverageState: string | null;
+  indexingState: string | null;
+  robotsTxtState: string | null;
+  pageFetchState: string | null;
+  googleCanonical: string | null;
+  userCanonical: string | null;
+  lastCrawlTime: string | null;
+  inspectedAt: string;
+};
+
+export type LinkEvidence = {
+  auditId: string;
+  sourceUrl: string;
+  targetUrl: string;
+  sharedQuery: string;
+  sourceImpressions: number;
+  sourcePosition: number;
+};
+
+export type RankEvidence = {
+  trackingKeywordId: string;
+  device: "desktop" | "mobile";
+  firstPosition: number | null;
+  lastPosition: number | null;
+  firstCheckedAt: string;
+  lastCheckedAt: string;
 };
 
 export type Opportunity = Omit<
   OpportunityCandidate,
-  "evidence" | "urls" | "ga4"
+  "evidence" | "urls" | "ga4" | "audit" | "inspection" | "link" | "rank"
 > & {
   id: string;
   projectId: string;
@@ -173,6 +224,8 @@ export type OpportunityRun = {
   previousPageRows: number;
   yearAgoPageRows: number;
   ga4PropertyId: string | null;
+  auditId: string | null;
+  inspectionRequests: number;
   requestCount: number;
   opportunityCount: number;
   truncated: boolean;
@@ -223,8 +276,13 @@ export type OpportunityDetail = {
   evidence: OpportunityEvidence[];
   urls: OpportunityUrl[];
   ga4Evidence: OpportunityGa4Evidence[];
+  auditEvidence: Array<AuditIssueEvidence & RunScoped>;
+  inspectionEvidence: Array<InspectionEvidence & RunScoped>;
+  linkEvidence: Array<LinkEvidence & RunScoped>;
+  rankEvidence: Array<RankEvidence & RunScoped>;
   decisions: OpportunityDecision[];
 };
+type RunScoped = { id: string; opportunityId: string; runId: string };
 
 export type OpportunityDetectionResult = {
   outcome: "completed" | "cached" | "busy" | "not_connected" | "failed";

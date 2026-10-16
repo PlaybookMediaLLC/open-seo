@@ -330,6 +330,13 @@
       "when": 1792168381599,
       "tag": "0046_exotic_fallen_one",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1792172784035,
+      "tag": "0047_mean_impossible_man",
+      "breakpoints": true
     }
   ]
 }

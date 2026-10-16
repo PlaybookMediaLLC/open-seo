@@ -2,6 +2,7 @@ import { sort } from "remeda";
 import type { OpportunityCandidate } from "@/types/schemas/opportunities";
 import { cannibalization } from "./detectors/cannibalization";
 import { decliningPages } from "./detectors/decliningPages";
+import { internalLinks } from "./detectors/internalLink";
 import { lowCtr } from "./detectors/lowCtr";
 import { scoringContext } from "./detectors/scoreCandidate";
 import {
@@ -12,6 +13,7 @@ import {
   type DetectionInput,
 } from "./detectors/shared";
 import { strikingDistance } from "./detectors/strikingDistance";
+import { technicalBlockers } from "./detectors/technicalBlocker";
 
 /** Pure evidence shaping. No collection, writes, or inferred search intent. */
 export function detectOpportunities(
@@ -33,18 +35,36 @@ export function detectOpportunities(
       .filter((row) => usableRow(row, 0))
       .map((row) => [row.keys![0], metrics(row)]),
   );
+  const candidates = [
+    ...strikingDistance(queryPages, context),
+    ...decliningPages(input, context),
+    ...lowCtr(nonBranded, pageMetrics, context),
+    ...cannibalization(nonBranded, pageMetrics, context),
+    ...technicalBlockers(input, context),
+    ...(input.audit?.inlinks.size
+      ? internalLinks(
+          nonBranded,
+          input.keyPages,
+          input.audit,
+          pageMetrics,
+          context,
+        )
+      : []),
+  ].map((candidate) => {
+    // Rank history is evidence only. It does not change the score.
+    const rank = candidate.query
+      ? input.rankHistory.get(candidate.query.toLowerCase())
+      : undefined;
+    return rank ? { ...candidate, rank } : candidate;
+  });
   return sort(
-    [
-      ...strikingDistance(queryPages, context),
-      ...decliningPages(input, context),
-      ...lowCtr(nonBranded, pageMetrics, context),
-      ...cannibalization(nonBranded, pageMetrics, context),
-    ],
+    candidates,
     (a, b) =>
       b.priority - a.priority ||
       compareText(a.url, b.url) ||
       compareText(a.query ?? "", b.query ?? "") ||
       compareText(a.type, b.type) ||
-      compareText(JSON.stringify(a.urls), JSON.stringify(b.urls)),
+      compareText(JSON.stringify(a.urls), JSON.stringify(b.urls)) ||
+      compareText(a.audit?.issueType ?? "", b.audit?.issueType ?? ""),
   ).slice(0, 50);
 }

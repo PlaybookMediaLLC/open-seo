@@ -30,6 +30,14 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: {
     getConnection: mocks.connection,
     getPerformance: mocks.performance,
+    inspectUrls: mocks.inspect,
+  },
+}));
+vi.mock("../repositories/opportunitySignals", () => ({
+  OpportunitySignalRepository: {
+    latestAudit: mocks.latestAudit,
+    rankHistory: mocks.rankHistory,
+    inspectionRequestsSince: mocks.inspectionsToday,
   },
 }));
 vi.mock(

@@ -43,6 +43,10 @@ export function createServiceMocks() {
     brandTerms: vi.fn(),
     ga4Connection: vi.fn(),
     ga4Rows: vi.fn(),
+    latestAudit: vi.fn(),
+    rankHistory: vi.fn(),
+    inspectionsToday: vi.fn(),
+    inspect: vi.fn(),
   };
 }
 
@@ -58,6 +62,10 @@ export function setServiceMockDefaults(
   mocks.brandTerms.mockResolvedValue({ terms: [], source: "none" });
   mocks.ga4Connection.mockResolvedValue(null);
   mocks.ga4Rows.mockResolvedValue([]);
+  mocks.latestAudit.mockResolvedValue(null);
+  mocks.rankHistory.mockResolvedValue(new Map());
+  mocks.inspectionsToday.mockResolvedValue(0);
+  mocks.inspect.mockResolvedValue({ results: [] });
   mocks.connection.mockResolvedValue({ siteUrl });
   mocks.performance.mockResolvedValue(response());
   mocks.keyPages.mockResolvedValue([]);

@@ -7,10 +7,8 @@ import {
   ga4DateInTimeZone,
   shiftGa4Date,
 } from "@/server/features/ga4/services/Ga4Dates";
-import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { previousPeriod } from "@/server/features/gsc/searchPerformanceReport";
 import { GscService } from "@/server/features/gsc/services/GscService";
-import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { AppError } from "@/server/lib/errors";
 import {
@@ -27,13 +25,16 @@ import type {
   OpportunityStatus,
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
-import { BrandTermService } from "./BrandTermService";
 import { detectOpportunities } from "./detectOpportunities";
 import { requestDetectionData } from "./detectionRequests";
+import {
+  detectionNotes,
+  inspectTopBlockers,
+  loadDetectionSignals,
+} from "./detectionSignals";
 
 type Context = Pick<EnsuredUserContext, "organizationId" | "userId" | "role">;
 const DAY_MS = 86_400_000;
-const DIFFICULTY_MAX_AGE_DAYS = 90;
 const DEADLINE_MS = 120_000;
 async function authorize(context: Context, projectId: string) {
   const project = await ProjectRepository.getProjectForOrganization(
@@ -97,18 +98,21 @@ async function identityKey(
   // Structured tuple prevents ambiguous delimiters. This is an identity hash,
   // not a store of relational data; evidence lives in separate normalized rows.
   // Single-URL types keep the original tuple, so their hashes never change.
+  const base = [projectId, siteUrl, candidate.type];
   const tuple =
     candidate.type === "cannibalization"
       ? [
-          projectId,
-          siteUrl,
-          candidate.type,
+          ...base,
           sort(
             candidate.urls.map((item) => item.url),
             (a, b) => (a < b ? -1 : a > b ? 1 : 0),
           ),
         ]
-      : [projectId, siteUrl, candidate.type, candidate.url, candidate.query];
+      : candidate.type === "technical_blocker"
+        ? [...base, candidate.url, candidate.audit?.issueType ?? null]
+        : candidate.type === "internal_link"
+          ? [...base, candidate.url, candidate.link?.sourceUrl ?? null]
+          : [...base, candidate.url, candidate.query];
   const bytes = new TextEncoder().encode(JSON.stringify(tuple));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) =>
@@ -184,6 +188,8 @@ async function detect(
     previousPageRows: 0,
     yearAgoPageRows: 0,
     ga4PropertyId: null,
+    auditId: null,
+    inspectionRequests: 0,
     requestCount: 0,
     opportunityCount: 0,
     truncated: false,
@@ -197,28 +203,20 @@ async function detect(
   ]);
   let rejectTimeout: (() => void) | undefined;
   try {
-    const [keyPages, brandTerms, ga4Connection, keywordDifficulty] =
-      await Promise.all([
-        ProjectContextRepository.listKeyPages(projectId),
-        BrandTermService.get(projectId),
-        Ga4ConnectionRepository.getByProjectId(projectId),
-        OpportunityRepository.cachedKeywordDifficulty({
-          projectId,
-          locationCode: project.locationCode,
-          languageCode: project.languageCode,
-          since: new Date(
-            Date.now() - DIFFICULTY_MAX_AGE_DAYS * DAY_MS,
-          ).toISOString(),
-        }),
-      ]);
-    // Reserve the entire bounded request allowance before starting network work:
-    // five Search Console reports, plus one GA4 report when GA4 is connected.
-    run.requestCount = ga4Connection ? 6 : 5;
+    const signals = await loadDetectionSignals(project);
+    const { ga4Connection } = signals;
+    // Reserve the entire bounded request allowance before starting network
+    // work: five Search Console reports, one GA4 report when GA4 is connected,
+    // and the URL inspections that the project's daily limit allows.
+    run.inspectionRequests = signals.inspectionBudget;
+    run.requestCount = 5 + (ga4Connection ? 1 : 0) + run.inspectionRequests;
     run.ga4PropertyId = ga4Connection?.propertyId ?? null;
+    run.auditId = signals.audit?.auditId ?? null;
     await OpportunityRepository.setRequestCount(
       projectId,
       run.id,
       run.requestCount,
+      run.inspectionRequests,
     );
     // Attach the rejection only when the race is ready to handle it. Database
     // setup may take time, so check cancellation before starting any query.
@@ -247,16 +245,28 @@ async function detect(
       data.yearAgoPages.length + data.yearAgoPreviousPages.length;
     run.truncated = data.truncated;
     if (!ga4Rows) run.ga4PropertyId = null;
-    const candidates = detectOpportunities({
+    const input = {
       ...searchConsole,
-      keyPages,
-      brandTerms: brandTerms.terms,
+      keyPages: signals.keyPages,
+      brandTerms: signals.brandTerms.terms,
       ga4:
         ga4Connection && ga4Rows
           ? { rows: ga4Rows, currency: ga4Connection.propertyCurrencyCode }
           : null,
-      keywordDifficulty,
-    });
+      keywordDifficulty: signals.keywordDifficulty,
+      audit: signals.audit,
+      rankHistory: signals.rankHistory,
+    };
+    // Detection is pure, so it runs again once inspection has confirmed the
+    // top technical candidates.
+    const first = detectOpportunities({ ...input, inspections: new Map() });
+    const inspections = await Promise.race([
+      inspectTopBlockers(projectId, first, signals.inspectionBudget),
+      timeout,
+    ]);
+    const candidates = inspections.size
+      ? detectOpportunities({ ...input, inspections })
+      : first;
     const identified = await Promise.all(
       candidates.map(async (candidate) => ({
         ...candidate,
@@ -288,11 +298,15 @@ async function detect(
         );
       },
     );
-    const ga4Note = !ga4Connection
-      ? " GA4 is not connected, so commercial value uses page roles only."
-      : !ga4Rows
-        ? " The GA4 report failed, so commercial value uses page roles only."
-        : "";
+    const notes = detectionNotes({
+      ga4Connected: Boolean(ga4Connection),
+      ga4Failed: Boolean(ga4Connection) && !ga4Rows,
+      audit: signals.audit,
+      inspectionSkipped:
+        Boolean(signals.audit) &&
+        !signals.inspectionBudget &&
+        candidates.some((candidate) => candidate.type === "technical_blocker"),
+    });
     return {
       outcome: "completed",
       run,
@@ -300,7 +314,7 @@ async function detect(
         (candidates.length > 0
           ? `Saved ${candidates.length} evidence-backed investigation opportunities. No website changes were made.`
           : "No qualifying opportunities were found in the returned data. This is not a complete assessment of the site.") +
-        ga4Note,
+        notes,
     };
   } catch (error) {
     const message = failureMessage(error);

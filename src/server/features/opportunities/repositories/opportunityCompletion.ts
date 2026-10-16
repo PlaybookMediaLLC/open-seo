@@ -15,8 +15,12 @@ import {
   dataRefreshClaims,
   gscConnections,
   opportunities,
+  opportunityAuditEvidence,
   opportunityEvidence,
   opportunityGa4Evidence,
+  opportunityInspectionEvidence,
+  opportunityLinkEvidence,
+  opportunityRankEvidence,
   opportunityRuns,
   opportunityUrls,
   projects,
@@ -150,7 +154,8 @@ export async function completeRun(input: {
         ),
     ];
     for (const candidate of candidates) {
-      const { evidence, urls, ga4, ...fields } = candidate;
+      const { evidence, urls, ga4, audit, inspection, link, rank, ...fields } =
+        candidate;
       const refreshed = {
         ...fields,
         siteUrl: run.siteUrl,
@@ -246,6 +251,28 @@ export async function completeRun(input: {
               accepted,
             ),
           ),
+        );
+      }
+      // Phase 2 evidence: one row per kind, plus one rank row per device.
+      const child = { projectId: run.projectId, opportunityId, runId: run.id };
+      const singles = [
+        [opportunityAuditEvidence, audit],
+        [opportunityInspectionEvidence, inspection],
+        [opportunityLinkEvidence, link],
+        ...(rank ?? []).map((item) => [opportunityRankEvidence, item] as const),
+      ] as const;
+      for (const [table, item] of singles) {
+        if (!item) continue;
+        statements.push(
+          tx
+            .insert(table)
+            .select(
+              selectedValues(
+                table,
+                { id: crypto.randomUUID(), ...child, ...item },
+                accepted,
+              ),
+            ),
         );
       }
     }

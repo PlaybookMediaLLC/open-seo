@@ -26,6 +26,7 @@ import {
   ORPHAN_PAGES_SQL,
   SCRATCHPAD_SCHEMA_SQL,
 } from "@/server/features/audit/scratchpad-sql";
+import { listInlinks } from "@/server/features/opportunities/audit/inlinksSql"; // playbook-seam
 
 export interface ClaimedUrl {
   url: string;
@@ -278,6 +279,11 @@ export class AuditScratchpad extends DurableObject {
         : [];
 
     return { brokenLinks, orphanPages };
+  }
+
+  // playbook-seam: RFC-0002 saves the inlinks of key pages before destroy.
+  async listInlinks(targetUrls: string[]) {
+    return listInlinks(this.ctx.storage.sql, targetUrls);
   }
 
   /** Wipe all state (success path, or explicit audit deletion). */

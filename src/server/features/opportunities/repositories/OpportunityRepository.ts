@@ -13,6 +13,7 @@ import {
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { completeRun } from "./opportunityCompletion";
+import { OpportunitySignalRepository } from "./opportunitySignals";
 import { review } from "./opportunityReview";
 import {
   keywordMetrics,
@@ -86,7 +87,7 @@ async function getDetail(
       and(eq(opportunities.projectId, projectId), eq(opportunities.id, id)),
     );
   if (!opportunity) return null;
-  const [evidence, urls, ga4Evidence, decisions] = await Promise.all([
+  const [evidence, urls, ga4Evidence, decisions, signals] = await Promise.all([
     db
       .select(evidenceColumns)
       .from(opportunityEvidence)
@@ -133,8 +134,9 @@ async function getDetail(
         desc(opportunityDecisions.createdAt),
         desc(opportunityDecisions.id),
       ),
+    OpportunitySignalRepository.evidenceFor(projectId, id),
   ]);
-  return { opportunity, evidence, urls, ga4Evidence, decisions };
+  return { opportunity, evidence, urls, ga4Evidence, ...signals, decisions };
 }
 
 async function latestRun(
@@ -187,14 +189,16 @@ async function startRun(run: OpportunityRun): Promise<void> {
   ]);
 }
 
+/** Saves the reserved requests before network work, so a failed run counts. */
 async function setRequestCount(
   projectId: string,
   runId: string,
   requestCount: number,
+  inspectionRequests = 0,
 ): Promise<void> {
   await db
     .update(opportunityRuns)
-    .set({ requestCount })
+    .set({ requestCount, inspectionRequests })
     .where(
       and(
         eq(opportunityRuns.projectId, projectId),
