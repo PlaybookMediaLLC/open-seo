@@ -91,7 +91,7 @@ Fingerprint version 2 (see 5.3) includes these three fields. At execution, the s
 
 ### 5.3 Title change (phase 1b)
 
-1. Generalize the parser function to `prepareMetadataField(source, field, value)`, with `field` `description` or `title`.
+1. Generalize the parser function to `prepareMetadataChange`, which takes a new `description`, a new `title`, or both.
 2. Support a direct string literal (`title: "..."`) and the helper-call form from 5.2. Reject the object form (`{ default, template, absolute }`) in the page with a clear message.
 3. Read the root layout and each parent layout of the page (at most 3 files). When one defines `title.template` as a literal, compute the final title by replacing `%s`. On S1 the template is `'%s | Playbook Media'`.
 4. Title rule: the final title is 10 to 60 characters, with no control characters. Show the final title in the diff.
@@ -269,11 +269,11 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### Phase 1b
 
-- [ ] `prepareMetadataField` for title and description, with tests for literal, helper call, object form (rejected) and the final title with a layout template.
-- [ ] Title columns and `fingerprint_version` in D1 and Postgres, with the parity test.
-- [ ] Test: version 1 hashes of existing proposals do not change.
-- [ ] Combined proposal diff shows both fields.
-- [ ] Execution writes one file with both changes (test against the GitHub mock).
+- [x] `prepareMetadataChange` for title and description, with tests for literal, helper call, object form (rejected) and the final title with a layout template.
+- [x] Title columns and `fingerprint_version` in D1 and Postgres.
+- [x] Test: version 1 hashes of existing proposals do not change (golden hash from the code before version 2).
+- [x] Combined proposal diff shows both fields.
+- [x] Execution writes one file with both changes (test against the GitHub mock).
 - [ ] `experiment_deployment_signals` table.
 - [ ] `production_environment` on connections, editable in the UI.
 - [ ] GitHub deployment signal with tests for match, no match, failed status and 403.

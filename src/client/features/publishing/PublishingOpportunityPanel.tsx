@@ -91,9 +91,10 @@ export function PublishingOpportunityPanel({
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Turn an approved opportunity into a small, reviewable GitHub pull
-            request. Only an existing static Next.js App Router page's
-            description can be replaced. Titles, dynamic metadata, dynamic
-            routes, and layouts are not supported.
+            request. Relay can replace the title, the description, or both, in
+            an existing static Next.js App Router page. Route groups and
+            metadata helper calls work. Dynamic metadata and dynamic routes are
+            not supported.
           </p>
           {!configured && (
             <p role="alert" className="rounded-lg border p-3 text-sm">
@@ -196,6 +197,7 @@ function PrepareForm({
     suggestPath(opportunity.url, rootDirectory),
   );
   const [description, setDescription] = useState("");
+  const [title, setTitle] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const refresh = useRefreshPublishing(opportunity.projectId);
   const mutation = useMutation({
@@ -206,17 +208,21 @@ function PrepareForm({
         opportunityId: opportunity.id,
         expectedOpportunityVersion: opportunity.version,
         filePath,
-        newDescription: description,
+        newDescription: description.trim() || undefined,
+        newTitle: title.trim() || undefined,
       });
       if (!input.success)
         throw new Error(
-          "Enter an existing page path and a description of 1 to 320 characters without line breaks.",
+          "Enter an existing page path, and a title or a description without line breaks.",
         );
       return prepareMetadataProposal({ data: input.data });
     },
     onSuccess: (result) => {
       setMessage(result.message);
-      if (result.ok) setDescription("");
+      if (result.ok) {
+        setDescription("");
+        setTitle("");
+      }
     },
     onError: () =>
       setMessage(
@@ -255,14 +261,29 @@ function PrepareForm({
           </p>
         </div>
         <div className="space-y-2">
+          <Label htmlFor="publishing-title">
+            Your replacement title (optional)
+          </Label>
+          <Input
+            id="publishing-title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            maxLength={120}
+            placeholder="Write the page title without the site name"
+          />
+          <p className="text-xs text-muted-foreground">
+            Relay adds your layout's title template, such as "%s | Site", and
+            checks that the final title has 10 to 60 characters.
+          </p>
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="publishing-description">
-            Your replacement description
+            Your replacement description (optional)
           </Label>
           <Textarea
             id="publishing-description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            required
             maxLength={320}
             rows={3}
             placeholder="Write an accurate description supported by this page's content"
@@ -274,12 +295,13 @@ function PrepareForm({
         </div>
         <p className="text-sm text-muted-foreground">
           Preparation reads the selected file and package.json from the
-          connected repository and verifies a description-only change. It writes
-          nothing remotely and does not run the repository build or CI.
+          connected repository and verifies that only the title and description
+          literals change. It writes nothing remotely and does not run the
+          repository build or CI.
         </p>
         <Button
           type="submit"
-          disabled={!description.trim() || !filePath.trim()}
+          disabled={(!description.trim() && !title.trim()) || !filePath.trim()}
           pending={mutation.isPending}
         >
           Prepare verified proposal

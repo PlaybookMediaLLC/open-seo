@@ -11,9 +11,10 @@ import {
 } from "@/types/schemas/publishing";
 import type { GithubClient } from "./githubClient";
 import { metadataHelperCandidates } from "./metadataHelper";
+import { readTitleTemplate } from "./layoutTitle";
 import {
   metadataHelperImport,
-  prepareMetadataDescription,
+  prepareMetadataChange,
   validateMetadataTarget,
 } from "./nextMetadata";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
@@ -175,14 +176,30 @@ async function prepare(
               }),
             )
           : undefined;
-        const patch = prepareMetadataDescription({
+        const patch = prepareMetadataChange({
           source: file.source,
           path: input.filePath,
           url: opportunity.url,
           newDescription: input.newDescription,
+          newTitle: input.newTitle,
+          titleTemplate:
+            input.newTitle === undefined
+              ? null
+              : await readTitleTemplate(
+                  client,
+                  base.sha,
+                  input.filePath,
+                  connection.rootDirectory,
+                ),
           rootDirectory: connection.rootDirectory,
           helper,
         });
+        const changed = [
+          patch.afterTitle !== null && "title",
+          patch.afterDescription !== patch.beforeDescription && "description",
+        ]
+          .filter(Boolean)
+          .join(" and ");
         const proposal: MetadataProposal = {
           id: crypto.randomUUID(),
           projectId: input.projectId,
@@ -202,11 +219,16 @@ async function prepare(
           metadataSource: helper ? "helper_call" : "literal_object",
           helperPath: helper?.path ?? null,
           helperBlobSha: helper?.blobSha ?? null,
+          titleBefore: patch.beforeTitle,
+          titleAfter: patch.afterTitle,
+          titleBeforeSnippet: patch.titleBeforeSnippet,
+          titleAfterSnippet: patch.titleAfterSnippet,
+          fingerprintVersion: 2,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:
-            "A clearer search snippet may help relevant visitors choose this page. Search engines may rewrite descriptions. Traffic, rankings and revenue are not guaranteed.",
-          risk: `${patch.helperNote ? `${patch.helperNote} ` : ""}The supplied copy may be inaccurate or less compelling. Check every claim. Only this description literal changes. Rewrites and custom routing are not verified. A pull request may trigger repository CI.`,
+            "A clearer search snippet may help relevant visitors choose this page. Search engines may rewrite titles and descriptions. Traffic, rankings and revenue are not guaranteed.",
+          risk: `${patch.helperNote ? `${patch.helperNote} ` : ""}The supplied copy may be inaccurate or less compelling. Check every claim. Only the ${changed} literal${changed.includes(" and ") ? "s change" : " changes"}. Rewrites and custom routing are not verified. A pull request may trigger repository CI.`,
           verificationPlan:
             "Review the exact diff and product claims. Run the repository build and tests in CI, then verify the rendered description on the target URL after your authorized deployment. Compare subsequent Search Console observations without assuming causation.",
           validationSummary: `${patch.validationSummary} Next.js dependency verified in the selected package manifest. Full repository build, routing and CI were not run.`,

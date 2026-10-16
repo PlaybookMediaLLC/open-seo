@@ -6,7 +6,7 @@ import type {
 } from "@/types/schemas/publishing";
 import { opportunityDetail } from "../opportunities/services/opportunityTestFixtures";
 import type { GithubRepository, GithubPullRequest } from "./githubClient";
-import { prepareMetadataDescription } from "./nextMetadata";
+import { prepareMetadataChange } from "./nextMetadata";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 
 export const publishingTestSecret =
@@ -31,7 +31,7 @@ export async function makePublishingFixture() {
   const source =
     "export const metadata = { description: 'Old pricing description' };\n";
   const filePath = "app/pricing/page.tsx";
-  const patch = prepareMetadataDescription({
+  const patch = prepareMetadataChange({
     source,
     path: filePath,
     url: detail.opportunity.url,
@@ -72,6 +72,11 @@ export async function makePublishingFixture() {
     metadataSource: "literal_object",
     helperPath: null,
     helperBlobSha: null,
+    titleBefore: null,
+    titleAfter: null,
+    titleBeforeSnippet: null,
+    titleAfterSnippet: null,
+    fingerprintVersion: 2,
     changeHash: "",
     reason: detail.opportunity.explanation,
     expectedEffect: "Clearer search snippet, without guaranteed results.",

@@ -1,4 +1,4 @@
-import { helperCall, helperDescription } from "./metadataHelper";
+import { helperCall, helperField } from "./metadataHelper";
 import {
   invalid,
   parseSource,
@@ -8,6 +8,7 @@ import {
   type CallNode,
   type Expression,
   type HelperFile,
+  type MetadataField,
 } from "./metadataSyntax";
 
 type Target = { path: string; url: string; rootDirectory?: string };
@@ -156,7 +157,12 @@ export function metadataHelperImport(source: string, path: string) {
   return { name, specifier };
 }
 
-function descriptionLiteral(source: string, path: string, helper?: HelperFile) {
+function fieldLiteral(
+  source: string,
+  path: string,
+  field: MetadataField,
+  helper?: HelperFile,
+) {
   const { program, init } = metadataInit(source, path);
   let found: {
     node:
@@ -165,27 +171,33 @@ function descriptionLiteral(source: string, path: string, helper?: HelperFile) {
       | undefined;
     value: string;
     helperNote: string | null;
-  };
+  } | null;
   if (init.type === "ObjectExpression") {
     if (helper) invalid("Metadata no longer uses the metadata helper.");
-    const property = fieldProperty(init, "description");
-    if (!property)
-      invalid("Metadata must contain an existing string literal description.");
-    if (property.value.type !== "StringLiteral")
-      invalid("Metadata description must be an existing string literal.");
-    found = {
-      node: property.value,
-      value: property.value.value,
-      helperNote: null,
-    };
+    const property = fieldProperty(init, field);
+    if (field === "title" && property?.value.type === "ObjectExpression")
+      invalid(
+        "The page title uses the { default, template, absolute } form. Relay can change only a plain title string.",
+      );
+    if (property && property.value.type !== "StringLiteral")
+      invalid(`Metadata ${field} must be an existing string literal.`);
+    found =
+      property?.value.type === "StringLiteral"
+        ? {
+            node: property.value,
+            value: property.value.value,
+            helperNote: null,
+          }
+        : null;
   } else {
     const { call, name } = helperCall(program, init);
     if (!helper) invalid("Metadata uses a helper that was not read.");
-    found = helperDescription(call, name, helper);
+    found = helperField(call, name, helper, field);
   }
+  if (!found) return null;
   const { node } = found;
   if (!node || node.start == null || node.end == null || !node.loc) {
-    invalid("Metadata must contain an existing string literal description.");
+    invalid(`Metadata must contain an existing string literal ${field}.`);
   }
   return {
     value: found.value,
@@ -217,52 +229,152 @@ function quoted(value: string, quote: string): string {
     : json;
 }
 
-export function prepareMetadataDescription(
+type Change = { field: MetadataField; after: string };
+
+function newText(field: MetadataField, value: string, max: number) {
+  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(value)) {
+    invalid(`The new ${field} must not contain control characters.`);
+  }
+  const text = value.trim();
+  if (text.length < 1 || text.length > max) {
+    invalid(
+      `The new ${field} must contain 1 to ${max} characters after trimming.`,
+    );
+  }
+  return text;
+}
+
+/**
+ * Replaces the title literal, the description literal, or both, in one page.
+ * `titleTemplate` is the nearest layout's `title.template`, used for the
+ * final-title rule (10 to 60 characters).
+ */
+export function prepareMetadataChange(
   input: Target & {
     source: string;
-    newDescription: string;
     helper?: HelperFile;
+    newDescription?: string;
+    newTitle?: string;
+    titleTemplate?: string | null;
   },
 ) {
   validateMetadataTarget(input);
   if (new TextEncoder().encode(input.source).byteLength > 32 * 1024) {
     invalid("Metadata source exceeds the 32 KiB limit.");
   }
-  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(input.newDescription)) {
-    invalid("The new description must not contain control characters.");
+  const changes: Change[] = [];
+  if (input.newDescription !== undefined)
+    changes.push({
+      field: "description",
+      after: newText("description", input.newDescription, 320),
+    });
+  let finalTitle: string | null = null;
+  if (input.newTitle !== undefined) {
+    const after = newText("title", input.newTitle, 120);
+    finalTitle = input.titleTemplate
+      ? input.titleTemplate.replace("%s", after)
+      : after;
+    if (finalTitle.length < 10 || finalTitle.length > 60)
+      invalid(
+        `The final title "${finalTitle}" has ${finalTitle.length} characters. Use 10 to 60.`,
+      );
+    changes.push({ field: "title", after });
   }
-  const afterDescription = input.newDescription.trim();
-  if (afterDescription.length < 1 || afterDescription.length > 320) {
-    invalid(
-      "The new description must contain 1 to 320 characters after trimming.",
-    );
-  }
-  const before = descriptionLiteral(input.source, input.path, input.helper);
-  if (afterDescription === before.value) {
-    invalid("The new description must differ from the existing description.");
-  }
-  const literal = quoted(afterDescription, before.quote);
-  const prefix = input.source.slice(0, before.start);
-  const suffix = input.source.slice(before.end);
-  const afterSource = prefix + literal + suffix;
-  const after = descriptionLiteral(afterSource, input.path, input.helper);
-  if (
-    after.value !== afterDescription ||
-    after.start !== before.start ||
-    afterSource.slice(0, after.start) !== prefix ||
-    afterSource.slice(after.end) !== suffix
-  ) {
+  if (!changes.length)
+    invalid("Enter a new title, a new description, or both.");
+  const read = (source: string, field: MetadataField) => {
+    const literal = fieldLiteral(source, input.path, field, input.helper);
+    if (!literal)
+      invalid(
+        input.helper
+          ? `The metadata helper does not return a ${field} field.`
+          : `Metadata must contain an existing string literal ${field}.`,
+      );
+    return literal;
+  };
+  const planned = changes.map((change) => {
+    const before = read(input.source, change.field);
+    if (change.after === before.value)
+      invalid(
+        `The new ${change.field} must differ from the existing ${change.field}.`,
+      );
+    return { ...change, before, literal: quoted(change.after, before.quote) };
+  });
+  const ascending =
+    planned.length === 2 && planned[0].before.start > planned[1].before.start
+      ? [planned[1], planned[0]]
+      : planned;
+  // Edit from the end of the file, so earlier offsets stay valid.
+  const descending =
+    ascending.length === 2 ? [ascending[1], ascending[0]] : ascending;
+  let afterSource = input.source;
+  for (const change of descending)
+    afterSource =
+      afterSource.slice(0, change.before.start) +
+      change.literal +
+      afterSource.slice(change.before.end);
+  // Parse again. Each literal must hold its new value, and the text between
+  // and around the literals must be unchanged.
+  let beforeEnd = 0;
+  let afterEnd = 0;
+  const results = ascending.map((change) => {
+    const after = read(afterSource, change.field);
+    if (
+      after.value !== change.after ||
+      input.source.slice(beforeEnd, change.before.start) !==
+        afterSource.slice(afterEnd, after.start)
+    )
+      invalid("Metadata patch failed single-literal preservation validation.");
+    beforeEnd = change.before.end;
+    afterEnd = after.end;
+    return { ...change, afterLine: after.line };
+  });
+  if (input.source.slice(beforeEnd) !== afterSource.slice(afterEnd))
     invalid("Metadata patch failed single-literal preservation validation.");
-  }
+  const result = (field: MetadataField) =>
+    results.find((change) => change.field === field);
+  const description = result("description");
+  const title = result("title");
+  // An unchanged description is recorded as is, so the proposal shows it.
+  const current = description
+    ? null
+    : fieldLiteral(input.source, input.path, "description", input.helper);
+  const currentSnippet = current
+    ? `Line ${current.line}: ${printable(current.value)}`
+    : "No description literal.";
+  const fields = results.map((change) => change.field).join(" and ");
   return {
-    beforeDescription: before.value,
-    afterDescription,
-    beforeSnippet: `Line ${before.line}: ${printable(before.value)}`,
-    afterSnippet: `Line ${after.line}: ${literal}`,
     afterSource,
-    helperNote: before.helperNote,
-    validationSummary: before.helperNote
-      ? "Validated direct path correspondence, a metadata helper call whose description comes straight from one parameter, a literal call argument, no metadata references, reparsed output, and unchanged surrounding source. Human-provided description only."
-      : "Validated direct path correspondence, direct metadata export, literal description, no metadata references, reparsed output, and unchanged surrounding source. Human-provided description only.",
+    beforeDescription: description?.before.value ?? current?.value ?? "",
+    afterDescription: description?.after ?? current?.value ?? "",
+    beforeSnippet: description
+      ? `Line ${description.before.line}: ${printable(description.before.value)}`
+      : currentSnippet,
+    afterSnippet: description
+      ? `Line ${description.afterLine}: ${description.literal}`
+      : currentSnippet,
+    beforeTitle: title?.before.value ?? null,
+    afterTitle: title?.after ?? null,
+    titleBeforeSnippet: title
+      ? `Line ${title.before.line}: ${printable(title.before.value)}`
+      : null,
+    titleAfterSnippet: title
+      ? `Line ${title.afterLine}: ${title.literal}`
+      : null,
+    finalTitle,
+    helperNote:
+      results
+        .map((change) => change.before.helperNote)
+        .filter(Boolean)
+        .join(" ") || null,
+    validationSummary: `Validated direct path correspondence, ${
+      input.helper
+        ? "a metadata helper call whose fields come straight from its parameters, literal call arguments"
+        : "a direct metadata export, literal values"
+    }, no metadata references, reparsed output, and unchanged surrounding source for the ${fields}.${
+      finalTitle
+        ? ` Final title with the layout template: ${printable(finalTitle)} (${finalTitle.length} characters).`
+        : ""
+    } Human-provided text only.`,
   };
 }

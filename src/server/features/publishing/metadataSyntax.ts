@@ -3,6 +3,7 @@ import { AppError } from "@/server/lib/errors";
 
 // Shared syntax helpers for the metadata parser. Nothing here executes code.
 export type HelperFile = { path: string; source: string };
+export type MetadataField = "title" | "description";
 
 export type Program = ReturnType<typeof parse>["program"];
 

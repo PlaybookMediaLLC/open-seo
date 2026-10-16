@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { metadataHelperCandidates } from "./metadataHelper";
-import { prepareMetadataDescription } from "./nextMetadata";
+import { prepareMetadataChange } from "./nextMetadata";
 
 // The shape of test site S1: a (site) route group and a shared metadata helper.
 const s1Helper = {
@@ -33,9 +33,9 @@ export default function Page() {
 }
 `;
 const prepareS1 = (
-  overrides: Partial<Parameters<typeof prepareMetadataDescription>[0]> = {},
+  overrides: Partial<Parameters<typeof prepareMetadataChange>[0]> = {},
 ) =>
-  prepareMetadataDescription({
+  prepareMetadataChange({
     path: "apps/www/app/(site)/approach/page.tsx",
     url: "https://playbookmedia.io/approach",
     rootDirectory: "apps/www",
@@ -60,7 +60,7 @@ describe("metadata helper calls", () => {
   });
 
   it("accepts an arrow function helper from a relative import", () => {
-    const result = prepareMetadataDescription({
+    const result = prepareMetadataChange({
       path: "app/about/page.tsx",
       url: "https://example.com/about",
       source:
@@ -98,7 +98,7 @@ describe("metadata helper calls", () => {
       "a helper that renames the field",
       s1Page,
       "export function pageMetadata(title: string, summary: string) { return { title, summary }; }",
-      "pageMetadata must return a description field.",
+      "The metadata helper does not return a description field.",
     ],
     [
       "a helper that changes the parameter",

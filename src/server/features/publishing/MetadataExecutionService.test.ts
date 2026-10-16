@@ -11,7 +11,9 @@ import {
 import type { GithubClient } from "./githubClient";
 import type { PublishingRepository } from "./repositories/PublishingRepository";
 import { MetadataExecutionService } from "./MetadataExecutionService";
-import { proposalFingerprint } from "./proposalFingerprint";
+import { prepareMetadataChange } from "./nextMetadata";
+import { AppError } from "@/server/lib/errors";
+import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   makePublishingFixture,
   publishingTestSecret,
@@ -402,6 +404,54 @@ describe("MetadataExecutionService interruption recovery", () => {
       message: "The metadata helper changed. Prepare the proposal again.",
     });
     expectNoRemoteWrites();
+  });
+
+  it("commits one file with the title and description, under a combined pull request title", async () => {
+    const page =
+      "export const metadata = { title: 'Pricing plans', description: 'Old pricing description' };\n";
+    const patch = prepareMetadataChange({
+      path: fixture.proposal.filePath,
+      url: fixture.proposal.targetUrl,
+      source: page,
+      newTitle: "Plans and pricing",
+      newDescription: "Explore our pricing and choose a plan.",
+    });
+    Object.assign(fixture.proposal, {
+      beforeBlobSha: await gitBlobHash(page),
+      afterBlobSha: await gitBlobHash(patch.afterSource),
+      descriptionBefore: patch.beforeDescription,
+      descriptionAfter: patch.afterDescription,
+      beforeSnippet: patch.beforeSnippet,
+      afterSnippet: patch.afterSnippet,
+      titleBefore: patch.beforeTitle,
+      titleAfter: patch.afterTitle,
+      titleBeforeSnippet: patch.titleBeforeSnippet,
+      titleAfterSnippet: patch.titleAfterSnippet,
+    });
+    fixture.proposal.changeHash = await proposalFingerprint(fixture.proposal);
+    fixture.executeInput.changeHash = fixture.proposal.changeHash;
+    fixture.pullRequest.body = `<!-- OpenSEO proposal:${fixture.proposal.id} change:${fixture.proposal.changeHash} -->`;
+    github.readFile.mockImplementation(async (path) => {
+      if (path !== fixture.proposal.filePath) throw new AppError("NOT_FOUND");
+      return { source: page, blobSha: fixture.proposal.beforeBlobSha };
+    });
+    github.updateFile.mockImplementation(async () => {
+      branchSha = headSha;
+      return { commitSha: headSha, blobSha: fixture.proposal.afterBlobSha };
+    });
+    const result = await execute();
+    expect(result.ok, result.message).toBe(true);
+    expect(github.updateFile).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: patch.afterSource,
+        message: "SEO: update reviewed page title and description (proposal-1)",
+      }),
+    );
+    expect(github.createPullRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "SEO: update title and description for /pricing",
+      }),
+    );
   });
 
   it("sanitizes an unknown provider failure before returning or recording it", async () => {
