@@ -21,6 +21,7 @@ export function opportunityDetail(
       lastDetectedAt: now,
       deferredUntil: null,
       version: 1,
+      stale: false,
       type: "striking_distance",
       url: "https://example.com/pricing",
       query: "software",

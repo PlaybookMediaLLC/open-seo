@@ -9,6 +9,10 @@ import { getErrorCode } from "@/client/lib/error-messages";
 import { OpportunityEvidenceHistory } from "@/client/features/opportunities/OpportunityEvidenceHistory";
 import { OpportunityReview } from "@/client/features/opportunities/OpportunityReview";
 import {
+  OwnerSelect,
+  TicketSheet,
+} from "@/client/features/opportunities/OpportunityOwnerAndTicket";
+import {
   AuditAndLinkEvidence,
   CompetingPages,
   diagnosisLabels,
@@ -21,6 +25,7 @@ import {
   opportunityAccessOptions,
   opportunityKeys,
   OpportunityStatusBadge,
+  StaleBadge,
   statusLabels,
   typeHelp,
   typeLabels,
@@ -110,6 +115,7 @@ function OpportunityDetailPage() {
           <span className="text-sm text-muted-foreground">
             First detected {dateLabel(item.firstDetectedAt)}
           </span>
+          {item.stale ? <StaleBadge /> : null}
           {item.deferredUntil &&
           new Date(item.deferredUntil).getTime() > Date.now() ? (
             <Badge variant="warning">
@@ -118,6 +124,15 @@ function OpportunityDetailPage() {
           ) : null}
         </div>
         <p className="text-sm text-muted-foreground">{typeHelp[item.type]}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <OwnerSelect
+            opportunity={item}
+            canAssign={
+              access.isSuccess && access.data.canReview && !query.isError
+            }
+          />
+          <TicketSheet key={`ticket-${item.id}`} opportunity={item} />
+        </div>
         <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <section className="rounded-xl border bg-card p-5 space-y-4">
             <h2 className="text-lg font-semibold">Why this matters</h2>

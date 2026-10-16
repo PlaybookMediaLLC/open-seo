@@ -13,18 +13,28 @@ import {
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { formatRelativeTime } from "@/client/lib/relative-time";
-import { OpportunityStatusBadge, typeLabels } from "./shared";
+import {
+  OpportunityStatusBadge,
+  OwnerAvatar,
+  StaleBadge,
+  typeLabels,
+  type OwnerOption,
+} from "./shared";
 import type { Opportunity } from "@/types/schemas/opportunities";
 
 export function OpportunitiesList({
   rows,
   projectId,
   filtered,
+  owners,
 }: {
   rows: Opportunity[];
   projectId: string;
   filtered: boolean;
+  owners: OwnerOption[];
 }) {
+  const ownerName = (userId: string) =>
+    owners.find((owner) => owner.userId === userId)?.name;
   if (!rows.length)
     return (
       <EmptyState
@@ -32,7 +42,7 @@ export function OpportunitiesList({
         title={filtered ? "No matching opportunities" : "No opportunities yet"}
         description={
           filtered
-            ? "Adjust the filters or include deferred opportunities."
+            ? "Adjust the filters, or turn on Show deferred."
             : "Run detection to find pages within reach and pages losing search traffic. Only opportunities supported by your Search Console data appear here."
         }
         action={
@@ -57,6 +67,7 @@ export function OpportunitiesList({
             <TableHead>Opportunity</TableHead>
             <TableHead>Priority</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Owner</TableHead>
             <TableHead>Effort</TableHead>
             <TableHead>Last detected</TableHead>
           </TableRow>
@@ -84,6 +95,7 @@ export function OpportunitiesList({
                       {new Date(row.deferredUntil).toLocaleDateString()}
                     </Badge>
                   ) : null}
+                  {row.stale ? <StaleBadge /> : null}
                 </div>
               </TableCell>
               <TableCell>
@@ -94,6 +106,20 @@ export function OpportunitiesList({
               </TableCell>
               <TableCell>
                 <OpportunityStatusBadge status={row.status} />
+              </TableCell>
+              <TableCell>
+                {row.ownerUserId ? (
+                  <span className="flex items-center gap-2 text-sm">
+                    <OwnerAvatar name={ownerName(row.ownerUserId)} />
+                    <span className="max-w-32 truncate">
+                      {ownerName(row.ownerUserId) ?? "Former member"}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    Unassigned
+                  </span>
+                )}
               </TableCell>
               <TableCell className="whitespace-nowrap">
                 ~{row.effortHours} h

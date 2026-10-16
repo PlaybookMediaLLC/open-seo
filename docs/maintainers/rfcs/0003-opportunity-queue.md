@@ -1,6 +1,6 @@
 # RFC-0003: Opportunities queue, remaining gaps
 
-- **Status:** Draft
+- **Status:** Building. The code is in review; the live checks and the acceptance test (section 9) are open.
 - **Date:** 2026-10-15
 - **Brief section:** 4 (Feature B)
 - **Depends on:** RFC-0001.
@@ -62,7 +62,7 @@ The Opportunities queue is mostly complete. It has the full lifecycle, filters, 
 ### 5.3 Items not found by the latest analysis
 
 1. Do not add a status. The brief lifecycle has no such state, and human decisions must stay intact.
-2. Derive the flag on read. An item is "not in latest analysis" when its `last_detected_at` is older than the latest completed run's `started_at` for the same site.
+2. Derive the flag on read. An item is "not in latest analysis" when its `last_detected_at` is older than the latest completed run's `started_at` for the same site and the same run kind (RFC-0002 content-gap runs are a separate kind).
 3. Return the flag as `stale: boolean` from `OpportunityRepository.list` and `getDetail`.
 4. Add a `freshness` filter: `all`, `current`, `stale`. Default `all`.
 5. Show a muted "Not in latest analysis" badge. Explain it in a tooltip: "The latest analysis did not find this opportunity. The issue may be fixed, or the data may have changed."
@@ -79,7 +79,7 @@ The Opportunities queue is mostly complete. It has the full lifecycle, filters, 
 
 1. Add `OpportunityRepository.countByStatus(projectId)`. It returns one count per status with one grouped query.
 2. Return the counts from `OpportunityService.list`.
-3. Show the counts in the status select, for example "Discovered (12)".
+3. Show the counts in the status select, for example "Discovered (12)". The counts use every other filter, so a status count equals the list total when that status is picked.
 
 ### 5.6 Next action for every type
 
@@ -95,7 +95,7 @@ The Opportunities queue is mostly complete. It has the full lifecycle, filters, 
 
 An issue ticket in this RFC is text only. The user copies it. It has a title, the affected URLs, the evidence summary, the proposed change, the risk and the verification plan. RFC-0005 adds an approved GitHub issue later.
 
-1. Add a "Create ticket" button for approved opportunities of every type.
+1. Add a "Create ticket" button for approved opportunities of every type (approved, in progress, implemented or failed). The RFC-0005 GitHub issue uses the same text.
 2. Build the text on the server from stored fields only. No model call.
 3. Show it in a sheet with a "Copy" button.
 
@@ -113,23 +113,23 @@ An issue ticket in this RFC is text only. The user copies it. It has a title, th
 
 ## 8. Ready-for-other-users checklist
 
-- [ ] `assigned` added to the decision enum.
-- [ ] `assignOpportunity` server function, service and conditional repository update.
-- [ ] Test: a non-member cannot become the owner.
-- [ ] Test: a member without manage permission cannot assign.
-- [ ] Test: a stale `expectedVersion` returns a conflict.
-- [ ] Owner select in the detail view, owner column and owner filter in the list.
-- [ ] "Show deferred" toggle and deferred badge.
-- [ ] `deferDays` input with 7, 30 and 90, and a test that other values fail.
-- [ ] Derived `stale` flag with a repository test on D1 and Postgres.
-- [ ] `freshness` filter and the badge with its tooltip.
-- [ ] `q` search with escaping, and a test that `%` and `_` match literally.
-- [ ] Status counts in one grouped query, shown in the status select.
-- [ ] "Create ticket" for every approved type, with a test that the text has no secrets.
+- [x] `assigned` added to the decision enum.
+- [x] `assignOpportunity` server function, service and conditional repository update.
+- [x] Test: a non-member cannot become the owner.
+- [x] Test: a member without manage permission cannot assign.
+- [x] Test: a stale `expectedVersion` returns a conflict.
+- [x] Owner select in the detail view, owner column and owner filter in the list.
+- [x] "Show deferred" toggle and deferred badge.
+- [x] `deferDays` input with 7, 30 and 90, and a test that other values fail.
+- [x] Derived `stale` flag with a repository test on D1 and Postgres.
+- [x] `freshness` filter and the badge with its tooltip.
+- [x] `q` search with escaping, and a test that `%` and `_` match literally.
+- [x] Status counts in one grouped query, shown in the status select.
+- [x] "Create ticket" for every approved type, with a test that the text has no secrets.
 - [ ] All new filters stay in the URL and survive a reload.
 - [ ] Keyboard and screen-reader check of the new controls.
 - [ ] Layout check at 390 px and 1440 px.
-- [ ] `content/docs/opportunities.mdx` explains owners, defer, stale items and tickets.
+- [x] `content/docs/opportunities.mdx` explains owners, defer, stale items and tickets.
 
 ## 9. Real-site acceptance test
 

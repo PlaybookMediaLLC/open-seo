@@ -9,6 +9,7 @@ import {
   isNull,
   lte,
   or,
+  sql,
 } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
@@ -30,6 +31,7 @@ import type {
   OpportunityDetail,
   OpportunityListInput,
   OpportunityRun,
+  OpportunityStatus,
 } from "@/types/schemas/opportunities";
 
 const { lastDecisionId: _lastDecisionId, ...opportunityColumns } =
@@ -45,12 +47,34 @@ const { projectId: _urlProjectId, ...urlColumns } =
 const { projectId: _ga4ProjectId, ...ga4Columns } = getTableColumns(
   opportunityGa4Evidence,
 );
-async function list(
-  input: OpportunityListInput,
-): Promise<{ rows: Opportunity[]; total: number }> {
-  const where = and(
+/**
+ * RFC-0003 5.3: an item is stale when the latest completed run of the same
+ * kind, for the same property, started after the item was last found.
+ */
+const staleExpression = sql<boolean>`(${opportunities.lastDetectedAt} < coalesce((
+  select max(r.started_at) from opportunity_runs r
+  where r.project_id = ${opportunities.projectId}
+    and r.site_url = ${opportunities.siteUrl}
+    and r.status = 'completed'
+    and r.kind = (select e.kind from opportunity_runs e where e.id = ${opportunities.evidenceRunId})
+), ''))`;
+const listColumns = {
+  ...opportunityColumns,
+  stale: staleExpression.mapWith(Boolean),
+};
+
+/** A case-insensitive substring pattern; %, _ and \ match literally. */
+function containsPattern(text: string) {
+  return `%${text.toLowerCase().replace(/[\\%_]/g, (char) => `\\${char}`)}%`;
+}
+
+function listFilter(input: OpportunityListInput, withStatus: boolean) {
+  const pattern = input.q ? containsPattern(input.q) : null;
+  return and(
     eq(opportunities.projectId, input.projectId),
-    input.status ? eq(opportunities.status, input.status) : undefined,
+    withStatus && input.status
+      ? eq(opportunities.status, input.status)
+      : undefined,
     input.type ? eq(opportunities.type, input.type) : undefined,
     gte(opportunities.priority, input.minPriority),
     input.includeDeferred
@@ -59,10 +83,32 @@ async function list(
           isNull(opportunities.deferredUntil),
           lte(opportunities.deferredUntil, new Date().toISOString()),
         ),
+    // The service resolves "me" to the user id before this call.
+    input.owner === "unassigned"
+      ? isNull(opportunities.ownerUserId)
+      : input.owner
+        ? eq(opportunities.ownerUserId, input.owner)
+        : undefined,
+    pattern
+      ? sql`(lower(${opportunities.url}) like ${pattern} escape '\\' or lower(coalesce(${opportunities.query}, '')) like ${pattern} escape '\\')`
+      : undefined,
+    input.freshness === "all"
+      ? undefined
+      : input.freshness === "stale"
+        ? sql`${staleExpression}`
+        : sql`not ${staleExpression}`,
   );
-  const [rows, totals] = await Promise.all([
+}
+
+async function list(input: OpportunityListInput): Promise<{
+  rows: Opportunity[];
+  total: number;
+  statusCounts: Partial<Record<OpportunityStatus, number>>;
+}> {
+  const where = listFilter(input, true);
+  const [rows, totals, counts] = await Promise.all([
     db
-      .select(opportunityColumns)
+      .select(listColumns)
       .from(opportunities)
       .where(where)
       .orderBy(
@@ -73,8 +119,21 @@ async function list(
       .limit(input.limit)
       .offset(input.offset),
     db.select({ total: count() }).from(opportunities).where(where),
+    // One grouped query, with every filter except status, so a status count
+    // equals the list total when that status is picked.
+    db
+      .select({ status: opportunities.status, total: count() })
+      .from(opportunities)
+      .where(listFilter(input, false))
+      .groupBy(opportunities.status),
   ]);
-  return { rows, total: totals[0]?.total ?? 0 };
+  return {
+    rows,
+    total: totals[0]?.total ?? 0,
+    statusCounts: Object.fromEntries(
+      counts.map((row) => [row.status, Number(row.total)]),
+    ),
+  };
 }
 
 async function getDetail(
@@ -82,7 +141,7 @@ async function getDetail(
   id: string,
 ): Promise<OpportunityDetail | null> {
   const [opportunity] = await db
-    .select(opportunityColumns)
+    .select(listColumns)
     .from(opportunities)
     .where(
       and(eq(opportunities.projectId, projectId), eq(opportunities.id, id)),

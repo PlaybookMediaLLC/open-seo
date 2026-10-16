@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  OpportunityDetail,
-  OpportunityListInput,
-  OpportunityReviewInput,
+import {
+  reviewOpportunityInputSchema,
+  type OpportunityDetail,
+  type OpportunityListInput,
+  type OpportunityReviewInput,
 } from "@/types/schemas/opportunities";
 import { OpportunityService } from "./OpportunityService";
 import { opportunityDetail as detail } from "./opportunityTestFixtures";
@@ -31,6 +32,12 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
     getConnection: mocks.connection,
     getPerformance: mocks.performance,
     inspectUrls: mocks.inspect,
+  },
+}));
+vi.mock("@/server/auth/repositories/AuthRepository", () => ({
+  AuthRepository: {
+    getMembership: mocks.membership,
+    getHostedUserNames: mocks.userNames,
   },
 }));
 vi.mock("../repositories/contentGapRepository", () => ({
@@ -83,6 +90,7 @@ const listInput: OpportunityListInput = {
   includeDeferred: false,
   limit: 50,
   offset: 0,
+  freshness: "all",
 };
 const reviewInput: OpportunityReviewInput = {
   projectId,
@@ -234,5 +242,93 @@ describe("OpportunityService review", () => {
     await expect(
       OpportunityService.review(context, reviewInput),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+});
+
+describe("OpportunityService queue (RFC-0003)", () => {
+  const assignInput = {
+    projectId,
+    opportunityId: "opportunity-1",
+    expectedVersion: 1,
+    ownerUserId: "user-2",
+  };
+
+  it("assigns a member and records the owner's name", async () => {
+    await OpportunityService.assign(context, assignInput);
+    expect(mocks.membership).toHaveBeenCalledWith("user-2", "org-1");
+    expect(mocks.review).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decision: "assigned",
+        ownerUserId: "user-2",
+        note: "Assigned to Ada",
+        fromStatus: "discovered",
+        toStatus: "discovered",
+      }),
+    );
+  });
+
+  it("refuses an owner outside the organization", async () => {
+    mocks.membership.mockResolvedValue(null);
+    await expect(
+      OpportunityService.assign(context, assignInput),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(mocks.review).not.toHaveBeenCalled();
+  });
+
+  it("refuses a member without manage permission", async () => {
+    await expect(
+      OpportunityService.assign({ ...context, role: "member" }, assignInput),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(mocks.review).not.toHaveBeenCalled();
+  });
+
+  it("returns a conflict for a stale version, before and at the write", async () => {
+    await expect(
+      OpportunityService.assign(context, {
+        ...assignInput,
+        expectedVersion: 2,
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(mocks.review).not.toHaveBeenCalled();
+    mocks.review.mockResolvedValue(false);
+    await expect(
+      OpportunityService.assign(context, assignInput),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it.each([7, 30, 90] as const)("defers for %i days", async (deferDays) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-16T00:00:00Z"));
+    await OpportunityService.review(context, {
+      ...reviewInput,
+      decision: "deferred",
+      deferDays,
+    });
+    expect(mocks.review.mock.lastCall![0].deferredUntil).toBe(
+      new Date(
+        Date.parse("2026-10-16T00:00:00Z") + deferDays * 86_400_000,
+      ).toISOString(),
+    );
+  });
+
+  it("accepts only 7, 30 or 90 days, and only for a defer decision", async () => {
+    expect(
+      reviewOpportunityInputSchema.safeParse({
+        ...reviewInput,
+        decision: "deferred",
+        deferDays: 14,
+      }).success,
+    ).toBe(false);
+    await expect(
+      OpportunityService.review(context, { ...reviewInput, deferDays: 30 }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    expect(mocks.review).not.toHaveBeenCalled();
+  });
+
+  it("filters by the caller for the owner value me", async () => {
+    await OpportunityService.list(context, { ...listInput, owner: "me" });
+    expect(mocks.list).toHaveBeenCalledWith(
+      expect.objectContaining({ owner: "user-1" }),
+    );
   });
 });

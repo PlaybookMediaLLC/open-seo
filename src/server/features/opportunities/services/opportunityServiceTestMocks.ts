@@ -49,6 +49,8 @@ export function createServiceMocks() {
     inspect: vi.fn(),
     aiCitations: vi.fn(),
     serpChecks: vi.fn(),
+    membership: vi.fn(),
+    userNames: vi.fn(),
   };
 }
 
@@ -70,6 +72,8 @@ export function setServiceMockDefaults(
   mocks.inspect.mockResolvedValue({ results: [] });
   mocks.aiCitations.mockResolvedValue(null);
   mocks.serpChecks.mockResolvedValue(new Map());
+  mocks.membership.mockResolvedValue({ role: "member" });
+  mocks.userNames.mockResolvedValue([{ id: "user-2", name: "Ada" }]);
   mocks.connection.mockResolvedValue({ siteUrl });
   mocks.performance.mockResolvedValue(response());
   mocks.keyPages.mockResolvedValue([]);
