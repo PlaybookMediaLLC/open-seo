@@ -67,7 +67,7 @@ describe("GitHub transport", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toBe("https://api.github.com/repos/acme/site");
     expect(init).toMatchObject({
-      redirect: "error",
+      redirect: "manual",
       method: "GET",
       headers: {
         Authorization: "Bearer private-token",

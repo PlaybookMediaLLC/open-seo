@@ -101,7 +101,8 @@ async function githubJson<T>(
     },
     body: init.body === undefined ? undefined : JSON.stringify(init.body),
     signal: AbortSignal.timeout(10_000),
-    redirect: "error",
+    // Workers rejects "error". A 3xx response is not ok, so it fails below.
+    redirect: "manual",
   });
   if (!response.ok) {
     await response.body?.cancel();
@@ -161,7 +162,8 @@ export async function exchangeUserCode(code: string) {
       code,
     }),
     signal: AbortSignal.timeout(10_000),
-    redirect: "error",
+    // Workers rejects "error". A 3xx response is not ok, so it fails below.
+    redirect: "manual",
   });
   const parsed = z
     .object({ access_token: z.string().min(1) })
