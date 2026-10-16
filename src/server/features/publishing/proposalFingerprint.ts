@@ -46,11 +46,12 @@ export function proposalFingerprint(
       proposal.validationSummary,
       proposal.createdBy,
       proposal.createdAt,
-      // Version 2 binds the helper and title fields. Version 1 rows keep their
-      // original hash: the helper fields were appended only for helper calls.
-      ...(proposal.fingerprintVersion === 2
+      // Version 2 binds the helper and title fields, and version 3 also the
+      // reverted proposal. Version 1 rows keep their original hash: the
+      // helper fields were appended only for helper calls.
+      ...(proposal.fingerprintVersion >= 2
         ? [
-            2,
+            proposal.fingerprintVersion,
             proposal.metadataSource,
             proposal.helperPath,
             proposal.helperBlobSha,
@@ -58,6 +59,9 @@ export function proposalFingerprint(
             proposal.titleAfter,
             proposal.titleBeforeSnippet,
             proposal.titleAfterSnippet,
+            ...(proposal.fingerprintVersion === 3
+              ? [proposal.revertsProposalId]
+              : []),
           ]
         : proposal.metadataSource === "helper_call"
           ? [

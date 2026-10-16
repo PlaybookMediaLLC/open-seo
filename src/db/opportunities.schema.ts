@@ -148,7 +148,7 @@ export const opportunityDecisions = sqliteTable(
       .references(() => opportunityRuns.id, { onDelete: "cascade" }),
     actorUserId: text("actor_user_id").notNull(),
     decision: text("decision", {
-      enum: ["reviewed", "approved", "rejected", "deferred"],
+      enum: ["reviewed", "approved", "rejected", "deferred", "reverted"],
     }).notNull(),
     fromStatus: text("from_status", { enum: OPPORTUNITY_STATUSES }).notNull(),
     toStatus: text("to_status", { enum: OPPORTUNITY_STATUSES }).notNull(),

@@ -1,4 +1,15 @@
-import { and, eq, exists, gte, inArray, notExists, or, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  exists,
+  gte,
+  inArray,
+  isNotNull,
+  isNull,
+  notExists,
+  or,
+  sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -27,8 +38,17 @@ export async function beginExecution(input: {
   approval: ProposalApproval;
   organizationId: string;
   siteUrl: string;
+  // A revert undoes a shipped change. It keeps the opportunity status, skips
+  // the evidence age check, and may follow the original's succeeded execution.
+  revert?: boolean;
 }): Promise<boolean> {
-  const { execution, approval, organizationId, siteUrl } = input;
+  const {
+    execution,
+    approval,
+    organizationId,
+    siteUrl,
+    revert = false,
+  } = input;
   const { projectId, proposalId } = execution;
   if (
     approval.projectId !== projectId ||
@@ -74,7 +94,7 @@ export async function beginExecution(input: {
       tx
         .update(opportunities)
         .set({
-          status: "in_progress",
+          status: revert ? sql`${opportunities.status}` : "in_progress",
           version: sql`${opportunities.version} + 1`,
           lastDecisionId: eventId,
         })
@@ -82,10 +102,12 @@ export async function beginExecution(input: {
           and(
             eq(opportunities.projectId, projectId),
             eq(opportunities.siteUrl, siteUrl),
-            gte(
-              opportunities.lastDetectedAt,
-              new Date(Date.now() - 14 * 86400_000).toISOString(),
-            ),
+            revert
+              ? inArray(opportunities.status, ["in_progress", "implemented"])
+              : gte(
+                  opportunities.lastDetectedAt,
+                  new Date(Date.now() - 14 * 86400_000).toISOString(),
+                ),
             claimExists(tx, claim),
             exists(
               tx
@@ -111,20 +133,29 @@ export async function beginExecution(input: {
                       projectId,
                       sql`${opportunityProposals.connectionId}`,
                     ),
+                    revert
+                      ? isNotNull(opportunityProposals.revertsProposalId)
+                      : isNull(opportunityProposals.revertsProposalId),
                     or(
                       and(
                         sql`${previous} is null`,
-                        eq(opportunities.status, "approved"),
-                        eq(
-                          opportunities.version,
-                          opportunityProposals.opportunityVersion,
-                        ),
+                        revert
+                          ? undefined
+                          : eq(opportunities.status, "approved"),
+                        revert
+                          ? undefined
+                          : eq(
+                              opportunities.version,
+                              opportunityProposals.opportunityVersion,
+                            ),
                       ),
                       and(
-                        inArray(opportunities.status, [
-                          "failed",
-                          "in_progress",
-                        ]),
+                        revert
+                          ? undefined
+                          : inArray(opportunities.status, [
+                              "failed",
+                              "in_progress",
+                            ]),
                         sql`${previousId} = ${latestExecutionId(projectId, sql`${opportunities.id}`)}`,
                         or(
                           sql`${previous} = 'failed'`,
@@ -149,7 +180,9 @@ export async function beginExecution(input: {
                   ),
                 ),
             ),
-            sql`not exists (select 1 from ${proposalExecutions} other_execution join ${opportunityProposals} other_proposal on other_proposal.id = other_execution.proposal_id and other_proposal.project_id = other_execution.project_id where other_execution.project_id = ${projectId} and other_proposal.opportunity_id = ${opportunities.id} and (other_execution.status = 'succeeded' or (other_execution.status = 'running' and other_execution.proposal_id <> ${proposalId})))`,
+            revert
+              ? sql`not exists (select 1 from ${proposalExecutions} other_execution join ${opportunityProposals} other_proposal on other_proposal.id = other_execution.proposal_id and other_proposal.project_id = other_execution.project_id where other_execution.project_id = ${projectId} and other_proposal.opportunity_id = ${opportunities.id} and ((other_execution.status = 'succeeded' and other_proposal.reverts_proposal_id is not null) or (other_execution.status = 'running' and other_execution.proposal_id <> ${proposalId})))`
+              : sql`not exists (select 1 from ${proposalExecutions} other_execution join ${opportunityProposals} other_proposal on other_proposal.id = other_execution.proposal_id and other_proposal.project_id = other_execution.project_id where other_execution.project_id = ${projectId} and other_proposal.opportunity_id = ${opportunities.id} and (other_execution.status = 'succeeded' or (other_execution.status = 'running' and other_execution.proposal_id <> ${proposalId})))`,
           ),
         ),
       ...retireExecutions(tx, projectId, eventId, now, accepted),

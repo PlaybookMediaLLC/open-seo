@@ -80,6 +80,12 @@ export const proposalInputSchema = projectScope.extend({
   proposalId: z.string().min(1),
 });
 export type ProposalInput = z.infer<typeof proposalInputSchema>;
+export const confirmRevertInputSchema = proposalInputSchema.extend({
+  deployedAt: z.iso.datetime({ offset: true }),
+  note: z.string().trim().min(1).max(2000),
+  confirmProductionDeployment: z.literal(true),
+});
+export type ConfirmRevertInput = z.infer<typeof confirmRevertInputSchema>;
 export const executeProposalInputSchema = projectScope.extend({
   proposalId: z.string().min(1),
   changeHash: z.string().regex(/^[a-f0-9]{64}$/),
@@ -150,6 +156,7 @@ export type MetadataProposal = {
   titleBeforeSnippet: string | null;
   titleAfterSnippet: string | null;
   fingerprintVersion: number;
+  revertsProposalId: string | null;
   changeHash: string;
   reason: string;
   expectedEffect: string;

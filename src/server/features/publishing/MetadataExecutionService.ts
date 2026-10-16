@@ -64,12 +64,14 @@ async function execute(
           proposal.opportunityId,
         );
         const gsc = await GscService.getConnection(input.projectId);
+        const revert = proposal.revertsProposalId !== null;
         if (
           !detail ||
           gsc?.siteUrl !== detail.opportunity.siteUrl ||
           detail.opportunity.evidenceRunId !== proposal.evidenceRunId ||
-          Date.now() - Date.parse(detail.opportunity.lastDetectedAt) >
-            14 * 86_400_000
+          (!revert &&
+            Date.now() - Date.parse(detail.opportunity.lastDetectedAt) >
+              14 * 86_400_000)
         )
           throw new AppError("CONFLICT");
         const client = await connectedGithub(connection, signal);
@@ -94,6 +96,7 @@ async function execute(
           execution,
           organizationId: context.organizationId,
           siteUrl: gsc.siteUrl,
+          revert,
           approval: {
             id: execution.approvalId,
             projectId: input.projectId,

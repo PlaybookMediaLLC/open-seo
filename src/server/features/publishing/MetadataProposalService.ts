@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import { AppError } from "@/server/lib/errors";
@@ -9,14 +8,8 @@ import {
   type PublishingMutationResult,
   type PublishingOpportunityState,
 } from "@/types/schemas/publishing";
-import type { GithubClient } from "./githubClient";
-import { metadataHelperCandidates } from "./metadataHelper";
 import { readTitleTemplate } from "./layoutTitle";
-import {
-  metadataHelperImport,
-  prepareMetadataChange,
-  validateMetadataTarget,
-} from "./nextMetadata";
+import { prepareMetadataChange, validateMetadataTarget } from "./nextMetadata";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   authorizePublishing,
@@ -26,58 +19,8 @@ import {
   type PublishingContext,
 } from "./publishingAccess";
 import { PublishingConnectionService } from "./PublishingConnectionService";
+import { readPublishingTarget } from "./publishingTarget";
 import { PublishingRepository } from "./repositories/PublishingRepository";
-
-const manifestSchema = z.object({
-  dependencies: z.record(z.string(), z.unknown()).optional(),
-  devDependencies: z.record(z.string(), z.unknown()).optional(),
-});
-
-function verifyNextManifest(source: string) {
-  let version: unknown;
-  try {
-    const manifest = manifestSchema.parse(JSON.parse(source));
-    version = manifest.dependencies?.next ?? manifest.devDependencies?.next;
-  } catch {
-    throw new AppError("VALIDATION_ERROR");
-  }
-  const parts =
-    typeof version === "string"
-      ? /^[~^]?(\d+)\.(\d+)\.\d+(?:-[a-zA-Z0-9.-]+)?$/.exec(version)
-      : null;
-  if (
-    !parts ||
-    !(
-      Number(parts[1]) > 13 ||
-      (Number(parts[1]) === 13 && Number(parts[2]) >= 2)
-    )
-  )
-    throw new AppError("VALIDATION_ERROR");
-}
-
-// Tries each candidate in order. A missing file in a folder that was already
-// read costs no extra GitHub request.
-async function readMetadataHelper(
-  client: GithubClient,
-  sha: string,
-  candidates: string[],
-) {
-  for (const path of candidates) {
-    try {
-      const file = await client.readFile(path, sha);
-      if ((await gitBlobHash(file.source)) !== file.blobSha)
-        throw new AppError("CONFLICT");
-      return { path, ...file };
-    } catch (error) {
-      if (!(error instanceof AppError && error.code === "NOT_FOUND"))
-        throw error;
-    }
-  }
-  throw new AppError(
-    "VALIDATION_ERROR",
-    "Relay could not find the metadata helper module in the repository.",
-  );
-}
 
 async function get(
   context: PublishingContext,
@@ -145,37 +88,12 @@ async function prepare(
           throw new AppError("CONFLICT");
         const base = await client.getRef(connection.baseBranch);
         if (!base) throw new AppError("NOT_FOUND");
-        const rootPrefix = connection.rootDirectory
-          ? `${connection.rootDirectory}/`
-          : "";
-        const manifest = await client.readFile(
-          `${rootPrefix}package.json`,
+        const { file, helper } = await readPublishingTarget(
+          client,
+          connection,
+          input.filePath,
           base.sha,
         );
-        verifyNextManifest(manifest.source);
-        const file = await client.readFile(input.filePath, base.sha);
-        if ((await gitBlobHash(file.source)) !== file.blobSha)
-          throw new AppError("CONFLICT");
-        const helperImport = metadataHelperImport(file.source, input.filePath);
-        const helper = helperImport
-          ? await readMetadataHelper(
-              client,
-              base.sha,
-              metadataHelperCandidates({
-                specifier: helperImport.specifier,
-                pagePath: input.filePath,
-                rootDirectory: connection.rootDirectory,
-                tsconfig: helperImport.specifier.startsWith(".")
-                  ? undefined
-                  : (
-                      await client.readFile(
-                        `${rootPrefix}tsconfig.json`,
-                        base.sha,
-                      )
-                    ).source,
-              }),
-            )
-          : undefined;
         const patch = prepareMetadataChange({
           source: file.source,
           path: input.filePath,
@@ -223,7 +141,8 @@ async function prepare(
           titleAfter: patch.afterTitle,
           titleBeforeSnippet: patch.titleBeforeSnippet,
           titleAfterSnippet: patch.titleAfterSnippet,
-          fingerprintVersion: 2,
+          fingerprintVersion: 3,
+          revertsProposalId: null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:

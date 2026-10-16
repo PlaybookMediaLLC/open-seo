@@ -1,0 +1,1 @@
+ALTER TABLE `opportunity_proposals` ADD `reverts_proposal_id` text REFERENCES opportunity_proposals(id) ON DELETE set null;

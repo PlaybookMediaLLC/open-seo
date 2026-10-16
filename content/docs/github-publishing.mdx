@@ -1,0 +1,65 @@
+---
+title: "Publish changes to GitHub"
+description: "Turn an approved opportunity into a small pull request that changes a page title or description, then track its deployment and results."
+---
+
+Relay can change the title, the description, or both, of a page in your Next.js App Router site. It opens one small pull request for each approved change. You review and merge it. Relay never merges or deploys.
+
+## Connect a repository
+
+1. Open your project, then **Project settings → Integrations → GitHub publishing**.
+2. Create a fine-grained personal access token for **this repository only**. Give it these permissions:
+   - **Contents: Read and write** and **Pull requests: Read and write**. Relay needs these to open the pull request.
+   - **Deployments: Read**, **Checks: Read** and **Commit statuses: Read**. These are optional and read-only. Relay uses them to show deployment and check status.
+3. Enter the repository owner, name, base branch and root directory, for example `apps/www` in a monorepo.
+4. Set the **GitHub production environment**. This is the deployment environment that counts as production, for example `Production`.
+
+## Which pages Relay can change
+
+Relay changes a page when its metadata is literal text in one of these forms:
+
+- An object: `export const metadata = { title: 'About us', description: '…' }`.
+- A helper call: `export const metadata = pageMetadata('About us', '…', '/about')`. The helper must be a named import from a relative path or a `tsconfig.json` path alias. It must return `title` and `description` straight from its parameters.
+
+Route groups such as `app/(site)/about/page.tsx` work.
+
+Relay does not change these. It tells you why:
+
+- Dynamic routes such as `app/[slug]/page.tsx`.
+- `generateMetadata`.
+- Computed text.
+- Client components.
+
+## Titles
+
+Next.js adds the nearest layout's `title.template` to a page title. For example, the template `%s | Example` makes the title "Pricing" into "Pricing | Example". Relay reads up to 3 layouts. It shows the final title before you approve. The final title must have 10 to 60 characters.
+
+## Review and approve
+
+Each proposal shows:
+
+- The exact before and after text, and the file.
+- The helper, and any other place in the helper that uses the same text. Example: the Open Graph title.
+- The reason, the expected effect, the risks and the verification plan.
+
+When you approve, Relay creates one branch, one commit and one pull request. The new text keeps your file's quote style, so formatter checks still pass. The proposal then shows **Your repository's checks**. This is your own CI, not a Relay build.
+
+## Track deployment and results
+
+After you merge, open **Track results** for the change:
+
+1. Click **Refresh GitHub status** to confirm the merge.
+2. Click **Check signals**. Relay looks for two independent signals:
+   - **GitHub deployment**: a successful deployment of the merge commit to your production environment.
+   - **Live page**: your page shows the approved text.
+3. When both signals agree, start measurement on the verified basis. The deployment time comes from GitHub. If your repository does not report deployments, confirm the deployment time yourself.
+
+Before measurement starts, tell Relay about other changes or seasonal effects in the same period.
+
+## Revert a change
+
+When a result is negative, or you change your mind, open the experiment and click **Prepare revert**:
+
+1. Relay checks that the page still shows the approved text. If someone changed the page since, it stops and asks you to prepare a new proposal instead.
+2. Relay prepares the exact inverse change as a new proposal. You approve it like any other change.
+3. After the revert pull request merges and ships, confirm it on the proposal. The opportunity then shows as **reverted**.

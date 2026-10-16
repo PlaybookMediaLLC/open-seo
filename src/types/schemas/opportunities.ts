@@ -124,7 +124,8 @@ export type OpportunityDecision = {
   opportunityId: string;
   evidenceRunId: string;
   actorUserId: string;
-  decision: OpportunityReviewInput["decision"];
+  // "reverted" is recorded only when a confirmed revert ships (RFC-0005 5.6).
+  decision: OpportunityReviewInput["decision"] | "reverted";
   fromStatus: OpportunityStatus;
   toStatus: OpportunityStatus;
   note: string;

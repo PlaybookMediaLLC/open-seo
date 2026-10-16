@@ -25,6 +25,7 @@ const v1: Omit<MetadataProposal, "changeHash"> = {
   titleAfter: null,
   titleBeforeSnippet: null,
   titleAfterSnippet: null,
+  revertsProposalId: null,
   fingerprintVersion: 1,
   reason: "r",
   expectedEffect: "e",

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
+import { RevertService } from "@/server/features/experiments/RevertService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   confirmDeploymentInputSchema,
@@ -10,6 +11,7 @@ import {
   experimentListInputSchema,
   registerExperimentInputSchema,
 } from "@/types/schemas/experiments";
+import { confirmRevertInputSchema } from "@/types/schemas/publishing";
 
 export const listExperiments = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
@@ -73,6 +75,21 @@ export const confirmVerifiedDeployment = createServerFn({ method: "POST" })
   .validator(confirmVerifiedDeploymentInputSchema)
   .handler(({ context, data }) =>
     ExperimentService.confirmVerifiedDeployment(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const prepareRevertProposal = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    RevertService.prepare(context, { ...data, projectId: context.projectId }),
+  );
+export const confirmRevertDeployed = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(confirmRevertInputSchema)
+  .handler(({ context, data }) =>
+    RevertService.confirmDeployed(context, {
       ...data,
       projectId: context.projectId,
     }),

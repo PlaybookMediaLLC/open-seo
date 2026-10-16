@@ -127,6 +127,7 @@ export async function fixture(database: TestDatabase) {
     titleAfter: null,
     titleBeforeSnippet: null,
     titleAfterSnippet: null,
+    revertsProposalId: null,
     fingerprintVersion: 1,
     changeHash: "a".repeat(64),
     reason: "Low CTR",

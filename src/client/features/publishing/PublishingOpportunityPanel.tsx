@@ -164,17 +164,26 @@ export function PublishingOpportunityPanel({
           : history.connection.revokedAt ||
               history.proposal.connectionId !== connection?.id
             ? "This proposal's connection was revoked or replaced. Prepare a new proposal."
-            : !["approved", "in_progress", "failed"].includes(
-                  opportunity.status,
-                )
-              ? "This opportunity is no longer approved for execution."
-              : null;
+            : history.proposal.revertsProposalId
+              ? ["in_progress", "implemented"].includes(opportunity.status)
+                ? null
+                : "This revert can no longer run on this opportunity."
+              : !["approved", "in_progress", "failed"].includes(
+                    opportunity.status,
+                  )
+                ? "This opportunity is no longer approved for execution."
+                : null;
         return (
           <PublishingProposal
             key={history.proposal.id}
             history={history}
             canExecute={enabled}
             canTrack={canManage && !readOnly}
+            canConfirmRevert={
+              enabled &&
+              !!history.proposal.revertsProposalId &&
+              ["in_progress", "implemented"].includes(opportunity.status)
+            }
             blockedReason={blockedReason}
           />
         );
