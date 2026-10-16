@@ -36,7 +36,7 @@ The upstream code says "OpenSEO". This fork ships the product as Relay without e
 - New API keys start with `relay_`; `/mcp` still accepts keys made before the rename (`oseo_`).
 - Unit tests run without the plugin and keep upstream's strings.
 - Static files skip the plugin. `src/public/site.webmanifest` and the icon PNGs carry the Relay name and mark directly, and `plugins/openseo/.mcp.json` points the agent plugin at this deployment.
-- Seams are marked `// playbook-seam`. Audit them with `grep -rn playbook-seam vite.config.ts src`.
+- Seams are marked `// playbook-seam`. Audit them with `grep -rn playbook-seam vite.config.ts src deploy`.
 - After an upstream merge, run `pnpm vite build` and confirm that `grep -rao OpenSEO dist` finds nothing.
 
 Known gaps: the agent plugin and skill folders keep the name `openseo`, and the skill files mention OpenSEO in their text. `docs/` and `web/` are upstream content that this deployment does not serve.
