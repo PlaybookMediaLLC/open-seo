@@ -99,15 +99,19 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
   });
   const busy = connect.isPending || disconnect.isPending;
   const canManage = query.isSuccess && query.data.canManage && !query.isError;
+  const appRevoked = query.isSuccess && query.data.appRevoked;
+  const active = connection && !connection.revokedAt && !appRevoked;
   return (
     <CardShell
       title="GitHub publishing"
       icon={<Github className="size-5" />}
       action={
-        <Badge
-          variant={connection && !connection.revokedAt ? "success" : "outline"}
-        >
-          {connection && !connection.revokedAt ? "Connected" : "Not connected"}
+        <Badge variant={active ? "success" : "outline"}>
+          {active
+            ? "Connected"
+            : appRevoked
+              ? "Reconnect the GitHub App"
+              : "Not connected"}
         </Badge>
       }
     >
@@ -151,6 +155,11 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
                 {connection.revokedAt ? (
                   <p className="text-destructive">
                     This connection has been revoked.
+                  </p>
+                ) : appRevoked ? (
+                  <p className="text-destructive">
+                    The GitHub App was uninstalled. Install it again, then
+                    choose the repository from the App.
                   </p>
                 ) : canManage ? (
                   <ProductionEnvironmentForm
