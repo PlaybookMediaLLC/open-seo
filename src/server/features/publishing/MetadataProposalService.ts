@@ -157,6 +157,7 @@ async function prepare(
           adapterId,
           fingerprintVersion: 5,
           revertsProposalId: null,
+          draftId: input.draftId ?? null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:

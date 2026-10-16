@@ -135,6 +135,8 @@ export function createGithubClient({
     repositoryId = value.id;
   };
   return {
+    // The file locator spends its own smaller budget through this.
+    request,
     get requestCount() {
       return requestCount;
     },

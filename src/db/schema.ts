@@ -15,6 +15,7 @@ import * as sqliteOpportunities from "./opportunities.schema";
 import * as sqliteOpportunitySignals from "./opportunity-signals.schema";
 import * as sqliteOpportunityContentGap from "./opportunity-content-gap.schema";
 import * as sqlitePublishing from "./publishing.schema";
+import * as sqliteProposalDrafts from "./proposal-drafts.schema";
 import * as sqliteExperiments from "./experiments.schema";
 import * as pgApp from "./pg/app.schema";
 import * as pgProjectContext from "./pg/project-context.schema";
@@ -32,6 +33,7 @@ import * as pgOpportunities from "./pg/opportunities.schema";
 import * as pgOpportunitySignals from "./pg/opportunity-signals.schema";
 import * as pgOpportunityContentGap from "./pg/opportunity-content-gap.schema";
 import * as pgPublishing from "./pg/publishing.schema";
+import * as pgProposalDrafts from "./pg/proposal-drafts.schema";
 import * as pgExperiments from "./pg/experiments.schema";
 
 // Canonical schema barrel. Repositories import their tables from here and the
@@ -60,6 +62,7 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteOpportunitySignals &
   typeof sqliteOpportunityContentGap &
   typeof sqlitePublishing &
+  typeof sqliteProposalDrafts &
   typeof sqliteExperiments;
 
 const runtimeSchema =
@@ -81,6 +84,7 @@ const runtimeSchema =
         ...pgOpportunitySignals,
         ...pgOpportunityContentGap,
         ...pgPublishing,
+        ...pgProposalDrafts,
         ...pgExperiments,
       }
     : {
@@ -100,6 +104,7 @@ const runtimeSchema =
         ...sqliteOpportunitySignals,
         ...sqliteOpportunityContentGap,
         ...sqlitePublishing,
+        ...sqliteProposalDrafts,
         ...sqliteExperiments,
       };
 
@@ -172,6 +177,9 @@ export const {
   publishingConnections,
   opportunityProposals,
   opportunityTickets,
+  proposalDrafts,
+  proposalDraftSources,
+  proposalDraftClaims,
   githubAppInstallations,
   proposalApprovals,
   proposalExecutions,

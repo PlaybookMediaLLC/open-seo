@@ -1,6 +1,6 @@
 # RFC-0004: AI SEO engineer
 
-- **Status:** Draft
+- **Status:** Phase 1 built; live checks pending
 - **Date:** 2026-10-15
 - **Brief section:** 5 (Feature C)
 - **Depends on:** RFC-0001 (B2, the model key) and RFC-0005 phase 1a (route groups and metadata helper calls, needed to read the current description on real sites). Phase 3 briefs use RFC-0002 content gaps.
@@ -68,7 +68,7 @@ Phase 1 closes the main acceptance-test gap: "The system creates a verified chan
 
 On test site S1, `/approach` resolves to `apps/www/app/(site)/approach/page.tsx`.
 
-Dynamic segments and rewrites stay unsupported. The locator says so, and the user can open a ticket instead (RFC-0003).
+Dynamic segments and rewrites stay unsupported. The locator says so, and the user can open a ticket instead (RFC-0003). When no file matches, the locator reads the parent folder once for each group. If that folder has a dynamic segment such as `[slug]`, the message names it. A dynamic segment higher in the path gets the general message.
 
 ### 5.3 Description drafting (phase 1)
 
@@ -106,26 +106,26 @@ Wrap each input in a labeled block. Mark page text as untrusted. Store the promp
 3. The draft differs from the current description after case and whitespace normalization.
 4. Every number, percentage or currency amount in the draft appears in an input text.
 5. Every claim `quote` appears in the input text of its `sourceKind`, after whitespace normalization.
-6. No phrase from the risky-claims list appears unless it also appears in the inputs.
+6. No phrase from the risky-claims list appears unless it also appears in the project context or the current description. Page text and queries cannot permit a risky phrase, so an instruction injected into the page cannot unlock "#1".
 7. Every `usedQueries` value is one of the input queries.
 
 When a check fails, retry once with the failure reasons added. When the retry fails, save the draft as `rejected_by_validation`. Show: "Relay could not write a safe draft. Write the description yourself." Never show an unchecked draft.
 
 **Limits:**
 
-| Limit                          | Value                                   |
-| ------------------------------ | --------------------------------------- |
-| Output tokens                  | 400                                     |
-| Timeout                        | 30 seconds per attempt                  |
-| Attempts per request           | 2                                       |
-| Drafts per opportunity per day | 3                                       |
-| Drafts per project per day     | 30                                      |
-| Concurrent drafts per project  | 1, using claim key `drafts:{projectId}` |
+| Limit                          | Value                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------- |
+| Output tokens                  | 1,000 (the answer is about 400 tokens; the rest is headroom for the model's reasoning) |
+| Timeout                        | 30 seconds per attempt                                                                 |
+| Attempts per request           | 2                                                                                      |
+| Drafts per opportunity per day | 3                                                                                      |
+| Drafts per project per day     | 30                                                                                     |
+| Concurrent drafts per project  | 1, using claim key `drafts:{projectId}`                                                |
 
 **Billing:**
 
 1. Before the call, refuse when `checkUsageCreditsDepleted` reports no credits. Show the existing out-of-credits message.
-2. After the call, bill the provider-reported cost of both attempts with `billResearchSpend`, as `websiteResearch.ts` does.
+2. Bill the provider-reported cost of each model step when the step finishes, with `billResearchSpend`, as `aiPromptSuggestions.ts` does. A failed attempt is billed too.
 3. This keeps a known small overdraft race. RFC-0009 replaces it with a hold and a project limit. The per-project concurrency of 1 bounds the race.
 
 **Permission:** drafting requires `integration: ["manage"]`, the same as preparing a proposal, because it spends credits.
@@ -158,7 +158,7 @@ When a check fails, retry once with the failure reasons added. When the retry fa
 
 Index on (`project_id`, `opportunity_id`, `created_at`).
 
-`proposal_draft_sources`: `id`, `project_id`, `draft_id` (FK cascade), `kind` (`query`, `page_text`, `project_context`, `current_metadata`), `label`, `excerpt` (at most 500 characters).
+`proposal_draft_sources`: `id`, `project_id`, `draft_id` (FK cascade), `kind` (`query`, `page_text`, `project_context`, `current_metadata`), `label`, `excerpt` (at most 500 characters). A draft stores the queries it used, the current description, and the exact quote of each claim that its source contains. The UI shows each claim with that quote.
 
 `proposal_draft_claims`: `id`, `project_id`, `draft_id` (FK cascade), `claim_text`, `source_id` (FK `proposal_draft_sources.id`, cascade), `verified` (boolean).
 
@@ -176,7 +176,7 @@ Server functions in `src/serverFunctions/publishing.ts` (fork-owned):
 UI in `src/client/features/publishing/PublishingOpportunityPanel.tsx`:
 
 1. On open, call `locateProposalFile` and pre-fill the path.
-2. Add "Draft with AI". Show the estimated credit cost range before the first draft.
+2. Add "Draft with AI". Show the estimated credit cost range before the first draft. The first estimate is "about 1 to 5 credits", from the default model's price for two attempts. Replace it with the recorded 95th percentile after the first 100 drafts.
 3. Show the draft, the character count, the rationale, the used queries and each claim with its source excerpt.
 4. "Use this draft" fills the existing description field. The user can edit it.
 5. Preparing the proposal sends `draftId`. The server records it.
@@ -260,22 +260,22 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 
 ### Phase 1
 
-- [ ] RFC-0001 B2 done: the model key works in production.
-- [ ] `locateMetadataFile` with tests for `/`, a nested path, `src/app`, a route group, two groups with the same path (ambiguous) and no match.
-- [ ] Locator makes at most 12 GitHub requests (test).
-- [ ] `proposal_drafts`, `proposal_draft_sources`, `proposal_draft_claims` and `opportunity_proposals.draft_id`, in D1 and Postgres, with the parity test.
-- [ ] Draft service with the input collection, the prompt constant and structured output.
-- [ ] One test per deterministic check, each with a draft that fails only that check.
-- [ ] Test: a page text that contains "ignore previous instructions" does not change the checks or the output handling.
-- [ ] Test: a failed retry stores `rejected_by_validation` and shows no draft.
-- [ ] Limits enforced: 3 per opportunity per day, 30 per project per day, 1 at a time (tests).
-- [ ] Billing: refusal with no credits makes no model call (test). Settled cost equals the reported cost (test).
-- [ ] Permission test: a member without manage permission cannot draft.
-- [ ] Tenancy test: a draft from project A is not readable from project B.
-- [ ] UI pre-fills the path, shows the draft with claims and sources, and sends `draftId`.
+- [x] RFC-0001 B2 done: the model key works in production.
+- [x] `locateMetadataFile` with tests for `/`, a nested path, `src/app`, a route group, two groups with the same path (ambiguous) and no match.
+- [x] Locator makes at most 12 GitHub requests (test).
+- [x] `proposal_drafts`, `proposal_draft_sources`, `proposal_draft_claims` and `opportunity_proposals.draft_id`, in D1 and Postgres, with the parity test.
+- [x] Draft service with the input collection, the prompt constant and structured output.
+- [x] One test per deterministic check, each with a draft that fails only that check.
+- [x] Test: a page text that contains "ignore previous instructions" does not change the checks or the output handling.
+- [x] Test: a failed retry stores `rejected_by_validation` and shows no draft.
+- [x] Limits enforced: 3 per opportunity per day, 30 per project per day, 1 at a time (tests).
+- [x] Billing: refusal with no credits makes no model call (test). Settled cost equals the reported cost (test).
+- [x] Permission test: a member without manage permission cannot draft.
+- [x] Tenancy test: a draft from project A is not readable from project B.
+- [x] UI pre-fills the path, shows the draft with claims and sources, and sends `draftId`.
 - [ ] Live check: draft 10 descriptions on a real project. A person rates each one. At least 8 are usable with small or no edits. No draft contains a fact that is not in the sources.
 - [ ] Live check: one drafted description goes through approval to a real pull request.
-- [ ] Docs page explains drafting, its checks, its cost and its limits.
+- [x] Docs page explains drafting, its checks, its cost and its limits.
 
 ### Phase 2
 

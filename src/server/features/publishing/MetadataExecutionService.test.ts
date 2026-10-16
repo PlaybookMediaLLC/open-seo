@@ -89,12 +89,14 @@ beforeEach(async () => {
   const { proposal, connection, detail, source } = fixture;
   github = {
     requestCount: 9,
+    request: vi.fn<GithubClient["request"]>(),
     getRepository: vi
       .fn<GithubClient["getRepository"]>()
       .mockResolvedValue(fixture.repository),
     readFile: vi
       .fn<GithubClient["readFile"]>()
       .mockResolvedValue({ source, blobSha: proposal.beforeBlobSha }),
+    listDirectory: vi.fn<GithubClient["listDirectory"]>(),
     getRef: vi
       .fn<GithubClient["getRef"]>()
       .mockImplementation(async (branch) =>

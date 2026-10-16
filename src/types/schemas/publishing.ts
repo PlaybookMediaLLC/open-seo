@@ -71,6 +71,9 @@ export const prepareProposalInputSchema = projectScope
     newRobots: z.object({ index: z.boolean(), follow: z.boolean() }).optional(),
     // The page path typed by the person, for canonical and robots changes.
     confirmPath: z.string().max(500).optional(),
+    // The AI draft the description started from (RFC-0004). The person may
+    // have edited it; the link records where it came from.
+    draftId: z.string().min(1).max(64).optional(),
   })
   .refine((value) => {
     const text =
@@ -174,6 +177,8 @@ export type MetadataProposal = {
   adapterId: "app_router_metadata" | "pages_router_head";
   fingerprintVersion: number;
   revertsProposalId: string | null;
+  /** RFC-0004: the AI draft the person started from, if any. */
+  draftId: string | null;
   changeHash: string;
   reason: string;
   expectedEffect: string;

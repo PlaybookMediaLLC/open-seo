@@ -79,6 +79,7 @@ beforeEach(() => {
         robotsBefore: null,
         robotsAfter: null,
         revertsProposalId: null,
+        draftId: null,
       },
     },
   });
