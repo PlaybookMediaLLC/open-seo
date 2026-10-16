@@ -1,6 +1,6 @@
 # RFC-0001: Launch readiness for other users
 
-- **Status:** Building. Progress and evidence on 2026-10-16 are in section 9.
+- **Status:** Done on 2026-10-16 for every item that Relay's code and configuration can close. The items in section 10 wait on Google, a payment, search data, calendar time or other RFCs. The owner decided on 2026-10-16 that they do not block closing this RFC. Evidence is in section 9.
 - **Date:** 2026-10-15
 - **Scope:** relay.playbookmedia.io (`AUTH_MODE=hosted`, D1, Google-only sign-in)
 - **Depends on:** nothing. All other RFCs depend on this one.
@@ -13,22 +13,22 @@ Relay is public, but a new user cannot yet complete the main workflow reliably. 
 
 ## 2. Current state (verified on 2026-10-15)
 
-| Area                      | State                                                                               | Evidence                                                                                                                                   |
-| ------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Sign-in                   | Works. Google-only.                                                                 | `AUTH_GOOGLE_ONLY=true` in the deploy config.                                                                                              |
-| Google OAuth branding     | Under human review, submitted 2026-10-15.                                           | Verification Center shows "Your branding is currently under review."                                                                       |
-| Google OAuth data access  | No scopes declared on the Data Access page.                                         | Data Access page lists no rows.                                                                                                            |
-| Search Console scope      | `webmasters.readonly`. Google lists it as non-sensitive.                            | Data Access "Add scopes" panel.                                                                                                            |
-| Analytics scope           | `analytics.readonly`. Sensitive. Needs a justification and a demo video.            | Same panel. The justification text is drafted. The video does not exist yet.                                                               |
-| AI provider key           | `OPENROUTER_API_KEY` is empty in the local copy of `.env.playbook`.                 | Key count check, no value read. Verify the deployed secret.                                                                                |
-| Team invitation email     | Not configured. `LOOPS_API_KEY` and `LOOPS_TRANSACTIONAL_INVITATION_ID` are absent. | `src/server/email/loops.ts`, `sendHostedInvitationEmail` requires both.                                                                    |
-| Billing (Autumn)          | `AUTUMN_SECRET_KEY` and `AUTUMN_WEBHOOK_SECRET` are set. Plans not verified.        | Key presence check. `docs/maintainers/playbook-deployment.md` still says Autumn is unconfigured.                                           |
-| Error monitoring          | Off. `POSTHOG_PUBLIC_KEY` is empty.                                                 | Key count check.                                                                                                                           |
-| Uptime                    | On. Smoke test after deploy and a check every 15 minutes.                           | `.github/workflows/deploy-playbook.yml`, `uptime-playbook.yml`.                                                                            |
-| Growth workflow live test | Never run with real credentials.                                                    | `docs/maintainers/organic-growth-handoff.md`, section 7F.                                                                                  |
-| In-app docs               | No pages for Opportunities, Experiments or GitHub publishing.                       | `content/docs/` lists no such pages. Repository docs exist in `docs/OPPORTUNITIES.md`, `docs/EXPERIMENTS.md`, `docs/GITHUB_PUBLISHING.md`. |
-| Account deletion          | No self-serve deletion. The privacy policy offers deletion by email.                | No delete-account code path found.                                                                                                         |
-| End-to-end test           | None for the growth workflow.                                                       | `tests/*.spec.ts` covers domain overview and keyword research only.                                                                        |
+| Area                      | State                                                                                                        | Evidence                                                                                                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Sign-in                   | Works. Google-only.                                                                                          | `AUTH_GOOGLE_ONLY=true` in the deploy config.                                                                                              |
+| Google OAuth branding     | Under human review, submitted 2026-10-15.                                                                    | Verification Center shows "Your branding is currently under review."                                                                       |
+| Google OAuth data access  | No scopes declared on the Data Access page.                                                                  | Data Access page lists no rows.                                                                                                            |
+| Search Console scope      | `webmasters.readonly`. Google lists it as non-sensitive.                                                     | Data Access "Add scopes" panel.                                                                                                            |
+| Analytics scope           | `analytics.readonly`. Sensitive. Needs a justification and a demo video.                                     | Same panel. The justification text is drafted. The video does not exist yet.                                                               |
+| AI provider key           | `OPENROUTER_API_KEY` is empty in the local copy of `.env.playbook`.                                          | Key count check, no value read. Verify the deployed secret.                                                                                |
+| Team invitation email     | Not configured. `LOOPS_API_KEY` and `LOOPS_TRANSACTIONAL_INVITATION_ID` are absent.                          | `src/server/email/loops.ts`, `sendHostedInvitationEmail` requires both.                                                                    |
+| Billing (Autumn)          | `AUTUMN_SECRET_KEY` and `AUTUMN_WEBHOOK_SECRET` are set. Plans not verified.                                 | Key presence check. `docs/maintainers/playbook-deployment.md` still says Autumn is unconfigured.                                           |
+| Error monitoring          | Off. `POSTHOG_PUBLIC_KEY` is empty.                                                                          | Key count check.                                                                                                                           |
+| Uptime                    | On. Smoke test after deploy. The check is scheduled every 15 minutes, but GitHub runs it every 3 to 5 hours. | `.github/workflows/deploy-playbook.yml`, `uptime-playbook.yml`.                                                                            |
+| Growth workflow live test | Never run with real credentials.                                                                             | `docs/maintainers/organic-growth-handoff.md`, section 7F.                                                                                  |
+| In-app docs               | No pages for Opportunities, Experiments or GitHub publishing.                                                | `content/docs/` lists no such pages. Repository docs exist in `docs/OPPORTUNITIES.md`, `docs/EXPERIMENTS.md`, `docs/GITHUB_PUBLISHING.md`. |
+| Account deletion          | No self-serve deletion. The privacy policy offers deletion by email.                                         | No delete-account code path found.                                                                                                         |
+| End-to-end test           | None for the growth workflow.                                                                                | `tests/*.spec.ts` covers domain overview and keyword research only.                                                                        |
 
 ## 3. Blockers
 
@@ -190,28 +190,18 @@ State these in the docs or the terms. Do not hide them.
 
 ### Google
 
-- [ ] Branding review approved.
-- [ ] Data Access lists all five scopes.
-- [ ] Demo video uploaded and linked.
-- [ ] Data access verification approved.
-- [ ] A new account connects GA4 without the unverified-app screen.
-
 ### Configuration
 
 - [x] `OPENROUTER_API_KEY` set, with a provider spend limit.
 - [x] The assistant answers in production, and the charge settles.
-- [ ] Sending domain onboarded, and a test invitation delivered.
+- [x] Sending domain onboarded, and a test invitation delivered.
 - [x] Autumn products match the landing page pricing.
 - [x] Autumn webhook reaches production.
-- [ ] A test purchase and a test top-up work.
 - [x] Error monitoring receives a test error.
 - [x] `docs/maintainers/playbook-deployment.md` matches the real configuration.
 
 ### Workflow
 
-- [ ] Live acceptance steps 1 to 10 pass on a real property and a real repository.
-- [ ] The evidence is written in `docs/maintainers/organic-growth-audit.md`.
-- [ ] RFC-0004 phase 1 is done, so the system drafts the change.
 - [x] The Playwright growth-workflow spec runs in CI.
 
 ### Documentation and support
@@ -222,10 +212,7 @@ State these in the docs or the terms. Do not hide them.
 - [x] The D1 restore runbook exists and was tested.
 - [x] The support mailbox has an owner and saved replies.
 
-### Before paid plans
-
-- [ ] RFC-0009 billing debts fixed.
-- [ ] Project and organization spending limits work.
+The items that wait on Google, a payment, search data, calendar time or other RFCs moved to section 10 on 2026-10-16.
 
 ## 7. Real-site acceptance test
 
@@ -316,19 +303,44 @@ State these in the docs or the terms. Do not hide them.
 - **S5.** The owner reads `team@playbookmedia.io` every business day (owner's statement, 2026-10-16). Saved replies are in `runbooks/support-replies.md`.
 - **S2, production.** `GDPR_ERASURE_SECRET` is in `ENV_PLAYBOOK` and deployed. The erasure endpoint answers an unsigned request with 401.
 
-**Open:**
+## 10. Follow-ups that do not block closing
 
-- **B1.** Google still shows "Your branding is currently under review". The five scopes are not declared under Data Access, and the demo video does not exist. The owner records the video, because the consent screen needs the owner's clicks. Two facts from 2026-10-16:
-  - Saving any Data Access change shows "Saving will update your verification request … and may require previously verified information to be reviewed again". So add the scopes after the branding result, as step 1 says.
-  - Save stays disabled while `analytics.readonly` is in the list and the YouTube link is empty. Declare all five scopes and the link in one save.
+Each follow-up names who acts and what triggers it. Check it here when it passes.
 
-  Justification for `analytics.readonly` (821 of 1,000 characters):
+**Google (B1)**
 
-  > Relay is an SEO tool. When a user chooses to connect Google Analytics 4 to a project, Relay uses analytics.readonly to list the GA4 properties the user can access (Admin API accountSummaries), so the user can pick the property of their own website, and to run read-only reports on that one property (Data API runReport): sessions, active users, engaged sessions, key events and page views by landing page and date. Relay shows these numbers next to Search Console data, uses them to rank which pages to improve, and measures results after a change. Relay never writes to Analytics and never shares the data. analytics.readonly is the narrowest scope that can read GA4 reports; no read scope limited to one property exists. Connecting is optional, and the user can disconnect at any time in Project settings, Integrations.
+- [ ] Branding review approved. Google has reviewed it since 2026-10-15.
+- [ ] Data Access lists all five scopes, and the demo video is uploaded and linked. Do both in one save after the branding result: saving any Data Access change updates the pending request, and Save stays disabled while `analytics.readonly` has no YouTube link. The owner records the video, because the consent screen needs the owner's clicks. The justification text is below.
+- [ ] Data access verification approved.
+- [ ] A new account connects GA4 without the unverified-app screen.
 
-- **B3.** The sending domain is onboarded. A test invitation to a second Google account is not sent yet.
-- **B4.** A test purchase and a test top-up need a payment by the owner. DataForSEO paused the account once at about 11:40 UTC ("We noticed some unusual activity", PostHog, 2026-10-16). Paid calls worked again at 15:19 UTC, and the owner asked `support@dataforseo.com` what triggered the pause. The balance is $0.45 of the $1 trial deposit, so paid research stops soon without a deposit (minimum $50).
-- **B5.** `playbookmedia.io` has no Search Console rows, so detection finds nothing to review. The merge and deploy steps need the monorepo GitHub Actions billing fix. RFC-0005 ran the publishing part on its test repository.
-- **Alerts.** PostHog error alerts have no email destination. The choices are Slack, Discord, GitHub issues, Linear, PagerDuty or a webhook. The owner picks one.
-- **RFC-0004 phase 1** and **RFC-0009** are their own RFCs. Their checklist items here close when those RFCs are done.
-- **Uptime.** The 7-day green window ends on 2026-10-22 at the earliest. GitHub ran the 15-minute schedule only 7 times between 2026-10-15 13:46 and 2026-10-16 11:40 UTC. All 7 runs passed.
+Justification for `analytics.readonly` (821 of 1,000 characters):
+
+> Relay is an SEO tool. When a user chooses to connect Google Analytics 4 to a project, Relay uses analytics.readonly to list the GA4 properties the user can access (Admin API accountSummaries), so the user can pick the property of their own website, and to run read-only reports on that one property (Data API runReport): sessions, active users, engaged sessions, key events and page views by landing page and date. Relay shows these numbers next to Search Console data, uses them to rank which pages to improve, and measures results after a change. Relay never writes to Analytics and never shares the data. analytics.readonly is the narrowest scope that can read GA4 reports; no read scope limited to one property exists. Connecting is optional, and the user can disconnect at any time in Project settings, Integrations.
+
+**Team (B3)**
+
+- [ ] The second account (`yoanyombapro@gmail.com`) accepts the invitation and sees the project within 1 minute. The invitation arrived 3 seconds after it was sent, and Gmail reported SPF, DKIM and DMARC as pass.
+
+**Billing (B4)**
+
+- [ ] A test purchase and a test top-up work. The owner pays, because the Autumn keys are live.
+- [ ] A paid lookup lowers the balance by the shown cost. DataForSEO paused the account once at about 11:40 UTC on 2026-10-16 and allowed paid calls again by 15:19 UTC. The owner asked its support about the cause. The trial balance is about $0.44, so research stops soon without a deposit (minimum $50).
+
+**Live acceptance (B5)**
+
+- [ ] Steps 1 to 10 pass on S1, and the evidence is in `docs/maintainers/organic-growth-audit.md`. Search Console returned no rows because the `playbookmedia.io` domain property was verified on 2026-10-15 and still shows "Processing data, please check again in a day or so". URL Inspection shows the home page as indexed. The site sitemap was submitted on 2026-10-16; before that, only Relay's sitemap was. The merge and deploy steps also need the monorepo GitHub Actions billing fix.
+
+**Monitoring**
+
+- [ ] The alert email arrives. The PostHog insight "Exception count" has the hourly alert "Relay production errors" (more than 0 exceptions), which emails the owner. A test error was thrown at 16:12 UTC on 2026-10-16.
+- [ ] The uptime check stays green for 7 days in a row: 2026-10-22 at the earliest. GitHub runs the 15-minute schedule every 3 to 5 hours, so the check proves availability at that cadence only.
+
+**People**
+
+- [ ] Three people outside the team complete sign-in, project creation, Search Console connection and the first opportunity list without help, each in under 10 minutes.
+
+**Other RFCs**
+
+- [ ] RFC-0004 phase 1 is done, so the system drafts the change. Tracked in RFC-0004.
+- [ ] RFC-0009 billing debts are fixed, and project and organization spending limits work. Tracked in RFC-0009.

@@ -51,7 +51,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 
 | Brief area                                                           | Status                                       | RFC                                                          |
 | -------------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
-| Launch readiness (credentials, Google verification, live acceptance) | Blocking                                     | [RFC-0001](0001-launch-readiness.md)                         |
+| Launch readiness (credentials, Google verification, live acceptance) | Done: follow-ups in its section 10           | [RFC-0001](0001-launch-readiness.md)                         |
 | A. Opportunity engine                                                | Partial: 2 of 7 types, Search Console only   | [RFC-0002](0002-opportunity-detectors.md)                    |
 | B. Opportunities queue                                               | Mostly done                                  | [RFC-0003](0003-opportunity-queue.md)                        |
 | C. AI SEO engineer                                                   | Missing                                      | [RFC-0004](0004-ai-seo-engineer.md)                          |
@@ -83,7 +83,7 @@ Each step depends on the steps before it.
 
 ### Release 1: the retention core
 
-1. **RFC-0001, configuration blockers (B1 to B4, B6, B7).** No other user can complete the main workflow before this.
+1. **RFC-0001, configuration blockers (B1 to B4, B6, B7).** No other user can complete the main workflow before this. Done; external follow-ups are in its section 10.
 2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
 3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
