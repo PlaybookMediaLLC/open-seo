@@ -72,14 +72,25 @@ async function handleSetup(request: Request) {
       302,
     );
   if (!payload) return Response.redirect(new URL("/", url.origin), 302);
-  if (!code || !Number.isSafeInteger(installationId) || installationId < 1)
+  if (!code || !Number.isSafeInteger(installationId) || installationId < 1) {
+    console.error("GitHub App setup callback is incomplete", {
+      hasCode: Boolean(code),
+      installationId: url.searchParams.get("installation_id"),
+      setupAction: url.searchParams.get("setup_action"),
+    });
     return back(payload.projectId, "failed");
+  }
   try {
     const userToken = await exchangeUserCode(code);
     const installation = (await userInstallations(userToken)).find(
       (item) => item.id === installationId,
     );
-    if (!installation) return back(payload.projectId, "refused");
+    if (!installation) {
+      console.error("GitHub App installation is not visible to the user", {
+        installationId,
+      });
+      return back(payload.projectId, "refused");
+    }
     await PublishingRepository.saveInstallation({
       organizationId: payload.organizationId,
       installationId,
@@ -89,7 +100,13 @@ async function handleSetup(request: Request) {
       createdAt: new Date().toISOString(),
     });
     return back(payload.projectId, "installed");
-  } catch {
+  } catch (error) {
+    // The redirect hides the reason. Error messages here hold no token.
+    console.error("GitHub App setup failed", {
+      installationId,
+      code: error instanceof AppError ? error.code : undefined,
+      message: error instanceof Error ? error.message : String(error),
+    });
     return back(payload.projectId, "failed");
   }
 }

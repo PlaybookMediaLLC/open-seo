@@ -165,10 +165,16 @@ export async function exchangeUserCode(code: string) {
     // Workers rejects "error". A 3xx response is not ok, so it fails below.
     redirect: "manual",
   });
-  const parsed = z
-    .object({ access_token: z.string().min(1) })
-    .safeParse(await response.json().catch(() => null));
-  if (!response.ok || !parsed.success) throw new AppError("FORBIDDEN");
+  const body: unknown = await response.json().catch(() => null);
+  const parsed = z.object({ access_token: z.string().min(1) }).safeParse(body);
+  if (!response.ok || !parsed.success) {
+    // GitHub's error code, for example "bad_verification_code", is not secret.
+    const reason = z.object({ error: z.string() }).safeParse(body);
+    throw new AppError(
+      "FORBIDDEN",
+      `GitHub refused the user code: ${reason.success ? reason.data.error : response.status}.`,
+    );
+  }
   return parsed.data.access_token;
 }
 
