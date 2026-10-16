@@ -55,7 +55,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | A. Opportunity engine                                                | Partial: 2 of 7 types, Search Console only   | [RFC-0002](0002-opportunity-detectors.md)                    |
 | B. Opportunities queue                                               | Mostly done                                  | [RFC-0003](0003-opportunity-queue.md)                        |
 | C. AI SEO engineer                                                   | Missing                                      | [RFC-0004](0004-ai-seo-engineer.md)                          |
-| D. GitHub execution                                                  | Partial: one change type                     | [RFC-0005](0005-github-execution.md)                         |
+| D. GitHub execution                                                  | Done: accepted on 2026-10-16                 | [RFC-0005](0005-github-execution.md)                         |
 | E. Experiments and results                                           | Partial: Search Console only, manual refresh | [RFC-0006](0006-outcome-measurement.md)                      |
 | F. Portfolio operations                                              | Deferred by the brief                        | [RFC-0007](0007-portfolio-operations.md)                     |
 | 9. Automation and scheduling                                         | Missing                                      | [RFC-0008](0008-growth-automation.md)                        |
@@ -84,12 +84,12 @@ Each step depends on the steps before it.
 ### Release 1: the retention core
 
 1. **RFC-0001, configuration blockers (B1 to B4, B6, B7).** No other user can complete the main workflow before this.
-2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1.
+2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
 3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
 5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this.
 6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications.
-7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals.
+7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
 8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it.
 9. **RFC-0002, phase 1.** Low click-through rate, cannibalization, decline diagnosis and the GA4 signal.
 10. **RFC-0006, phase 1, and the RFC-0012 tracking gate and conversion metric.** Outcome tracking for clicks and signups.
@@ -110,7 +110,7 @@ Each step depends on the steps before it.
 22. **RFC-0016.** Revenue attribution. Start with Relay's own billing.
 23. **RFC-0022, phase 1.** Competitor change response.
 24. **RFC-0024, phase 2.** Track records per change class.
-25. **RFC-0005, phase 2,** then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
+25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
 26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.**
 
 ### Release 3: beyond SEO
