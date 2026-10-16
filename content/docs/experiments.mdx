@@ -1,0 +1,73 @@
+---
+title: "Track results"
+description: "Confirm that an approved change reached production, then compare Search Console data before and after it."
+---
+
+Experiments & Results follows one approved pull request after Relay opens it. It shows whether the pull request merged, whether the change reached production, and what Search Console reported for the page before and after.
+
+This is a before-and-after observation. It does not prove that your change caused a difference in traffic.
+
+Nothing runs on its own. Each GitHub check, deployment confirmation and Search Console request starts when an owner or administrator clicks. Opening a page makes no provider request.
+
+## Start tracking
+
+Open an opportunity whose proposal created a pull request. In its execution history, click **Track results**. Relay pins that exact pull request, commit and page, and makes no external request. Clicking it again opens the same experiment.
+
+Tracking needs the opportunity's original Search Console property to stay connected to the project.
+
+## Confirm the merge
+
+Click **Refresh GitHub status**. This only reads from GitHub. Relay checks the repository, the pull request, the approved commit and the branches. When the pull request is merged, Relay reads the changed file at the merge commit. The file must match the approved change exactly. Relay rejects a different repository, commit or file.
+
+A merge is not proof of a deployment. Relay reuses the status for 5 minutes.
+
+## Confirm the deployment
+
+After the merge, click **Check signals**. Relay looks for two signals:
+
+- **GitHub deployment:** a successful deployment of the merge commit to your production environment. Set the environment name in **Project settings → Integrations → GitHub publishing**.
+- **Live page:** your page shows the approved text.
+
+When both signals agree, click **Start measurement on the verified basis**. Relay uses the deployment time that GitHub reports. One signal alone is not enough.
+
+If your repository does not report deployments, an administrator can enter the deployment time by hand. Describe how you confirmed it, and say whether other changes or seasonal demand can affect the page. The time must be at or after the merge, not in the future, and within the last 90 days. You cannot change it after you save it.
+
+## Measurement windows
+
+Dates use Google's Pacific reporting time. With the deployment date D:
+
+- **Baseline:** the 28 days from D−28 to D−1.
+- **Skipped:** D to D+6, while search engines process the change.
+- **Observation:** the 28 days from D+7 to D+34.
+
+Relay requests only final data that is at least 3 days old. The observation window ends about 38 days after the deployment.
+
+## Refresh measurements
+
+Click **Refresh Search Console measurements**. Each refresh makes at most one Search Console request for the page, by day. The first successful refresh saves the baseline. Later refreshes keep it and add observations. Measurement keeps working after you disconnect GitHub.
+
+- A successful result is reused for 24 hours.
+- A failed attempt can be retried after 5 minutes.
+- A project can make at most 5 attempts in 24 hours, failures included.
+
+A day that Search Console does not report shows as **Unknown**, not zero.
+
+## Read the result
+
+Each refresh shows one of three labels:
+
+- **Encouraging:** clicks rose by at least 20 clicks and 20%.
+- **Negative:** clicks fell by at least 20 clicks and 20%.
+- **Inconclusive:** anything else.
+
+A label other than Inconclusive also needs all 28 days in both windows, at least 100 baseline clicks, at least 1,000 impressions in each window, and no reported other changes, seasonal risk or overlapping experiment.
+
+These are product rules, not statistical tests. Search demand, ranking updates and other site changes can move the numbers.
+
+## Revert a change
+
+When a result is negative, or you change your mind, click **Prepare revert**. Relay checks that the page still shows the approved text. Then it prepares the exact inverse change as a new proposal, which you approve like any other change. Nothing is reverted on its own.
+
+## Permissions
+
+Members can view experiments. Only owners and administrators can start tracking, refresh GitHub status, confirm a deployment, request measurements or prepare a revert.

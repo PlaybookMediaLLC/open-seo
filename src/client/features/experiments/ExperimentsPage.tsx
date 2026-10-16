@@ -63,6 +63,16 @@ export function ExperimentsPage({ projectId }: { projectId: string }) {
                   offset ? "No experiments on this page" : "No experiments yet"
                 }
                 description="Open a successful publishing proposal and choose Track results. Registration pins its existing pull request and makes no external request."
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    nativeButton={false}
+                    render={<a href="/docs/experiments" />}
+                  >
+                    Read the guide
+                  </Button>
+                }
               />
             ) : (
               <TableCard>
