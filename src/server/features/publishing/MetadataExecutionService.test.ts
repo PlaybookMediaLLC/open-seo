@@ -133,6 +133,9 @@ beforeEach(async () => {
     createPullRequest: vi
       .fn<GithubClient["createPullRequest"]>()
       .mockImplementation(async () => fixture.pullRequest),
+    listDeployments: vi.fn<GithubClient["listDeployments"]>(),
+    listDeploymentStatuses: vi.fn<GithubClient["listDeploymentStatuses"]>(),
+    getChecks: vi.fn<GithubClient["getChecks"]>(),
   };
   mocks.project.mockResolvedValue({ id: proposal.projectId });
   mocks.claim.mockResolvedValue("execution-1");

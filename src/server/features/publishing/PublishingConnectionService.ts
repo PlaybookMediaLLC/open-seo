@@ -3,7 +3,9 @@ import { hasOrgPermission } from "@/lib/org-permissions";
 import { AppError } from "@/server/lib/errors";
 import {
   connectPublishingInputSchema,
+  productionEnvironmentInputSchema,
   type ConnectPublishingInput,
+  type ProductionEnvironmentInput,
 } from "@/types/schemas/publishing";
 import { createGithubClient } from "./githubClient";
 import {
@@ -62,6 +64,7 @@ async function connect(
             repository: input.repository,
             baseBranch: input.baseBranch,
             rootDirectory: input.rootDirectory,
+            productionEnvironment: input.productionEnvironment,
             encryptedToken,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),
@@ -108,4 +111,39 @@ async function disconnect(context: PublishingContext, projectId: string) {
   }
 }
 
-export const PublishingConnectionService = { get, connect, disconnect };
+async function setProductionEnvironment(
+  context: PublishingContext,
+  raw: ProductionEnvironmentInput,
+) {
+  await authorizePublishing(context, raw.projectId, true);
+  const input = productionEnvironmentInputSchema.parse(raw);
+  try {
+    return await withPublishingClaim(
+      context,
+      input.projectId,
+      async (claimToken) => {
+        if (
+          !(await PublishingRepository.setProductionEnvironment({
+            ...input,
+            claimToken,
+            organizationId: context.organizationId,
+          }))
+        )
+          throw new AppError("CONFLICT");
+        return {
+          ok: true,
+          message: `Deployment signals now look for the "${input.productionEnvironment}" environment.`,
+        };
+      },
+    );
+  } catch (error) {
+    return { ok: false, message: publishingFailure(error) };
+  }
+}
+
+export const PublishingConnectionService = {
+  get,
+  connect,
+  disconnect,
+  setProductionEnvironment,
+};

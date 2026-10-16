@@ -42,6 +42,7 @@ export const growthExperiments = pgTable(
     deploymentConfirmedBy: text("deployment_confirmed_by"),
     deploymentNote: text("deployment_note"),
     deploymentConfirmedAt: text("deployment_confirmed_at"),
+    deploymentBasis: text("deployment_basis", { enum: ["human", "verified"] }),
     otherChanges: boolean("other_changes").notNull(),
     seasonalRisk: boolean("seasonal_risk").notNull(),
     baselineStart: text("baseline_start"),
@@ -59,6 +60,37 @@ export const growthExperiments = pgTable(
     index("growth_experiments_project_created_idx").on(
       t.projectId,
       t.createdAt,
+    ),
+  ],
+);
+
+// Evidence that a merged change reached production (RFC-0005 5.4).
+export const experimentDeploymentSignals = pgTable(
+  "experiment_deployment_signals",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    experimentId: text("experiment_id")
+      .notNull()
+      .references(() => growthExperiments.id, { onDelete: "cascade" }),
+    kind: text("kind", {
+      enum: ["human_attestation", "github_deployment", "live_content_match"],
+    }).notNull(),
+    observedAt: text("observed_at").notNull(),
+    effectiveAt: text("effective_at").notNull(),
+    environment: text("environment"),
+    // The GitHub deployment id, or "human" and "live" for the other kinds.
+    externalId: text("external_id").notNull(),
+    detail: text("detail").notNull(),
+    createdBy: text("created_by").notNull(),
+  },
+  (t) => [
+    uniqueIndex("experiment_deployment_signals_unique_idx").on(
+      t.experimentId,
+      t.kind,
+      t.externalId,
     ),
   ],
 );

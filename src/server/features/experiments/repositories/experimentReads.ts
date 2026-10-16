@@ -24,6 +24,7 @@ import {
   experimentScope,
   runColumns,
 } from "./experimentSql";
+import { listSignals } from "./deploymentSignals";
 
 export async function list(
   input: ExperimentListInput,
@@ -83,7 +84,7 @@ export async function get(
     eq(measurementRuns.projectId, projectId),
     eq(measurementRuns.experimentId, experimentId),
   );
-  const [publishing, runs, completed] = await Promise.all([
+  const [publishing, runs, completed, signals] = await Promise.all([
     PublishingRepository.getProposal(projectId, experiment.proposalId),
     db
       .select(runColumns)
@@ -97,6 +98,7 @@ export async function get(
       .where(and(runScope, eq(measurementRuns.status, "completed")))
       .orderBy(desc(measurementRuns.startedAt), desc(measurementRuns.id))
       .limit(1),
+    listSignals(projectId, experimentId),
   ]);
   if (!publishing) return null;
   const dayScope = and(
@@ -137,6 +139,7 @@ export async function get(
   return {
     experiment,
     publishing,
+    signals,
     runs,
     baselineDays,
     observationDays,

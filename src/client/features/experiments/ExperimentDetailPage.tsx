@@ -116,6 +116,7 @@ export function ExperimentDetailPage({
         </section>
         <ExperimentActions
           experiment={experiment}
+          signals={detail.signals}
           canManage={detail.canManage}
           configured={detail.configured}
           connected={detail.connected}

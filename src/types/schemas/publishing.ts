@@ -37,6 +37,21 @@ export const connectPublishingInputSchema = projectScope.extend({
     .trim()
     .regex(/^github_pat_[A-Za-z0-9_]{20,245}$/),
   authorizeRepositoryAccess: z.literal(true),
+  productionEnvironment: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .regex(/^[\x20-\x7e]+$/)
+    .default("Production"),
+});
+export const productionEnvironmentInputSchema = projectScope.extend({
+  productionEnvironment: z
+    .string()
+    .trim()
+    .min(1)
+    .max(100)
+    .regex(/^[\x20-\x7e]+$/),
 });
 const metadataText = (max: number) =>
   z
@@ -61,14 +76,21 @@ export const prepareProposalInputSchema = projectScope
 export const publishingOpportunityInputSchema = projectScope.extend({
   opportunityId: z.string().min(1),
 });
+export const proposalInputSchema = projectScope.extend({
+  proposalId: z.string().min(1),
+});
+export type ProposalInput = z.infer<typeof proposalInputSchema>;
 export const executeProposalInputSchema = projectScope.extend({
   proposalId: z.string().min(1),
   changeHash: z.string().regex(/^[a-f0-9]{64}$/),
   authorizePullRequest: z.literal(true),
   note: z.string().trim().max(2000).default(""),
 });
-export type ConnectPublishingInput = z.infer<
+export type ConnectPublishingInput = z.input<
   typeof connectPublishingInputSchema
+>;
+export type ProductionEnvironmentInput = z.infer<
+  typeof productionEnvironmentInputSchema
 >;
 export type PrepareProposalInput = z.infer<typeof prepareProposalInputSchema>;
 export type ExecuteProposalInput = z.infer<typeof executeProposalInputSchema>;
@@ -96,6 +118,7 @@ export type PublishingConnection = {
   repository: string;
   baseBranch: string;
   rootDirectory: string;
+  productionEnvironment: string;
   createdBy: string;
   createdAt: string;
   revokedAt: string | null;

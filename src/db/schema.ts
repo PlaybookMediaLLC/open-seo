@@ -152,6 +152,7 @@ export const {
   proposalExecutions,
   proposalExecutionEvents,
   growthExperiments,
+  experimentDeploymentSignals,
   measurementRuns,
   measurementDays,
 } = schema;

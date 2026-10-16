@@ -21,6 +21,7 @@ export async function confirmDeployment(
     confirmedAt: string;
     otherChanges: boolean;
     seasonalRisk: boolean;
+    basis: "human" | "verified";
     baselineStart: string;
     baselineEnd: string;
     observationStart: string;
@@ -55,6 +56,7 @@ export async function confirmDeployment(
           deploymentConfirmedBy: input.confirmedBy,
           deploymentNote: input.note,
           deploymentConfirmedAt: input.confirmedAt,
+          deploymentBasis: input.basis,
           otherChanges: input.otherChanges,
           seasonalRisk: input.seasonalRisk,
           baselineStart: input.baselineStart,

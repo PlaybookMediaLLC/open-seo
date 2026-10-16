@@ -21,6 +21,9 @@ export const publishingConnections = pgTable(
     repository: text("repository").notNull(),
     baseBranch: text("base_branch").notNull(),
     rootDirectory: text("root_directory").notNull(),
+    productionEnvironment: text("production_environment")
+      .notNull()
+      .default("Production"),
     encryptedToken: text("encrypted_token"),
     createdBy: text("created_by").notNull(),
     createdAt: text("created_at").notNull(),

@@ -14,6 +14,7 @@ import {
   disconnectPublishingRepository,
 } from "@/serverFunctions/publishing";
 import { connectPublishingInputSchema } from "@/types/schemas/publishing";
+import { ProductionEnvironmentForm } from "./ProductionEnvironmentForm";
 import { publishingConnectionOptions, useRefreshPublishing } from "./queries";
 
 const repositoryFields = [
@@ -143,9 +144,20 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
                   Base branch: {connection.baseBranch} · Root:{" "}
                   {connection.rootDirectory || "/"}
                 </p>
-                {connection.revokedAt && (
+                {connection.revokedAt ? (
                   <p className="text-destructive">
                     This connection has been revoked.
+                  </p>
+                ) : canManage ? (
+                  <ProductionEnvironmentForm
+                    key={connection.productionEnvironment}
+                    projectId={projectId}
+                    current={connection.productionEnvironment}
+                  />
+                ) : (
+                  <p className="text-muted-foreground">
+                    GitHub production environment:{" "}
+                    {connection.productionEnvironment}
                   </p>
                 )}
               </div>
@@ -197,24 +209,7 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
                           proposals. Prepare new proposals after reconnecting.
                         </p>
                       )}
-                      <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
-                        <p className="font-medium">
-                          Use a minimally scoped fine-grained personal access
-                          token
-                        </p>
-                        <p>
-                          Select <strong>Only select repositories</strong> and
-                          select this repository only. Grant{" "}
-                          <strong>Contents: Read and write</strong> and{" "}
-                          <strong>Pull requests: Read and write</strong>. Do not
-                          grant Workflows permissions.
-                        </p>
-                        <p className="text-muted-foreground">
-                          Choose a short expiry, such as 30 days, and rotate
-                          when needed. GitHub App connections are planned for a
-                          future release.
-                        </p>
-                      </div>
+                      <TokenInstructions />
                       <fieldset disabled={busy} className="space-y-4">
                         <div className="grid gap-4 sm:grid-cols-2">
                           {repositoryFields.map(
@@ -330,5 +325,30 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
         </ConfirmDialog>
       )}
     </CardShell>
+  );
+}
+
+function TokenInstructions() {
+  return (
+    <div className="rounded-lg bg-muted/40 p-4 text-sm space-y-2">
+      <p className="font-medium">
+        Use a minimally scoped fine-grained personal access token
+      </p>
+      <p>
+        Select <strong>Only select repositories</strong> and select this
+        repository only. Grant <strong>Contents: Read and write</strong> and{" "}
+        <strong>Pull requests: Read and write</strong>. Do not grant Workflows
+        permissions.
+      </p>
+      <p>
+        To see deployment and check status, also grant{" "}
+        <strong>Deployments: Read</strong>, <strong>Checks: Read</strong> and{" "}
+        <strong>Commit statuses: Read</strong>. These are read-only.
+      </p>
+      <p className="text-muted-foreground">
+        Choose a short expiry, such as 30 days, and rotate when needed. GitHub
+        App connections are planned for a future release.
+      </p>
+    </div>
   );
 }

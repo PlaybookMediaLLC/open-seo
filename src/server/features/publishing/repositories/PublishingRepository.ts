@@ -3,6 +3,7 @@ import {
   getConnectionById,
   replaceConnection,
   disconnect,
+  setProductionEnvironment,
 } from "./publishingConnections";
 import {
   getProposal,
@@ -18,6 +19,7 @@ export const PublishingRepository = {
   getConnectionById,
   replaceConnection,
   disconnect,
+  setProductionEnvironment,
   listProposals,
   getProposal,
   saveProposal,

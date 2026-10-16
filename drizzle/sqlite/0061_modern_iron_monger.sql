@@ -1,0 +1,1 @@
+ALTER TABLE `publishing_connections` ADD `production_environment` text DEFAULT 'Production' NOT NULL;

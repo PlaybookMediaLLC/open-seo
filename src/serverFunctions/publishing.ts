@@ -3,11 +3,14 @@ import { MetadataExecutionService } from "@/server/features/publishing/MetadataE
 import { MetadataProposalService } from "@/server/features/publishing/MetadataProposalService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
+import { getRepositoryChecks } from "@/server/features/publishing/repositoryChecks";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   connectPublishingInputSchema,
   executeProposalInputSchema,
   prepareProposalInputSchema,
+  productionEnvironmentInputSchema,
+  proposalInputSchema,
   publishingOpportunityInputSchema,
   publishingProjectInputSchema,
   recoverPublishingInputSchema,
@@ -67,4 +70,23 @@ export const recoverPublishingOpportunity = createServerFn({ method: "POST" })
       ...data,
       projectId: context.projectId,
     }),
+  );
+
+export const setPublishingProductionEnvironment = createServerFn({
+  method: "POST",
+})
+  .middleware(requireProjectContext)
+  .validator(productionEnvironmentInputSchema)
+  .handler(({ context, data }) =>
+    PublishingConnectionService.setProductionEnvironment(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const getProposalRepositoryChecks = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(proposalInputSchema)
+  .handler(({ context, data }) =>
+    getRepositoryChecks(context, { ...data, projectId: context.projectId }),
   );

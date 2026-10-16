@@ -19,6 +19,15 @@ export const confirmDeploymentInputSchema = experimentInputSchema.extend({
   otherChanges: z.boolean(),
   seasonalRisk: z.boolean(),
 });
+export const confirmVerifiedDeploymentInputSchema =
+  experimentInputSchema.extend({
+    note: z.string().trim().max(2000).default(""),
+    otherChanges: z.boolean(),
+    seasonalRisk: z.boolean(),
+  });
+export type ConfirmVerifiedDeploymentInput = z.input<
+  typeof confirmVerifiedDeploymentInputSchema
+>;
 export type ExperimentListInput = z.infer<typeof experimentListInputSchema>;
 export type ExperimentInput = z.infer<typeof experimentInputSchema>;
 export type RegisterExperimentInput = z.infer<
@@ -46,6 +55,7 @@ export type GrowthExperiment = {
   deploymentConfirmedBy: string | null;
   deploymentNote: string | null;
   deploymentConfirmedAt: string | null;
+  deploymentBasis: "human" | "verified" | null;
   otherChanges: boolean;
   seasonalRisk: boolean;
   baselineStart: string | null;
@@ -103,9 +113,22 @@ export type ExperimentSummary = GrowthExperiment & {
   pullRequestUrl: string | null;
   latestRun: MeasurementRun | null;
 };
+export type DeploymentSignal = {
+  id: string;
+  projectId: string;
+  experimentId: string;
+  kind: "human_attestation" | "github_deployment" | "live_content_match";
+  observedAt: string;
+  effectiveAt: string;
+  environment: string | null;
+  externalId: string;
+  detail: string;
+  createdBy: string;
+};
 export type ExperimentDetail = {
   experiment: GrowthExperiment;
   publishing: ProposalWithHistory;
+  signals: DeploymentSignal[];
   runs: MeasurementRun[];
   baselineDays: MeasurementDay[];
   observationDays: MeasurementDay[];
