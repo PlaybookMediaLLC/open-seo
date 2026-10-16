@@ -96,6 +96,13 @@ export async function withPublishingClaim<T>(
 }
 
 export function publishingFailure(error: unknown): string {
+  // Specific messages from the parser and checks are written for the user.
+  if (
+    error instanceof AppError &&
+    (error.code === "VALIDATION_ERROR" || error.code === "CONFLICT") &&
+    error.message !== error.code
+  )
+    return error.message;
   if (error instanceof AppError) {
     switch (error.code) {
       case "AUTH_CONFIG_MISSING":

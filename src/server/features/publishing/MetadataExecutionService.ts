@@ -144,12 +144,29 @@ async function execute(
             (await gitBlobHash(before.source)) !== proposal.beforeBlobSha
           )
             throw new AppError("CONFLICT");
+          const helperPath = proposal.helperPath;
+          const helper = helperPath
+            ? {
+                path: helperPath,
+                ...(await client.readFile(helperPath, proposal.baseSha)),
+              }
+            : undefined;
+          if (
+            helper &&
+            (helper.blobSha !== proposal.helperBlobSha ||
+              (await gitBlobHash(helper.source)) !== proposal.helperBlobSha)
+          )
+            throw new AppError(
+              "CONFLICT",
+              "The metadata helper changed. Prepare the proposal again.",
+            );
           const patch = prepareMetadataDescription({
             source: before.source,
             path: proposal.filePath,
             url: proposal.targetUrl,
             newDescription: proposal.descriptionAfter,
             rootDirectory: connection.rootDirectory,
+            helper,
           });
           if (
             patch.beforeDescription !== proposal.descriptionBefore ||

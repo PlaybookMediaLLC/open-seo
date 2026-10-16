@@ -47,7 +47,7 @@ describe("prepareMetadataDescription", () => {
           source: source + component,
         }).afterSource,
       ).toBe(
-        'export const metadata = { description: "New description" };' +
+        "export const metadata = { description: 'New description' };" +
           component,
       );
     },
@@ -61,12 +61,12 @@ describe("prepareMetadataDescription", () => {
       source: prefix + "'Old description'" + suffix,
       newDescription: "  Human supplied copy  ",
     });
-    expect(result.afterSource).toBe(prefix + '"Human supplied copy"' + suffix);
+    expect(result.afterSource).toBe(prefix + "'Human supplied copy'" + suffix);
     expect(result).toMatchObject({
       beforeDescription: "Old description",
       afterDescription: "Human supplied copy",
       beforeSnippet: 'Line 3: "Old description"',
-      afterSnippet: 'Line 3: "Human supplied copy"',
+      afterSnippet: "Line 3: 'Human supplied copy'",
     });
   });
 
@@ -75,11 +75,23 @@ describe("prepareMetadataDescription", () => {
     const result = prepare({ newDescription });
     expect(result.afterDescription).toBe(newDescription);
     expect(result.afterSource).toBe(
-      `export const metadata = { description: ${JSON.stringify(newDescription)} };`,
+      "export const metadata = { description: 'It\\'s \"café\" 😀 \\\\ ${notCode} </script>' };",
     );
     expect(prepare({ source: result.afterSource }).beforeDescription).toBe(
       newDescription,
     );
+  });
+
+  it("keeps the quote style unless the other quote needs fewer escapes, like Prettier", () => {
+    expect(prepare({ newDescription: "Don't wait" }).afterSource).toBe(
+      'export const metadata = { description: "Don\'t wait" };',
+    );
+    expect(
+      prepare({
+        source: 'export const metadata = { description: "Old" };',
+        newDescription: 'Say "hi"',
+      }).afterSource,
+    ).toBe("export const metadata = { description: 'Say \"hi\"' };");
   });
 
   it("renders old escaped controls as safe literal evidence, not terminal controls", () => {
@@ -121,7 +133,7 @@ describe("prepareMetadataDescription", () => {
     ],
     [
       "export const metadata = getMetadata();",
-      "Metadata must be a plain object literal.",
+      "The metadata helper must be a named import.",
     ],
     [
       "export const metadata = { ...base, description: 'Old' };",
@@ -229,13 +241,17 @@ describe("validateMetadataTarget", () => {
       url: "https://example.com/about",
       rootDirectory: "apps/site",
     },
+    {
+      path: "app/(marketing)/about/page.tsx",
+      url: "https://example.com/about",
+    },
+    { path: "app/(site)/page.tsx", url: "https://example.com/" },
   ])("accepts exact static page mapping: $path", (input) => {
     expect(() => validateMetadataTarget(input)).not.toThrow();
   });
 
   it.each([
     { path: "app/[slug]/page.tsx" },
-    { path: "app/(marketing)/about/page.tsx" },
     { path: "app/@modal/about/page.tsx" },
     { path: "app/(.)about/page.tsx" },
     { path: "app/../about/page.tsx" },
@@ -264,6 +280,27 @@ describe("validateMetadataTarget", () => {
   ])("rejects unsafe or mismatched mapping: %j", (input) => {
     expect(() => validateMetadataTarget({ ...target, ...input })).toThrow(
       AppError,
+    );
+  });
+});
+
+describe("unsupported route segments", () => {
+  it.each([
+    [
+      "app/[product]/page.tsx",
+      "The dynamic route segment [product] is not supported. Relay changes static pages only. Track this page as a ticket instead.",
+    ],
+    [
+      "app/@modal/about/page.tsx",
+      "The parallel route @modal is not supported.",
+    ],
+    [
+      "app/(.)about/page.tsx",
+      "The intercepting route (.)about is not supported.",
+    ],
+  ])("names the segment in the refusal: %s", (path, message) => {
+    expect(() => validateMetadataTarget({ ...target, path })).toThrowError(
+      expect.objectContaining({ code: "VALIDATION_ERROR", message }),
     );
   });
 });

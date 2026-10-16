@@ -46,6 +46,10 @@ export function proposalFingerprint(
       proposal.validationSummary,
       proposal.createdBy,
       proposal.createdAt,
+      // Appended only for helper calls, so literal-object hashes stay unchanged.
+      ...(proposal.metadataSource === "helper_call"
+        ? [proposal.metadataSource, proposal.helperPath, proposal.helperBlobSha]
+        : []),
     ]),
   );
 }

@@ -110,6 +110,9 @@ export type MetadataProposal = {
   descriptionAfter: string;
   beforeSnippet: string;
   afterSnippet: string;
+  metadataSource: "literal_object" | "helper_call";
+  helperPath: string | null;
+  helperBlobSha: string | null;
   changeHash: string;
   reason: string;
   expectedEffect: string;
