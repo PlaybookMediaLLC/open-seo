@@ -1,6 +1,6 @@
 # RFC-0002: Opportunity engine, remaining detectors and signals
 
-- **Status:** The code of all three phases is done. Open: the live acceptance of each phase (section 11), because no connected property has Search Console data yet, and the RFC-0009 spending-limit check in phase 3, which waits for RFC-0009.
+- **Status:** Done on 2026-10-16 for every item that Relay's code can close (PRs #65, #66 and #67). The items in section 13 wait on Search Console data, a paid run or RFC-0009. The owner decided on 2026-10-16 that they do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 3 (Feature A)
 - **Depends on:** RFC-0001. Phase 3 also depends on RFC-0009 (spending limits).
@@ -509,3 +509,24 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 - A run never makes more Search Console requests than it reserved.
 - URL Inspection never exceeds the per-project daily cap.
 - Phase 3 charges stay within the estimate plus 10%. A cached repeat costs 0.
+
+## 13. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+**Search Console data.** The only connected property, `sc-domain:playbookmedia.io`, had 0 clicks and 0 impressions over 3 months on 2026-10-16, and no signed-in Google account had another property. The detection code runs in production with no rows: the brand-terms editor, the detail sections and the content-gap estimate were checked live.
+
+- [ ] Phase 1 acceptance (section 11) on a property with traffic. Trigger: the owner verifies a site with search traffic (for example `conduitt.io`, `eigenn.io` or `solomonhq.io`) in Search Console for the account that Relay uses, or adds that account as a user on an existing property.
+- [ ] Phase 1 thin-data run (S3 step) on `playbookmedia.io`. Trigger: the 24-hour cache of its last run ends, after 2026-10-17 11:10 UTC.
+- [ ] Phase 1 checklist: live run on two real properties, and a person reviews 20 sampled opportunities (at least 14 worth reviewing).
+- [ ] Phase 2 acceptance: fresh audits on S1 and S3, every technical item checked against the live page, no internal link that already exists, and a fixed item that disappears after a new audit. Mark money or hub key pages first, so the audit saves inlinks.
+- [ ] Phase 2 checklist: audit finalize stays inside its time limits on a 5,000-page site (the inlinks query takes about 1.5 seconds on a synthetic graph of that size).
+- [ ] Section 12 completion criteria: accuracy against Search Console, usefulness reviews, three runs on three days, and the performance targets.
+
+**Paid run.** The owner approved on 2026-10-16 one content-gap run with up to 3 competitors (about 507 credits at 169 each), one live results check and one site audit, once a property with data is connected.
+
+- [ ] Phase 3 acceptance: record the estimate and the settled charge, run it again within 30 days at 0 credits, and the owner reviews every topic. The DataForSEO account balance was about $0.44 on 2026-10-16, and 3 competitors cost about $0.40 at the provider, so a deposit is needed first.
+
+**RFC-0009.**
+
+- [ ] Content-gap and live-check admission go through the RFC-0009 spending check. Until then, the credit hold is the only admission check. Trigger: RFC-0009 ships its spending limits.
