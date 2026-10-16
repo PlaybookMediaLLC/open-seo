@@ -23,6 +23,7 @@
     "src/db/pg/schema.ts",
     // Standalone CLI/dev scripts, invoked via package.json scripts
     "scripts/**",
+    "tests/*.e2e.ts", // playbook-seam: growth E2E spec, run by tests/playwright.growth.config.ts
     // shadcn components are copied in whole; pages use only some exports
     "src/client/components/ui/**",
   ],

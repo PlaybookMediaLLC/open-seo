@@ -28,6 +28,9 @@ import type { Plugin } from "vite";
  *   worker settings such as the GitHub App (deploy/alchemy/relay-env.ts).
  * - src/serverFunctions/organization.ts and src/env.d.ts: invites go through
  *   the Cloudflare EMAIL binding.
+ * - src/server.ts: loads the growth E2E provider fake
+ *   (src/server/e2e/growthFixtures.ts), inert outside E2E builds.
+ * - knip.jsonc: lists the growth E2E spec (tests/growth-workflow.e2e.ts).
  */
 const RELAY = "https://relay.playbookmedia.io";
 
