@@ -240,6 +240,17 @@ function quoted(value: string, quote: string): string {
     : json;
 }
 
+/** The unchanged description of a literal metadata object. */
+export function currentDescription(source: string, path: string) {
+  const literal = fieldLiteral(source, path, "description");
+  return literal
+    ? {
+        value: literal.value,
+        snippet: `Line ${literal.line}: ${printable(literal.value)}`,
+      }
+    : { value: "", snippet: "No description literal." };
+}
+
 type Change = { field: MetadataField; after: string };
 
 function newText(field: MetadataField, value: string, max: number) {

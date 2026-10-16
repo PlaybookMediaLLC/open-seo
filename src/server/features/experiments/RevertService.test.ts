@@ -74,6 +74,10 @@ beforeEach(() => {
         descriptionAfter: "New pricing copy",
         titleBefore: null,
         titleAfter: null,
+        canonicalBefore: null,
+        canonicalAfter: null,
+        robotsBefore: null,
+        robotsAfter: null,
         revertsProposalId: null,
       },
     },
@@ -102,7 +106,7 @@ describe("RevertService.prepare", () => {
     });
     expect(mocks.save.mock.calls[0][0].proposal).toMatchObject({
       revertsProposalId: "proposal-1",
-      fingerprintVersion: 4,
+      fingerprintVersion: 5,
       descriptionBefore: "New pricing copy",
       descriptionAfter: "Old pricing copy",
       opportunityVersion: 4,

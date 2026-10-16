@@ -35,6 +35,7 @@ export const opportunityAccessOptions = (projectId: string) =>
 export const typeLabels: Record<OpportunityType, string> = {
   striking_distance: "Striking distance",
   declining_page: "Declining page",
+  technical_blocker: "Technical blocker",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",

@@ -4,7 +4,9 @@ import type { PublishingConnectionRecord } from "@/types/schemas/publishing";
 import type { GithubClient } from "./githubClient";
 import { metadataHelperCandidates } from "./metadataHelper";
 import { readTitleTemplate } from "./layoutTitle";
+import { prepareIndexingChange, type Robots } from "./indexingMetadata";
 import {
+  currentDescription,
   metadataHelperImport,
   prepareMetadataChange,
   validateMetadataTarget,
@@ -83,6 +85,26 @@ export function validateTarget(
   return "app_router_metadata";
 }
 
+// Every patch has the same fields, whatever it changes.
+const NO_INDEXING_CHANGE = {
+  canonicalBefore: null,
+  canonicalAfter: null,
+  canonicalBeforeSnippet: null,
+  canonicalAfterSnippet: null,
+  robotsBefore: null,
+  robotsAfter: null,
+  robotsBeforeSnippet: null,
+  robotsAfterSnippet: null,
+};
+const NO_TEXT_CHANGE = {
+  beforeTitle: null,
+  afterTitle: null,
+  titleBeforeSnippet: null,
+  titleAfterSnippet: null,
+  finalTitle: null,
+  helperNote: null,
+};
+
 /**
  * Reads the page at one commit and prepares the change with the adapter for
  * its router: App Router metadata (with its helper module and layout title
@@ -97,6 +119,8 @@ export async function prepareChangeAt(
     sha: string;
     newDescription?: string;
     newTitle?: string;
+    newCanonical?: string;
+    newRobots?: Robots;
     restore?: boolean;
     // Execution skips it: the base commit is pinned, and prepare checked it.
     verifyManifest?: boolean;
@@ -113,6 +137,39 @@ export async function prepareChangeAt(
   const file = await client.readFile(filePath, sha);
   if ((await gitBlobHash(file.source)) !== file.blobSha)
     throw new AppError("CONFLICT");
+  const indexing =
+    input.newCanonical !== undefined || input.newRobots !== undefined;
+  if (indexing && adapterId !== "app_router_metadata")
+    throw new AppError(
+      "VALIDATION_ERROR",
+      "Relay changes canonical and robots only in App Router pages.",
+    );
+  if (indexing) {
+    const patch = prepareIndexingChange({
+      path: filePath,
+      url,
+      rootDirectory,
+      source: file.source,
+      newCanonical: input.newCanonical,
+      newRobots: input.newRobots,
+    });
+    const description = currentDescription(file.source, filePath);
+    return {
+      adapterId,
+      file,
+      helper: undefined,
+      patch: {
+        ...patch,
+        ...NO_TEXT_CHANGE,
+        beforeDescription: description.value,
+        afterDescription: description.value,
+        beforeSnippet: description.snippet,
+        afterSnippet: description.snippet,
+        validationSummary:
+          "Validated direct path correspondence, a literal metadata object, literal canonical and robots values, reparsed output, and unchanged surrounding source. Human-provided values only.",
+      },
+    };
+  }
   const change = {
     path: filePath,
     url,
@@ -127,7 +184,7 @@ export async function prepareChangeAt(
       adapterId,
       file,
       helper: undefined,
-      patch: preparePagesHeadChange(change),
+      patch: { ...preparePagesHeadChange(change), ...NO_INDEXING_CHANGE },
     };
   const helperImport = metadataHelperImport(file.source, filePath);
   const helper = helperImport
@@ -152,5 +209,10 @@ export async function prepareChangeAt(
         ? null
         : await readTitleTemplate(client, sha, filePath, rootDirectory),
   });
-  return { adapterId, file, helper, patch };
+  return {
+    adapterId,
+    file,
+    helper,
+    patch: { ...patch, ...NO_INDEXING_CHANGE },
+  };
 }

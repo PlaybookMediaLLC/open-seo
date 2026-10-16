@@ -67,12 +67,18 @@ export const prepareProposalInputSchema = projectScope
     filePath: z.string().min(1).max(300),
     newDescription: metadataText(320).optional(),
     newTitle: metadataText(120).optional(),
+    newCanonical: z.string().trim().min(1).max(500).optional(),
+    newRobots: z.object({ index: z.boolean(), follow: z.boolean() }).optional(),
+    // The page path typed by the person, for canonical and robots changes.
+    confirmPath: z.string().max(500).optional(),
   })
-  .refine(
-    (value) =>
-      value.newDescription !== undefined || value.newTitle !== undefined,
-    "Enter a new title, a new description, or both.",
-  );
+  .refine((value) => {
+    const text =
+      value.newDescription !== undefined || value.newTitle !== undefined;
+    const indexing =
+      value.newCanonical !== undefined || value.newRobots !== undefined;
+    return text !== indexing;
+  }, "Change the title and description, or the canonical URL and robots, in one proposal.");
 export const publishingOpportunityInputSchema = projectScope.extend({
   opportunityId: z.string().min(1),
 });
@@ -155,6 +161,14 @@ export type MetadataProposal = {
   titleAfter: string | null;
   titleBeforeSnippet: string | null;
   titleAfterSnippet: string | null;
+  canonicalBefore: string | null;
+  canonicalAfter: string | null;
+  canonicalBeforeSnippet: string | null;
+  canonicalAfterSnippet: string | null;
+  robotsBefore: string | null;
+  robotsAfter: string | null;
+  robotsBeforeSnippet: string | null;
+  robotsAfterSnippet: string | null;
   adapterId: "app_router_metadata" | "pages_router_head";
   fingerprintVersion: number;
   revertsProposalId: string | null;

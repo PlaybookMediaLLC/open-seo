@@ -3,6 +3,8 @@ import { z } from "zod";
 export const OPPORTUNITY_TYPES = [
   "striking_distance",
   "declining_page",
+  // Detected by RFC-0002 phase 2. Only this type may change canonical or robots.
+  "technical_blocker",
 ] as const;
 export const OPPORTUNITY_STATUSES = [
   "discovered",

@@ -124,6 +124,16 @@ export function PublishingProposal({
               proposal.beforeSnippet,
               proposal.afterSnippet,
             ],
+            proposal.canonicalAfter !== null && [
+              "Canonical URL",
+              proposal.canonicalBeforeSnippet,
+              proposal.canonicalAfterSnippet,
+            ],
+            proposal.robotsAfter !== null && [
+              "Robots",
+              proposal.robotsBeforeSnippet,
+              proposal.robotsAfterSnippet,
+            ],
           ] as const
         )
           .filter((diff) => diff !== false)

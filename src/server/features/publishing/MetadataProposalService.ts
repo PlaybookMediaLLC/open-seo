@@ -67,6 +67,19 @@ async function prepare(
           Date.now() - Date.parse(opportunity.lastDetectedAt) > 14 * 86_400_000
         )
           throw new AppError("CONFLICT");
+        const indexing =
+          input.newCanonical !== undefined || input.newRobots !== undefined;
+        // Canonical and robots changes can remove a page from Google.
+        if (indexing && opportunity.type !== "technical_blocker")
+          throw new AppError(
+            "VALIDATION_ERROR",
+            "Only technical blocker opportunities can change the canonical URL or robots.",
+          );
+        if (indexing && input.confirmPath !== new URL(opportunity.url).pathname)
+          throw new AppError(
+            "VALIDATION_ERROR",
+            "Type the page path exactly to confirm a canonical or robots change.",
+          );
         const connection = await PublishingRepository.getConnection(
           input.projectId,
         );
@@ -95,11 +108,15 @@ async function prepare(
             sha: base.sha,
             newDescription: input.newDescription,
             newTitle: input.newTitle,
+            newCanonical: input.newCanonical,
+            newRobots: input.newRobots,
           },
         );
         const changed = [
           patch.afterTitle !== null && "title",
           patch.afterDescription !== patch.beforeDescription && "description",
+          patch.canonicalAfter !== null && "canonical URL",
+          patch.robotsAfter !== null && "robots",
         ]
           .filter(Boolean)
           .join(" and ");
@@ -126,16 +143,27 @@ async function prepare(
           titleAfter: patch.afterTitle,
           titleBeforeSnippet: patch.titleBeforeSnippet,
           titleAfterSnippet: patch.titleAfterSnippet,
+          canonicalBefore: patch.canonicalBefore,
+          canonicalAfter: patch.canonicalAfter,
+          canonicalBeforeSnippet: patch.canonicalBeforeSnippet,
+          canonicalAfterSnippet: patch.canonicalAfterSnippet,
+          robotsBefore: patch.robotsBefore,
+          robotsAfter: patch.robotsAfter,
+          robotsBeforeSnippet: patch.robotsBeforeSnippet,
+          robotsAfterSnippet: patch.robotsAfterSnippet,
           adapterId,
-          fingerprintVersion: 4,
+          fingerprintVersion: 5,
           revertsProposalId: null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:
             "A clearer search snippet may help relevant visitors choose this page. Search engines may rewrite titles and descriptions. Traffic, rankings and revenue are not guaranteed.",
           risk: `${patch.helperNote ? `${patch.helperNote} ` : ""}The supplied copy may be inaccurate or less compelling. Check every claim. Only the ${changed} literal${changed.includes(" and ") ? "s change" : " changes"}. Rewrites and custom routing are not verified. A pull request may trigger repository CI.`,
-          verificationPlan:
-            "Review the exact diff and product claims. Run the repository build and tests in CI, then verify the rendered description on the target URL after your authorized deployment. Compare subsequent Search Console observations without assuming causation.",
+          verificationPlan: `Review the exact diff and product claims. Run the repository build and tests in CI, then verify the rendered page on the target URL after your authorized deployment.${
+            indexing
+              ? " Then run URL Inspection in Search Console and confirm the expected canonical URL and indexing state."
+              : ""
+          } Compare subsequent Search Console observations without assuming causation.`,
           validationSummary: `${patch.validationSummary} Next.js dependency verified in the selected package manifest. Full repository build, routing and CI were not run.`,
           createdBy: context.userId,
           createdAt: new Date().toISOString(),
