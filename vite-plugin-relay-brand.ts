@@ -23,6 +23,11 @@ import type { Plugin } from "vite";
  * - plugins/openseo/.mcp.json: the agent plugin connects to this deployment.
  * - plugins/openseo/assets/icon.png and the Cursor manifest's logo URL: the
  *   agent plugin shows the Relay mark.
+ * - deploy/alchemy/alchemy.run.ts: binds EMAIL for team invites
+ *   (src/server/email/relay-email.ts) and spreads relayDataEnv, the fork's
+ *   worker settings such as the GitHub App (deploy/alchemy/relay-env.ts).
+ * - src/serverFunctions/organization.ts and src/env.d.ts: invites go through
+ *   the Cloudflare EMAIL binding.
  */
 const RELAY = "https://relay.playbookmedia.io";
 

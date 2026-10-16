@@ -89,7 +89,10 @@ async function prepare(
           opportunity.url,
           connection.rootDirectory,
         );
-        const client = await connectedGithub(connection, signal);
+        const client = await connectedGithub(connection, signal, {
+          metadata: "read",
+          contents: "read",
+        });
         const repository = await client.getRepository();
         if (
           repository.id !== connection.repositoryId ||

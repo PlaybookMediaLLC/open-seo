@@ -149,6 +149,7 @@ export const {
   publishingConnections,
   opportunityProposals,
   opportunityTickets,
+  githubAppInstallations,
   proposalApprovals,
   proposalExecutions,
   proposalExecutionEvents,

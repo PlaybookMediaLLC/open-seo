@@ -65,6 +65,8 @@ async function connect(
             baseBranch: input.baseBranch,
             rootDirectory: input.rootDirectory,
             productionEnvironment: input.productionEnvironment,
+            transport: "pat",
+            installationRef: null,
             encryptedToken,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),

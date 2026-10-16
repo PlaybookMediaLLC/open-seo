@@ -73,7 +73,10 @@ async function refresh(
         });
       const messages: string[] = [];
 
-      const client = await connectedGithub(connection, signal);
+      const client = await connectedGithub(connection, signal, {
+        metadata: "read",
+        deployments: "read",
+      });
       try {
         const deployments = (await client.listDeployments(sha)).filter(
           (deployment) =>

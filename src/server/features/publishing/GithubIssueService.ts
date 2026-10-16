@@ -131,7 +131,10 @@ async function create(
             message: `This approved text already has issue #${ticket.issueNumber}. No GitHub request was made.`,
             issueUrl: ticket.issueUrl,
           };
-        const client = await connectedGithub(connection, signal);
+        const client = await connectedGithub(connection, signal, {
+          metadata: "read",
+          issues: "write",
+        });
         const marker = `<!-- Relay ticket:${input.textHash} -->`;
         // A retry first looks for the issue that an interrupted create made.
         const issue =

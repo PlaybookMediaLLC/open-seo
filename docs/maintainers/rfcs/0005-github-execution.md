@@ -286,18 +286,18 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 ### Phase 2
 
 - [ ] GitHub App registered with the listed permissions only.
-- [ ] Secrets set, and the PKCS#8 conversion documented.
-- [ ] Setup callback with state, user-token check and repository picker.
-- [ ] Test: a forged `installation_id` that the user cannot access is refused.
-- [ ] Installation tokens limited to one repository and the needed permissions (test of the request body).
-- [ ] Revoked installation is detected and shown.
-- [ ] Personal tokens still work for self-hosting (regression test).
+- [ ] Secrets set. The PKCS#8 conversion is documented in `docs/maintainers/playbook-deployment.md`.
+- [x] Setup callback with state, user-token check and repository picker.
+- [x] Test: a forged `installation_id` that the user cannot access is refused.
+- [x] Installation tokens limited to one repository and the needed permissions (test of the request body).
+- [x] Revoked installation is detected and shown.
+- [x] Personal tokens still work for self-hosting (the existing publishing tests run on personal tokens).
 - [x] Adapter dispatch (`validateTarget`, `prepareChangeAt`), with the App Router logic and its tests unchanged.
 - [x] Pages Router adapter with tests for supported and rejected forms.
 - [x] Canonical and robots changes with the typed confirmation and the inspection step. The `technical_blocker` type exists; its detector comes with RFC-0002 phase 2, so no opportunity offers these changes yet.
 - [x] GitHub issues with exact-text approval, and a test that one approval creates one issue.
 - [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state.
-- [ ] Docs cover the App install and permissions.
+- [x] Docs cover the App install and permissions.
 
 ## 9. Open questions
 

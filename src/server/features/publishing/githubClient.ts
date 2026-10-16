@@ -30,12 +30,14 @@ export function createGithubClient({
   repository,
   signal,
   maxRequests = 32,
+  assumePush = false,
 }: {
   token: string;
   owner: string;
   repository: string;
   signal?: AbortSignal;
   maxRequests?: number;
+  assumePush?: boolean;
 }) {
   if (
     !/^[A-Za-z0-9][A-Za-z0-9-]{0,38}$/.test(owner) ||
@@ -152,7 +154,7 @@ export function createGithubClient({
         fullName: value.full_name,
         defaultBranch: value.default_branch,
         private: value.private,
-        canPush: value.permissions?.push ?? false,
+        canPush: value.permissions?.push ?? assumePush,
         archived: value.archived,
       };
     },

@@ -11,6 +11,12 @@ import type {
   PublishingConnectionRecord,
 } from "@/types/schemas/publishing";
 import { createGithubClient } from "./githubClient";
+import {
+  installationToken,
+  PUBLISH_PERMISSIONS,
+  type AppPermissions,
+} from "./githubApp";
+import { PublishingRepository } from "./repositories/PublishingRepository";
 
 export type PublishingContext = Pick<
   EnsuredUserContext,
@@ -45,23 +51,51 @@ export function connectionSummary(
 export async function connectedGithub(
   connection: PublishingConnectionRecord,
   signal: AbortSignal,
+  // A GitHub App token gets only this operation's permissions.
+  permissions: AppPermissions = PUBLISH_PERMISSIONS,
 ) {
+  if (connection.revokedAt) throw new AppError("CONFLICT");
+  const target = {
+    owner: connection.owner,
+    repository: connection.repository,
+    signal,
+  };
+  if (connection.transport === "github_app") {
+    const installation = connection.installationRef
+      ? await PublishingRepository.getInstallation(connection.installationRef)
+      : null;
+    if (!installation || installation.revokedAt)
+      throw new AppError("CONFLICT", "Reconnect the GitHub App.");
+    let token: string;
+    try {
+      token = await installationToken({
+        installationId: installation.installationId,
+        repositoryId: connection.repositoryId,
+        permissions,
+      });
+    } catch (error) {
+      if (
+        error instanceof AppError &&
+        (error.code === "NOT_FOUND" || error.code === "FORBIDDEN")
+      ) {
+        await PublishingRepository.revokeInstallation(installation.id);
+        throw new AppError("CONFLICT", "Reconnect the GitHub App.");
+      }
+      throw error;
+    }
+    // App tokens carry the installation's permissions, not a push flag.
+    return createGithubClient({ ...target, token, assumePush: true });
+  }
   const key = await publishingEncryptionKey();
   if (!key) throw new AppError("AUTH_CONFIG_MISSING");
-  if (connection.revokedAt || !connection.encryptedToken)
-    throw new AppError("CONFLICT");
+  if (!connection.encryptedToken) throw new AppError("CONFLICT");
   let token: string;
   try {
     token = await symmetricDecrypt({ key, data: connection.encryptedToken });
   } catch {
     throw new AppError("AUTH_CONFIG_MISSING");
   }
-  return createGithubClient({
-    token,
-    owner: connection.owner,
-    repository: connection.repository,
-    signal,
-  });
+  return createGithubClient({ ...target, token });
 }
 
 // One lease serializes credential replacement, preparation and publication.

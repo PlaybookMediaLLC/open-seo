@@ -14,6 +14,7 @@ import {
   disconnectPublishingRepository,
 } from "@/serverFunctions/publishing";
 import { connectPublishingInputSchema } from "@/types/schemas/publishing";
+import { GithubAppConnect } from "./GithubAppConnect";
 import { ProductionEnvironmentForm } from "./ProductionEnvironmentForm";
 import { publishingConnectionOptions, useRefreshPublishing } from "./queries";
 
@@ -143,6 +144,9 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
                 <p className="break-all text-muted-foreground">
                   Base branch: {connection.baseBranch} · Root:{" "}
                   {connection.rootDirectory || "/"}
+                  {connection.transport === "github_app"
+                    ? " · via the GitHub App"
+                    : " · via a personal token"}
                 </p>
                 {connection.revokedAt ? (
                   <p className="text-destructive">
@@ -161,6 +165,9 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
                   </p>
                 )}
               </div>
+            )}
+            {canManage && query.data.configured && (
+              <GithubAppConnect projectId={projectId} />
             )}
             {!canManage ? (
               <p className="text-sm text-muted-foreground">

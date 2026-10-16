@@ -99,6 +99,8 @@ export async function fixture(database: TestDatabase) {
     baseBranch: "main",
     rootDirectory: "",
     productionEnvironment: "Production",
+    transport: "pat",
+    installationRef: null,
     encryptedToken: "encrypted-secret",
     createdBy: "reviewer",
     createdAt: now,

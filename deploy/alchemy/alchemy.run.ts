@@ -8,6 +8,7 @@ import * as Effect from "effect/Effect";
 import { Redacted } from "effect";
 import { unstable_readConfig } from "wrangler";
 import { z } from "zod";
+import { relayDataEnv } from "./relay-env"; // playbook-seam
 import {
   emailAccessGate,
   HOSTED_PROD_STAGE,
@@ -296,6 +297,7 @@ const dataEnv = {
     "LOOPS_TRANSACTIONAL_INVITATION_ID",
   ),
   POSTHOG_PUBLIC_KEY: optionalVar("POSTHOG_PUBLIC_KEY"),
+  ...relayDataEnv, // playbook-seam: fork settings (deploy/alchemy/relay-env.ts)
   POSTHOG_HOST: optionalVar("POSTHOG_HOST"),
   TURNSTILE_SECRET_KEY: optionalSecret("TURNSTILE_SECRET_KEY"),
   TURNSTILE_SITE_KEY: optionalVar("TURNSTILE_SITE_KEY"),

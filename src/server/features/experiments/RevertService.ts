@@ -77,7 +77,10 @@ async function prepare(
           connection.repositoryId !== detail.publishing.connection.repositoryId
         )
           throw new AppError("CONFLICT");
-        const client = await connectedGithub(connection, signal);
+        const client = await connectedGithub(connection, signal, {
+          metadata: "read",
+          contents: "read",
+        });
         const repository = await client.getRepository();
         if (
           repository.id !== connection.repositoryId ||
@@ -234,7 +237,11 @@ async function confirmDeployed(
           connection.repositoryId !== history.connection.repositoryId
         )
           throw new AppError("CONFLICT");
-        const client = await connectedGithub(connection, signal);
+        const client = await connectedGithub(connection, signal, {
+          metadata: "read",
+          contents: "read",
+          pull_requests: "read",
+        });
         const pull = await client.getPullRequest(execution.pullRequestNumber);
         if (
           pull.repositoryId !== connection.repositoryId ||

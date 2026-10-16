@@ -8,6 +8,7 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { projects } from "./app.schema";
+import { organization } from "./better-auth-schema";
 import { opportunities, opportunityRuns } from "./opportunities.schema";
 
 export const publishingConnections = pgTable(
@@ -25,6 +26,15 @@ export const publishingConnections = pgTable(
     productionEnvironment: text("production_environment")
       .notNull()
       .default("Production"),
+    // "github_app" connections mint a short-lived installation token per
+    // operation and store no token (RFC-0005 5.7).
+    transport: text("transport", { enum: ["pat", "github_app"] })
+      .notNull()
+      .default("pat"),
+    installationRef: text("installation_ref").references(
+      () => githubAppInstallations.id,
+      { onDelete: "set null" },
+    ),
     encryptedToken: text("encrypted_token"),
     createdBy: text("created_by").notNull(),
     createdAt: text("created_at").notNull(),
@@ -233,5 +243,29 @@ export const opportunityTickets = pgTable(
   },
   (t) => [
     uniqueIndex("opportunity_tickets_text_idx").on(t.opportunityId, t.textHash),
+  ],
+);
+
+// GitHub App installations that a person in the organization proved they can
+// access, through the user-token check in the setup callback.
+export const githubAppInstallations = pgTable(
+  "github_app_installations",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    installationId: integer("installation_id").notNull(),
+    accountLogin: text("account_login").notNull(),
+    accountType: text("account_type").notNull(),
+    createdBy: text("created_by").notNull(),
+    createdAt: text("created_at").notNull(),
+    revokedAt: text("revoked_at"),
+  },
+  (t) => [
+    uniqueIndex("github_app_installations_org_idx").on(
+      t.organizationId,
+      t.installationId,
+    ),
   ],
 );

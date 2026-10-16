@@ -77,7 +77,11 @@ async function execute(
           input.projectId,
           proposal.connectionId,
         );
-        if (!connection || connection.revokedAt || !connection.encryptedToken)
+        if (
+          !connection ||
+          connection.revokedAt ||
+          (connection.transport === "pat" && !connection.encryptedToken)
+        )
           throw new AppError("CONFLICT");
         const detail = await OpportunityRepository.getDetail(
           input.projectId,

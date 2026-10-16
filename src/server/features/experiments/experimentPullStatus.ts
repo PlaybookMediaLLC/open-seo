@@ -34,7 +34,11 @@ export async function refreshPullStatus(
     connection.baseBranch !== publishing.connection.baseBranch
   )
     throw new AppError("CONFLICT");
-  const client = await connectedGithub(connection, signal);
+  const client = await connectedGithub(connection, signal, {
+    metadata: "read",
+    contents: "read",
+    pull_requests: "read",
+  });
   const repository = await client.getRepository();
   if (repository.id !== connection.repositoryId) throw new AppError("CONFLICT");
   const pull = await client.getPullRequest(execution.pullRequestNumber);
