@@ -1,3 +1,4 @@
+/* eslint-disable max-lines -- one spec covers the execution service, including the metadata helper pin */
 import {
   afterEach,
   beforeEach,
@@ -379,6 +380,29 @@ describe("MetadataExecutionService interruption recovery", () => {
       expect(github.createPullRequest).not.toHaveBeenCalled();
     },
   );
+
+  it("fails closed without writes when the metadata helper changed", async () => {
+    Object.assign(fixture.proposal, {
+      metadataSource: "helper_call",
+      helperPath: "lib/site.ts",
+      helperBlobSha: "d".repeat(40),
+    });
+    fixture.proposal.changeHash = await proposalFingerprint(fixture.proposal);
+    fixture.executeInput.changeHash = fixture.proposal.changeHash;
+    github.readFile.mockImplementation(async (path) =>
+      path === "lib/site.ts"
+        ? {
+            source: "export function pageMetadata() {}",
+            blobSha: "e".repeat(40),
+          }
+        : { source: fixture.source, blobSha: fixture.proposal.beforeBlobSha },
+    );
+    expect(await execute()).toMatchObject({
+      ok: false,
+      message: "The metadata helper changed. Prepare the proposal again.",
+    });
+    expectNoRemoteWrites();
+  });
 
   it("sanitizes an unknown provider failure before returning or recording it", async () => {
     github.updateFile.mockRejectedValue(

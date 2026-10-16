@@ -34,7 +34,7 @@ const transport = vi.fn<typeof fetch>();
 const source = "export const metadata = { description: 'Old description' };\n";
 const newDescription = "Human reviewed page description.";
 const afterSource =
-  'export const metadata = { description: "Human reviewed page description." };\n';
+  "export const metadata = { description: 'Human reviewed page description.' };\n";
 const manifest = '{"dependencies":{"next":"15.4.0"}}';
 const baseSha = "a".repeat(40);
 const headSha = "b".repeat(40);

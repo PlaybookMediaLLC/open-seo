@@ -9,7 +9,10 @@ import {
   type PublishingMutationResult,
   type PublishingOpportunityState,
 } from "@/types/schemas/publishing";
+import type { GithubClient } from "./githubClient";
+import { metadataHelperCandidates } from "./metadataHelper";
 import {
+  metadataHelperImport,
   prepareMetadataDescription,
   validateMetadataTarget,
 } from "./nextMetadata";
@@ -49,6 +52,30 @@ function verifyNextManifest(source: string) {
     )
   )
     throw new AppError("VALIDATION_ERROR");
+}
+
+// Tries each candidate in order. A missing file in a folder that was already
+// read costs no extra GitHub request.
+async function readMetadataHelper(
+  client: GithubClient,
+  sha: string,
+  candidates: string[],
+) {
+  for (const path of candidates) {
+    try {
+      const file = await client.readFile(path, sha);
+      if ((await gitBlobHash(file.source)) !== file.blobSha)
+        throw new AppError("CONFLICT");
+      return { path, ...file };
+    } catch (error) {
+      if (!(error instanceof AppError && error.code === "NOT_FOUND"))
+        throw error;
+    }
+  }
+  throw new AppError(
+    "VALIDATION_ERROR",
+    "Relay could not find the metadata helper module in the repository.",
+  );
 }
 
 async function get(
@@ -117,18 +144,44 @@ async function prepare(
           throw new AppError("CONFLICT");
         const base = await client.getRef(connection.baseBranch);
         if (!base) throw new AppError("NOT_FOUND");
-        const manifestPath = `${connection.rootDirectory ? `${connection.rootDirectory}/` : ""}package.json`;
-        const manifest = await client.readFile(manifestPath, base.sha);
+        const rootPrefix = connection.rootDirectory
+          ? `${connection.rootDirectory}/`
+          : "";
+        const manifest = await client.readFile(
+          `${rootPrefix}package.json`,
+          base.sha,
+        );
         verifyNextManifest(manifest.source);
         const file = await client.readFile(input.filePath, base.sha);
         if ((await gitBlobHash(file.source)) !== file.blobSha)
           throw new AppError("CONFLICT");
+        const helperImport = metadataHelperImport(file.source, input.filePath);
+        const helper = helperImport
+          ? await readMetadataHelper(
+              client,
+              base.sha,
+              metadataHelperCandidates({
+                specifier: helperImport.specifier,
+                pagePath: input.filePath,
+                rootDirectory: connection.rootDirectory,
+                tsconfig: helperImport.specifier.startsWith(".")
+                  ? undefined
+                  : (
+                      await client.readFile(
+                        `${rootPrefix}tsconfig.json`,
+                        base.sha,
+                      )
+                    ).source,
+              }),
+            )
+          : undefined;
         const patch = prepareMetadataDescription({
           source: file.source,
           path: input.filePath,
           url: opportunity.url,
           newDescription: input.newDescription,
           rootDirectory: connection.rootDirectory,
+          helper,
         });
         const proposal: MetadataProposal = {
           id: crypto.randomUUID(),
@@ -146,11 +199,14 @@ async function prepare(
           descriptionAfter: patch.afterDescription,
           beforeSnippet: patch.beforeSnippet,
           afterSnippet: patch.afterSnippet,
+          metadataSource: helper ? "helper_call" : "literal_object",
+          helperPath: helper?.path ?? null,
+          helperBlobSha: helper?.blobSha ?? null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:
             "A clearer search snippet may help relevant visitors choose this page. Search engines may rewrite descriptions. Traffic, rankings and revenue are not guaranteed.",
-          risk: "The supplied copy may be inaccurate or less compelling. Check every claim. Only this description literal changes. Rewrites and custom routing are not verified. A pull request may trigger repository CI.",
+          risk: `${patch.helperNote ? `${patch.helperNote} ` : ""}The supplied copy may be inaccurate or less compelling. Check every claim. Only this description literal changes. Rewrites and custom routing are not verified. A pull request may trigger repository CI.`,
           verificationPlan:
             "Review the exact diff and product claims. Run the repository build and tests in CI, then verify the rendered description on the target URL after your authorized deployment. Compare subsequent Search Console observations without assuming causation.",
           validationSummary: `${patch.validationSummary} Next.js dependency verified in the selected package manifest. Full repository build, routing and CI were not run.`,

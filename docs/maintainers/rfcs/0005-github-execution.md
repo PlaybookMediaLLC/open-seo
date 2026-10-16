@@ -60,7 +60,7 @@ Relay can open a pull request that changes one meta description in a static Next
 
 1. In `validateMetadataTarget`, accept folder segments that match `^\([a-z0-9-]+\)$`. Drop them when mapping the file path to the URL path.
 2. Keep rejecting dynamic segments (`[x]`, `[...x]`, `[[...x]]`), parallel routes (`@x`), intercepting routes (`(.)x`, `(..)x`, `(...)x`) and private folders (`_x`).
-3. When two route groups map to the same URL, Next.js fails the build. Treat it as ambiguous.
+3. When two route groups map to the same URL, Next.js fails the build. No deployed site has this, so Relay does not check for it.
 
 **Metadata helper calls:**
 
@@ -69,11 +69,11 @@ Relay can open a pull request that changes one meta description in a static Next
    - A relative path, or
    - An alias from the app's `tsconfig.json` `compilerOptions.paths` that has the `prefix/*` form and one target.
    - Try `.ts`, `.tsx`, `.js`, `.jsx` and `/index.*`.
-3. Read at most 2 extra files: `tsconfig.json` and the helper module.
+3. Read at most 2 extra files: `tsconfig.json` (for an alias only) and the helper module. A missing candidate in a folder that was already read costs no request.
 4. In the helper module, find the exported function with that name. Accept a function declaration or `export const name = (…) =>`. Every parameter must be a plain identifier.
 5. Prove the mapping. The function must return an object literal whose `description` property is the shorthand `description` or `description: <parameter>`. Apply the same rule to `title`. This maps a field to one parameter index, and so to one call argument.
 6. The call argument must be a string literal, or a template literal without expressions. Otherwise reject with "The description is computed. Relay can only change literal text."
-7. Replace only that argument literal. Parse the page again.
+7. Replace only that argument literal. Keep its quote style, and switch quotes only when that needs fewer escapes, as Prettier does. S1 runs `prettier --check` with single quotes. Parse the page again.
 8. List the other places inside the helper that use the same parameter. Show them in the risk text. On S1, `title` also feeds the Open Graph image `alt` text.
 9. Show the helper in the diff: "Changes the `description` argument of `pageMetadata` (defined in `apps/www/lib/site.ts`)."
 
@@ -256,14 +256,16 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### Phase 1a
 
-- [ ] `validateMetadataTarget` accepts route groups and still rejects dynamic, parallel, intercepting and private segments (one test each).
-- [ ] Route-group URL mapping, with a test for two groups that map to the same URL.
-- [ ] Helper-call support: relative import, `@/*` alias import, function declaration and arrow function (tests).
-- [ ] Rejection tests: destructured parameters, a computed argument, a helper that renames the field, an unresolvable import.
-- [ ] Only the target argument literal changes (test on a copy of the S1 `approach` page and `lib/site.ts`).
-- [ ] `metadata_source`, `helper_path` and `helper_blob_sha` columns in D1 and Postgres.
-- [ ] Test: a changed helper blob at execution fails closed.
-- [ ] Diff view names the helper and lists other uses of the parameter.
+- [x] `validateMetadataTarget` accepts route groups and still rejects dynamic, parallel, intercepting and private segments (one test each).
+- [x] Route-group URL mapping. Two groups that map to one URL fail the Next.js build, so there is no check for them (5.2).
+- [x] Helper-call support: relative import, `@/*` alias import, function declaration and arrow function (tests).
+- [x] Rejection tests: destructured parameters, a computed argument, a helper that renames the field, an unresolvable import.
+- [x] Only the target argument literal changes (test on a copy of the S1 `approach` page and `lib/site.ts`).
+- [x] `metadata_source`, `helper_path` and `helper_blob_sha` columns in D1 and Postgres.
+- [x] Test: a changed helper blob at execution fails closed.
+- [x] Diff view names the helper and lists other uses of the parameter (risk text).
+- [ ] S1 repository CI passes on a real test pull request.
+- [ ] Phase 1a acceptance test run in production (section 10).
 
 ### Phase 1b
 
@@ -374,6 +376,11 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 ## 11. Completion criteria
 
 **Phase 1a: real-site coverage**
+
+Dry run on 2026-10-16, parser only, no pull request:
+
+- S1: 9 of 9 static pages prepared. Each diff changes one line, the `description` argument of `pageMetadata`, in single quotes.
+- S4: 0 of 19 pages prepared, each with its reason. 4 dynamic routes (`[product]`, `[industry]`, `[program]`, `[segment]`) are refused with the segment name. 13 pages call `createSolomonMetadata({ title, description, path })`, which takes a destructured object and passes it to a package helper. 1 page is over 32 KiB. 1 page references `metadata` elsewhere.
 
 - Dry runs (no pull request) prepare a proposal for every S1 static page. Record the count. The target is 100%.
 - Each S1 diff changes only the target argument. The S1 repository CI passes on the test pull request.

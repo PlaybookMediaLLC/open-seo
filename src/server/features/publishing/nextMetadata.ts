@@ -1,30 +1,52 @@
-import { parse } from "@babel/parser";
-import { AppError } from "@/server/lib/errors";
+import { helperCall, helperDescription } from "./metadataHelper";
+import {
+  invalid,
+  parseSource,
+  unwrap,
+  walk,
+  fieldProperty,
+  type CallNode,
+  type Expression,
+  type HelperFile,
+} from "./metadataSyntax";
 
 type Target = { path: string; url: string; rootDirectory?: string };
-type Statement = ReturnType<typeof parse>["program"]["body"][number];
-type Expression = Extract<
-  Statement,
-  { type: "ExpressionStatement" }
->["expression"];
 
-function invalid(message: string): never {
-  throw new AppError("VALIDATION_ERROR", message);
-}
+// Next.js route groups such as (site) organize files and are not part of the URL.
+const ROUTE_GROUP = /^\([a-z0-9-]+\)$/;
 
 function safeSegments(value: string): boolean {
   return value
     .split("/")
-    .every((segment) => /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(segment));
+    .every(
+      (segment) =>
+        ROUTE_GROUP.test(segment) ||
+        /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(segment),
+    );
+}
+
+function rejectUnsupportedSegments(path: string) {
+  for (const segment of path.split("/")) {
+    if (/^\[.+\]$/.test(segment))
+      invalid(
+        `The dynamic route segment ${segment} is not supported. Relay changes static pages only. Track this page as a ticket instead.`,
+      );
+    if (segment.startsWith("@"))
+      invalid(`The parallel route ${segment} is not supported.`);
+    if (/^\(\.{1,3}\)/.test(segment))
+      invalid(`The intercepting route ${segment} is not supported.`);
+  }
 }
 
 // Deliberately narrower than Next routing: no rewrites, basePath, private folders,
-// route groups, dynamic routes, encoded paths, or filesystem normalization.
+// dynamic routes, encoded paths, or filesystem normalization. Two route groups
+// that map to one URL fail the Next.js build, so no deployed site has them.
 export function validateMetadataTarget({
   path,
   url,
   rootDirectory = "",
 }: Target): void {
+  rejectUnsupportedSegments(path);
   if (
     !safeSegments(path) ||
     (rootDirectory !== "" && !safeSegments(rootDirectory))
@@ -39,10 +61,13 @@ export function validateMetadataTarget({
     relative,
   );
   if (!match) invalid("Metadata target must be an App Router page file.");
-  const route = match[1]?.slice(0, -1) ?? "";
-  if (route.split("/").some((segment) => segment.startsWith("_"))) {
+  const folders = match[1]?.slice(0, -1).split("/") ?? [];
+  if (folders.some((segment) => segment.startsWith("_"))) {
     invalid("Private route folders are not supported.");
   }
+  const route = folders
+    .filter((segment) => !ROUTE_GROUP.test(segment))
+    .join("/");
   const raw = /^https?:\/\/[^/?#\\\s]+(\/[^?#\\\s]*)?$/.exec(url);
   if (!raw || url.includes("%"))
     invalid(
@@ -66,67 +91,18 @@ export function validateMetadataTarget({
   }
 }
 
-function unwrap(expression: Expression): Expression {
-  while (
-    expression.type === "TSAsExpression" ||
-    expression.type === "TSSatisfiesExpression" ||
-    expression.type === "TSTypeAssertion" ||
-    expression.type === "ParenthesizedExpression"
-  ) {
-    expression = expression.expression;
-  }
-  return expression;
-}
-
-function isUnknownArray(value: unknown): value is unknown[] {
-  return Array.isArray(value);
-}
-
-function isSyntaxNode(value: object): value is Record<string, unknown> {
-  return "type" in value && typeof value.type === "string";
-}
-
-// Walk syntax only. No project imports, expressions, or repository code execute.
-function walk(
-  value: unknown,
-  visit: (node: Record<string, unknown>) => void,
-): void {
-  const pending = [value];
-  while (pending.length) {
-    const child = pending.pop();
-    if (!child || typeof child !== "object") continue;
-    if (isUnknownArray(child)) {
-      pending.push(...child);
-      continue;
-    }
-    if (!isSyntaxNode(child)) continue;
-    visit(child);
-    pending.push(...Object.values(child));
-  }
-}
-
-function descriptionLiteral(source: string, path: string) {
-  let ast: ReturnType<typeof parse>;
-  try {
-    ast = parse(source, {
-      sourceType: "module",
-      plugins: [
-        ...(/\.tsx?$/.test(path) ? ["typescript" as const] : []),
-        ...(!path.endsWith(".ts") ? ["jsx" as const] : []),
-      ],
-    });
-  } catch {
-    invalid("Metadata source could not be parsed safely.");
-  }
+// The page's `export const metadata = ...` initializer, after page-level checks.
+function metadataInit(source: string, path: string) {
+  const program = parseSource(source, path);
   if (
-    ast.program.directives.some(
+    program.directives.some(
       (directive) => directive.value.value === "use client",
     )
   ) {
     invalid("Client components cannot be edited as static metadata pages.");
   }
   let references = 0;
-  walk(ast.program, (node) => {
+  walk(program, (node) => {
     if (node.type === "Identifier" && node.name === "metadata") references++;
     if (
       node.type === "ExportAllDeclaration" ||
@@ -153,7 +129,7 @@ function descriptionLiteral(source: string, path: string) {
     invalid(
       "Metadata must have one declaration and no other references or mutations.",
     );
-  const declarations = ast.program.body.flatMap((statement) => {
+  const declarations = program.body.flatMap((statement) => {
     if (
       statement.type !== "ExportNamedDeclaration" ||
       statement.declaration?.type !== "VariableDeclaration" ||
@@ -169,49 +145,55 @@ function descriptionLiteral(source: string, path: string) {
   if (declarations.length !== 1 || !declarations[0].init) {
     invalid("Expected exactly one direct export const metadata declaration.");
   }
-  const object = unwrap(declarations[0].init);
-  if (object.type !== "ObjectExpression")
-    invalid("Metadata must be a plain object literal.");
-  let description: Extract<Expression, { type: "StringLiteral" }> | undefined;
-  for (const property of object.properties) {
-    if (property.type === "SpreadElement" || property.computed) {
-      invalid("Metadata spreads and computed keys are not supported.");
-    }
-    const key =
-      property.key.type === "Identifier"
-        ? property.key.name
-        : property.key.type === "StringLiteral"
-          ? property.key.value
-          : null;
-    if (key !== "description") {
-      if (property.type === "ObjectMethod" || key === "__proto__") {
-        invalid("Metadata methods and custom prototypes are not supported.");
-      }
-      continue;
-    }
-    if (description)
-      invalid("Metadata must not contain duplicate description keys.");
-    if (
-      property.type !== "ObjectProperty" ||
-      property.value.type !== "StringLiteral"
-    ) {
+  return { program, init: unwrap(declarations[0].init) };
+}
+
+/** The helper import to resolve when the page sets metadata through a call, or null. */
+export function metadataHelperImport(source: string, path: string) {
+  const { program, init } = metadataInit(source, path);
+  if (init.type === "ObjectExpression") return null;
+  const { name, specifier } = helperCall(program, init);
+  return { name, specifier };
+}
+
+function descriptionLiteral(source: string, path: string, helper?: HelperFile) {
+  const { program, init } = metadataInit(source, path);
+  let found: {
+    node:
+      | Expression
+      | Exclude<CallNode["arguments"][number], Expression>
+      | undefined;
+    value: string;
+    helperNote: string | null;
+  };
+  if (init.type === "ObjectExpression") {
+    if (helper) invalid("Metadata no longer uses the metadata helper.");
+    const property = fieldProperty(init, "description");
+    if (!property)
+      invalid("Metadata must contain an existing string literal description.");
+    if (property.value.type !== "StringLiteral")
       invalid("Metadata description must be an existing string literal.");
-    }
-    description = property.value;
+    found = {
+      node: property.value,
+      value: property.value.value,
+      helperNote: null,
+    };
+  } else {
+    const { call, name } = helperCall(program, init);
+    if (!helper) invalid("Metadata uses a helper that was not read.");
+    found = helperDescription(call, name, helper);
   }
-  if (
-    !description ||
-    description.start == null ||
-    description.end == null ||
-    !description.loc
-  ) {
+  const { node } = found;
+  if (!node || node.start == null || node.end == null || !node.loc) {
     invalid("Metadata must contain an existing string literal description.");
   }
   return {
-    value: description.value,
-    start: description.start,
-    end: description.end,
-    line: description.loc.start.line,
+    value: found.value,
+    helperNote: found.helperNote,
+    start: node.start,
+    end: node.end,
+    line: node.loc.start.line,
+    quote: source[node.start],
   };
 }
 
@@ -223,8 +205,24 @@ function printable(value: string): string {
   );
 }
 
+// Keeps the file's quote style, so the repository's formatter check still
+// passes. Like Prettier, it switches quotes only when that needs fewer escapes.
+function quoted(value: string, quote: string): string {
+  const json = printable(value);
+  const singles = value.split("'").length - 1;
+  const doubles = value.split('"').length - 1;
+  const single = quote === "'" ? singles <= doubles : singles < doubles;
+  return single
+    ? `'${json.slice(1, -1).replaceAll('\\"', '"').replaceAll("'", "\\'")}'`
+    : json;
+}
+
 export function prepareMetadataDescription(
-  input: Target & { source: string; newDescription: string },
+  input: Target & {
+    source: string;
+    newDescription: string;
+    helper?: HelperFile;
+  },
 ) {
   validateMetadataTarget(input);
   if (new TextEncoder().encode(input.source).byteLength > 32 * 1024) {
@@ -239,15 +237,15 @@ export function prepareMetadataDescription(
       "The new description must contain 1 to 320 characters after trimming.",
     );
   }
-  const before = descriptionLiteral(input.source, input.path);
+  const before = descriptionLiteral(input.source, input.path, input.helper);
   if (afterDescription === before.value) {
     invalid("The new description must differ from the existing description.");
   }
-  const literal = printable(afterDescription);
+  const literal = quoted(afterDescription, before.quote);
   const prefix = input.source.slice(0, before.start);
   const suffix = input.source.slice(before.end);
   const afterSource = prefix + literal + suffix;
-  const after = descriptionLiteral(afterSource, input.path);
+  const after = descriptionLiteral(afterSource, input.path, input.helper);
   if (
     after.value !== afterDescription ||
     after.start !== before.start ||
@@ -262,7 +260,9 @@ export function prepareMetadataDescription(
     beforeSnippet: `Line ${before.line}: ${printable(before.value)}`,
     afterSnippet: `Line ${after.line}: ${literal}`,
     afterSource,
-    validationSummary:
-      "Validated direct path correspondence, direct metadata export, literal description, no metadata references, reparsed output, and unchanged surrounding source. Human-provided description only.",
+    helperNote: before.helperNote,
+    validationSummary: before.helperNote
+      ? "Validated direct path correspondence, a metadata helper call whose description comes straight from one parameter, a literal call argument, no metadata references, reparsed output, and unchanged surrounding source. Human-provided description only."
+      : "Validated direct path correspondence, direct metadata export, literal description, no metadata references, reparsed output, and unchanged surrounding source. Human-provided description only.",
   };
 }

@@ -11,7 +11,9 @@ export function validateGithubPath(path: string): string[] {
   const parts = path.split("/");
   if (
     parts.length > 10 ||
-    !parts.every((part) => /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/.test(part))
+    !parts.every((part) =>
+      /^(?:[A-Za-z0-9_-][A-Za-z0-9._-]*|\([a-z0-9-]+\))$/.test(part),
+    )
   )
     throw new AppError("VALIDATION_ERROR", "GitHub path is not supported.");
   return parts;

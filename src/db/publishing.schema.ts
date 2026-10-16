@@ -60,6 +60,13 @@ export const opportunityProposals = sqliteTable(
     descriptionAfter: text("description_after").notNull(),
     beforeSnippet: text("before_snippet").notNull(),
     afterSnippet: text("after_snippet").notNull(),
+    metadataSource: text("metadata_source", {
+      enum: ["literal_object", "helper_call"],
+    })
+      .notNull()
+      .default("literal_object"),
+    helperPath: text("helper_path"),
+    helperBlobSha: text("helper_blob_sha"),
     changeHash: text("change_hash").notNull(),
     reason: text("reason").notNull(),
     expectedEffect: text("expected_effect").notNull(),

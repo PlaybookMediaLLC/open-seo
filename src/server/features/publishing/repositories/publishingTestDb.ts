@@ -10,9 +10,13 @@ export function createPublishingTestDatabase() {
     prepare: async () => {
       await database.prepare();
       if (!database.isPostgres)
-        await database.client.executeMultiple(
-          readFileSync("drizzle/sqlite/0057_youthful_dragon_lord.sql", "utf8"),
-        );
+        for (const migration of [
+          "0057_youthful_dragon_lord.sql",
+          "0059_fat_stephen_strange.sql",
+        ])
+          await database.client.executeMultiple(
+            readFileSync(`drizzle/sqlite/${migration}`, "utf8"),
+          );
     },
   };
 }

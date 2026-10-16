@@ -214,6 +214,46 @@ describe("MetadataProposalService", () => {
     );
   });
 
+  it("binds a metadata helper call to the helper file it read", async () => {
+    const page =
+      "import { pageMetadata } from '@/lib/site';\nexport const metadata = pageMetadata('Pricing', 'Old pricing description', '/pricing');\n";
+    const helper =
+      "export function pageMetadata(title: string, description: string, path: string) {\n  return { title, description, alternates: { canonical: path } };\n}\n";
+    input.filePath = "app/(site)/pricing/page.tsx";
+    mocks.readFile.mockImplementation(async (path: string) => {
+      const source =
+        {
+          "package.json": '{"dependencies":{"next":"^15.4.0"}}',
+          "tsconfig.json": '{"compilerOptions":{"paths":{"@/*":["./*"]}}}',
+          "lib/site.ts": helper,
+        }[path] ?? page;
+      return { source, blobSha: await gitBlobHash(source) };
+    });
+    const result = await MetadataProposalService.prepare(
+      fixture.context,
+      input,
+    );
+    expect(result.ok, result.message).toBe(true);
+    const { proposal } = mocks.save.mock.calls[0][0];
+    expect(proposal).toMatchObject({
+      metadataSource: "helper_call",
+      helperPath: "lib/site.ts",
+      helperBlobSha: await gitBlobHash(helper),
+    });
+    expect(proposal.risk).toContain(
+      "Changes the description argument of pageMetadata (defined in lib/site.ts).",
+    );
+    expect(proposal.changeHash).toBe(await proposalFingerprint(proposal));
+    const sha = fixture.proposal.baseSha;
+    expect(mocks.readFile.mock.calls).toEqual([
+      ["package.json", sha],
+      [input.filePath, sha],
+      ["tsconfig.json", sha],
+      ["lib/site.ts", sha],
+    ]);
+    expectNoRemoteWrites();
+  });
+
   it.each(["version", "property", "evidence-age", "status", "stale-approval"])(
     "rejects stale %s before reaching GitHub",
     async (reason) => {
@@ -283,7 +323,11 @@ describe("MetadataProposalService", () => {
       );
       expect(result.ok).toBe(false);
       expect(result.message).toContain(
-        failure === "blob-mismatch" ? "changed" : "not supported",
+        {
+          "invalid-source": "existing string literal description",
+          "invalid-manifest": "not supported",
+          "blob-mismatch": "changed",
+        }[failure],
       );
       expect(mocks.save).not.toHaveBeenCalled();
       expect(mocks.replaceConnection).not.toHaveBeenCalled();
