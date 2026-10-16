@@ -314,14 +314,22 @@ State these in the docs or the terms. Do not hide them.
 - **S2 and S3.** `runbooks/delete-user-data.md` with `scripts/relay-erase-user-d1.ts`, and `runbooks/restore-d1.md`, both tested on a copy of production (PR #59).
 - **S4.** `tests/growth-workflow.e2e.ts` runs in CI against a Google and GitHub fake (PR #60). It found a stuck review dialog, which is fixed.
 - **S5, in part.** Saved replies are in `runbooks/support-replies.md`.
+- **S2, production.** `GDPR_ERASURE_SECRET` is in `ENV_PLAYBOOK` and deployed. The erasure endpoint answers an unsigned request with 401.
 
 **Open:**
 
-- **B1.** Google still shows "Your branding is currently under review". The five scopes are not declared under Data Access, and the demo video does not exist. The owner records the video, because the consent screen needs the owner's clicks.
+- **B1.** Google still shows "Your branding is currently under review". The five scopes are not declared under Data Access, and the demo video does not exist. The owner records the video, because the consent screen needs the owner's clicks. Two facts from 2026-10-16:
+  - Saving any Data Access change shows "Saving will update your verification request … and may require previously verified information to be reviewed again". So add the scopes after the branding result, as step 1 says.
+  - Save stays disabled while `analytics.readonly` is in the list and the YouTube link is empty. Declare all five scopes and the link in one save.
+
+  Justification for `analytics.readonly` (821 of 1,000 characters):
+
+  > Relay is an SEO tool. When a user chooses to connect Google Analytics 4 to a project, Relay uses analytics.readonly to list the GA4 properties the user can access (Admin API accountSummaries), so the user can pick the property of their own website, and to run read-only reports on that one property (Data API runReport): sessions, active users, engaged sessions, key events and page views by landing page and date. Relay shows these numbers next to Search Console data, uses them to rank which pages to improve, and measures results after a change. Relay never writes to Analytics and never shares the data. analytics.readonly is the narrowest scope that can read GA4 reports; no read scope limited to one property exists. Connecting is optional, and the user can disconnect at any time in Project settings, Integrations.
+
 - **B3.** The sending domain is onboarded. A test invitation to a second Google account is not sent yet.
 - **B4.** A test purchase and a test top-up need a payment by the owner. A paid lookup cannot run while DataForSEO has paused the account ("We noticed some unusual activity", PostHog, 2026-10-16). The owner contacts `support@dataforseo.com`.
 - **B5.** `playbookmedia.io` has no Search Console rows, so detection finds nothing to review. The merge and deploy steps need the monorepo GitHub Actions billing fix. RFC-0005 ran the publishing part on its test repository.
-- **S2.** Production use needs `GDPR_ERASURE_SECRET` in `ENV_PLAYBOOK`.
+- **Alerts.** PostHog error alerts have no email destination. The choices are Slack, Discord, GitHub issues, Linear, PagerDuty or a webhook. The owner picks one.
 - **S5.** The owner names who reads `team@playbookmedia.io` every business day.
 - **RFC-0004 phase 1** and **RFC-0009** are their own RFCs. Their checklist items here close when those RFCs are done.
 - **Uptime.** The 7-day green window ends on 2026-10-22 at the earliest. GitHub ran the 15-minute schedule only 7 times between 2026-10-15 13:46 and 2026-10-16 11:40 UTC. All 7 runs passed.
