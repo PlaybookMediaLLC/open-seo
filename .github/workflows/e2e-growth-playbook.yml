@@ -1,0 +1,63 @@
+# The growth workflow end to end (RFC-0001 S4): connect Search Console and
+# GitHub, detect, review, prepare, open a pull request and track it. Google and
+# GitHub are faked in the worker (src/server/e2e/growthProviderFake.ts).
+name: E2E growth workflow
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: e2e-growth-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-growth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Migrate the local D1 database
+        run: pnpm db:migrate:local
+
+      # The worker reads AUTH_MODE from .env.local, as in local development.
+      # A shell variable reaches only the client build.
+      - name: Use local no-auth mode
+        run: printf 'AUTH_MODE=local_noauth\n' > .env.local
+
+      - name: Run the growth workflow spec
+        run: pnpm exec playwright test -c tests/playwright.growth.config.ts
+        env:
+          PLAYWRIGHT_CHANNEL: chromium
+
+      - name: Upload the failure trace
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-growth-results
+          path: test-results/
+          retention-days: 7

@@ -27,6 +27,8 @@ import { sweepDubReferredOrganizations } from "@/server/referrals/dub";
 import { maybeSendSelfHostHeartbeat } from "@/server/lib/self-host-telemetry";
 import { handleGdprStorageErasure } from "@/server/gdpr/storage-erasure";
 import { GDPR_STORAGE_ERASURE_PATH } from "@/shared/gdpr-erasure";
+import { installGrowthFixtures } from "@/server/e2e/growthFixtures"; // playbook-seam
+installGrowthFixtures(); // playbook-seam: growth E2E provider fake, inert outside E2E builds
 
 const startHandler = createStartHandler(defaultStreamHandler);
 

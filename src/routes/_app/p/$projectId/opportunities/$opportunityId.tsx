@@ -179,8 +179,9 @@ function OpportunityDetailPage() {
           evidence={evidence}
           latestRunId={item.evidenceRunId}
         />
+        {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
         <OpportunityReview
-          key={item.id}
+          key={`review-${item.id}`}
           opportunity={item}
           currentEvidenceReviewed={decisions.some(
             (decision) =>
@@ -192,7 +193,7 @@ function OpportunityDetailPage() {
           }
         />
         <PublishingOpportunityPanel
-          key={item.id}
+          key={`publishing-${item.id}`}
           opportunity={item}
           readOnly={query.isError}
         />
