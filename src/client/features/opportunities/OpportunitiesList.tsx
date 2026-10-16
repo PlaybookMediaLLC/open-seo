@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import { Badge } from "@/client/components/ui/badge";
+import { Button } from "@/client/components/ui/button";
 import { formatRelativeTime } from "@/client/lib/relative-time";
 import { OpportunityStatusBadge, typeLabels } from "./shared";
 import type { Opportunity } from "@/types/schemas/opportunities";
@@ -33,6 +34,18 @@ export function OpportunitiesList({
           filtered
             ? "Adjust the filters or include deferred opportunities."
             : "Run detection to find pages within reach and pages losing search traffic. Only opportunities supported by your Search Console data appear here."
+        }
+        action={
+          filtered ? undefined : (
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={<a href="/docs/opportunities" />}
+            >
+              Read the guide
+            </Button>
+          )
         }
       />
     );

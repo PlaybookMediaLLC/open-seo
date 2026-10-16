@@ -1,0 +1,62 @@
+---
+title: "Find opportunities"
+description: "Turn your Search Console data into a ranked list of pages to improve, then review and approve them."
+---
+
+Opportunities turns your project's Search Console data into a review queue. It shows which existing pages deserve work, with the numbers behind each one.
+
+Approving an opportunity only allows Relay to prepare a proposal. It does not change your website. To change a page, prepare a proposal and approve its pull request separately. See [Publish changes to GitHub](/docs/github-publishing).
+
+## Get started
+
+1. Select the project for your website.
+2. Connect its Search Console property in **Project settings → Integrations**. See [Connect Google Search Console](/docs/google-search-console).
+3. Open **Opportunities** and click **Run detection**.
+4. Open a result to see the page, the metrics, the score and the uncertainty.
+5. Click **Mark reviewed**. Then approve proposal preparation, reject the opportunity, or defer it for 7 days.
+
+Detection needs no GA4 connection, no credits, no AI model and no GitHub connection. Organization members can read the queue and run detection. Owners and administrators record review decisions.
+
+## What Relay looks for
+
+- **Striking distance:** the best page for a query has an average position from 5 to 20, with at least 100 impressions in the current window. This is a reason to look at the page and the search results. It is not an automatic request to rewrite the title.
+- **Declining page:** the same URL is in both windows, had at least 30 clicks before, and lost at least 20 clicks and 30% of its clicks. A URL that is missing from a report is unknown, not zero.
+
+Each run compares two 28-day windows that end 3 days before today, in Google's Pacific reporting time. It reads at most 1,000 rows from each of three reports and saves at most 50 opportunities.
+
+The reports are samples, not a full export. Search Console can leave out anonymized queries. When a report reaches the row limit, Relay marks the coverage as limited and lowers its confidence. Relay does not check search intent, branded queries, seasonality or the layout of the search results. It does not explain why a page declined.
+
+When your data has no qualifying pages, Relay says so. It never invents opportunities to fill the queue.
+
+## How priority works
+
+The score sets the review order. It is not a traffic, conversion or revenue forecast:
+
+```text
+priority = round(100 × confidence × (
+  0.30 × commercial relevance
+  + 0.25 × observed demand
+  + 0.20 × visibility opportunity
+  + 0.15 × (1 − difficulty)
+  + 0.10 × inverse effort
+))
+```
+
+The detail view shows every value. Commercial relevance comes from the page roles in your project context. An unknown page gets a careful default. Demand uses observed impressions. Average position stands in for difficulty. Effort is 2 hours for striking distance and 4 hours for a decline. Confidence is a fixed rule of thumb, not a probability of success.
+
+## Review and history
+
+Filter by type, status or minimum priority. Sort by priority or by newest.
+
+A new detection run updates an existing opportunity. It does not make a copy. Each decision records who made it, the note and the evidence it was based on. When new evidence arrives, review it before you approve. You cannot approve evidence that is older than 14 days, or that belongs to a disconnected or changed Search Console property.
+
+A deferred opportunity leaves the default queue for 7 days. Turn on **Include deferred** to see it sooner.
+
+## Limits and failures
+
+- A successful run is reused for 24 hours. Filtering the queue reads saved results only.
+- Each run makes at most 3 Search Console requests.
+- One run at a time can work on a project. A failed run can be retried after 5 minutes.
+- When Google is unavailable, the existing opportunities stay. A run that fails partway publishes nothing new.
+
+Detection makes no paid calls.

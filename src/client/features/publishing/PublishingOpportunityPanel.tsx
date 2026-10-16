@@ -165,7 +165,10 @@ export function PublishingOpportunityPanel({
       {!proposals.length && (
         <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
           No verified proposals yet. Preparing a proposal reads the selected
-          file and package.json, but writes nothing to GitHub.
+          file and package.json, but writes nothing to GitHub.{" "}
+          <a href="/docs/github-publishing" className="underline">
+            Read the guide
+          </a>
         </p>
       )}
       {proposals.map((history) => {
