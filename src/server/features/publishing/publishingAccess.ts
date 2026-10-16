@@ -83,7 +83,7 @@ export async function connectedGithub(
       }
       throw error;
     }
-    // App tokens carry the installation's permissions, not a push flag.
+    // GitHub reports push: false for App tokens, so trust the installation.
     return createGithubClient({ ...target, token, assumePush: true });
   }
   const key = await publishingEncryptionKey();

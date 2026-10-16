@@ -84,6 +84,20 @@ describe("GitHub transport", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("trusts the installation for App tokens, which GitHub reports as push: false", async () => {
+    fetchMock.mockImplementation(async () =>
+      json({ ...repository(), permissions: { push: false } }),
+    );
+    const app = createGithubClient({ ...connection, assumePush: true });
+    const token = createGithubClient(connection);
+    await expect(app.getRepository()).resolves.toMatchObject({
+      canPush: true,
+    });
+    await expect(token.getRepository()).resolves.toMatchObject({
+      canPush: false,
+    });
+  });
+
   it("does not send an already cancelled request", async () => {
     const client = createGithubClient({
       ...connection,
