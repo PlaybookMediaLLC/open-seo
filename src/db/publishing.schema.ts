@@ -209,3 +209,29 @@ export const proposalExecutionEvents = sqliteTable(
     ),
   ],
 );
+
+// GitHub issues created from an approved ticket text (RFC-0005 5.10). The
+// unique text hash per opportunity makes one approval create one issue.
+export const opportunityTickets = sqliteTable(
+  "opportunity_tickets",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    connectionId: text("connection_id")
+      .notNull()
+      .references(() => publishingConnections.id, { onDelete: "cascade" }),
+    textHash: text("text_hash").notNull(),
+    issueNumber: integer("issue_number"),
+    issueUrl: text("issue_url"),
+    createdBy: text("created_by").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [
+    uniqueIndex("opportunity_tickets_text_idx").on(t.opportunityId, t.textHash),
+  ],
+);

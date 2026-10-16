@@ -14,6 +14,7 @@ import { beginExecution } from "./beginExecution";
 import { checkpoint } from "./checkpoint";
 import { getLatestExecution, recoverOpportunity } from "./recoverOpportunity";
 import { markReverted } from "./markReverted";
+import { claimTicket, completeTicket, getTicket } from "./opportunityTickets";
 
 export const PublishingRepository = {
   getConnection,
@@ -29,4 +30,7 @@ export const PublishingRepository = {
   getLatestExecution,
   recoverOpportunity,
   markReverted,
+  claimTicket,
+  completeTicket,
+  getTicket,
 };

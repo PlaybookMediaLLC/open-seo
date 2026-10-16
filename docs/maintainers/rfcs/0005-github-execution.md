@@ -226,11 +226,11 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### 5.10 GitHub issues (phase 2)
 
-1. On any approved opportunity, "Create GitHub issue" shows the RFC-0003 ticket text and the target repository.
+1. On any approved opportunity, "Create GitHub issue" shows the ticket text and the target repository. Until RFC-0003 adds ticket text, Relay builds it from the opportunity: title, explanation, page and query, suggested next step, and limits.
 2. The user approves the exact text. The server stores an approval with the SHA-256 of the text.
 3. The server creates the issue with the App token (Issues write) or a personal token that has Issues write.
 4. Store `opportunity_tickets`: `id`, `project_id`, `opportunity_id`, `connection_id`, `text_hash`, `issue_number`, `issue_url`, `created_by`, `created_at`.
-5. The same approval cannot create a second issue.
+5. The same approval cannot create a second issue. The ticket row is stored before the GitHub call, with a unique text hash per opportunity. The issue body ends with a hidden marker, so a retry after an interrupted create finds the issue instead of creating another one.
 
 ## 6. Security
 
@@ -295,7 +295,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Adapter dispatch (`validateTarget`, `prepareChangeAt`), with the App Router logic and its tests unchanged.
 - [x] Pages Router adapter with tests for supported and rejected forms.
 - [x] Canonical and robots changes with the typed confirmation and the inspection step. The `technical_blocker` type exists; its detector comes with RFC-0002 phase 2, so no opportunity offers these changes yet.
-- [ ] GitHub issues with exact-text approval, and a test that one approval creates one issue.
+- [x] GitHub issues with exact-text approval, and a test that one approval creates one issue.
 - [ ] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state.
 - [ ] Docs cover the App install and permissions.
 

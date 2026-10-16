@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { GithubIssueService } from "@/server/features/publishing/GithubIssueService";
 import { MetadataExecutionService } from "@/server/features/publishing/MetadataExecutionService";
 import { MetadataProposalService } from "@/server/features/publishing/MetadataProposalService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
@@ -7,6 +8,7 @@ import { getRepositoryChecks } from "@/server/features/publishing/repositoryChec
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   connectPublishingInputSchema,
+  createIssueInputSchema,
   executeProposalInputSchema,
   prepareProposalInputSchema,
   productionEnvironmentInputSchema,
@@ -89,4 +91,23 @@ export const getProposalRepositoryChecks = createServerFn({ method: "POST" })
   .validator(proposalInputSchema)
   .handler(({ context, data }) =>
     getRepositoryChecks(context, { ...data, projectId: context.projectId }),
+  );
+
+export const getGithubIssuePreview = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(publishingOpportunityInputSchema)
+  .handler(({ context, data }) =>
+    GithubIssueService.preview(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const createGithubIssue = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(createIssueInputSchema)
+  .handler(({ context, data }) =>
+    GithubIssueService.create(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
   );
