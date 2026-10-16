@@ -82,7 +82,10 @@ export function OpportunityFilterBar({
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border p-4">
       <div className="space-y-1">
-        <label htmlFor="opportunity-search" className="text-xs font-medium">
+        <label
+          htmlFor="opportunity-search"
+          className="block text-xs font-medium"
+        >
           Search
         </label>
         <SearchInput
@@ -212,7 +215,10 @@ export function OpportunityFilterBar({
         </Select>
       </div>
       <div className="space-y-1">
-        <label htmlFor="opportunity-priority" className="text-xs font-medium">
+        <label
+          htmlFor="opportunity-priority"
+          className="block text-xs font-medium"
+        >
           Minimum priority
         </label>
         <Input
