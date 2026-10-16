@@ -57,3 +57,25 @@ Do not mine an entire session for papercuts or start a broad cleanup unless the 
 Reviewer context lives in `docs/maintainers/review-guidelines.md`: the hard invariants (tenant scoping, dual-dialect persistence, billing seams, SSRF handling) and the false-positive controls that keep reviewers from flagging intentional behavior. After a merge-ready or other code review verifies a finding, add to that file only when the finding exposes a recurring or high-risk repository invariant that existing context and automated checks do not capture. Do not promote one-off bugs or preferences into permanent review rules.
 
 Changes to `AGENTS.md`, `.claude/CLAUDE.md`, `.agents/skills/**`, `.github/**`, and `docs/maintainers/review-guidelines.md` alter the review control plane and must receive explicit maintainer review. CODEOWNERS requests that review; where repository settings allow, enable GitHub's requirement for code-owner approval.
+
+## Playbook fork: upstream sync
+
+This repository is the Playbook Media fork of `every-app/open-seo`, sold as Relay. We stay a downstream fork and take upstream's core improvements.
+
+- `.github/workflows/upstream-sync-playbook.yml` merges upstream `main` into a `sync/upstream-<date>` branch on the 1st and 15th of each month, runs the CI checks, and opens a pull request. A person reviews and merges it. Merging deploys production.
+- Time-box each sync to 2 hours. Record the time spent and the conflicted files in the pull request.
+- On conflicts, keep upstream's core code (billing, providers, sign-in, audits, MCP) and keep our user interface.
+- Keep every `// playbook-seam` line. The seam registry is in `vite-plugin-relay-brand.ts`.
+
+Hard-fork when any of these happens:
+
+- Two merges in a row take more than a day.
+- Upstream changes billing, sign-in or the data model in a way that breaks our product.
+- The retention engine needs core rewrites that upstream would not accept.
+
+If we do hard-fork:
+
+- Keep the MIT license and attribution.
+- Rename the code properly and remove the build-time "OpenSEO → Relay" rewrite.
+- Delete features we don't sell.
+- Keep watching upstream for security fixes to cherry-pick.

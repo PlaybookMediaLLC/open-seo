@@ -1,0 +1,175 @@
+# Playbook fork: merge every-app/open-seo into this fork every 2 weeks.
+#
+# On the 1st and 15th of each month, this job merges upstream `main` into a
+# `sync/upstream-<date>` branch, runs the same checks as CI, and opens a pull
+# request for a person to review. It never merges into `main` by itself.
+# Merging the pull request deploys production (deploy-playbook.yml).
+#
+# Conflict rule (AGENTS.md): keep upstream's core code (billing, providers,
+# sign-in, audits, MCP) and keep our user interface.
+#
+# Pull requests opened with GITHUB_TOKEN do not start other workflows, so this
+# job runs the CI checks itself and reports them in the pull request.
+
+name: Upstream sync (Playbook)
+
+on:
+  schedule:
+    - cron: "0 14 1,15 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: upstream-sync-playbook
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+      UPSTREAM_URL: https://github.com/every-app/open-seo.git
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Fetch upstream
+        id: upstream
+        run: |
+          git remote add upstream "$UPSTREAM_URL"
+          git fetch --no-tags upstream main
+          count=$(git rev-list --count HEAD..upstream/main)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+          echo "Upstream commits not in main: $count"
+
+      - name: Stop when a sync pull request is still open
+        id: open_pr
+        if: steps.upstream.outputs.count != '0'
+        run: |
+          open=$(gh pr list --state open --label upstream-sync --json number --jq '.[0].number // empty')
+          echo "number=$open" >> "$GITHUB_OUTPUT"
+          if [ -n "$open" ]; then
+            gh pr comment "$open" --body "The scheduled sync found ${{ steps.upstream.outputs.count }} upstream commits, but this sync pull request is still open. Finish it first. A sync that takes more than a day twice in a row is a hard-fork trigger (AGENTS.md)."
+          fi
+
+      - name: Merge upstream into a sync branch
+        id: merge
+        if: steps.upstream.outputs.count != '0' && steps.open_pr.outputs.number == ''
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          branch="sync/upstream-$(date -u +%F)"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          seams_before=$(git grep -n 'playbook-seam' -- src deploy vite.config.ts | wc -l | tr -d ' ')
+          git switch -c "$branch"
+          if git merge --no-ff --no-edit upstream/main; then
+            echo "clean=true" >> "$GITHUB_OUTPUT"
+            seams_after=$(git grep -n 'playbook-seam' -- src deploy vite.config.ts | wc -l | tr -d ' ')
+            git push origin "$branch"
+          else
+            echo "clean=false" >> "$GITHUB_OUTPUT"
+            git diff --name-only --diff-filter=U > "$RUNNER_TEMP/conflicts.txt"
+            git merge --abort
+            seams_after="$seams_before"
+            # Push upstream's head as the branch. The pull request then shows the
+            # conflicts, and a person resolves them locally.
+            git push origin "upstream/main:refs/heads/$branch"
+          fi
+          echo "seams_before=$seams_before" >> "$GITHUB_OUTPUT"
+          echo "seams_after=$seams_after" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        if: steps.merge.outputs.clean == 'true'
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        if: steps.merge.outputs.clean == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Run CI checks on the merged code
+        id: checks
+        if: steps.merge.outputs.clean == 'true'
+        continue-on-error: true
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run ci:check
+          pnpm run test:ci
+
+      - name: Open the sync pull request
+        if: steps.merge.outputs.branch != ''
+        env:
+          BRANCH: ${{ steps.merge.outputs.branch }}
+          CLEAN: ${{ steps.merge.outputs.clean }}
+          CHECKS: ${{ steps.checks.outcome }}
+          COUNT: ${{ steps.upstream.outputs.count }}
+          SEAMS_BEFORE: ${{ steps.merge.outputs.seams_before }}
+          SEAMS_AFTER: ${{ steps.merge.outputs.seams_after }}
+        run: |
+          body="$RUNNER_TEMP/body.md"
+          {
+            echo "## TL;DR"
+            echo
+            echo "Scheduled upstream sync: $COUNT new commits from every-app/open-seo."
+            echo
+            echo "## What to do"
+            echo
+            echo "1. Time-box this sync to 2 hours. Write the time you spent at the end of this description."
+            echo "2. On conflicts, keep upstream's core code (billing, providers, sign-in, audits, MCP) and keep our user interface."
+            echo "3. Keep every \`// playbook-seam\` line. Check the seam registry in \`vite-plugin-relay-brand.ts\`."
+            echo "4. Merging deploys production."
+            echo
+            echo "## Result"
+            echo
+            if [ "$CLEAN" = "true" ]; then
+              echo "- The merge has no conflicts."
+              echo "- CI checks on the merged code: **$CHECKS**."
+              echo "- Seam lines: $SEAMS_BEFORE before, $SEAMS_AFTER after."
+              if [ "$SEAMS_AFTER" -lt "$SEAMS_BEFORE" ]; then
+                echo "- **Warning:** the merge removed seam lines. Restore them before merging."
+              fi
+            else
+              echo "This branch is upstream's \`main\`. It conflicts with our \`main\` in these files:"
+              echo
+              while read -r file; do
+                case "$file" in
+                  src/server/billing/*|src/server/lib/dataforseo/*|src/lib/auth*|src/server/auth/*|src/server/features/audit/*|src/server/lib/audit/*|src/server/workflows/*|src/server/mcp/*|src/db/*|drizzle/*)
+                    echo "- \`$file\`: core. Keep upstream's version (\`git checkout --theirs\`), then re-add any seam line." ;;
+                  src/client/*|src/routes/*|src/public/*|content/*|web/*)
+                    echo "- \`$file\`: user interface. Keep ours (\`git checkout --ours\`), then add upstream fixes by hand." ;;
+                  *)
+                    echo "- \`$file\`: decide case by case." ;;
+                esac
+              done < "$RUNNER_TEMP/conflicts.txt"
+              echo
+              echo "Resolve locally:"
+              echo
+              echo '```sh'
+              echo "git fetch playbook && git switch -c resolve/$BRANCH playbook/main"
+              echo "git fetch https://github.com/every-app/open-seo.git main && git merge FETCH_HEAD"
+              echo "# resolve, run the checks, push, and open a pull request"
+              echo '```'
+            fi
+            echo
+            echo "## Upstream commits"
+            echo
+            git log --format='- %s' main..upstream/main | head -60
+            echo
+            echo "## Time spent"
+            echo
+            echo "_Fill in when done. Two syncs in a row over a day is a hard-fork trigger._"
+          } > "$body"
+          gh label create upstream-sync --color 5319e7 --description "Scheduled upstream merge" 2>/dev/null || true
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore(upstream): sync every-app/open-seo ($(date -u +%F))" \
+            --label upstream-sync --body-file "$body"
