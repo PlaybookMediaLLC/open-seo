@@ -11,6 +11,7 @@ import { TrackResultsButton } from "@/client/features/experiments/TrackResultsBu
 import { executeMetadataProposal } from "@/serverFunctions/publishing";
 import type { ProposalWithHistory } from "@/types/schemas/publishing";
 import { useRefreshPublishing } from "./queries";
+import { RepositoryChecks } from "./RepositoryChecks";
 
 export function PublishingProposal({
   history,
@@ -165,10 +166,16 @@ export function PublishingProposal({
           proof of a successful build or a search performance improvement.
         </p>
         {succeeded && (
-          <p className="text-sm">
-            The opportunity is in progress, not implemented. Review and merge
-            the pull request through your own process.
-          </p>
+          <>
+            <RepositoryChecks
+              projectId={proposal.projectId}
+              proposalId={proposal.id}
+            />
+            <p className="text-sm">
+              The opportunity is in progress, not implemented. Review and merge
+              the pull request through your own process.
+            </p>
+          </>
         )}
         {disabledReason && (
           <p className="text-sm text-muted-foreground">{disabledReason}</p>

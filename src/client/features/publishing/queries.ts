@@ -1,5 +1,6 @@
 import { queryOptions, useQueryClient } from "@tanstack/react-query";
 import {
+  getProposalRepositoryChecks,
   getPublishingConnection,
   getPublishingOpportunity,
 } from "@/serverFunctions/publishing";
@@ -27,6 +28,17 @@ export const publishingOpportunityOptions = (
       )
         ? 10_000
         : false,
+  });
+// The repository's own checks, cached for 60 seconds (RFC-0005 5.5).
+export const repositoryChecksOptions = (
+  projectId: string,
+  proposalId: string,
+) =>
+  queryOptions({
+    queryKey: [...publishingKey(projectId), "checks", proposalId],
+    queryFn: () =>
+      getProposalRepositoryChecks({ data: { projectId, proposalId } }),
+    staleTime: 60_000,
   });
 export function useRefreshPublishing(projectId: string) {
   const client = useQueryClient();

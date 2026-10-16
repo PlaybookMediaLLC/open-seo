@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
+import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   confirmDeploymentInputSchema,
+  confirmVerifiedDeploymentInputSchema,
   experimentInputSchema,
   experimentListInputSchema,
   registerExperimentInputSchema,
@@ -53,6 +55,24 @@ export const refreshExperimentMeasurements = createServerFn({ method: "POST" })
   .validator(experimentInputSchema)
   .handler(({ context, data }) =>
     MeasurementService.refresh(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const refreshDeploymentSignals = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    DeploymentSignalService.refresh(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const confirmVerifiedDeployment = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(confirmVerifiedDeploymentInputSchema)
+  .handler(({ context, data }) =>
+    ExperimentService.confirmVerifiedDeployment(context, {
       ...data,
       projectId: context.projectId,
     }),

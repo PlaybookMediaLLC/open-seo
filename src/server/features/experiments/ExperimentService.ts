@@ -15,10 +15,12 @@ import { PublishingRepository } from "@/server/features/publishing/repositories/
 import { AppError } from "@/server/lib/errors";
 import {
   confirmDeploymentInputSchema,
+  confirmVerifiedDeploymentInputSchema,
   experimentInputSchema,
   experimentListInputSchema,
   registerExperimentInputSchema,
   type ConfirmDeploymentInput,
+  type ConfirmVerifiedDeploymentInput,
   type ExperimentInput,
   type ExperimentListInput,
   type ExperimentMutationResult,
@@ -127,6 +129,7 @@ async function register(
       deploymentConfirmedBy: null,
       deploymentNote: null,
       deploymentConfirmedAt: null,
+      deploymentBasis: null,
       otherChanges: false,
       seasonalRisk: false,
       baselineStart: null,
@@ -203,6 +206,68 @@ async function refreshPull(
   }));
 }
 
+// Records the deployment time and the measurement windows around it. The
+// approved change must be merged before the deployment time.
+async function recordDeployment(
+  context: PublishingContext,
+  input: ExperimentInput & {
+    deployedAt: string;
+    note: string;
+    otherChanges: boolean;
+    seasonalRisk: boolean;
+    basis: "human" | "verified";
+  },
+  claimToken: string,
+  signal: AbortSignal,
+): Promise<ExperimentMutationResult | null> {
+  const detail = await ExperimentRepository.get(
+    input.projectId,
+    input.experimentId,
+  );
+  if (!detail) throw new AppError("NOT_FOUND");
+  if (detail.experiment.deployedAt)
+    return {
+      ok: false,
+      message:
+        "Deployment is already confirmed. The recorded deployment and measurement windows cannot be overwritten.",
+    };
+  const updated = await refreshPullStatus(context, detail, claimToken, signal);
+  if (
+    updated.pullRequestState !== "merged" ||
+    !updated.mergedAt ||
+    !updated.mergeCommitSha ||
+    input.deployedAt < updated.mergedAt
+  )
+    return {
+      ok: false,
+      message:
+        "The approved change must be verified as merged before the stated production deployment time.",
+    };
+  const day = ga4DateInTimeZone(
+    new Date(input.deployedAt),
+    "America/Los_Angeles",
+  );
+  const saved = await ExperimentRepository.confirmDeployment({
+    projectId: input.projectId,
+    experimentId: input.experimentId,
+    claimToken,
+    organizationId: context.organizationId,
+    deployedAt: input.deployedAt,
+    confirmedBy: context.userId,
+    note: input.note,
+    confirmedAt: new Date().toISOString(),
+    otherChanges: input.otherChanges,
+    seasonalRisk: input.seasonalRisk,
+    basis: input.basis,
+    baselineStart: shiftGa4Date(day, -28),
+    baselineEnd: shiftGa4Date(day, -1),
+    observationStart: shiftGa4Date(day, 7),
+    observationEnd: shiftGa4Date(day, 34),
+  });
+  if (!saved) throw new AppError("CONFLICT");
+  return null;
+}
+
 async function confirmDeployment(
   context: PublishingContext,
   raw: ConfirmDeploymentInput,
@@ -221,55 +286,31 @@ async function confirmDeployment(
     context,
     input.projectId,
     async (claimToken, signal) => {
-      const detail = await ExperimentRepository.get(
-        input.projectId,
-        input.experimentId,
-      );
-      if (!detail) throw new AppError("NOT_FOUND");
-      if (detail.experiment.deployedAt)
-        return {
-          ok: false,
-          message:
-            "Deployment is already confirmed. The recorded deployment and measurement windows cannot be overwritten.",
-        };
-      const updated = await refreshPullStatus(
+      const refused = await recordDeployment(
         context,
-        detail,
+        { ...input, deployedAt, basis: "human" },
         claimToken,
         signal,
       );
-      if (
-        updated.pullRequestState !== "merged" ||
-        !updated.mergedAt ||
-        !updated.mergeCommitSha ||
-        deployedAt < updated.mergedAt
-      )
-        return {
-          ok: false,
-          message:
-            "The approved change must be verified as merged before the stated production deployment time.",
-        };
-      const day = ga4DateInTimeZone(
-        new Date(deployedAt),
-        "America/Los_Angeles",
-      );
-      const saved = await ExperimentRepository.confirmDeployment({
+      if (refused) return refused;
+      await ExperimentRepository.recordSignal({
         projectId: input.projectId,
         experimentId: input.experimentId,
         claimToken,
         organizationId: context.organizationId,
-        deployedAt,
-        confirmedBy: context.userId,
-        note: input.note,
-        confirmedAt: new Date().toISOString(),
-        otherChanges: input.otherChanges,
-        seasonalRisk: input.seasonalRisk,
-        baselineStart: shiftGa4Date(day, -28),
-        baselineEnd: shiftGa4Date(day, -1),
-        observationStart: shiftGa4Date(day, 7),
-        observationEnd: shiftGa4Date(day, 34),
+        signal: {
+          id: crypto.randomUUID(),
+          projectId: input.projectId,
+          experimentId: input.experimentId,
+          kind: "human_attestation",
+          observedAt: new Date().toISOString(),
+          effectiveAt: deployedAt,
+          environment: null,
+          externalId: "human",
+          detail: input.note.slice(0, 500),
+          createdBy: context.userId,
+        },
       });
-      if (!saved) throw new AppError("CONFLICT");
       return {
         ok: true,
         message:
@@ -283,10 +324,64 @@ async function confirmDeployment(
   }));
 }
 
+// The verified basis needs two independent signals: GitHub's successful
+// production deployment of the merge commit, and the approved text on the
+// live page. The person still declares other changes and seasonal risk.
+async function confirmVerifiedDeployment(
+  context: PublishingContext,
+  raw: ConfirmVerifiedDeploymentInput,
+): Promise<ExperimentMutationResult> {
+  await authorizePublishing(context, raw.projectId, true);
+  const input = confirmVerifiedDeploymentInputSchema.parse(raw);
+  return withPublishingClaim(
+    context,
+    input.projectId,
+    async (claimToken, signal) => {
+      const signals = await ExperimentRepository.listSignals(
+        input.projectId,
+        input.experimentId,
+      );
+      const github = signals.find((row) => row.kind === "github_deployment");
+      const live = signals.find((row) => row.kind === "live_content_match");
+      if (!github || !live)
+        return {
+          ok: false,
+          message:
+            "The verified start needs a GitHub deployment signal and a live page signal. Check signals again, or confirm the deployment yourself.",
+        };
+      const refused = await recordDeployment(
+        context,
+        {
+          ...input,
+          deployedAt: github.effectiveAt,
+          note:
+            input.note ||
+            `Verified by GitHub deployment ${github.externalId} and the live page.`,
+          basis: "verified",
+        },
+        claimToken,
+        signal,
+      );
+      return (
+        refused ?? {
+          ok: true,
+          message:
+            "Measurement starts on the verified basis. The deployment time comes from GitHub.",
+        }
+      );
+    },
+  ).catch(() => ({
+    ok: false,
+    message:
+      "Could not start measurement on the verified basis. Existing history was preserved.",
+  }));
+}
+
 export const ExperimentService = {
   list,
   get,
   register,
   refreshPull,
   confirmDeployment,
+  confirmVerifiedDeployment,
 };

@@ -1,5 +1,6 @@
 import { completeRun } from "./completeMeasurement";
 import { confirmDeployment } from "./confirmDeployment";
+import { listSignals, recordSignal } from "./deploymentSignals";
 import {
   get,
   getExecutionHistory,
@@ -18,6 +19,8 @@ export const ExperimentRepository = {
   register,
   recordPullStatus,
   confirmDeployment,
+  recordSignal,
+  listSignals,
   startRun,
   completeRun,
   failRun,

@@ -125,3 +125,34 @@ export async function disconnect(input: ClaimScope): Promise<boolean> {
     );
   return Boolean(accepted);
 }
+
+// The GitHub environment name that counts as production for deployment
+// signals. It changes no access, so it updates the active connection in place.
+export async function setProductionEnvironment(
+  input: ClaimScope & { productionEnvironment: string },
+): Promise<boolean> {
+  const lastEventId = crypto.randomUUID();
+  await runBatch((tx) => [
+    lockClaim(tx, input),
+    tx
+      .update(publishingConnections)
+      .set({ productionEnvironment: input.productionEnvironment, lastEventId })
+      .where(
+        and(
+          eq(publishingConnections.projectId, input.projectId),
+          isNull(publishingConnections.revokedAt),
+          claimExists(tx, input),
+        ),
+      ),
+  ]);
+  const [accepted] = await db
+    .select({ id: publishingConnections.id })
+    .from(publishingConnections)
+    .where(
+      and(
+        eq(publishingConnections.projectId, input.projectId),
+        eq(publishingConnections.lastEventId, lastEventId),
+      ),
+    );
+  return Boolean(accepted);
+}

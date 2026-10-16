@@ -7,18 +7,24 @@ import {
   refreshExperimentMeasurements,
   refreshExperimentPullRequest,
 } from "@/serverFunctions/experiments";
-import type { GrowthExperiment } from "@/types/schemas/experiments";
+import type {
+  DeploymentSignal,
+  GrowthExperiment,
+} from "@/types/schemas/experiments";
 import { DeploymentAttestation } from "./DeploymentAttestation";
+import { DeploymentSignals } from "./DeploymentSignals";
 import { useRefreshExperiments } from "./queries";
 
 export function ExperimentActions({
   experiment,
+  signals,
   canManage,
   configured,
   connected,
   githubConnected,
 }: {
   experiment: GrowthExperiment;
+  signals: DeploymentSignal[];
   canManage: boolean;
   configured: boolean;
   connected: boolean;
@@ -112,14 +118,20 @@ export function ExperimentActions({
         <h2 className="text-lg font-semibold">Production deployment</h2>
         {experiment.deployedAt ? (
           <div className="space-y-3 text-sm">
-            <Badge variant="outline">Human-attested · immutable</Badge>
+            <Badge variant="outline">
+              {experiment.deploymentBasis === "verified"
+                ? "Verified by GitHub and the live page · immutable"
+                : "Human-attested · immutable"}
+            </Badge>
             <p>Production time: {dateLabel(experiment.deployedAt)}</p>
             <p className="text-muted-foreground">
-              Attested by {experiment.deploymentConfirmedBy}
-              {experiment.deploymentConfirmedAt
-                ? ` on ${dateLabel(experiment.deploymentConfirmedAt)}`
-                : ""}
-              . This is not GitHub-verified deployment proof.
+              {experiment.deploymentBasis === "verified"
+                ? "The time comes from GitHub's successful production deployment of the merge commit. The live page showed the approved text."
+                : `Attested by ${experiment.deploymentConfirmedBy}${
+                    experiment.deploymentConfirmedAt
+                      ? ` on ${dateLabel(experiment.deploymentConfirmedAt)}`
+                      : ""
+                  }. This is not GitHub-verified deployment proof.`}
             </p>
             <p className="whitespace-pre-wrap break-words rounded-lg bg-muted p-3">
               {experiment.deploymentNote}
@@ -133,11 +145,18 @@ export function ExperimentActions({
         ) : canCheckGithub &&
           connected &&
           experiment.pullRequestState === "merged" ? (
-          <DeploymentAttestation
-            projectId={experiment.projectId}
-            experimentId={experiment.id}
-            mergedAt={experiment.mergedAt}
-          />
+          <>
+            <DeploymentSignals
+              projectId={experiment.projectId}
+              experimentId={experiment.id}
+              signals={signals}
+            />
+            <DeploymentAttestation
+              projectId={experiment.projectId}
+              experimentId={experiment.id}
+              mergedAt={experiment.mergedAt}
+            />
+          </>
         ) : (
           <p className="text-sm text-muted-foreground">
             Not confirmed. An administrator must verify the pull request is

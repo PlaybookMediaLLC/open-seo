@@ -8,9 +8,13 @@ export function createExperimentTestDatabase() {
     prepare: async () => {
       await database.prepare();
       if (!database.isPostgres)
-        await database.client.executeMultiple(
-          readFileSync("drizzle/sqlite/0058_blue_terror.sql", "utf8"),
-        );
+        for (const migration of [
+          "0058_blue_terror.sql",
+          "0062_cooing_triathlon.sql",
+        ])
+          await database.client.executeMultiple(
+            readFileSync(`drizzle/sqlite/${migration}`, "utf8"),
+          );
     },
   };
 }

@@ -142,7 +142,7 @@ Unique index on (`experiment_id`, `kind`, `external_id`).
 
 1. Fetch the target URL with `readPages` (SSRF-checked on every hop).
 2. Parse the `<title>` and `<meta name="description">` values.
-3. Record a signal when each changed field equals its approved value after whitespace normalization.
+3. Record a signal when each changed field equals its approved value after whitespace normalization. The rendered title includes the layout template, so it must contain the approved title.
 4. This proves that the change is visible on the page. It does not prove which commit runs. Say so in `detail`.
 
 **Measurement start rule.** Keep human attestation as one valid basis. Add a second: a `github_deployment` signal plus a `live_content_match` signal. Add `deployment_basis` to `growth_experiments`: text enum `human`, `verified`, nullable. With the verified basis, the deployment date is the GitHub `effective_at`. The person still declares other changes and seasonal risk before measurement starts.
@@ -274,15 +274,15 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Test: version 1 hashes of existing proposals do not change (golden hash from the code before version 2).
 - [x] Combined proposal diff shows both fields.
 - [x] Execution writes one file with both changes (test against the GitHub mock).
-- [ ] `experiment_deployment_signals` table.
-- [ ] `production_environment` on connections, editable in the UI.
-- [ ] GitHub deployment signal with tests for match, no match, failed status and 403.
-- [ ] Live content signal with tests for match, mismatch and SSRF refusal.
-- [ ] `deployment_basis` and the verified-start rule, with a test that a single signal is not enough.
-- [ ] Repository checks view with tests for each state and for 403.
+- [x] `experiment_deployment_signals` table.
+- [x] `production_environment` on connections, editable in the UI.
+- [x] GitHub deployment signal with tests for match, no match, failed status and 403.
+- [x] Live content signal with tests for match, mismatch and SSRF refusal.
+- [x] `deployment_basis` and the verified-start rule, with a test that a single signal is not enough.
+- [x] Repository checks view with tests for each state and for 403.
 - [ ] Revert proposal with the "file changed" refusal test.
 - [ ] Opportunity becomes `reverted` after the revert is confirmed (test).
-- [ ] Token instructions list the new read permissions.
+- [x] Token instructions list the new read permissions.
 - [ ] Live check on S1: the GitHub deployment signal (environment `production`) and the live content signal appear after merge and deploy.
 - [ ] Live check: prepare and open a revert pull request. Do not merge it unless the owner approves.
 - [ ] `content/docs/github-publishing.mdx` covers titles, deployment signals, checks and reverts.
