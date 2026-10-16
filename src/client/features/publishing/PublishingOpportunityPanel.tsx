@@ -13,6 +13,7 @@ import type { Opportunity } from "@/types/schemas/opportunities";
 import { prepareProposalInputSchema } from "@/types/schemas/publishing";
 import { publishingOpportunityOptions, useRefreshPublishing } from "./queries";
 import { PublishingRecovery } from "./PublishingRecovery";
+import { GithubIssueCard } from "./GithubIssueCard";
 import { IndexingFields, type IndexingValues } from "./IndexingFields";
 import { PublishingProposal } from "./PublishingProposal";
 
@@ -146,6 +147,13 @@ export function PublishingOpportunityPanel({
           )}
         </div>
       </CardShell>
+      {enabled && (
+        <GithubIssueCard
+          projectId={projectId}
+          opportunityId={id}
+          repository={`${connection.owner}/${connection.repository}`}
+        />
+      )}
       {canRecover && (
         <PublishingRecovery
           key={`${id}-${opportunity.version}`}

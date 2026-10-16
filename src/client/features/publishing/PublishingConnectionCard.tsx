@@ -343,7 +343,9 @@ function TokenInstructions() {
       <p>
         To see deployment and check status, also grant{" "}
         <strong>Deployments: Read</strong>, <strong>Checks: Read</strong> and{" "}
-        <strong>Commit statuses: Read</strong>. These are read-only.
+        <strong>Commit statuses: Read</strong>. These are read-only. To create
+        GitHub issues from approved tickets, grant{" "}
+        <strong>Issues: Read and write</strong>.
       </p>
       <p className="text-muted-foreground">
         Choose a short expiry, such as 30 days, and rotate when needed. GitHub

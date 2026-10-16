@@ -233,3 +233,20 @@ export type PublishingOpportunityState = {
   connection: PublishingConnection | null;
   proposals: ProposalWithHistory[];
 };
+export type OpportunityTicket = {
+  id: string;
+  projectId: string;
+  opportunityId: string;
+  connectionId: string;
+  textHash: string;
+  issueNumber: number | null;
+  issueUrl: string | null;
+  createdBy: string;
+  createdAt: string;
+};
+export const createIssueInputSchema = projectScope.extend({
+  opportunityId: z.string().min(1),
+  textHash: z.string().regex(/^[a-f0-9]{64}$/),
+  confirmExactText: z.literal(true),
+});
+export type CreateIssueInput = z.infer<typeof createIssueInputSchema>;

@@ -6,6 +6,7 @@ import {
   validateGithubBranch,
   type GithubRequest,
 } from "./githubRead";
+import { createGithubIssues } from "./githubIssues";
 import { createGithubSignals } from "./githubSignals";
 import { createGithubWriter } from "./githubWrite";
 
@@ -157,6 +158,7 @@ export function createGithubClient({
     },
     ...createGithubReader(request),
     ...createGithubSignals(request),
+    ...createGithubIssues(request),
     ...createGithubWriter(
       request,
       owner,

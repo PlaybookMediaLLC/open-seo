@@ -148,6 +148,7 @@ export const {
   opportunityDecisions,
   publishingConnections,
   opportunityProposals,
+  opportunityTickets,
   proposalApprovals,
   proposalExecutions,
   proposalExecutionEvents,
