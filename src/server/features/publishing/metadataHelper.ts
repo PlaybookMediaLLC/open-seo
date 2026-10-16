@@ -9,6 +9,7 @@ import {
   type CallNode,
   type Expression,
   type HelperFile,
+  type MetadataField,
   type Program,
   type Statement,
 } from "./metadataSyntax";
@@ -114,7 +115,7 @@ export function metadataHelperCandidates(input: {
 
 // Proves that the helper returns `description` straight from one parameter, so
 // changing that call argument changes the description and nothing else.
-function helperMapping(helper: HelperFile, name: string) {
+function helperMapping(helper: HelperFile, name: string, field: MetadataField) {
   type FunctionNode =
     | Extract<
         Expression,
@@ -166,14 +167,14 @@ function helperMapping(helper: HelperFile, name: string) {
   const object = returned && unwrap(returned);
   if (object?.type !== "ObjectExpression")
     invalid("The metadata helper must return one object literal.");
-  const property = fieldProperty(object, "description");
-  if (!property) invalid(`${name} must return a description field.`);
+  const property = fieldProperty(object, field);
+  if (!property) return null;
   const index =
     property.value.type === "Identifier"
       ? params.indexOf(property.value.name)
       : -1;
   if (index < 0)
-    invalid("The description is computed. Relay can only change literal text.");
+    invalid(`The ${field} is computed. Relay can only change literal text.`);
   const param = params[index];
   const ignored = new Set<unknown>([property.key, property.value]);
   walk(fn.body, (node) => {
@@ -189,9 +190,7 @@ function helperMapping(helper: HelperFile, name: string) {
       (node.type === "UpdateExpression" && isNamed(node.argument, param)) ||
       (node.type === "VariableDeclarator" && isNamed(node.id, param))
     )
-      invalid(
-        "The metadata helper changes the description before it returns it.",
-      );
+      invalid(`The metadata helper changes the ${field} before it returns it.`);
     if (
       isNamed(node, param) &&
       !ignored.has(node) &&
@@ -203,12 +202,15 @@ function helperMapping(helper: HelperFile, name: string) {
   return { index, otherLines: lines.flatMap((_, line) => [line]) };
 }
 
-export function helperDescription(
+/** The call argument that sets `field`, or null when the helper does not return it. */
+export function helperField(
   call: CallNode,
   name: string,
   helper: HelperFile,
+  field: MetadataField,
 ) {
-  const mapping = helperMapping(helper, name);
+  const mapping = helperMapping(helper, name, field);
+  if (!mapping) return null;
   if (call.arguments.some((argument) => argument.type === "SpreadElement"))
     invalid("The metadata helper call must not use spread arguments.");
   const argument = call.arguments[mapping.index];
@@ -220,13 +222,13 @@ export function helperDescription(
         ? argument.quasis[0].value.cooked
         : undefined;
   if (value == null)
-    invalid("The description is computed. Relay can only change literal text.");
+    invalid(`The ${field} is computed. Relay can only change literal text.`);
   const others = mapping.otherLines.length
     ? ` The same parameter is also used on line${mapping.otherLines.length > 1 ? "s" : ""} ${mapping.otherLines.join(", ")} of ${helper.path}.`
     : "";
   return {
     node: argument,
     value,
-    helperNote: `Changes the description argument of ${name} (defined in ${helper.path}).${others}`,
+    helperNote: `Changes the ${field} argument of ${name} (defined in ${helper.path}).${others}`,
   };
 }

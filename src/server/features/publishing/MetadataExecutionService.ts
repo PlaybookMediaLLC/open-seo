@@ -8,7 +8,8 @@ import {
   type ProposalExecution,
   type PublishingMutationResult,
 } from "@/types/schemas/publishing";
-import { prepareMetadataDescription } from "./nextMetadata";
+import { readTitleTemplate } from "./layoutTitle";
+import { prepareMetadataChange } from "./nextMetadata";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   authorizePublishing,
@@ -160,11 +161,24 @@ async function execute(
               "CONFLICT",
               "The metadata helper changed. Prepare the proposal again.",
             );
-          const patch = prepareMetadataDescription({
+          const patch = prepareMetadataChange({
             source: before.source,
             path: proposal.filePath,
             url: proposal.targetUrl,
-            newDescription: proposal.descriptionAfter,
+            newDescription:
+              proposal.descriptionAfter === proposal.descriptionBefore
+                ? undefined
+                : proposal.descriptionAfter,
+            newTitle: proposal.titleAfter ?? undefined,
+            titleTemplate:
+              proposal.titleAfter === null
+                ? null
+                : await readTitleTemplate(
+                    client,
+                    proposal.baseSha,
+                    proposal.filePath,
+                    connection.rootDirectory,
+                  ),
             rootDirectory: connection.rootDirectory,
             helper,
           });
@@ -172,6 +186,9 @@ async function execute(
             patch.beforeDescription !== proposal.descriptionBefore ||
             patch.beforeSnippet !== proposal.beforeSnippet ||
             patch.afterSnippet !== proposal.afterSnippet ||
+            patch.beforeTitle !== proposal.titleBefore ||
+            patch.titleBeforeSnippet !== proposal.titleBeforeSnippet ||
+            patch.titleAfterSnippet !== proposal.titleAfterSnippet ||
             (await gitBlobHash(patch.afterSource)) !== proposal.afterBlobSha
           )
             throw new AppError("CONFLICT");

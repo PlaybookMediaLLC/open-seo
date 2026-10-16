@@ -13,6 +13,7 @@ export function createPublishingTestDatabase() {
         for (const migration of [
           "0057_youthful_dragon_lord.sql",
           "0059_fat_stephen_strange.sql",
+          "0060_bright_sinister_six.sql",
         ])
           await database.client.executeMultiple(
             readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

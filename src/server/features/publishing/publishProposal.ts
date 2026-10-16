@@ -24,6 +24,13 @@ export async function publishProposal(
   checkpoint: Checkpoint,
 ) {
   const branchName = `growth/${proposal.id}`;
+  const fields = [
+    proposal.titleAfter !== null && "title",
+    proposal.descriptionAfter !== proposal.descriptionBefore && "description",
+  ]
+    .filter(Boolean)
+    .join(" and ");
+  const urlPath = new URL(proposal.targetUrl).pathname;
   const refs = { headBranch: branchName, baseBranch: connection.baseBranch };
   const marker = `<!-- OpenSEO proposal:${proposal.id} change:${proposal.changeHash} -->`;
   const verifyCommit = async (sha: string) => {
@@ -84,7 +91,7 @@ export async function publishProposal(
       path: proposal.filePath,
       source: afterSource,
       blobSha: proposal.beforeBlobSha,
-      message: `SEO: update reviewed page description (${proposal.id})`,
+      message: `SEO: update reviewed page ${fields} (${proposal.id})`,
     });
     if (updated.blobSha !== proposal.afterBlobSha)
       throw new AppError("CONFLICT");
@@ -93,7 +100,7 @@ export async function publishProposal(
   }
   await checkpoint(
     "file_committed",
-    "Verified one commit changing only the approved page description.",
+    `Verified one commit changing only the approved page ${fields}.`,
     { commitSha },
   );
   // Reject a concurrent branch push or base movement before opening a fresh PR.
@@ -104,8 +111,8 @@ export async function publishProposal(
     throw new AppError("CONFLICT");
   const pull = await client.createPullRequest({
     ...refs,
-    title: "SEO: update reviewed page description",
-    body: `${marker}\n\n## What changes\n\nReplace one existing static Next.js metadata description in \`${proposal.filePath}\`. The exact proposal was approved in the growth queue.\n\n## Review before merging\n\nCheck the product claims and diff. Run this repository's build and tests. Static parsing passed, but the repository build, custom routing and CI were not run by the platform. Search engines may rewrite snippets, and traffic or revenue gains are not guaranteed.\n\nNo auto-merge or deployment was requested. Confirm deployment separately before measuring results.\n\nApproved base: \`${proposal.baseSha}\`\nChange fingerprint: \`${proposal.changeHash}\``,
+    title: `SEO: update ${fields} for ${urlPath}`,
+    body: `${marker}\n\n## What changes\n\nReplace the existing static Next.js metadata ${fields} in \`${proposal.filePath}\`. The exact proposal was approved in the growth queue.\n\n## Review before merging\n\nCheck the product claims and diff. Run this repository's build and tests. Static parsing passed, but the repository build, custom routing and CI were not run by the platform. Search engines may rewrite snippets, and traffic or revenue gains are not guaranteed.\n\nNo auto-merge or deployment was requested. Confirm deployment separately before measuring results.\n\nApproved base: \`${proposal.baseSha}\`\nChange fingerprint: \`${proposal.changeHash}\``,
   });
   await verifyPull(pull, commitSha);
   await checkpoint(

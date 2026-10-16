@@ -1,16 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { AppError } from "@/server/lib/errors";
-import {
-  prepareMetadataDescription,
-  validateMetadataTarget,
-} from "./nextMetadata";
+import { prepareMetadataChange, validateMetadataTarget } from "./nextMetadata";
 
 const source = "export const metadata = { description: 'Old description' };";
 const target = { path: "app/about/page.tsx", url: "https://example.com/about" };
 const prepare = (
-  overrides: Partial<Parameters<typeof prepareMetadataDescription>[0]> = {},
+  overrides: Partial<Parameters<typeof prepareMetadataChange>[0]> = {},
 ) =>
-  prepareMetadataDescription({
+  prepareMetadataChange({
     ...target,
     source,
     newDescription: "New description",
@@ -27,7 +24,7 @@ function rejects(overrides: Parameters<typeof prepare>[0], message: string) {
   );
 }
 
-describe("prepareMetadataDescription", () => {
+describe("prepareMetadataChange", () => {
   it("rejects unchanged descriptions including whitespace-trimmed matches", () => {
     for (const newDescription of ["Old description", "  Old description  "]) {
       rejects(
@@ -300,6 +297,68 @@ describe("unsupported route segments", () => {
     ],
   ])("names the segment in the refusal: %s", (path, message) => {
     expect(() => validateMetadataTarget({ ...target, path })).toThrowError(
+      expect.objectContaining({ code: "VALIDATION_ERROR", message }),
+    );
+  });
+});
+
+describe("title changes", () => {
+  const page =
+    "export const metadata = { title: 'Pricing plans', description: 'Old description' };";
+  const change = (
+    overrides: Partial<Parameters<typeof prepareMetadataChange>[0]>,
+  ) => prepareMetadataChange({ ...target, source: page, ...overrides });
+
+  it("changes the title and the description together and nothing else", () => {
+    const result = change({
+      newTitle: "Plans and pricing",
+      newDescription: "New description",
+      titleTemplate: "%s | Example",
+    });
+    expect(result.afterSource).toBe(
+      "export const metadata = { title: 'Plans and pricing', description: 'New description' };",
+    );
+    expect(result).toMatchObject({
+      beforeTitle: "Pricing plans",
+      afterTitle: "Plans and pricing",
+      finalTitle: "Plans and pricing | Example",
+      titleBeforeSnippet: 'Line 1: "Pricing plans"',
+      titleAfterSnippet: "Line 1: 'Plans and pricing'",
+    });
+  });
+
+  it("records the unchanged description on a title-only change", () => {
+    expect(change({ newTitle: "Plans and pricing" })).toMatchObject({
+      beforeDescription: "Old description",
+      afterDescription: "Old description",
+      beforeSnippet: 'Line 1: "Old description"',
+      afterSnippet: 'Line 1: "Old description"',
+    });
+  });
+
+  it.each([
+    [
+      "a final title over 60 characters",
+      { newTitle: "A".repeat(50), titleTemplate: "%s | Playbook Media" },
+      `The final title "${"A".repeat(50)} | Playbook Media" has 67 characters. Use 10 to 60.`,
+    ],
+    [
+      "a final title under 10 characters",
+      { newTitle: "Plans" },
+      'The final title "Plans" has 5 characters. Use 10 to 60.',
+    ],
+    [
+      "the title object form",
+      {
+        source:
+          "export const metadata = { title: { default: 'Pricing', template: '%s' } };",
+        newTitle: "Plans and pricing",
+      },
+      "The page title uses the { default, template, absolute } form. Relay can change only a plain title string.",
+    ],
+    ["no change at all", {}, "Enter a new title, a new description, or both."],
+  ])("rejects %s", (_name, overrides, message) => {
+    expect(() => change(overrides)).toThrowError(
       expect.objectContaining({ code: "VALIDATION_ERROR", message }),
     );
   });

@@ -38,17 +38,26 @@ export const connectPublishingInputSchema = projectScope.extend({
     .regex(/^github_pat_[A-Za-z0-9_]{20,245}$/),
   authorizeRepositoryAccess: z.literal(true),
 });
-export const prepareProposalInputSchema = projectScope.extend({
-  opportunityId: z.string().min(1),
-  expectedOpportunityVersion: z.number().int().positive(),
-  filePath: z.string().min(1).max(300),
-  newDescription: z
+const metadataText = (max: number) =>
+  z
     .string()
     .trim()
     .min(1)
-    .max(320)
-    .refine((value) => !/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(value)),
-});
+    .max(max)
+    .refine((value) => !/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(value));
+export const prepareProposalInputSchema = projectScope
+  .extend({
+    opportunityId: z.string().min(1),
+    expectedOpportunityVersion: z.number().int().positive(),
+    filePath: z.string().min(1).max(300),
+    newDescription: metadataText(320).optional(),
+    newTitle: metadataText(120).optional(),
+  })
+  .refine(
+    (value) =>
+      value.newDescription !== undefined || value.newTitle !== undefined,
+    "Enter a new title, a new description, or both.",
+  );
 export const publishingOpportunityInputSchema = projectScope.extend({
   opportunityId: z.string().min(1),
 });
@@ -113,6 +122,11 @@ export type MetadataProposal = {
   metadataSource: "literal_object" | "helper_call";
   helperPath: string | null;
   helperBlobSha: string | null;
+  titleBefore: string | null;
+  titleAfter: string | null;
+  titleBeforeSnippet: string | null;
+  titleAfterSnippet: string | null;
+  fingerprintVersion: number;
   changeHash: string;
   reason: string;
   expectedEffect: string;
