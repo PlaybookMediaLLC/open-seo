@@ -13,6 +13,7 @@ import {
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { completeRun } from "./opportunityCompletion";
+import { ContentGapRepository } from "./contentGapRepository";
 import { OpportunitySignalRepository } from "./opportunitySignals";
 import { review } from "./opportunityReview";
 import {
@@ -87,61 +88,75 @@ async function getDetail(
       and(eq(opportunities.projectId, projectId), eq(opportunities.id, id)),
     );
   if (!opportunity) return null;
-  const [evidence, urls, ga4Evidence, decisions, signals] = await Promise.all([
-    db
-      .select(evidenceColumns)
-      .from(opportunityEvidence)
-      .where(
-        and(
-          eq(opportunityEvidence.projectId, projectId),
-          eq(opportunityEvidence.opportunityId, id),
+  const [evidence, urls, ga4Evidence, decisions, signals, paid] =
+    await Promise.all([
+      db
+        .select(evidenceColumns)
+        .from(opportunityEvidence)
+        .where(
+          and(
+            eq(opportunityEvidence.projectId, projectId),
+            eq(opportunityEvidence.opportunityId, id),
+          ),
+        )
+        .orderBy(
+          desc(opportunityEvidence.endDate),
+          desc(opportunityEvidence.id),
         ),
-      )
-      .orderBy(desc(opportunityEvidence.endDate), desc(opportunityEvidence.id)),
-    db
-      .select(urlColumns)
-      .from(opportunityUrls)
-      .where(
-        and(
-          eq(opportunityUrls.projectId, projectId),
-          eq(opportunityUrls.opportunityId, id),
+      db
+        .select(urlColumns)
+        .from(opportunityUrls)
+        .where(
+          and(
+            eq(opportunityUrls.projectId, projectId),
+            eq(opportunityUrls.opportunityId, id),
+          ),
+        )
+        .orderBy(opportunityUrls.role, opportunityUrls.url),
+      db
+        .select(ga4Columns)
+        .from(opportunityGa4Evidence)
+        .where(
+          and(
+            eq(opportunityGa4Evidence.projectId, projectId),
+            eq(opportunityGa4Evidence.opportunityId, id),
+          ),
+        )
+        .orderBy(
+          desc(opportunityGa4Evidence.runId),
+          opportunityGa4Evidence.period,
         ),
-      )
-      .orderBy(opportunityUrls.role, opportunityUrls.url),
-    db
-      .select(ga4Columns)
-      .from(opportunityGa4Evidence)
-      .where(
-        and(
-          eq(opportunityGa4Evidence.projectId, projectId),
-          eq(opportunityGa4Evidence.opportunityId, id),
+      db
+        .select(decisionColumns)
+        .from(opportunityDecisions)
+        .where(
+          and(
+            eq(opportunityDecisions.projectId, projectId),
+            eq(opportunityDecisions.opportunityId, id),
+          ),
+        )
+        .orderBy(
+          desc(opportunityDecisions.createdAt),
+          desc(opportunityDecisions.id),
         ),
-      )
-      .orderBy(
-        desc(opportunityGa4Evidence.runId),
-        opportunityGa4Evidence.period,
-      ),
-    db
-      .select(decisionColumns)
-      .from(opportunityDecisions)
-      .where(
-        and(
-          eq(opportunityDecisions.projectId, projectId),
-          eq(opportunityDecisions.opportunityId, id),
-        ),
-      )
-      .orderBy(
-        desc(opportunityDecisions.createdAt),
-        desc(opportunityDecisions.id),
-      ),
-    OpportunitySignalRepository.evidenceFor(projectId, id),
-  ]);
-  return { opportunity, evidence, urls, ga4Evidence, ...signals, decisions };
+      OpportunitySignalRepository.evidenceFor(projectId, id),
+      ContentGapRepository.evidenceFor(projectId, id),
+    ]);
+  return {
+    opportunity,
+    evidence,
+    urls,
+    ga4Evidence,
+    ...signals,
+    ...paid,
+    decisions,
+  };
 }
 
 async function latestRun(
   projectId: string,
   siteUrl?: string,
+  kind?: OpportunityRun["kind"],
 ): Promise<OpportunityRun | null> {
   const [row] = await db
     .select(runColumns)
@@ -152,6 +167,7 @@ async function latestRun(
         siteUrl === undefined
           ? undefined
           : eq(opportunityRuns.siteUrl, siteUrl),
+        kind === undefined ? undefined : eq(opportunityRuns.kind, kind),
       ),
     )
     .orderBy(desc(opportunityRuns.startedAt), desc(opportunityRuns.id))
@@ -183,6 +199,8 @@ async function startRun(run: OpportunityRun): Promise<void> {
         and(
           eq(opportunityRuns.projectId, run.projectId),
           eq(opportunityRuns.status, "running"),
+          // Content-gap and Search Console runs hold separate claims.
+          eq(opportunityRuns.kind, run.kind),
         ),
       ),
     tx.insert(opportunityRuns).values(run),

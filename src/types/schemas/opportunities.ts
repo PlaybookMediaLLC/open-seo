@@ -8,6 +8,8 @@ export const OPPORTUNITY_TYPES = [
   // Only this type may change canonical or robots (RFC-0005).
   "technical_blocker",
   "internal_link",
+  // Paid: runs only when a person confirms the estimate.
+  "content_gap",
 ] as const;
 export const OPPORTUNITY_DIAGNOSES = [
   "ranking_drop",
@@ -17,7 +19,7 @@ export const OPPORTUNITY_DIAGNOSES = [
   "seasonal",
   "unknown",
 ] as const;
-export const OPPORTUNITY_RUN_KINDS = ["search_console"] as const;
+export const OPPORTUNITY_RUN_KINDS = ["search_console", "content_gap"] as const;
 // The year-ago periods are the current and previous windows moved back 364
 // days, so weekdays match.
 export const EVIDENCE_PERIODS = [
@@ -72,6 +74,15 @@ export const reviewOpportunityInputSchema = opportunityDetailInputSchema.extend(
     note: z.string().trim().max(2000).default(""),
   },
 );
+export const contentGapEstimateInputSchema = projectScope.extend({
+  domains: z.array(z.string().trim().min(1).max(255)).min(1).max(3),
+});
+/** The credits a person confirmed. A higher estimate is refused. */
+const confirmed = { confirmedCredits: z.number().int().min(0).max(1_000_000) };
+export const findContentGapsInputSchema =
+  contentGapEstimateInputSchema.extend(confirmed);
+export const serpCheckInputSchema =
+  opportunityDetailInputSchema.extend(confirmed);
 export const BRAND_TERM_LIMIT = 20;
 /** Lowercase, trimmed, 2 to 60 characters, at most 20 per project. */
 export const brandTermsSchema = z
@@ -147,6 +158,45 @@ export type OpportunityCandidate = {
   inspection?: InspectionEvidence;
   link?: LinkEvidence;
   rank?: RankEvidence[];
+  // Phase 3 evidence.
+  keywords?: KeywordEvidence[];
+  ai?: AiCitationEvidence;
+  /** Content gaps only: the topic key, part of the identity. Not stored. */
+  topic?: string;
+};
+
+export type KeywordEvidence = {
+  keyword: string;
+  locationCode: number;
+  languageCode: string;
+  searchVolume: number;
+  keywordDifficulty: number | null;
+  intent: string | null;
+  competitorDomain: string;
+  competitorUrl: string | null;
+  competitorPosition: number;
+  fetchedAt: string;
+};
+
+export type AiCitationEvidence = {
+  trackerId: string;
+  citations: number;
+  answers: number;
+  periodStart: string;
+  periodEnd: string;
+};
+
+export type SerpCheck = {
+  id: string;
+  opportunityId: string;
+  keyword: string;
+  pagePosition: number | null;
+  hasAds: boolean;
+  hasAiOverview: boolean;
+  hasFeaturedSnippet: boolean;
+  confidenceDelta: number;
+  estimatedCredits: number;
+  checkedAt: string;
 };
 
 export type AuditIssueEvidence = {
@@ -191,7 +241,16 @@ export type RankEvidence = {
 
 export type Opportunity = Omit<
   OpportunityCandidate,
-  "evidence" | "urls" | "ga4" | "audit" | "inspection" | "link" | "rank"
+  | "evidence"
+  | "urls"
+  | "ga4"
+  | "audit"
+  | "inspection"
+  | "link"
+  | "rank"
+  | "keywords"
+  | "ai"
+  | "topic"
 > & {
   id: string;
   projectId: string;
@@ -280,6 +339,9 @@ export type OpportunityDetail = {
   inspectionEvidence: Array<InspectionEvidence & RunScoped>;
   linkEvidence: Array<LinkEvidence & RunScoped>;
   rankEvidence: Array<RankEvidence & RunScoped>;
+  keywordEvidence: Array<KeywordEvidence & RunScoped>;
+  aiEvidence: Array<AiCitationEvidence & RunScoped>;
+  serpChecks: SerpCheck[];
   decisions: OpportunityDecision[];
 };
 type RunScoped = { id: string; opportunityId: string; runId: string };

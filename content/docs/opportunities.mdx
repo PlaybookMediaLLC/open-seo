@@ -61,6 +61,20 @@ For the top 10 technical blockers that can stop indexing, Relay asks Google's UR
 
 When a striking-distance query is also a tracked keyword, the detail view shows its rank history over the last 30 days. Rank history does not change the score.
 
+When the project has an AI visibility tracker, the detail view shows how many AI answers in the last 30 days cite the page. AI citations do not change the score.
+
+### Content gaps (paid)
+
+Content gaps find commercial topics where your competitors rank and your site barely appears. Click **Find content gaps** on the Opportunities page and pick up to 3 competitors from your project context. Relay shows the cost in credits before it buys anything. Nothing is bought until you confirm.
+
+Relay buys each competitor's top-10 keywords with 50 or more monthly searches from DataForSEO. It keeps a keyword when its intent is commercial or transactional, your site has fewer than 10 impressions for it, and no tracked keyword of yours ranks in the top 20 for it. It groups the keywords into topics by their two most frequent words. A topic becomes an opportunity when it has 3 or more keywords, or 500 or more monthly searches.
+
+Competitor data is saved for 30 days. A new run with the same competitors in that time is free. Content gaps can run once a day for each project. When your credits run out, Relay stops before the next purchase and keeps the data it already bought.
+
+### Live results check (paid)
+
+A low click-through page can have ads, an AI overview or a featured snippet above it. On a low click-through opportunity, click **Check live results**. Relay shows the cost first, then buys one live Google results page for the page's top query. When any of these features are above your page, confidence goes down by 0.15. When none are, it goes up by 0.10. The check is reused for 24 hours.
+
 ## How priority works
 
 The score sets the review order. It is not a traffic, conversion or revenue forecast:
@@ -80,7 +94,7 @@ The detail view shows every value and where it came from:
 - **Commercial relevance** is the higher of two scores. The page role in your project context gives 1 for a money page, 0.7 for a hub, 0.5 for other roles and 0.25 for an unknown page. When GA4 is connected, organic key events on the page over the current window give 0 for none, 0.7 for 1 to 9, and 1 for 10 or more.
 - **Demand** uses observed impressions.
 - **Difficulty** uses the keyword difficulty that you already researched in Relay, when it is 90 days old or newer. Relay never buys new data for this. Otherwise, the average position stands in for difficulty.
-- **Effort** is 2 hours for striking distance, 4 hours for a decline, 1 hour for low click-through, 4 hours for competing pages and 30 minutes for an internal link. For a technical blocker, it is 1 to 8 hours by problem type.
+- **Effort** is 2 hours for striking distance, 4 hours for a decline, 1 hour for low click-through, 4 hours for competing pages, 30 minutes for an internal link and 8 hours for a content gap. For a technical blocker, it is 1 to 8 hours by problem type.
 - **Confidence** is a fixed rule of thumb for each type, not a probability of success.
 
 ## Review and history
@@ -98,4 +112,4 @@ A deferred opportunity leaves the default queue for 7 days. Turn on **Include de
 - One run at a time can work on a project. A failed run can be retried after 5 minutes.
 - When Google is unavailable, the existing opportunities stay. A run that fails partway publishes nothing new.
 
-Detection makes no paid calls.
+Detection makes no paid calls. Only content gaps and live results checks use credits, and both show the cost before you confirm.

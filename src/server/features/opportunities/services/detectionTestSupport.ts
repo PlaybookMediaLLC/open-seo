@@ -31,6 +31,8 @@ export function input(
     audit: null,
     inspections: new Map(),
     rankHistory: new Map(),
+    aiCitations: null,
+    serpChecks: new Map(),
     truncated: false,
     ...overrides,
   };

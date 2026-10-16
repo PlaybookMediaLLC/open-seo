@@ -9,11 +9,27 @@ import {
   brandMatcher,
   compareText,
   metrics,
+  urlJoinKey,
   usableRow,
+  type AiCitations,
   type DetectionInput,
 } from "./detectors/shared";
 import { strikingDistance } from "./detectors/strikingDistance";
 import { technicalBlockers } from "./detectors/technicalBlocker";
+
+/** Adds the AI answer citations of the candidate's URL, zero included. */
+export function withAiCitations<T extends OpportunityCandidate>(
+  candidate: T,
+  ai: AiCitations | null,
+): T {
+  if (!ai) return candidate;
+  const { citations, ...summary } = ai;
+  const key = urlJoinKey(candidate.url);
+  return {
+    ...candidate,
+    ai: { ...summary, citations: (key && citations.get(key)) || 0 },
+  };
+}
 
 /** Pure evidence shaping. No collection, writes, or inferred search intent. */
 export function detectOpportunities(
@@ -38,7 +54,7 @@ export function detectOpportunities(
   const candidates = [
     ...strikingDistance(queryPages, context),
     ...decliningPages(input, context),
-    ...lowCtr(nonBranded, pageMetrics, context),
+    ...lowCtr(nonBranded, pageMetrics, context, input.serpChecks),
     ...cannibalization(nonBranded, pageMetrics, context),
     ...technicalBlockers(input, context),
     ...(input.audit?.inlinks.size
@@ -51,11 +67,15 @@ export function detectOpportunities(
         )
       : []),
   ].map((candidate) => {
-    // Rank history is evidence only. It does not change the score.
+    // Rank history and AI citations are evidence only. They do not change
+    // the score.
     const rank = candidate.query
       ? input.rankHistory.get(candidate.query.toLowerCase())
       : undefined;
-    return rank ? { ...candidate, rank } : candidate;
+    return withAiCitations(
+      rank ? { ...candidate, rank } : candidate,
+      input.aiCitations,
+    );
   });
   return sort(
     candidates,

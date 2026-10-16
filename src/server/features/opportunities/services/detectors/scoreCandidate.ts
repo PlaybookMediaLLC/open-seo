@@ -36,7 +36,47 @@ const TYPE_DEFAULTS = {
     truncatedConfidence: 0.35,
     effortHours: 0.5,
   },
+  content_gap: {
+    confidence: 0.35,
+    truncatedConfidence: 0.25,
+    effortHours: 8,
+  },
 } as const;
+
+type ScoreComponents = Pick<
+  OpportunityCandidate,
+  | "commercialScore"
+  | "demandScore"
+  | "visibilityScore"
+  | "difficultyScore"
+  | "effortScore"
+>;
+
+/** The one priority formula (RFC-0002 2). */
+export function priorityFor(confidence: number, scores: ScoreComponents) {
+  return Math.round(
+    100 *
+      confidence *
+      (0.3 * scores.commercialScore +
+        0.25 * scores.demandScore +
+        0.2 * scores.visibilityScore +
+        0.15 * (1 - scores.difficultyScore) +
+        0.1 * scores.effortScore),
+  );
+}
+
+/** A live results check moves confidence by this much (RFC-0002 5.3). */
+export function serpCheckDelta(featuresAbovePage: boolean) {
+  return featuresAbovePage ? -0.15 : 0.1;
+}
+
+/** Confidence after a live results check, from the type default. */
+export function serpCheckedConfidence(truncated: boolean, delta: number) {
+  const defaults = TYPE_DEFAULTS.low_ctr;
+  return bounded(
+    (truncated ? defaults.truncatedConfidence : defaults.confidence) + delta,
+  );
+}
 
 type DetectedType = keyof typeof TYPE_DEFAULTS;
 
@@ -49,7 +89,12 @@ export type ScoringContext = {
   truncated: boolean;
 };
 
-export function scoringContext(input: DetectionInput): ScoringContext {
+export function scoringContext(
+  input: Pick<
+    DetectionInput,
+    "keyPages" | "ga4" | "keywordDifficulty" | "truncated"
+  >,
+): ScoringContext {
   let ga4: ScoringContext["ga4"] = null;
   if (input.ga4) {
     ga4 = new Map();
@@ -97,7 +142,11 @@ export function scoreCandidate(
     confidenceFactor?: number;
     /** Replaces the default confidence, for example 0.7 when confirmed. */
     confidence?: number;
+    /** Added to confidence after a live results check. */
+    confidenceDelta?: { value: number; reason: string };
     effortHours?: number;
+    /** Replaces the position proxy, for example competitor difficulty. */
+    difficulty?: { value: number; source: string };
     uncertainty: string;
   },
 ): Scored {
@@ -124,32 +173,36 @@ export function scoreCandidate(
       ? undefined
       : context.keywordDifficulty.get(input.query.toLowerCase());
   const difficultyScore = bounded(
-    cachedDifficulty !== undefined
-      ? cachedDifficulty / 100
-      : input.position === null
-        ? 0.5
-        : (input.position - 1) / 19,
+    input.difficulty
+      ? input.difficulty.value
+      : cachedDifficulty !== undefined
+        ? cachedDifficulty / 100
+        : input.position === null
+          ? 0.5
+          : (input.position - 1) / 19,
   );
   const effortHours = input.effortHours ?? defaults.effortHours;
   const effortScore = bounded(1 / effortHours);
   const baseConfidence =
     input.confidence ??
     (context.truncated ? defaults.truncatedConfidence : defaults.confidence);
-  const confidence = bounded(baseConfidence * (input.confidenceFactor ?? 1));
-  const priority = Math.round(
-    100 *
-      confidence *
-      (0.3 * commercialScore +
-        0.25 * demandScore +
-        0.2 * input.visibilityScore +
-        0.15 * (1 - difficultyScore) +
-        0.1 * effortScore),
+  const confidence = bounded(
+    baseConfidence * (input.confidenceFactor ?? 1) +
+      (input.confidenceDelta?.value ?? 0),
   );
+  const priority = priorityFor(confidence, {
+    commercialScore,
+    demandScore,
+    visibilityScore: input.visibilityScore,
+    difficultyScore,
+    effortScore,
+  });
   const ga4Text = context.ga4
     ? `the GA4 score ${ga4Score} from ${keyEvents} organic key events in the current period`
     : "no GA4 score, because GA4 is not connected";
-  const difficultyText =
-    cachedDifficulty !== undefined
+  const difficultyText = input.difficulty
+    ? input.difficulty.source
+    : cachedDifficulty !== undefined
       ? `cached keyword difficulty ${cachedDifficulty} / 100`
       : input.position === null
         ? "0.5, because Search Console has no position for this page"
@@ -163,7 +216,7 @@ export function scoreCandidate(
     visibilityScore: input.visibilityScore,
     difficultyScore,
     effortScore,
-    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}${input.confidence === undefined ? `, the default for this type${context.truncated ? " with truncated rows" : ""}` : ", because URL inspection confirms the problem"}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${ga4Text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
+    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}${input.confidence === undefined ? `, the default for this type${context.truncated ? " with truncated rows" : ""}` : ", because URL inspection confirms the problem"}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}${input.confidenceDelta ? `, then ${input.confidenceDelta.value > 0 ? "+" : ""}${input.confidenceDelta.value} because ${input.confidenceDelta.reason}` : ""}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${ga4Text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
     uncertainty: `${input.uncertainty} Priority is a review heuristic, not a traffic or revenue forecast.${context.ga4 ? "" : " GA4 not connected; commercial value uses page roles only."}${context.truncated ? " Source rows are truncated, so coverage and confidence are limited." : " Bounded source rows may omit queries or pages."}`,
     ga4: ga4Rows.map(({ hostName: _hostName, ...row }) => ({
       ...row,

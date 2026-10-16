@@ -7,6 +7,7 @@ import { Button } from "@/client/components/ui/button";
 import { OpportunityFilterBar } from "@/client/features/opportunities/OpportunityFilterBar";
 import { OpportunityRunLog } from "@/client/features/opportunities/OpportunityRunLog";
 import { OpportunitiesList } from "@/client/features/opportunities/OpportunitiesList";
+import { ContentGapSheet } from "@/client/features/opportunities/PaidChecks";
 import {
   ConnectSearchConsole,
   dateLabel,
@@ -73,22 +74,29 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
           title="Opportunities"
           description="Growth Operations · Evidence-led improvements for your current project."
           actions={
-            <Button
-              onClick={() => detection.mutate()}
-              pending={detection.isPending}
-              disabled={detection.isPending || !query.data?.connected}
-            >
-              <Search data-icon="inline-start" />
-              Run detection
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {query.data?.connected ? (
+                <ContentGapSheet projectId={projectId} />
+              ) : null}
+              <Button
+                onClick={() => detection.mutate()}
+                pending={detection.isPending}
+                disabled={detection.isPending || !query.data?.connected}
+              >
+                <Search data-icon="inline-start" />
+                Run detection
+              </Button>
+            </div>
           }
         />
         <div className="rounded-xl border bg-card p-4 text-sm space-y-1">
           <p className="font-medium">Research first. Review before action.</p>
           <p className="text-muted-foreground">
-            Detection makes at most 3 free Google Search Console requests, with
-            at most 1,000 rows each. Results are cached for 24 hours. No paid AI
-            calls. Nothing is published or changed on your site.
+            Detection makes at most 5 free Search Console requests, 1 GA4
+            request and 10 URL inspections. Results are cached for 24 hours. It
+            makes no paid calls. Content gaps and live results checks use paid
+            data and show the cost first. Nothing is published or changed on
+            your site.
           </p>
         </div>
         {detection.isError ? (

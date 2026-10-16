@@ -1,4 +1,3 @@
-import { sort } from "remeda";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { requireOrgPermission } from "@/server/auth/org-gate";
@@ -17,7 +16,6 @@ import {
   GscTokenError,
 } from "@/server/lib/gscErrors";
 import type {
-  OpportunityCandidate,
   OpportunityDetectionResult,
   OpportunityListInput,
   OpportunityReviewInput,
@@ -27,6 +25,7 @@ import type {
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
 import { detectOpportunities } from "./detectOpportunities";
 import { requestDetectionData } from "./detectionRequests";
+import { withIdentityKeys } from "./opportunityIdentity";
 import {
   detectionNotes,
   inspectTopBlockers,
@@ -90,36 +89,6 @@ function failureMessage(error: unknown): string {
   return "Analysis could not finish. Existing opportunities are unchanged. Wait five minutes and retry, or check the Search Console connection.";
 }
 
-async function identityKey(
-  projectId: string,
-  siteUrl: string,
-  candidate: OpportunityCandidate,
-) {
-  // Structured tuple prevents ambiguous delimiters. This is an identity hash,
-  // not a store of relational data; evidence lives in separate normalized rows.
-  // Single-URL types keep the original tuple, so their hashes never change.
-  const base = [projectId, siteUrl, candidate.type];
-  const tuple =
-    candidate.type === "cannibalization"
-      ? [
-          ...base,
-          sort(
-            candidate.urls.map((item) => item.url),
-            (a, b) => (a < b ? -1 : a > b ? 1 : 0),
-          ),
-        ]
-      : candidate.type === "technical_blocker"
-        ? [...base, candidate.url, candidate.audit?.issueType ?? null]
-        : candidate.type === "internal_link"
-          ? [...base, candidate.url, candidate.link?.sourceUrl ?? null]
-          : [...base, candidate.url, candidate.query];
-  const bytes = new TextEncoder().encode(JSON.stringify(tuple));
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("");
-}
-
 async function detect(
   context: Context,
   projectId: string,
@@ -136,6 +105,7 @@ async function detect(
   const latest = await OpportunityRepository.latestRun(
     projectId,
     connection.siteUrl,
+    "search_console",
   );
   if (
     latest?.status === "completed" &&
@@ -247,15 +217,11 @@ async function detect(
     if (!ga4Rows) run.ga4PropertyId = null;
     const input = {
       ...searchConsole,
-      keyPages: signals.keyPages,
-      brandTerms: signals.brandTerms.terms,
+      ...signals.inputs,
       ga4:
         ga4Connection && ga4Rows
           ? { rows: ga4Rows, currency: ga4Connection.propertyCurrencyCode }
           : null,
-      keywordDifficulty: signals.keywordDifficulty,
-      audit: signals.audit,
-      rankHistory: signals.rankHistory,
     };
     // Detection is pure, so it runs again once inspection has confirmed the
     // top technical candidates.
@@ -267,11 +233,10 @@ async function detect(
     const candidates = inspections.size
       ? detectOpportunities({ ...input, inspections })
       : first;
-    const identified = await Promise.all(
-      candidates.map(async (candidate) => ({
-        ...candidate,
-        identityKey: await identityKey(projectId, run.siteUrl, candidate),
-      })),
+    const identified = await withIdentityKeys(
+      projectId,
+      run.siteUrl,
+      candidates,
     );
     run.opportunityCount = candidates.length;
     run.status = "completed";

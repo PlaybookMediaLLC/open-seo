@@ -6,6 +6,7 @@ import type {
   OpportunityCandidate,
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
+import { ContentGapRepository } from "../repositories/contentGapRepository";
 import { OpportunitySignalRepository } from "../repositories/opportunitySignals";
 import { BrandTermService } from "./BrandTermService";
 import {
@@ -18,6 +19,8 @@ const DAY_MS = 86_400_000;
 const DIFFICULTY_MAX_AGE_DAYS = 90;
 const AUDIT_MAX_AGE_DAYS = 30;
 const RANK_HISTORY_DAYS = 30;
+const AI_CITATION_DAYS = 30;
+const SERP_CHECK_HOURS = 24;
 const INSPECTIONS_PER_RUN = 10;
 // Google allows about 2,000 inspections a day per property. This cap keeps
 // retried runs of one project far below that.
@@ -41,6 +44,8 @@ export async function loadDetectionSignals(project: {
     audit,
     rankHistory,
     inspectionsToday,
+    aiCitations,
+    serpChecks,
   ] = await Promise.all([
     ProjectContextRepository.listKeyPages(projectId),
     BrandTermService.get(projectId),
@@ -64,14 +69,25 @@ export async function loadDetectionSignals(project: {
       projectId,
       new Date().toISOString().slice(0, 10),
     ),
+    ContentGapRepository.aiCitations(projectId, daysAgo(AI_CITATION_DAYS)),
+    ContentGapRepository.recentSerpChecks(
+      projectId,
+      daysAgo(SERP_CHECK_HOURS / 24),
+    ),
   ]);
   return {
-    keyPages,
-    brandTerms,
     ga4Connection,
-    keywordDifficulty,
     audit,
-    rankHistory,
+    // The free inputs that detection takes as they are.
+    inputs: {
+      keyPages,
+      brandTerms: brandTerms.terms,
+      keywordDifficulty,
+      audit,
+      rankHistory,
+      aiCitations,
+      serpChecks,
+    },
     // Inspections only check audit issues, so a run without an audit needs none.
     inspectionBudget: audit
       ? Math.max(

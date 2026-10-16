@@ -30,6 +30,19 @@ export type DetectionInput = {
   inspections: Map<string, InspectionEvidence>;
   /** Lowercase tracked keyword to its rank history over the last 30 days. */
   rankHistory: Map<string, RankEvidence[]>;
+  /** AI answer citations over the last 30 days. Null without a tracker. */
+  aiCitations: AiCitations | null;
+  /** Live results checks from the last 24 hours, by URL join key. */
+  serpChecks: Map<string, { value: number; reason: string }>;
+};
+
+export type AiCitations = {
+  trackerId: string;
+  answers: number;
+  periodStart: string;
+  periodEnd: string;
+  /** URL join key to the answers that cite it. */
+  citations: Map<string, number>;
 };
 
 export type AuditSignals = {

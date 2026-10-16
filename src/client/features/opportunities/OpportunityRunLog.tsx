@@ -58,6 +58,9 @@ export function OpportunityRunLog({ runs }: { runs: OpportunityRun[] }) {
                         Finished {dateLabel(run.finishedAt)}
                       </p>
                     ) : null}
+                    {run.kind === "content_gap" ? (
+                      <p className="mt-1 text-xs">Content gaps (paid data)</p>
+                    ) : null}
                     <p className="mt-1 break-all text-xs text-muted-foreground">
                       {run.id}
                     </p>
