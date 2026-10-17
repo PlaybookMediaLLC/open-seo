@@ -2,9 +2,18 @@ import { z } from "zod";
 import type { ProposalWithHistory } from "./publishing";
 
 const project = z.object({ projectId: z.string().min(1) });
+// RFC-0006 5.5: a final label, or "measuring" until the window is complete.
+export const EXPERIMENT_LABELS = [
+  "encouraging",
+  "inconclusive",
+  "negative",
+  "measuring",
+] as const;
+export type ExperimentLabel = (typeof EXPERIMENT_LABELS)[number];
 export const experimentListInputSchema = project.extend({
   limit: z.number().int().min(1).max(100).default(50),
   offset: z.number().int().nonnegative().default(0),
+  label: z.enum(EXPERIMENT_LABELS).optional(),
 });
 export const experimentInputSchema = project.extend({
   experimentId: z.string().min(1),

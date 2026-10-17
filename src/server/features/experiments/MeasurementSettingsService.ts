@@ -9,11 +9,13 @@ import type {
   ExperimentInput,
   MeasurementSettingsInput,
 } from "@/types/schemas/experiments";
+import { experimentCsv } from "./experimentCsv";
 import { fetchKeyEventNames, ga4Failure } from "./measurementGa4";
 import { ExperimentRepository } from "./repositories/ExperimentRepository";
 import { MeasurementGa4Repository } from "./repositories/measurementGa4Rows";
 
-// RFC-0006: the daily refresh switch and the GA4 key events of one experiment.
+// RFC-0006: the daily refresh switch, the GA4 key events and the CSV export of
+// one experiment.
 
 async function experimentAndProperty(projectId: string, experimentId: string) {
   const detail = await ExperimentRepository.get(projectId, experimentId);
@@ -74,4 +76,27 @@ async function save(
   await MeasurementGa4Repository.saveSettings(input);
 }
 
-export const MeasurementSettingsService = { get, keyEventNames, save };
+/** The stored daily rows as CSV. It makes no Google request. */
+async function exportCsv(context: PublishingContext, input: ExperimentInput) {
+  await authorizePublishing(context, input.projectId);
+  const detail = await ExperimentRepository.get(
+    input.projectId,
+    input.experimentId,
+  );
+  if (!detail) throw new AppError("NOT_FOUND");
+  return {
+    filename: `experiment-${detail.experiment.createdAt.slice(0, 10)}-${detail.experiment.id.slice(0, 8)}.csv`,
+    csv: experimentCsv({
+      targetUrl: detail.experiment.targetUrl,
+      days: [...detail.baselineDays, ...detail.observationDays],
+      ga4Days: detail.ga4Days,
+    }),
+  };
+}
+
+export const MeasurementSettingsService = {
+  get,
+  keyEventNames,
+  save,
+  exportCsv,
+};

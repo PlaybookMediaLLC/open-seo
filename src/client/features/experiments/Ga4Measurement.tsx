@@ -10,7 +10,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/client/components/ui/sheet";
+import { downloadFile } from "@/client/lib/download";
 import {
+  exportExperimentCsv,
   getMeasurementSettings,
   listExperimentKeyEvents,
   saveMeasurementSettings,
@@ -27,6 +29,33 @@ const settingsKey = (projectId: string, experimentId: string) => [
 ];
 const count = (value: number) =>
   value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+
+/** RFC-0006 5.5: the stored daily rows, built on the server. */
+export function DownloadCsvButton({
+  projectId,
+  experimentId,
+}: {
+  projectId: string;
+  experimentId: string;
+}) {
+  const download = useMutation({
+    mutationFn: () =>
+      exportExperimentCsv({ data: { projectId, experimentId } }),
+    onSuccess: ({ csv, filename }) =>
+      downloadFile(csv, filename, "text/csv;charset=utf-8"),
+  });
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      pending={download.isPending}
+      onClick={() => download.mutate()}
+    >
+      Download CSV
+    </Button>
+  );
+}
 
 /** RFC-0006 5.2: GA4 numbers below the Search Console label. */
 export function Ga4Results({ detail }: { detail: ExperimentDetail }) {

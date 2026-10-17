@@ -13,6 +13,7 @@ import {
 } from "@/db/schema";
 import type {
   ExperimentDetail,
+  ExperimentLabel,
   ExperimentListInput,
   ExperimentSummary,
   GrowthExperiment,
@@ -27,11 +28,25 @@ import {
 } from "./experimentSql";
 import { listSignals } from "./deploymentSignals";
 
-export async function list(
-  input: ExperimentListInput,
-): Promise<{ items: ExperimentSummary[]; total: number }> {
-  const scope = eq(growthExperiments.projectId, input.projectId);
-  const [items, totals] = await Promise.all([
+/** The newest COMPLETED run, so a later failed attempt never hides a result. */
+const latestRun = (projectId: string) =>
+  eq(
+    measurementRuns.id,
+    sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' order by latest.started_at desc, latest.id desc limit 1)`,
+  );
+/** RFC-0006: the final label, or "measuring" until the window is complete. */
+const label = sql<ExperimentLabel>`case when ${eq(measurementRuns.windowComplete, true)} then ${measurementRuns.outcome} else 'measuring' end`;
+
+export async function list(input: ExperimentListInput): Promise<{
+  items: ExperimentSummary[];
+  total: number;
+  summary: Record<ExperimentLabel, number>;
+}> {
+  const scope = and(
+    eq(growthExperiments.projectId, input.projectId),
+    input.label ? sql`${label} = ${input.label}` : undefined,
+  );
+  const [items, totals, labels] = await Promise.all([
     db
       .select({
         ...experimentColumns,
@@ -54,22 +69,45 @@ export async function list(
           eq(proposalExecutions.projectId, growthExperiments.projectId),
         ),
       )
-      .leftJoin(
-        measurementRuns,
-        eq(
-          measurementRuns.id,
-          // Same rule as get(): the newest COMPLETED snapshot, so a later failed
-          // attempt never replaces the last valid assessment.
-          sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${input.projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' order by latest.started_at desc, latest.id desc limit 1)`,
-        ),
-      )
+      .leftJoin(measurementRuns, latestRun(input.projectId))
       .where(scope)
       .orderBy(desc(growthExperiments.createdAt), desc(growthExperiments.id))
       .limit(input.limit)
       .offset(input.offset),
-    db.select({ total: count() }).from(growthExperiments).where(scope),
+    db
+      .select({ total: count() })
+      .from(growthExperiments)
+      .leftJoin(measurementRuns, latestRun(input.projectId))
+      .where(scope),
+    // The strip counts the whole project, whatever the filter.
+    // Grouped by the raw columns; Postgres cannot group a parameterized CASE.
+    db
+      .select({
+        windowComplete: measurementRuns.windowComplete,
+        outcome: measurementRuns.outcome,
+        total: count(),
+      })
+      .from(growthExperiments)
+      .leftJoin(measurementRuns, latestRun(input.projectId))
+      .where(eq(growthExperiments.projectId, input.projectId))
+      .groupBy(measurementRuns.windowComplete, measurementRuns.outcome),
   ]);
-  return { items, total: totals[0]?.total ?? 0 };
+  const counted = (name: ExperimentLabel) =>
+    labels
+      .filter(
+        (row) => (row.windowComplete ? row.outcome : "measuring") === name,
+      )
+      .reduce((sum, row) => sum + Number(row.total), 0);
+  return {
+    items,
+    total: totals[0]?.total ?? 0,
+    summary: {
+      encouraging: counted("encouraging"),
+      inconclusive: counted("inconclusive"),
+      negative: counted("negative"),
+      measuring: counted("measuring"),
+    },
+  };
 }
 
 export async function get(
