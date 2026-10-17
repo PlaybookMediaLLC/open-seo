@@ -241,10 +241,11 @@ describe("PublishingConnectionService", () => {
         input.projectId,
       ),
     ).toMatchObject({ ok: true });
-    expect(mocks.disconnect).toHaveBeenCalledWith({
+    expect(mocks.disconnect.mock.lastCall?.[0]).toMatchObject({
       projectId: input.projectId,
       claimToken: "claim-1",
       organizationId: fixture.context.organizationId,
+      audit: { action: "publishing.disconnected" },
     });
     expect(mocks.client).not.toHaveBeenCalled();
   });

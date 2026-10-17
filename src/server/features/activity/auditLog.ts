@@ -69,3 +69,27 @@ export async function recordAudit(input: AuditInput) {
     });
   }
 }
+
+const SUMMARIES: Partial<Record<AuditAction, string>> = {
+  "integration.gsc_connected": "Connected Search Console",
+  "integration.gsc_disconnected": "Disconnected Search Console",
+  "integration.ga4_connected": "Connected Google Analytics",
+  "integration.ga4_disconnected": "Disconnected Google Analytics",
+  "member.invited": "Invited a member",
+};
+
+/** One seam line in an upstream server function, after its change. */
+export function auditAfter(
+  context: AuditActor & { organizationId: string; projectId?: string },
+  action: AuditAction,
+) {
+  return recordAudit({
+    organizationId: context.organizationId,
+    projectId: context.projectId ?? null,
+    actor: context,
+    action,
+    targetType: context.projectId ? "project" : "organization",
+    targetId: context.projectId ?? context.organizationId,
+    summary: SUMMARIES[action] ?? action,
+  });
+}

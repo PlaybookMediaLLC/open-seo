@@ -110,7 +110,15 @@ export async function draftAnchor(
         : [],
       claims: [],
     };
-    await ProposalDraftRepository.save(input.projectId, record);
+    await ProposalDraftRepository.save(input.projectId, record, {
+      organizationId: context.organizationId,
+      projectId: input.projectId,
+      actor: context,
+      action: "proposal.drafted",
+      targetType: "opportunity",
+      targetId: record.opportunityId,
+      summary: `Drafted a ${record.kind.replaceAll("_", " ")} for ${record.targetUrl} (${record.status})`,
+    });
     return visible(record);
   });
 }

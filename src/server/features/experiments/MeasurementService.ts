@@ -194,6 +194,15 @@ async function refresh(
           run,
           claimToken,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "experiment.measurement_requested",
+            targetType: "experiment",
+            targetId: input.experimentId,
+            summary: `Requested a Search Console measurement (${run.window ?? "primary"} window)`,
+          },
         }))
       )
         return {

@@ -2,6 +2,10 @@ import { and, count, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
+import {
   proposalDraftClaims,
   proposalDraftSources,
   proposalDrafts,
@@ -41,8 +45,12 @@ async function countSince(
   };
 }
 
-/** Saves a draft with its sources and claims in one batch. */
-async function save(projectId: string, draft: ProposalDraft): Promise<void> {
+/** Saves a draft with its sources, claims and audit event in one batch. */
+async function save(
+  projectId: string,
+  draft: ProposalDraft,
+  audit?: AuditInput,
+): Promise<void> {
   const { sources, claims, ...row } = draft;
   await runBatch((tx) => [
     tx.insert(proposalDrafts).values({ ...row, projectId }),
@@ -56,6 +64,7 @@ async function save(projectId: string, draft: ProposalDraft): Promise<void> {
         .insert(proposalDraftClaims)
         .values({ ...claim, projectId, draftId: draft.id }),
     ),
+    ...(audit ? [auditInsert(tx, audit)] : []),
   ]);
 }
 

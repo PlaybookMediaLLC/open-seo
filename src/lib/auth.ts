@@ -1,4 +1,5 @@
 import { env } from "cloudflare:workers";
+import { auditAuthRoute } from "@/server/features/activity/authAudit"; // playbook-seam
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { captcha } from "better-auth/plugins";
@@ -212,6 +213,7 @@ function createAuth() {
         : []),
       tanstackStartCookies(),
     ],
+    hooks: { after: auditAuthRoute }, // playbook-seam
     databaseHooks: {
       user: {
         create: {

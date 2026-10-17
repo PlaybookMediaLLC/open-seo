@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) part C (AI paths, scheduled skips, debts 1 to 3) and part D1 (audit log, Activity page, first events) built
+- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) part C (AI paths, scheduled skips, debts 1 to 3) and part D (audit log, Activity page, every listed event) built
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -217,6 +217,13 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 4. The Activity tab lists the newest 200 events. The filters are project, action and person. The CSV export holds up to 5,000 rows and reuses the RFC-0006 formula escaping.
 5. The daily `growth-retention` task deletes events older than 365 days.
 
+**As built (part D2).**
+
+1. Proposals, executions, drafts, publishing connections, deployment confirmations and measurement runs add the event to their batch on the same fence. The repository argument is optional, so repository tests can leave it out; the services always pass it.
+2. A GitHub App revocation writes its event before the update, while the row is still unrevoked, because the installation table has no event fence. Its actor is the system: GitHub refused the token.
+3. Upstream paths record the event after the change with one seam line each: Search Console and GA4 connect and disconnect, and team invitations.
+4. Member removal and API key changes run in better-auth's own endpoints. A global `hooks.after` middleware records them when they succeed. A member is recorded by id, never by the email that a removal may name.
+
 ### 5.7 Repository token key
 
 1. Add `PUBLISHING_TOKEN_KEY` (at least 32 random bytes) and `PUBLISHING_TOKEN_KEY_VERSION` (integer, starting at 1).
@@ -272,7 +279,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 ### Audit log
 
 - [x] `audit_events` table and migrations.
-- [ ] Every listed action writes an event (one test per action group).
+- [x] Every listed action writes an event (one test per action group).
 - [x] Fork paths write in the same operation as the change (test that a failed change writes no event).
 - [x] Activity page with filters and CSV export.
 - [x] Retention deletes events older than 1 year.

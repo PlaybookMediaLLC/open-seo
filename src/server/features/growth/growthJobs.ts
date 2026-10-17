@@ -14,7 +14,13 @@ export type JobContext = {
   projectId: string;
   windowKey: string;
   organizationId: string;
-  actor: { organizationId: string; userId: string; role: string };
+  // `scheduled` labels audit events as the system's (RFC-0009).
+  actor: {
+    organizationId: string;
+    userId: string;
+    role: string;
+    scheduled?: boolean;
+  };
   now: Date;
   log: (level: LogLine["level"], message: string) => void;
 };

@@ -82,6 +82,15 @@ async function connect(
           },
           claimToken,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "publishing.connected",
+            targetType: "repository",
+            targetId: `${input.owner}/${input.repository}`,
+            summary: `Connected ${input.owner}/${input.repository} with a personal token`,
+          },
         });
         if (!saved) throw new AppError("CONFLICT");
         return {
@@ -107,6 +116,15 @@ async function disconnect(context: PublishingContext, projectId: string) {
           projectId,
           claimToken,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId,
+            actor: context,
+            action: "publishing.disconnected",
+            targetType: "project",
+            targetId: projectId,
+            summary: "Disconnected the GitHub repository",
+          },
         }))
       )
         throw new AppError("CONFLICT");

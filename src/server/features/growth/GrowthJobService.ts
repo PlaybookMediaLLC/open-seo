@@ -196,6 +196,7 @@ async function run(
         organizationId: project.organizationId,
         userId: ownerId,
         role: membership.role,
+        scheduled: true,
       },
       now,
       log: (level, message) =>
