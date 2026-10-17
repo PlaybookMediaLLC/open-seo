@@ -7,7 +7,7 @@ Experiments & Results follows one approved pull request after Relay opens it. It
 
 This is a before-and-after observation. It does not prove that your change caused a difference in traffic.
 
-Nothing runs on its own. Each GitHub check, deployment confirmation and Search Console request starts when an owner or administrator clicks. Opening a page makes no provider request.
+Relay never confirms a deployment on its own. When [scheduled jobs](/docs/automation) are on, a daily job refreshes each measurement and looks for deployment signals. You can also start each GitHub check and Search Console request with a click. Opening a page makes no provider request.
 
 ## Start tracking
 

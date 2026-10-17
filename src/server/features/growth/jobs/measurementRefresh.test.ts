@@ -29,6 +29,7 @@ const experiment = (id: string, overrides: object = {}) => ({
 });
 const context = {
   projectId: "project",
+  windowKey: "2026-10-17",
   organizationId: "org",
   actor: { organizationId: "org", userId: "owner", role: "owner" },
   now,

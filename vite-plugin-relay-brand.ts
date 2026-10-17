@@ -52,6 +52,12 @@ import type { Plugin } from "vite";
  *   trigger/), which only the Trigger.dev CLI reads (RFC-0008).
  * - src/client/components/Sidebar.tsx: mounts the notification bell
  *   (src/client/features/notifications/NotificationsBell.tsx).
+ * - src/server/workflows/siteAuditWorkflowPhases.ts: a completed audit queues
+ *   its follow-up job (src/server/features/growth/auditFollowup.ts).
+ * - src/server/features/gsc/services/GscService.ts: connecting Search Console
+ *   starts the default growth schedules (src/server/features/growth/).
+ * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
+ *   (src/client/features/automation/AutomationSettings.tsx).
  */
 const RELAY = "https://relay.playbookmedia.io";
 

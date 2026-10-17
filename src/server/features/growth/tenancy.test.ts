@@ -17,6 +17,7 @@ import { ExperimentService } from "@/server/features/experiments/ExperimentServi
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { MeasurementSettingsService } from "@/server/features/experiments/MeasurementSettingsService";
 import { RevertService } from "@/server/features/experiments/RevertService";
+import { AutomationService } from "./AutomationService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -119,6 +120,7 @@ const services: Record<string, Record<string, unknown>> = {
   MeasurementSettingsService,
   DeploymentSignalService,
   RevertService,
+  AutomationService,
 };
 
 async function growthRowCount() {

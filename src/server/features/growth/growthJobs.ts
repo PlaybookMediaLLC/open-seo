@@ -1,5 +1,6 @@
 import type { GrowthJobKind } from "@/types/schemas/growthJobs";
 import type { LogLine } from "./repositories/GrowthJobRepository";
+import { auditFollowupJob } from "./jobs/auditFollowup";
 import { deploymentCheckJob } from "./jobs/deploymentCheck";
 import { measurementRefreshJob } from "./jobs/measurementRefresh";
 import {
@@ -11,6 +12,7 @@ import { trafficWatchJob } from "./jobs/trafficWatch";
 // RFC-0008 5.8: each job runs with the schedule owner's current permissions.
 export type JobContext = {
   projectId: string;
+  windowKey: string;
   organizationId: string;
   actor: { organizationId: string; userId: string; role: string };
   now: Date;
@@ -24,4 +26,5 @@ export const GROWTH_JOBS: Partial<Record<GrowthJobKind, Job>> = {
   deployment_check: deploymentCheckJob,
   traffic_watch: trafficWatchJob,
   recommendation_recheck: recommendationRecheckJob,
+  audit_followup: auditFollowupJob,
 };
