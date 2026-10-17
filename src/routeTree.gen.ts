@@ -67,6 +67,9 @@ import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$proj
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
 import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/callback'
+import { Route as ApiInternalGrowthDueRouteImport } from './routes/api/internal/growth/due'
+import { Route as ApiInternalGrowthRetentionRouteImport } from './routes/api/internal/growth/retention'
+import { Route as ApiInternalGrowthRunRouteImport } from './routes/api/internal/growth/run'
 import { Route as AppPProjectIdAiVisibilityIndexRouteImport } from './routes/_app/p/$projectId/ai-visibility/index'
 import { Route as AppPProjectIdAiVisibilityResearchRouteImport } from './routes/_app/p/$projectId/ai-visibility/research'
 import { Route as AppPProjectIdAuditIndexRouteImport } from './routes/_app/p/$projectId/audit/index'
@@ -380,6 +383,22 @@ const ApiGscOauthCallbackRoute = ApiGscOauthCallbackRouteImport.update({
   path: '/api/gsc/oauth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalGrowthDueRoute = ApiInternalGrowthDueRouteImport.update({
+  id: '/api/internal/growth/due',
+  path: '/api/internal/growth/due',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalGrowthRetentionRoute =
+  ApiInternalGrowthRetentionRouteImport.update({
+    id: '/api/internal/growth/retention',
+    path: '/api/internal/growth/retention',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiInternalGrowthRunRoute = ApiInternalGrowthRunRouteImport.update({
+  id: '/api/internal/growth/run',
+  path: '/api/internal/growth/run',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppPProjectIdAiVisibilityIndexRoute =
   AppPProjectIdAiVisibilityIndexRouteImport.update({
     id: '/',
@@ -537,6 +556,9 @@ export interface FileRoutesByFullPath {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
+  '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
+  '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
   '/p/$projectId/': typeof AppPProjectIdIndexRoute
   '/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
   '/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
@@ -606,6 +628,9 @@ export interface FileRoutesByTo {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
+  '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
+  '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
   '/p/$projectId': typeof AppPProjectIdIndexRoute
   '/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
   '/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
@@ -684,6 +709,9 @@ export interface FileRoutesById {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
+  '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
+  '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
   '/_app/p/$projectId/': typeof AppPProjectIdIndexRoute
   '/_app/p/$projectId/ai-visibility/research': typeof AppPProjectIdAiVisibilityResearchRoute
   '/_app/p/$projectId/experiments/$experimentId': typeof AppPProjectIdExperimentsExperimentIdRoute
@@ -760,6 +788,9 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/growth/due'
+    | '/api/internal/growth/retention'
+    | '/api/internal/growth/run'
     | '/p/$projectId/'
     | '/p/$projectId/ai-visibility/research'
     | '/p/$projectId/experiments/$experimentId'
@@ -829,6 +860,9 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/growth/due'
+    | '/api/internal/growth/retention'
+    | '/api/internal/growth/run'
     | '/p/$projectId'
     | '/p/$projectId/ai-visibility/research'
     | '/p/$projectId/experiments/$experimentId'
@@ -906,6 +940,9 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/growth/due'
+    | '/api/internal/growth/retention'
+    | '/api/internal/growth/run'
     | '/_app/p/$projectId/'
     | '/_app/p/$projectId/ai-visibility/research'
     | '/_app/p/$projectId/experiments/$experimentId'
@@ -954,6 +991,9 @@ export interface RootRouteChildren {
   ApiGa4OauthCallbackRoute: typeof ApiGa4OauthCallbackRoute
   ApiGithubAppSetupRoute: typeof ApiGithubAppSetupRoute
   ApiGscOauthCallbackRoute: typeof ApiGscOauthCallbackRoute
+  ApiInternalGrowthDueRoute: typeof ApiInternalGrowthDueRoute
+  ApiInternalGrowthRetentionRoute: typeof ApiInternalGrowthRetentionRoute
+  ApiInternalGrowthRunRoute: typeof ApiInternalGrowthRunRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1364,6 +1404,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGscOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/growth/due': {
+      id: '/api/internal/growth/due'
+      path: '/api/internal/growth/due'
+      fullPath: '/api/internal/growth/due'
+      preLoaderRoute: typeof ApiInternalGrowthDueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/growth/retention': {
+      id: '/api/internal/growth/retention'
+      path: '/api/internal/growth/retention'
+      fullPath: '/api/internal/growth/retention'
+      preLoaderRoute: typeof ApiInternalGrowthRetentionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/growth/run': {
+      id: '/api/internal/growth/run'
+      path: '/api/internal/growth/run'
+      fullPath: '/api/internal/growth/run'
+      preLoaderRoute: typeof ApiInternalGrowthRunRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/p/$projectId/ai-visibility/': {
       id: '/_app/p/$projectId/ai-visibility/'
       path: '/'
@@ -1699,6 +1760,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGa4OauthCallbackRoute: ApiGa4OauthCallbackRoute,
   ApiGithubAppSetupRoute: ApiGithubAppSetupRoute,
   ApiGscOauthCallbackRoute: ApiGscOauthCallbackRoute,
+  ApiInternalGrowthDueRoute: ApiInternalGrowthDueRoute,
+  ApiInternalGrowthRetentionRoute: ApiInternalGrowthRetentionRoute,
+  ApiInternalGrowthRunRoute: ApiInternalGrowthRunRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

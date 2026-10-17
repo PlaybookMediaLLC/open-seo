@@ -18,4 +18,10 @@ export const relayDataEnv = {
   GITHUB_APP_CLIENT_ID: optionalVar("GITHUB_APP_CLIENT_ID"),
   GITHUB_APP_CLIENT_SECRET: optionalSecret("GITHUB_APP_CLIENT_SECRET"),
   GITHUB_APP_PRIVATE_KEY: optionalSecret("GITHUB_APP_PRIVATE_KEY"),
+  // Scheduled growth jobs on Trigger.dev (RFC-0008 5.2). Without a secret
+  // the internal endpoints answer 404.
+  GROWTH_JOBS_MODE: optionalVar("GROWTH_JOBS_MODE"),
+  GROWTH_JOBS_SECRET: optionalSecret("GROWTH_JOBS_SECRET"),
+  GROWTH_JOBS_SECRET_PREVIOUS: optionalSecret("GROWTH_JOBS_SECRET_PREVIOUS"),
+  TRIGGER_SECRET_KEY: optionalSecret("TRIGGER_SECRET_KEY"),
 };

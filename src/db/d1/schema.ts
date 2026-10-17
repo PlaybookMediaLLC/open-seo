@@ -19,6 +19,7 @@ export * from "../opportunity-content-gap.schema";
 export * from "../opportunity-investigations.schema";
 export * from "../content-briefs.schema";
 export * from "../measurement-ga4.schema";
+export * from "../growth-jobs.schema";
 export * from "../publishing.schema";
 export * from "../proposal-drafts.schema";
 export * from "../experiments.schema";

@@ -48,6 +48,8 @@ import type { Plugin } from "vite";
  *   src/server/mcp/tools/growth-tools.ts).
  * - src/server/features/sam/samSystemPrompt.ts: adds the growth workflow rules
  *   (src/server/features/sam/growthPrompt.ts).
+ * - knip.jsonc: lists the Trigger.dev config and tasks (trigger.config.ts,
+ *   trigger/), which only the Trigger.dev CLI reads (RFC-0008).
  */
 const RELAY = "https://relay.playbookmedia.io";
 
