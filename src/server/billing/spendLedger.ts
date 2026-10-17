@@ -123,3 +123,41 @@ export async function recordSettlement(
     logLedgerError("settle", error);
   }
 }
+
+/**
+ * Records spend that was charged without a hold, such as the assistant's
+ * metered chunks. It counts against the limits like any settled row.
+ */
+export async function recordChargedSpend(input: {
+  organizationId: string;
+  projectId: string;
+  actor: string;
+  feature: string;
+  provider: "dataforseo" | "openrouter";
+  credits: number;
+  costUsd: number;
+}) {
+  try {
+    const { db, spendLedger } = await ledgerDb();
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    await db.insert(spendLedger).values({
+      id,
+      organizationId: input.organizationId,
+      projectId: input.projectId,
+      feature: input.feature,
+      provider: input.provider,
+      actor: input.actor,
+      periodMonth: now.slice(0, 7),
+      estimatedCredits: input.credits,
+      actualCredits: input.credits,
+      costUsd: input.costUsd,
+      status: "settled",
+      idempotencyKey: id,
+      createdAt: now,
+      settledAt: now,
+    });
+  } catch (error) {
+    logLedgerError("charge", error);
+  }
+}

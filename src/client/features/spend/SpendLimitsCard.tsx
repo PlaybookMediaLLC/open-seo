@@ -15,6 +15,14 @@ import {
 } from "@/serverFunctions/spendLimits";
 import { credits, LimitSheet, LimitUsage } from "./spendParts";
 
+// Ledger features that are not Autumn credit features.
+const LEDGER_LABELS: Record<string, string> = {
+  proposal_draft: "AI drafts",
+  ai_research: "AI research",
+};
+const featureLabel = (feature: string | null) =>
+  feature ? (LEDGER_LABELS[feature] ?? creditFeatureLabel(feature)) : "Other";
+
 /** RFC-0009 5.5: the Billing page's limit and this month's spend. */
 export function SpendLimitsCard() {
   const client = useQueryClient();
@@ -91,7 +99,7 @@ export function SpendLimitsCard() {
             {features
               .map(
                 (row) =>
-                  `${row.feature ? creditFeatureLabel(row.feature) : "Other"} ${credits(row.committed)}`,
+                  `${featureLabel(row.feature)} ${credits(row.committed)}`,
               )
               .join(" · ")}
           </p>

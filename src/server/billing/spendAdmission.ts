@@ -177,16 +177,38 @@ export async function admitSpend(input: {
 }
 
 /**
+ * RFC-0009 5.3: scheduled work checks for room before it starts, so a run
+ * at the limit skips with its reason. Each provider call still admits.
+ */
+export async function assertSpendRoom(
+  scope: { organizationId: string; projectId?: string },
+  estimatedCredits = 1,
+) {
+  const uses = await limitUse(
+    scope.organizationId,
+    scope.projectId ?? null,
+    periodOf(new Date()),
+  );
+  if (uses.some((use) => use.committed + estimatedCredits > use.limit))
+    throw new AppError(
+      "SPEND_LIMIT_REACHED",
+      refusalMessage(uses, estimatedCredits),
+    );
+}
+
+/**
  * The DataForSEO reservation inside the monthly limits: admit the batch's
  * estimate, then hold it in Autumn and link each hold to the ledger.
  */
 export async function reserveWithinLimits(
   args: Parameters<typeof reserveUsageCredits>[0],
+  /** The ledger's feature when it differs from the credit feature. */
+  ledgerFeature?: string,
 ) {
   const ledgerId = await admitSpend({
     customer: args.customer,
-    feature: args.creditFeature,
-    provider: "dataforseo",
+    feature: ledgerFeature ?? args.creditFeature,
+    provider: args.provider ?? "dataforseo",
     estimatedCredits: args.callCredits.reduce(
       (sum, credits) => sum + Math.max(1, credits),
       0,

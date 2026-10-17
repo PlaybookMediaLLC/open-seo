@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO) and part B (limit settings, spend views, 80% warnings) built
+- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) and part C (AI paths, scheduled skips, debts 1 and 3) built
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -126,6 +126,15 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 4. Both dialects run the same two statements in `runBatch`: an update that changes nothing but locks the organization's limit rows on Postgres, then the conditional insert. A test with 8 parallel admissions against a limit for 3 fails on Postgres without the lock.
 5. Limits apply in hosted mode, where Autumn holds credits. Self-hosted installs pay their providers directly.
 
+**As built (part C).**
+
+1. AI research holds its estimate through the same reservation as DataForSEO, with provider `openrouter`, then settles the summed step costs against the hold. This covers drafts, investigation summaries and content briefs (one helper, `generateChecked`, 50 credits), prompt suggestions (50 credits) and website research (200 credits). The ledger labels them `proposal_draft` or `ai_research`.
+2. The assistant keeps upstream's chunked metering. Each turn reserves 50 credits as an `admitted` row; each metered chunk adds a `settled` row; the reservation is released when the turn's metering ends. A refused turn answers with the limit message. A ledger outage does not lock members out of chat, because the Autumn balance check already passed.
+3. Content gaps make DataForSEO calls, so each call already passes admission. No separate job-level admission was added.
+4. Scheduled work checks for room before it starts (`assertSpendRoom`): rank checks with their credit estimate, AI visibility checks with 1 credit. A refusal stores the reason `spend_limit` (rank) or "Project monthly limit reached" (AI visibility). Each provider call during the run still admits.
+5. Debt 1 is fixed once, in `parseTaskItems`: a billed task with an invalid payload throws `DataforseoChargedTaskError` with its cost, which the metering wrapper already settles. One test at that function replaces the per-caller tests.
+6. Debt 3: the hold is atomic in Autumn, so parallel requests cannot all pass one balance reading. The limit side is covered by the part A race test; the balance side is checked live (section 11).
+
 ### 5.4 Billing debt fixes
 
 **Debt 1: charged tasks that fail validation.**
@@ -237,18 +246,18 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 - [x] Test: two parallel admissions near the limit admit only one (both dialects).
 - [x] Test: no limit rows means only the Autumn balance applies.
 - [x] Test: a refused admission makes no provider call.
-- [ ] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
-- [ ] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
-- [ ] `settleUsageCredits` accepts a provider argument.
+- [x] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
+- [x] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
+- [x] `settleUsageCredits` accepts a provider argument.
 - [x] Billing page and project settings show limits and month-to-date spend.
 - [x] 80% banner and one notification per period.
 - [ ] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
 
 ### Billing debts
 
-- [ ] Debt 1 fixed, with one test per DataForSEO caller.
+- [x] Debt 1 fixed, with one test per DataForSEO caller.
 - [ ] Debt 2: `reconcileSpend` with tests for valid hold, expired hold and the 10-attempt stop.
-- [ ] Debt 3 fixed by admission, with a parallel-request test.
+- [x] Debt 3 fixed by admission, with a parallel-request test.
 - [ ] Review guidelines updated if the fixes add a new invariant.
 
 ### Audit log

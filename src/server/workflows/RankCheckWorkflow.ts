@@ -17,6 +17,7 @@ import { pgStep } from "@/server/workflows/pgStep";
 import { createDataforseoClient } from "@/server/lib/dataforseo";
 import { captureServerEvent } from "@/server/lib/posthog";
 import { AppError } from "@/server/lib/errors";
+import { assertSpendRoom } from "@/server/billing/spendAdmission"; // playbook-seam
 import { autumn } from "@/server/billing/autumn";
 import {
   AUTUMN_SEO_DATA_BALANCE_FEATURE_ID,
@@ -102,6 +103,7 @@ async function prepareRankCheckKeywords(input: {
   // Scheduled checks go through the cheaper task queue, so estimate at queued
   // pricing — a live-price estimate would skip checks the user can afford.
   if (await isHostedServerAuthMode()) {
+    await assertSpendRoom(input.billingCustomer, costCredits); // playbook-seam
     const [monthlyCheck, topupCheck] = await Promise.all([
       autumn.check({
         customerId: input.billingCustomer.organizationId,
@@ -272,6 +274,14 @@ async function markRankCheckRunFailed(input: {
       lastSkipReason: "insufficient_credits",
     });
   }
+  // playbook-seam: RFC-0009 a monthly limit skips the check with its reason.
+  if (
+    input.error instanceof AppError &&
+    input.error.code === "SPEND_LIMIT_REACHED"
+  )
+    await RankTrackingRepository.updateConfig(input.configId, input.projectId, {
+      lastSkipReason: "spend_limit",
+    });
 
   await captureServerEvent({
     distinctId: input.billingCustomer.userId,

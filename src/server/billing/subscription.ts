@@ -313,6 +313,7 @@ export async function reserveUsageCredits(args: {
   customerId: string;
   callCredits: number[];
   creditFeature?: CreditFeature;
+  provider?: "dataforseo" | "openrouter"; // playbook-seam
 }): Promise<{ holds: UsageCreditHold[]; refusedCalls: number[] }> {
   const callCredits = args.callCredits.map((credits) => Math.max(1, credits));
   const allCalls = callCredits.map((_, index) => index);
@@ -320,7 +321,7 @@ export async function reserveUsageCredits(args: {
     calls.reduce((sum, index) => sum + callCredits[index], 0);
   const properties = {
     creditFeature: args.creditFeature,
-    provider: "dataforseo",
+    provider: args.provider ?? "dataforseo", // playbook-seam
     estimatedCredits: creditsFor(allCalls),
   };
   // Holds `featureId` for the calls, in order, that fit `remaining`; null
@@ -486,6 +487,7 @@ export async function settleUsageCredits(args: {
   creditFeature?: CreditFeature;
   /** Billed provider calls under this hold; empty when none was charged. */
   costs: Array<{ costUsd: number; path: string[] }>;
+  provider?: "dataforseo" | "openrouter"; // playbook-seam
 }): Promise<void> {
   const { customer, hold, creditFeature, costs } = args;
   let actualCredits = 0;
@@ -498,7 +500,7 @@ export async function settleUsageCredits(args: {
 
   const { landed, error } = await finalizeHold(hold, actualCredits, {
     creditFeature,
-    provider: "dataforseo",
+    provider: args.provider ?? "dataforseo", // playbook-seam
     paths,
     totalCostUsd,
     estimatedCredits: hold.estimatedCredits,
