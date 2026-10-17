@@ -4,10 +4,14 @@ import {
   growthExperiments,
   measurementRuns,
   measurementDays,
+  measurementGa4Days,
+  measurementGa4EventTotals,
   opportunities,
 } from "@/db/schema";
 import type {
   MeasurementDay,
+  MeasurementGa4Day,
+  MeasurementGa4EventTotal,
   MeasurementRun,
 } from "@/types/schemas/experiments";
 import {
@@ -25,10 +29,22 @@ import { runAccepted } from "./measurementRuns";
 export async function completeRun(input: {
   run: MeasurementRun;
   days: MeasurementDay[];
+  // RFC-0006: GA4 rows for the whole window of this run, when GA4 answered.
+  ga4Days?: MeasurementGa4Day[];
+  ga4EventTotals?: MeasurementGa4EventTotal[];
   claimToken: string;
   organizationId: string;
 }): Promise<boolean> {
-  const { run, days } = input;
+  const { run, days, ga4Days = [], ga4EventTotals = [] } = input;
+  if (
+    ga4Days.length > 56 ||
+    new Set(ga4Days.map((day) => day.date)).size !== ga4Days.length ||
+    ga4EventTotals.length > 10 ||
+    [...ga4Days, ...ga4EventTotals].some(
+      (row) => row.projectId !== run.projectId || row.runId !== run.id,
+    )
+  )
+    return false;
   if (
     run.status !== "completed" ||
     days.length > 56 ||
@@ -87,6 +103,8 @@ export async function completeRun(input: {
           overlappingChanges: run.overlappingChanges,
           windowComplete: run.windowComplete,
           error: null,
+          ga4Error: run.ga4Error,
+          requestCount: run.requestCount,
           completionToken,
         })
         .where(
@@ -119,6 +137,16 @@ export async function completeRun(input: {
         tx
           .insert(measurementDays)
           .select(selectedValues(measurementDays, day, accepted)),
+      ),
+      ...ga4Days.map((day) =>
+        tx
+          .insert(measurementGa4Days)
+          .select(selectedValues(measurementGa4Days, day, accepted)),
+      ),
+      ...ga4EventTotals.map((total) =>
+        tx
+          .insert(measurementGa4EventTotals)
+          .select(selectedValues(measurementGa4EventTotals, total, accepted)),
       ),
       ...(run.includesBaseline
         ? [

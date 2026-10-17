@@ -76,6 +76,8 @@ export function newExperiment(
     observationStart: null,
     observationEnd: null,
     baselineRunId: null,
+    ga4PropertyId: null,
+    autoRefresh: true,
   };
 }
 
@@ -100,6 +102,7 @@ export function runningMeasurement(
     overlappingChanges: false,
     windowComplete: false,
     error: null,
+    ga4Error: null,
   };
 }
 

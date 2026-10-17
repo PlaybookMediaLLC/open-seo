@@ -11,6 +11,7 @@ export function createExperimentTestDatabase() {
         for (const migration of [
           "0058_blue_terror.sql",
           "0062_cooing_triathlon.sql",
+          "0074_nasty_lilandra.sql",
         ])
           await database.client.executeMultiple(
             readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

@@ -53,6 +53,11 @@ export const growthExperiments = sqliteTable(
       { onDelete: "set null" },
     ),
     lastEventId: text("last_event_id"),
+    // RFC-0006: the GA4 property at registration, and the daily refresh.
+    ga4PropertyId: text("ga4_property_id"),
+    autoRefresh: integer("auto_refresh", { mode: "boolean" })
+      .notNull()
+      .default(true),
   },
   (t) => [
     uniqueIndex("growth_experiments_execution_idx").on(t.executionId),
@@ -124,6 +129,8 @@ export const measurementRuns = sqliteTable(
     }).notNull(),
     windowComplete: integer("window_complete", { mode: "boolean" }).notNull(),
     error: text("error"),
+    // RFC-0006: a GA4 failure never fails the Search Console run.
+    ga4Error: text("ga4_error"),
     claimToken: text("claim_token").notNull(),
     completionToken: text("completion_token"),
   },

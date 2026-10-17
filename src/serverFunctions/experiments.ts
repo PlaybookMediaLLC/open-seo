@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
+import { MeasurementSettingsService } from "@/server/features/experiments/MeasurementSettingsService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { RevertService } from "@/server/features/experiments/RevertService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
@@ -9,6 +10,7 @@ import {
   confirmVerifiedDeploymentInputSchema,
   experimentInputSchema,
   experimentListInputSchema,
+  measurementSettingsInputSchema,
   registerExperimentInputSchema,
 } from "@/types/schemas/experiments";
 import { confirmRevertInputSchema } from "@/types/schemas/publishing";
@@ -90,6 +92,35 @@ export const confirmRevertDeployed = createServerFn({ method: "POST" })
   .validator(confirmRevertInputSchema)
   .handler(({ context, data }) =>
     RevertService.confirmDeployed(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0006: daily refresh and GA4 key events for one experiment.
+export const getMeasurementSettings = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    MeasurementSettingsService.get(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const listExperimentKeyEvents = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    MeasurementSettingsService.keyEventNames(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const saveMeasurementSettings = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(measurementSettingsInputSchema)
+  .handler(({ context, data }) =>
+    MeasurementSettingsService.save(context, {
       ...data,
       projectId: context.projectId,
     }),

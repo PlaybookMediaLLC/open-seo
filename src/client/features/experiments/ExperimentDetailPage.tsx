@@ -8,6 +8,7 @@ import { Button } from "@/client/components/ui/button";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { experimentDetailOptions } from "./queries";
 import { ExperimentActions } from "./ExperimentActions";
+import { Ga4Results } from "./Ga4Measurement";
 import { MeasurementResults } from "./MeasurementResults";
 import { PrepareRevert } from "./PrepareRevert";
 
@@ -124,6 +125,7 @@ export function ExperimentDetailPage({
           githubConnected={detail.githubConnected}
         />
         <MeasurementResults detail={detail} assessment={detail.assessment} />
+        <Ga4Results detail={detail} />
         {detail.canManage &&
           experiment.pullRequestState === "merged" &&
           !detail.publishing.proposal.revertsProposalId && (

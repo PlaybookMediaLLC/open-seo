@@ -14,10 +14,54 @@ import {
   experimentInputSchema,
   type ExperimentInput,
   type ExperimentMutationResult,
+  type GrowthExperiment,
   type MeasurementRun,
 } from "@/types/schemas/experiments";
+import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { assessMeasurement, parseMeasurementDays } from "./measurementAnalysis";
+import { fetchMeasurementGa4, ga4Failure } from "./measurementGa4";
+import { MeasurementGa4Repository } from "./repositories/measurementGa4Rows";
 import { ExperimentRepository } from "./repositories/ExperimentRepository";
+
+const NO_GA4 = { days: [], eventTotals: [] };
+
+/** GA4 rows for the run, or a reason on the run when GA4 cannot answer. */
+async function measureGa4(
+  experiment: GrowthExperiment,
+  run: MeasurementRun,
+  windows: Parameters<typeof fetchMeasurementGa4>[0]["windows"],
+) {
+  if (!experiment.ga4PropertyId) return NO_GA4;
+  try {
+    const connection = await Ga4ConnectionRepository.getByProjectId(
+      run.projectId,
+    );
+    if (connection?.propertyId !== experiment.ga4PropertyId) {
+      run.ga4Error =
+        "The GA4 property changed since tracking started. Reconnect the original property to see GA4 data.";
+      return NO_GA4;
+    }
+    const result = await fetchMeasurementGa4({
+      connection,
+      targetUrl: experiment.targetUrl,
+      windows,
+      keyEvents: await MeasurementGa4Repository.keyEvents(
+        run.projectId,
+        run.experimentId,
+      ),
+      ids: {
+        projectId: run.projectId,
+        experimentId: run.experimentId,
+        runId: run.id,
+      },
+    });
+    run.requestCount += result.requests;
+    return result;
+  } catch (error) {
+    run.ga4Error = ga4Failure(error);
+    return NO_GA4;
+  }
+}
 
 const FAILURE =
   "Measurement could not finish. Saved baseline and observations are unchanged. Check Search Console access and retry after five minutes, subject to the project's five-attempt daily limit.";
@@ -111,6 +155,7 @@ async function refresh(
         overlappingChanges: false,
         windowComplete: observationThrough === observationEnd,
         error: null,
+        ga4Error: null,
       };
       const scope = {
         projectId: input.projectId,
@@ -187,6 +232,14 @@ async function refresh(
           seasonalRisk: experiment.seasonalRisk,
           overlappingChanges: run.overlappingChanges,
         });
+        // RFC-0006: GA4 is supporting evidence. It never changes the label,
+        // and its failure never fails the Search Console run.
+        const ga4 = await measureGa4(experiment, run, {
+          baselineStart,
+          baselineEnd,
+          observationStart,
+          observationThrough,
+        });
         run.outcome = assessment.outcome;
         run.explanation = assessment.explanation;
         run.status = "completed";
@@ -196,6 +249,8 @@ async function refresh(
           !(await ExperimentRepository.completeRun({
             run,
             days,
+            ga4Days: ga4.days,
+            ga4EventTotals: ga4.eventTotals,
             claimToken,
             organizationId: context.organizationId,
           }))
