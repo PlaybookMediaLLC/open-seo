@@ -1,0 +1,66 @@
+name: Deploy Trigger.dev tasks (Playbook Media)
+
+# RFC-0008 5.2: deploys the growth tasks in trigger/ after the Worker deploy
+# succeeds on main, so the tasks never call endpoints the Worker lacks.
+#
+# Required:
+#   secret   TRIGGER_ACCESS_TOKEN  Personal access token from the Trigger.dev
+#                                  dashboard. Without it, the job skips.
+#   variable TRIGGER_PROJECT_REF   The project ref (proj_...).
+# Set RELAY_INTERNAL_URL and GROWTH_JOBS_SECRET in the Trigger.dev
+# environment, not here. See docs/maintainers/playbook-deployment.md.
+
+on:
+  workflow_run:
+    workflows: ["Deploy (Playbook Media)"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: trigger-deploy-playbook
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.repository == 'PlaybookMediaLLC/open-seo' &&
+      (github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: playbook
+    env:
+      TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+      TRIGGER_PROJECT_REF: ${{ vars.TRIGGER_PROJECT_REF }}
+    steps:
+      - name: Skip without Trigger.dev credentials
+        id: gate
+        run: |
+          if [ -z "$TRIGGER_ACCESS_TOKEN" ] || [ -z "$TRIGGER_PROJECT_REF" ]; then
+            echo "Trigger.dev is not configured; skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          # Deploy the commit the Worker deploy used, not a newer main.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.ready == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+      - if: steps.gate.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Deploy tasks to production
+        if: steps.gate.outputs.ready == 'true'
+        # Keep the CLI version equal to @trigger.dev/sdk in package.json.
+        run: pnpm dlx trigger.dev@4.6.4 deploy --env prod
