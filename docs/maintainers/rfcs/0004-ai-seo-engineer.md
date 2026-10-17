@@ -1,6 +1,6 @@
 # RFC-0004: AI SEO engineer
 
-- **Status:** Phases 1, 2 and 3 built; live checks pending
+- **Status:** Done on 2026-10-17 for every item that Relay's code can close (PRs #72 to #77). The live checks in section 13 need the GitHub App back on PlaybookMediaLLC, the owner's ratings, an MCP client of the owner's and real Search Console data. The owner decided on 2026-10-17 that they do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 5 (Feature C)
 - **Depends on:** RFC-0001 (B2, the model key) and RFC-0005 phase 1a (route groups and metadata helper calls, needed to read the current description on real sites). Phase 3 briefs use RFC-0002 content gaps.
@@ -423,3 +423,24 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 **Outcome**
 
 - At least 1 drafted change is merged and deployed on S1 during the test window, and its measurement starts.
+
+## 13. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 1 live check: draft up to 9 descriptions on the approved Playbook Media and Relay Lab items (the owner approved this spend on 2026-10-17). The owner rates each draft and checks every claim. Trigger: the Relay GitHub App is installed on PlaybookMediaLLC again. It was found revoked on 2026-10-16 at 12:34 UTC, so every GitHub step answers "Reconnect the GitHub App."
+- [ ] Phase 1 live check: one drafted description goes through approval to a real pull request on S1. Trigger: the same.
+- [ ] The prompt-injection check on the S1 staging site (section 11, step 5). Trigger: the same, and a staging page that carries the injected text.
+- [ ] Phase 2 live check in Claude Code: list, read and draft on a real project. Trigger: the owner connects the Relay MCP server in Claude Code, with plugin 1.0.22.
+- [ ] Phase 3 live checks: an investigation of a real declining page, a brief for a content-gap topic, and an anchor for an internal-link item. Trigger: a property with Search Console data produces these opportunity types (see RFC-0002 section 13).
+- [ ] Draft cost: record the median and 95th percentile of `cost_usd`, and set the shown estimate from them. Trigger: 100 drafts.
+- [ ] Draft quality and safety criteria (section 12): 20 rated drafts and 10 adversarial pages. Trigger: the first three follow-ups pass.
+
+Evidence for the completion criteria that code can show:
+
+- **File locator:** on 2026-10-16 the real locator, run read-only against the real repositories, found all five real pages: `/`, `/company` and `/approach` under `apps/www/app/(site)/` on S1, and `/pricing` and `/about` on the Relay Lab site. It used at most 8 GitHub requests each. A test proves the 12-request cap, and another names a dynamic segment.
+- **Checks:** one test per deterministic check, each with a draft that fails only that check. An injected "#1" in page text or a query is rejected, and only the owner's own context can permit it.
+- **Limits and billing:** tests prove 3 drafts a day per kind for each opportunity, 30 for each project, one draft at a time, no model call without credits, and a settled cost equal to the reported cost.
+- **Permission and tenancy:** tests prove that a member without manage permission cannot draft, in the app and through MCP, and that a draft from one project is not readable from another.
+- **Agents:** a test proves that `tools/list` has no tool that approves, publishes, merges, deploys or reverts, and that the draft is the only growth tool that writes.
+- **Phase 3:** tests prove each investigation finding kind, a summary that the stored findings bound, a brief that lists the facts the writer must supply, and an anchor that the source page text bounds.

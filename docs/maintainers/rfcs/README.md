@@ -54,7 +54,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | Launch readiness (credentials, Google verification, live acceptance) | Done: follow-ups in its section 10           | [RFC-0001](0001-launch-readiness.md)                         |
 | A. Opportunity engine                                                | Done: follow-ups in its section 13           | [RFC-0002](0002-opportunity-detectors.md)                    |
 | B. Opportunities queue                                               | Done: follow-ups in its section 11           | [RFC-0003](0003-opportunity-queue.md)                        |
-| C. AI SEO engineer                                                   | Missing                                      | [RFC-0004](0004-ai-seo-engineer.md)                          |
+| C. AI SEO engineer                                                   | Done: follow-ups in its section 13           | [RFC-0004](0004-ai-seo-engineer.md)                          |
 | D. GitHub execution                                                  | Done: accepted on 2026-10-16                 | [RFC-0005](0005-github-execution.md)                         |
 | E. Experiments and results                                           | Partial: Search Console only, manual refresh | [RFC-0006](0006-outcome-measurement.md)                      |
 | F. Portfolio operations                                              | Deferred by the brief                        | [RFC-0007](0007-portfolio-operations.md)                     |
