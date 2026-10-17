@@ -193,7 +193,7 @@ function PrepareForm({
   >;
   rootDirectory: string;
 }) {
-  const [filePath, setTypedPath, located] = useProposalFilePath(
+  const [filePath, setTypedPath, locateNote] = useProposalFilePath(
     opportunity,
     rootDirectory,
   );
@@ -270,9 +270,9 @@ function PrepareForm({
             placeholder={`${rootDirectory ? `${rootDirectory}/` : ""}app/example/page.tsx`}
           />
           <p className="text-xs text-muted-foreground">
-            {located?.status === "found"
+            {locateNote === null
               ? "Relay found this file in the repository. You can change it."
-              : `${located?.message ?? ""} The URL-based suggestion is not verified. Confirm the actual file under app/ or src/app/ (page.tsx and similar), or under pages/ or src/pages/ for the Pages Router. Include the configured root directory prefix.`}
+              : `${locateNote} The URL-based suggestion is not verified. Confirm the actual file under app/ or src/app/ (page.tsx and similar), or under pages/ or src/pages/ for the Pages Router. Include the configured root directory prefix.`}
           </p>
         </div>
         {opportunity.type === "technical_blocker" && (
