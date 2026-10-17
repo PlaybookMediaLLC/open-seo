@@ -11,9 +11,9 @@ import {
 } from "@/server/features/publishing/publishingAccess";
 import { AppError } from "@/server/lib/errors";
 import {
-  experimentInputSchema,
-  type ExperimentInput,
+  refreshMeasurementInputSchema,
   type ExperimentMutationResult,
+  type RefreshMeasurementInput,
   type GrowthExperiment,
   type MeasurementRun,
 } from "@/types/schemas/experiments";
@@ -24,6 +24,8 @@ import { MeasurementGa4Repository } from "./repositories/measurementGa4Rows";
 import { ExperimentRepository } from "./repositories/ExperimentRepository";
 
 const NO_GA4 = { days: [], eventTotals: [] };
+// Days 63 to 90 after deployment are the primary window moved by 8 weeks.
+const LONG_TERM_SHIFT = 56;
 
 /** GA4 rows for the run, or a reason on the run when GA4 cannot answer. */
 async function measureGa4(
@@ -68,10 +70,11 @@ const FAILURE =
 
 async function refresh(
   context: PublishingContext,
-  raw: ExperimentInput,
+  raw: RefreshMeasurementInput,
 ): Promise<ExperimentMutationResult> {
   await authorizePublishing(context, raw.projectId, true);
-  const input = experimentInputSchema.parse(raw);
+  const input = refreshMeasurementInputSchema.parse(raw);
+  const longTerm = input.window === "long_term";
   return withPublishingClaim(
     context,
     input.projectId,
@@ -96,10 +99,24 @@ async function refresh(
           message:
             "Confirm the actual production deployment before requesting measurements. A merged pull request is not a deployment.",
         };
+      if (longTerm && !detail.latestRun?.windowComplete)
+        return {
+          ok: false,
+          message:
+            "The long-term check starts after the primary result is final. No Google request was made.",
+        };
+      // RFC-0006 5.4: days 63 to 90 after deployment, with the same baseline.
+      const window = longTerm
+        ? {
+            start: shiftGa4Date(observationStart, LONG_TERM_SHIFT),
+            end: shiftGa4Date(observationEnd, LONG_TERM_SHIFT),
+          }
+        : { start: observationStart, end: observationEnd };
+      const saved = longTerm ? detail.longTermRun : detail.latestRun;
       if (
-        detail.latestRun?.status === "completed" &&
-        detail.latestRun.finishedAt &&
-        Date.now() - Date.parse(detail.latestRun.finishedAt) < 86_400_000
+        saved?.status === "completed" &&
+        saved.finishedAt &&
+        Date.now() - Date.parse(saved.finishedAt) < 86_400_000
       )
         return {
           ok: true,
@@ -124,15 +141,23 @@ async function refresh(
             "The complete pre-change baseline is not yet old enough for the three-day reporting allowance. No Google request was made.",
         };
       const observationThrough =
-        finalDate < observationStart
+        finalDate < window.start
           ? null
-          : finalDate < observationEnd
+          : finalDate < window.end
             ? finalDate
-            : observationEnd;
+            : window.end;
+      if (longTerm && !observationThrough)
+        return {
+          ok: false,
+          message:
+            "The long-term window starts 63 days after deployment, plus three reporting days. No Google request was made.",
+        };
+      // A long-term run reads only its own window; the baseline stays pinned.
+      const queryStart = longTerm ? window.start : baselineStart;
       const queryEnd = observationThrough ?? baselineEnd;
       if (
-        resolveDateRange({ startDate: baselineStart, endDate: queryEnd })
-          .startDate !== baselineStart
+        resolveDateRange({ startDate: queryStart, endDate: queryEnd })
+          .startDate !== queryStart
       )
         return {
           ok: false,
@@ -148,14 +173,15 @@ async function refresh(
         startedAt: new Date().toISOString(),
         finishedAt: null,
         requestCount: 1,
-        includesBaseline: !experiment.baselineRunId,
+        includesBaseline: !longTerm && !experiment.baselineRunId,
         observationThrough,
         outcome: "inconclusive",
         explanation: "Measurement has not completed.",
         overlappingChanges: false,
-        windowComplete: observationThrough === observationEnd,
+        windowComplete: observationThrough === window.end,
         error: null,
         ga4Error: null,
+        window: input.window,
       };
       const scope = {
         projectId: input.projectId,
@@ -180,7 +206,7 @@ async function refresh(
         const result = await GscService.getPerformance(
           {
             projectId: input.projectId,
-            startDate: baselineStart,
+            startDate: queryStart,
             endDate: queryEnd,
             dimensions: ["date"],
             filters: [
@@ -199,7 +225,7 @@ async function refresh(
         signal.throwIfAborted();
         if (
           result.siteUrl !== experiment.siteUrl ||
-          result.request.startDate !== baselineStart ||
+          result.request.startDate !== queryStart ||
           result.request.endDate !== queryEnd ||
           result.rows.length >= 100
         )
@@ -210,8 +236,8 @@ async function refresh(
           runId: run.id,
           baselineStart,
           baselineEnd,
-          observationStart,
-          observationEnd,
+          observationStart: window.start,
+          observationEnd: window.end,
           observationThrough,
         });
         const days = run.includesBaseline
@@ -237,7 +263,7 @@ async function refresh(
         const ga4 = await measureGa4(experiment, run, {
           baselineStart,
           baselineEnd,
-          observationStart,
+          observationStart: window.start,
           observationThrough,
         });
         run.outcome = assessment.outcome;

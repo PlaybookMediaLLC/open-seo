@@ -9,6 +9,7 @@ import { dateLabel } from "@/client/features/opportunities/shared";
 import { experimentDetailOptions } from "./queries";
 import { ExperimentActions } from "./ExperimentActions";
 import { DownloadCsvButton, Ga4Results } from "./Ga4Measurement";
+import { LongTermCheck } from "./LongTermCheck";
 import { MeasurementResults } from "./MeasurementResults";
 import { PrepareRevert } from "./PrepareRevert";
 
@@ -126,6 +127,7 @@ export function ExperimentDetailPage({
         />
         <MeasurementResults detail={detail} assessment={detail.assessment} />
         <Ga4Results detail={detail} />
+        <LongTermCheck detail={detail} canManage={detail.canManage} />
         {detail.canManage &&
           experiment.pullRequestState === "merged" &&
           !detail.publishing.proposal.revertsProposalId && (
@@ -170,6 +172,7 @@ export function ExperimentDetailPage({
                       {run.status === "completed"
                         ? run.outcome
                         : "No final assessment from this attempt"}
+                      {run.window === "long_term" && " (long-term check)"}
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">

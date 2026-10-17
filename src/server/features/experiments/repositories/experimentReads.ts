@@ -32,7 +32,7 @@ import { listSignals } from "./deploymentSignals";
 const latestRun = (projectId: string) =>
   eq(
     measurementRuns.id,
-    sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' order by latest.started_at desc, latest.id desc limit 1)`,
+    sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' and latest.measurement_window = 'primary' order by latest.started_at desc, latest.id desc limit 1)`,
   );
 /** RFC-0006: the final label, or "measuring" until the window is complete. */
 const label = sql<ExperimentLabel>`case when ${eq(measurementRuns.windowComplete, true)} then ${measurementRuns.outcome} else 'measuring' end`;
@@ -134,7 +134,13 @@ export async function get(
     db
       .select(runColumns)
       .from(measurementRuns)
-      .where(and(runScope, eq(measurementRuns.status, "completed")))
+      .where(
+        and(
+          runScope,
+          eq(measurementRuns.status, "completed"),
+          eq(measurementRuns.window, "primary"),
+        ),
+      )
       .orderBy(desc(measurementRuns.startedAt), desc(measurementRuns.id))
       .limit(1),
     listSignals(projectId, experimentId),
@@ -174,6 +180,27 @@ export async function get(
           .limit(28)
       : [],
   ]);
+  // RFC-0006 5.4: the newest long-term check, shown beside the primary result.
+  const [longTermRun] = await db
+    .select(runColumns)
+    .from(measurementRuns)
+    .where(
+      and(
+        runScope,
+        eq(measurementRuns.status, "completed"),
+        eq(measurementRuns.window, "long_term"),
+      ),
+    )
+    .orderBy(desc(measurementRuns.startedAt), desc(measurementRuns.id))
+    .limit(1);
+  const longTermDays = longTermRun
+    ? await db
+        .select()
+        .from(measurementDays)
+        .where(and(dayScope, eq(measurementDays.runId, longTermRun.id)))
+        .orderBy(asc(measurementDays.date))
+        .limit(28)
+    : [];
   const [keyEvents, ga4] = await Promise.all([
     MeasurementGa4Repository.keyEvents(projectId, experimentId),
     completed[0]
@@ -182,6 +209,8 @@ export async function get(
   ]);
   // latestRun is the newest completed snapshot so its flags always describe observationDays.
   return {
+    longTermRun: longTermRun ?? null,
+    longTermDays,
     keyEvents,
     ga4Days: ga4.days,
     ga4EventTotals: ga4.eventTotals,

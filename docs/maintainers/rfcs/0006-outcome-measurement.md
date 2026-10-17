@@ -1,6 +1,6 @@
 # RFC-0006: Outcome measurement with GA4 and scheduled refresh
 
-- **Status:** Phases 1a (GA4 data) and 1b (summary, filter, CSV) built; phase 2 in progress
+- **Status:** Phases 1a, 1b and 2 built; scheduled refresh and notifications ship with RFC-0008
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E)
 - **Depends on:** RFC-0001. Scheduled refresh depends on RFC-0008. Notifications depend on RFC-0008.
@@ -128,6 +128,7 @@ Use the RFC-0008 Trigger.dev task `measurement-refresh` (job kind `measurement_r
 3. It uses the same label rules, and it shows the label as "long-term".
 4. It never replaces the first result.
 5. Store it as a run with `window` = `long_term`. Add the column to `measurement_runs`: text enum `primary`, `long_term`, default `primary`.
+6. As built: the column is `measurement_window`, because `window` is an SQL keyword. A long-term run reads only its own window from Search Console, uses the pinned baseline, and has its own 24-hour cache. It never changes the opportunity's status. Every primary read (the detail, the list and the summary) filters to primary runs.
 
 ### 5.5 Results summary and export
 
@@ -183,9 +184,9 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 
 ### Phase 2
 
-- [ ] `measurement_runs.window` column and the long-term window.
-- [ ] Test: a long-term result never replaces the primary result.
-- [ ] Docs explain the long-term check.
+- [x] `measurement_runs.window` column and the long-term window.
+- [x] Test: a long-term result never replaces the primary result.
+- [x] Docs explain the long-term check.
 
 ## 10. Open questions
 

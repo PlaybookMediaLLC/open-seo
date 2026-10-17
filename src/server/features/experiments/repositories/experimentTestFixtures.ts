@@ -103,6 +103,7 @@ export function runningMeasurement(
     windowComplete: false,
     error: null,
     ga4Error: null,
+    window: "primary",
   };
 }
 

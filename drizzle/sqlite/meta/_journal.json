@@ -526,6 +526,13 @@
       "when": 1792254941971,
       "tag": "0074_nasty_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "6",
+      "when": 1792257495524,
+      "tag": "0075_freezing_menace",
+      "breakpoints": true
     }
   ]
 }

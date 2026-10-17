@@ -126,6 +126,10 @@ export const measurementRuns = pgTable(
     error: text("error"),
     // RFC-0006: a GA4 failure never fails the Search Console run.
     ga4Error: text("ga4_error"),
+    // RFC-0006 5.4: a long-term run never replaces the primary result.
+    window: text("measurement_window", { enum: ["primary", "long_term"] })
+      .notNull()
+      .default("primary"),
     claimToken: text("claim_token").notNull(),
     completionToken: text("completion_token"),
   },
