@@ -12,6 +12,7 @@ import type { CreditFeature } from "@/shared/billing-credit-features";
 import { autumn, AUTUMN_TRACK_RETRY_OPTIONS } from "@/server/billing/autumn";
 import { captureServerEvent } from "@/server/lib/posthog";
 import { AppError } from "@/server/lib/errors";
+import { recordSettlement } from "@/server/billing/spendLedger"; // playbook-seam
 
 export type BillingCustomerContext = Pick<
   EnsuredUserContext,
@@ -502,6 +503,7 @@ export async function settleUsageCredits(args: {
     totalCostUsd,
     estimatedCredits: hold.estimatedCredits,
   });
+  await recordSettlement(hold.lockId, { costs, landed, error, creditFeature }); // playbook-seam
   if (!landed) {
     console.error("[autumn] finalize failed", {
       organizationId: customer.organizationId,

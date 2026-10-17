@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** Draft
+- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO) built
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -118,6 +118,14 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 
 `settleUsageCredits` hard-codes `provider: "dataforseo"`. Add a `provider` argument with that default, so the AI paths can use holds.
 
+**As built (part A).**
+
+1. One ledger row follows one Autumn hold. A DataForSEO batch that draws on monthly and top-up credits gets a second row when the holds are known; refused calls drop out of the estimate.
+2. DataForSEO admission wraps the reservation in `meterDataforseoCalls` (`reserveWithinLimits`). Upstream's `settleUsageCredits` records each settlement on the ledger through one seam line. Ledger writes after admission never throw.
+3. `cost_usd` is the raw provider cost, because reconciliation charges it through `trackUsageCreditSpend`, which applies the markup.
+4. Both dialects run the same two statements in `runBatch`: an update that changes nothing but locks the organization's limit rows on Postgres, then the conditional insert. A test with 8 parallel admissions against a limit for 3 fails on Postgres without the lock.
+5. Limits apply in hosted mode, where Autumn holds credits. Self-hosted installs pay their providers directly.
+
 ### 5.4 Billing debt fixes
 
 **Debt 1: charged tasks that fail validation.**
@@ -217,11 +225,11 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ### Limits and ledger
 
-- [ ] `spend_limits` and `spend_ledger` with D1 and Postgres migrations, partial unique indexes and the parity test.
-- [ ] `admitSpend` with the D1 single-statement path and the Postgres lock path.
-- [ ] Test: two parallel admissions near the limit admit only one (both dialects).
-- [ ] Test: no limit rows means only the Autumn balance applies.
-- [ ] Test: a refused admission makes no provider call.
+- [x] `spend_limits` and `spend_ledger` with D1 and Postgres migrations, partial unique indexes and the parity test.
+- [x] `admitSpend` with the D1 single-statement path and the Postgres lock path.
+- [x] Test: two parallel admissions near the limit admit only one (both dialects).
+- [x] Test: no limit rows means only the Autumn balance applies.
+- [x] Test: a refused admission makes no provider call.
 - [ ] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
 - [ ] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
 - [ ] `settleUsageCredits` accepts a provider argument.
@@ -255,8 +263,8 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ## 9. Open questions
 
-1. Should admins also set project limits, below the organization limit?
-2. Is 50 credits the right per-turn admission cap for the assistant? Measure the 95th percentile turn cost first.
+1. Should admins also set project limits, below the organization limit? **Answer (owner, 2026-10-17):** no. Only owners set limits.
+2. Is 50 credits the right per-turn admission cap for the assistant? Measure the 95th percentile turn cost first. **Answer (owner, 2026-10-17):** start at 50 credits. The ledger records real turn totals, so the cap can follow the 95th percentile later.
 
 ## 10. Real-site acceptance test
 
