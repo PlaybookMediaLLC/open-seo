@@ -512,6 +512,13 @@
       "when": 1792250273944,
       "tag": "0072_previous_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "6",
+      "when": 1792251794168,
+      "tag": "0073_overconfident_tattoo",
+      "breakpoints": true
     }
   ]
 }

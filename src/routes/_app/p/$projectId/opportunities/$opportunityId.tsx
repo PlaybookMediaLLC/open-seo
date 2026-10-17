@@ -9,6 +9,8 @@ import { getErrorCode } from "@/client/lib/error-messages";
 import { OpportunityEvidenceHistory } from "@/client/features/opportunities/OpportunityEvidenceHistory";
 import { OpportunityReview } from "@/client/features/opportunities/OpportunityReview";
 import { OpportunityInvestigation } from "@/client/features/opportunities/OpportunityInvestigation";
+import { ContentBriefCard } from "@/client/features/opportunities/ContentBriefCard";
+import { BRIEF_OPPORTUNITY_TYPES } from "@/types/schemas/contentBriefs";
 import {
   OwnerSelect,
   TicketSheet,
@@ -224,6 +226,12 @@ function OpportunityDetailPage() {
         />
         <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
         <PaidEvidence detail={query.data} projectId={projectId} />
+        {(BRIEF_OPPORTUNITY_TYPES as readonly string[]).includes(item.type) && (
+          <ContentBriefCard
+            opportunity={item}
+            canRun={access.isSuccess && access.data.canReview && !query.isError}
+          />
+        )}
         {item.type === "declining_page" && (
           <OpportunityInvestigation
             projectId={projectId}

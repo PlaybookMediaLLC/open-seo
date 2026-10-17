@@ -5,6 +5,7 @@ import { SerpCheckService } from "@/server/features/opportunities/services/SerpC
 import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
+import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   assignOpportunityInputSchema,
@@ -18,6 +19,10 @@ import {
   reviewOpportunityInputSchema,
   updateBrandTermsInputSchema,
 } from "@/types/schemas/opportunities";
+import {
+  createBriefInputSchema,
+  listBriefsInputSchema,
+} from "@/types/schemas/contentBriefs";
 import {
   investigateInputSchema,
   summarizeInvestigationInputSchema,
@@ -149,6 +154,27 @@ export const summarizeOpportunityInvestigation = createServerFn({
   .validator(summarizeInvestigationInputSchema)
   .handler(({ data, context }) =>
     OpportunityInvestigationService.summarizeInvestigation(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0004 phase 3: content briefs, exported as Markdown.
+export const createContentBrief = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(createBriefInputSchema)
+  .handler(({ data, context }) =>
+    ContentBriefService.create(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const listContentBriefs = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(listBriefsInputSchema)
+  .handler(({ data, context }) =>
+    ContentBriefService.list(context, {
       ...data,
       projectId: context.projectId,
     }),
