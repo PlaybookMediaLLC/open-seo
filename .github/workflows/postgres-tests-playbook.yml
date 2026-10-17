@@ -1,0 +1,67 @@
+name: Postgres real-SQL tests (Playbook)
+
+# The opportunity, publishing, experiment and tenancy suites run on SQLite in
+# CI. This job runs the same files against a real Postgres, as RFC-0007 asks.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: postgres-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  postgres:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: openseo_test
+          POSTGRES_DB: openseo_growth_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U openseo_test -d openseo_growth_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      # The suites accept only a disposable localhost/openseo_growth_test.
+      OPPORTUNITY_TEST_PG_URL: postgres://openseo_test@127.0.0.1:5432/openseo_growth_test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply Postgres migrations
+        run: pnpm db:migrate:pg
+        env:
+          POSTGRES_DATABASE_URL: ${{ env.OPPORTUNITY_TEST_PG_URL }}
+
+      # One file at a time: the suites share one database (see PAPERCUTS.md).
+      - name: Run real-SQL suites on Postgres
+        run: >-
+          pnpm exec vitest run
+          src/server/features/opportunities
+          src/server/features/publishing
+          src/server/features/experiments
+          src/server/features/growth
+          --no-file-parallelism
