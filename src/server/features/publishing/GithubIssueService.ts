@@ -16,6 +16,7 @@ import {
   withPublishingClaim,
   type PublishingContext,
 } from "./publishingAccess";
+import { ProposalDraftRepository } from "./repositories/ProposalDraftRepository";
 import { PublishingRepository } from "./repositories/PublishingRepository";
 
 // RFC-0005 5.10: a GitHub issue from an approved opportunity, created only
@@ -47,7 +48,13 @@ async function preview(
   const input = publishingOpportunityInputSchema.parse(raw);
   const detail = await eligibleDetail(input.projectId, input.opportunityId);
   if (!detail) return null;
-  const text = opportunityTicket(detail);
+  const text = opportunityTicket(
+    detail,
+    await ProposalDraftRepository.latestAnchor(
+      input.projectId,
+      detail.opportunity,
+    ),
+  );
   const hash = await textHash(text);
   return {
     ...text,
@@ -81,7 +88,13 @@ async function create(
             message: "Approve the opportunity before you create an issue.",
           };
         const opportunity = detail.opportunity;
-        const text = opportunityTicket(detail);
+        const text = opportunityTicket(
+          detail,
+          await ProposalDraftRepository.latestAnchor(
+            input.projectId,
+            detail.opportunity,
+          ),
+        );
         if ((await textHash(text)) !== input.textHash)
           return {
             ok: false,

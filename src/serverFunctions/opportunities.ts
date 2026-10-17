@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { BrandTermService } from "@/server/features/opportunities/services/BrandTermService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { SerpCheckService } from "@/server/features/opportunities/services/SerpCheckService";
-import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
+import { getTicket } from "@/server/features/opportunities/services/opportunityTicketService";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";

@@ -1,20 +1,13 @@
-import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { z } from "zod";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { requireOrgPermission } from "@/server/auth/org-gate";
-import { billResearchSpend } from "@/server/billing/researchSpend";
 import { checkUsageCreditsDepleted } from "@/server/billing/subscription";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import { GscService } from "@/server/features/gsc/services/GscService";
+import { generateChecked } from "@/server/features/publishing/checkedGeneration";
 import { checkGroundedText } from "@/server/features/publishing/draftChecks";
-import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
 import { AppError } from "@/server/lib/errors";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
-import {
-  getOptionalEnvValue,
-  getRequiredEnvValue,
-  isHostedServerAuthMode,
-} from "@/server/lib/runtime-env";
+import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type {
   InvestigationFinding,
   OpportunityInvestigation,
@@ -200,64 +193,26 @@ async function summarizeInvestigation(
     const source = investigation.findings
       .map((finding) => `- [${finding.severity}] ${finding.summary}`)
       .join("\n");
-    const model = buildChatAgentModel(
-      await getRequiredEnvValue("OPENROUTER_API_KEY"),
-      await getOptionalEnvValue("OPENROUTER_MODEL"),
-      "low",
-    );
-    let costUsd = 0;
-    let modelId = "unknown";
-    let failures: string[] = [];
-    let summary = "";
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const result = await generateText({
-          model,
-          output: Output.object({
-            schema: z.object({ summary: z.string().min(1).max(1_200) }),
-          }),
-          maxOutputTokens: 1_000,
-          abortSignal: AbortSignal.timeout(30_000),
-          system: SUMMARY_PROMPT,
-          prompt: [
-            `<findings>\n${source}\n</findings>`,
-            failures.length
-              ? `Your previous summary failed these checks. Fix every one:\n- ${failures.join("\n- ")}`
-              : "",
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-          onStepFinish: async (step) => {
-            const stepCost = requireOpenRouterCostUsd(step.providerMetadata);
-            costUsd += stepCost;
-            await billResearchSpend(customer, [
-              {
-                provider: "openrouter",
-                creditFeature: "agent",
-                operation: "investigation_summary",
-                costUsd: stepCost,
-              },
-            ]);
-          },
-        });
-        modelId = result.response.modelId;
-        summary = result.output.summary.trim();
-        failures = checkGroundedText(summary, source, SUMMARY_MAX);
-      } catch (error) {
-        if (!NoObjectGeneratedError.isInstance(error)) throw error;
-        failures = ["The answer did not match the required JSON format."];
-      }
-      if (!failures.length) break;
-    }
-    if (failures.length)
+    const result = await generateChecked({
+      customer,
+      operation: "investigation_summary",
+      schema: z.object({ summary: z.string().min(1).max(1_200) }),
+      system: SUMMARY_PROMPT,
+      prompt: `<findings>\n${source}\n</findings>`,
+      check: (output) =>
+        checkGroundedText(output.summary.trim(), source, SUMMARY_MAX),
+      maxOutputTokens: 1_000,
+      timeoutMs: 30_000,
+    });
+    if (!result.output)
       throw new AppError(
         "VALIDATION_ERROR",
         "Relay could not write a safe summary. Read the findings instead.",
       );
     await InvestigationRepository.saveSummary(projectId, investigation.id, {
-      summary,
-      model: modelId,
-      costUsd,
+      summary: result.output.summary.trim(),
+      model: result.modelId,
+      costUsd: result.costUsd,
     });
     return InvestigationRepository.get(projectId, investigation.id);
   } finally {

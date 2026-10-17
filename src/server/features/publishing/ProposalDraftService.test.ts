@@ -3,7 +3,12 @@ import type * as Ai from "ai";
 import type * as Access from "./publishingAccess";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { dataRefreshClaims, opportunities } from "@/db/schema";
+import {
+  dataRefreshClaims,
+  opportunities,
+  opportunityLinkEvidence,
+} from "@/db/schema";
+import { getTicket } from "@/server/features/opportunities/services/opportunityTicketService";
 import type { ProposalDraft } from "@/types/schemas/proposalDrafts";
 import type { DraftOutput } from "./draftChecks";
 import { ProposalDraftService } from "./ProposalDraftService";
@@ -110,8 +115,7 @@ afterAll(() => database.close());
 
 const COST = 0.0012;
 const good: DraftOutput = {
-  description:
-    "Playbook Media owns software for the long term: we support customers and reinvest cash flow since 2019.",
+  text: "Playbook Media owns software for the long term: we support customers and reinvest cash flow since 2019.",
   rationale: "Uses the page's own words.",
   usedQueries: ["software ownership"],
   claims: [
@@ -124,8 +128,7 @@ const good: DraftOutput = {
 };
 const injected: DraftOutput = {
   ...good,
-  description:
-    "Playbook Media is the #1 agency: it owns software for the long term and reinvests cash flow.",
+  text: "Playbook Media is the #1 agency: it owns software for the long term and reinvests cash flow.",
 };
 function answers(...outputs: DraftOutput[]) {
   for (const output of outputs)
@@ -168,7 +171,7 @@ it("drafts a checked description with its sources and bills the reported cost", 
   const draft = await ProposalDraftService.draft(context, request);
   expect(draft).toMatchObject({
     status: "generated",
-    valueAfter: good.description,
+    valueAfter: good.text,
     model: "test-model",
     costUsd: COST,
   });
@@ -229,7 +232,7 @@ it("lets only a member who manages integrations draft", async () => {
   expect(mocks.generate).not.toHaveBeenCalled();
 });
 
-it("allows 3 drafts per opportunity in 24 hours", async () => {
+it("allows 3 drafts of each kind per opportunity in 24 hours", async () => {
   const { context, request } = await project();
   answers(good, good, good);
   for (let index = 0; index < 3; index++)
@@ -238,6 +241,69 @@ it("allows 3 drafts per opportunity in 24 hours", async () => {
     ProposalDraftService.draft(context, request),
   ).rejects.toMatchObject({ code: "RATE_LIMITED" });
   expect(mocks.generate).toHaveBeenCalledTimes(3);
+  // A title has its own limit and its own 30 to 60 character rule.
+  answers({ ...good, text: "Software ownership at Playbook Media since 2019" });
+  expect(
+    await ProposalDraftService.draft(context, {
+      ...request,
+      kind: "meta_title",
+    }),
+  ).toMatchObject({ kind: "meta_title", status: "generated" });
+});
+
+it("drafts an anchor copied from the source page and adds it to the ticket", async () => {
+  const { input, context, request } = await project();
+  const audit = crypto.randomUUID();
+  await database.client.execute({
+    sql: "INSERT INTO audits (id, project_id, started_by_user_id, start_url, status, completed_at) VALUES (?, ?, 'test', 'https://example.com/', 'completed', ?)",
+    args: [audit, input.projectId, new Date().toISOString()],
+  });
+  await db
+    .update(opportunities)
+    .set({ type: "internal_link" })
+    .where(eq(opportunities.id, request.opportunityId));
+  await db.insert(opportunityLinkEvidence).values({
+    id: crypto.randomUUID(),
+    projectId: input.projectId,
+    opportunityId: request.opportunityId,
+    runId: input.proposal.evidenceRunId,
+    auditId: audit,
+    sourceUrl: "https://example.com/blog",
+    targetUrl: "https://example.com/page",
+    sharedQuery: "software ownership",
+    sourceImpressions: 120,
+    sourcePosition: 8,
+  });
+  mocks.generate.mockImplementationOnce(async (options) => {
+    await options.onStepFinish({
+      providerMetadata: { openrouter: { usage: { cost: COST } } },
+    });
+    return {
+      output: {
+        anchor: "owns software for the long term",
+        sentence: "Playbook Media owns software for the long term.",
+        rationale: "Close to the shared query.",
+      },
+      response: { modelId: "test-model" },
+    };
+  });
+  expect(
+    await ProposalDraftService.draftAnchor(context, request),
+  ).toMatchObject({
+    kind: "internal_link_anchor",
+    status: "generated",
+    targetUrl: "https://example.com/blog",
+    valueBefore: "Playbook Media owns software for the long term.",
+    valueAfter: "owns software for the long term",
+  });
+  const ticket = await getTicket(
+    context,
+    input.projectId,
+    request.opportunityId,
+  );
+  expect(ticket.body).toContain(
+    'On https://example.com/blog, link the words "owns software for the long term" to https://example.com/page.',
+  );
 });
 
 it("allows 30 drafts per project in 24 hours", async () => {

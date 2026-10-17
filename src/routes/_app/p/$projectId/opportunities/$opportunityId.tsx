@@ -1,4 +1,5 @@
 import { PublishingOpportunityPanel } from "@/client/features/publishing/PublishingOpportunityPanel";
+import { AnchorDraftCard } from "@/client/features/publishing/AnchorDraftCard";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
@@ -230,6 +231,14 @@ function OpportunityDetailPage() {
           <ContentBriefCard
             opportunity={item}
             canRun={access.isSuccess && access.data.canReview && !query.isError}
+          />
+        )}
+        {item.type === "internal_link" && (
+          <AnchorDraftCard
+            opportunity={item}
+            canDraft={
+              access.isSuccess && access.data.canReview && !query.isError
+            }
           />
         )}
         {item.type === "declining_page" && (

@@ -2,8 +2,12 @@ import { z } from "zod";
 
 // RFC-0004 5.3: deterministic checks that every model draft passes before a
 // person sees it. A failing draft is retried once, then rejected.
-const DESCRIPTION_MIN = 70;
-const DESCRIPTION_MAX = 160;
+export const LENGTH_RULES = {
+  meta_description: { label: "description", min: 70, max: 160 },
+  // The final title, with the layout's title template (RFC-0005).
+  meta_title: { label: "title", min: 30, max: 60 },
+} as const;
+export type LengthRule = { label: string; min: number; max: number };
 // Claims that need the owner's own words before a draft may use them.
 const RISKY_PHRASES = [
   "best",
@@ -24,7 +28,7 @@ const RISKY_PHRASES = [
 ];
 
 export const draftOutputSchema = z.object({
-  description: z.string().min(1).max(320),
+  text: z.string().min(1).max(320),
   rationale: z.string().max(500),
   usedQueries: z.array(z.string()).max(5),
   claims: z
@@ -44,7 +48,7 @@ export type DraftInputs = {
   pageTitle: string;
   pageText: string;
   contextText: string;
-  currentDescription: string | null;
+  currentValue: string | null;
 };
 
 const normalize = (text: string) =>
@@ -59,8 +63,12 @@ function containsPhrase(text: string, phrase: string) {
 }
 
 /** The failed checks, in order. An empty list means the draft passed. */
-export function checkDraft(output: DraftOutput, inputs: DraftInputs): string[] {
-  const draft = output.description.trim();
+export function checkDraft(
+  output: DraftOutput,
+  inputs: DraftInputs,
+  rule: LengthRule = LENGTH_RULES.meta_description,
+): string[] {
+  const draft = output.text.trim();
   const sources = {
     page: `${inputs.pageTitle}\n${inputs.pageText}`,
     context: inputs.contextText,
@@ -70,20 +78,20 @@ export function checkDraft(output: DraftOutput, inputs: DraftInputs): string[] {
     sources.page,
     sources.context,
     sources.query,
-    inputs.currentDescription ?? "",
+    inputs.currentValue ?? "",
   ].join("\n");
   const failures: string[] = [];
-  if (draft.length < DESCRIPTION_MIN || draft.length > DESCRIPTION_MAX)
+  if (draft.length < rule.min || draft.length > rule.max)
     failures.push(
-      `The description has ${draft.length} characters. Use ${DESCRIPTION_MIN} to ${DESCRIPTION_MAX}.`,
+      `The ${rule.label} has ${draft.length} characters. Use ${rule.min} to ${rule.max}.`,
     );
-  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(output.description))
-    failures.push("The description contains a control or format character.");
+  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(output.text))
+    failures.push(`The ${rule.label} contains a control or format character.`);
   if (
-    inputs.currentDescription !== null &&
-    normalize(draft) === normalize(inputs.currentDescription)
+    inputs.currentValue !== null &&
+    normalize(draft) === normalize(inputs.currentValue)
   )
-    failures.push("The description is the same as the current one.");
+    failures.push(`The ${rule.label} is the same as the current one.`);
   const numbers = draft.match(/\d+(?:[.,]\d+)*/g) ?? [];
   const missingNumbers = numbers.filter(
     (number) => !containsPhrase(everything, number),
@@ -101,9 +109,9 @@ export function checkDraft(output: DraftOutput, inputs: DraftInputs): string[] {
       `These claims have no exact quote in their source: ${unsupported.map((claim) => claim.text).join("; ")}.`,
     );
   // Page text is untrusted and queries are what searchers type, so only the
-  // owner's own words (context and current description) can support a claim
+  // owner's own words (context and current metadata) can support a claim
   // like "best" or "#1".
-  const trusted = `${inputs.contextText}\n${inputs.currentDescription ?? ""}`;
+  const trusted = `${inputs.contextText}\n${inputs.currentValue ?? ""}`;
   const risky = RISKY_PHRASES.filter(
     (phrase) =>
       containsPhrase(draft, phrase) && !containsPhrase(trusted, phrase),
@@ -151,5 +159,33 @@ export function checkGroundedText(
   );
   if (risky.length)
     failures.push(`Remove these unsupported claims: ${risky.join(", ")}.`);
+  return failures;
+}
+
+export const anchorOutputSchema = z.object({
+  anchor: z.string().min(1).max(120),
+  sentence: z.string().min(1).max(500),
+  rationale: z.string().max(500),
+});
+type AnchorOutput = z.infer<typeof anchorOutputSchema>;
+
+/**
+ * An internal-link anchor must be words that already stand in one sentence
+ * of the source page, so the link reads naturally where it is added.
+ */
+export function checkAnchor(output: AnchorOutput, pageText: string): string[] {
+  const anchor = output.anchor.trim();
+  const failures: string[] = [];
+  const words = anchor.split(/\s+/).length;
+  if (anchor.length < 2 || anchor.length > 80 || words > 8)
+    failures.push("Use an anchor of 2 to 80 characters and at most 8 words.");
+  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(`${output.anchor}${output.sentence}`))
+    failures.push(
+      "The anchor or sentence contains a control or format character.",
+    );
+  if (!normalize(pageText).includes(normalize(output.sentence)))
+    failures.push("The sentence is not on the source page. Copy it exactly.");
+  if (!containsPhrase(output.sentence, anchor))
+    failures.push("The anchor is not in the sentence. Copy it exactly.");
   return failures;
 }

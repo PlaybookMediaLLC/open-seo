@@ -9,7 +9,6 @@ import type {
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository } from "../repositories/OpportunityRepository";
 import { authorize, get, type OpportunityContext } from "./opportunityAccess";
-import { opportunityTicket, TICKET_STATUSES } from "./opportunityTicket";
 
 const DAY_MS = 86_400_000;
 
@@ -147,16 +146,3 @@ export async function assign(
 }
 
 /** RFC-0003 5.6: the ticket of an approved opportunity, for a person to copy. */
-export async function getTicket(
-  context: OpportunityContext,
-  projectId: string,
-  opportunityId: string,
-) {
-  const detail = await get(context, projectId, opportunityId);
-  if (!TICKET_STATUSES.includes(detail.opportunity.status))
-    throw new AppError(
-      "VALIDATION_ERROR",
-      "Approve the opportunity before you create a ticket.",
-    );
-  return opportunityTicket(detail);
-}

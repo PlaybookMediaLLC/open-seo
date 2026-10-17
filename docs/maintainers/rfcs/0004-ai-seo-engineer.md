@@ -1,6 +1,6 @@
 # RFC-0004: AI SEO engineer
 
-- **Status:** Phases 1 and 2 built; live checks pending
+- **Status:** Phases 1, 2 and 3 built; live checks pending
 - **Date:** 2026-10-15
 - **Brief section:** 5 (Feature C)
 - **Depends on:** RFC-0001 (B2, the model key) and RFC-0005 phase 1a (route groups and metadata helper calls, needed to read the current description on real sites). Phase 3 briefs use RFC-0002 content gaps.
@@ -228,6 +228,13 @@ Rules:
 
 **Title drafts.** After RFC-0005 adds the title change, add draft kind `meta_title` with a 30 to 60 character rule.
 
+As built (anchors and titles):
+
+1. Anchors are `proposal_drafts` rows of kind `internal_link_anchor`. `target_url` is the source page that gets the link, `value_before` the sentence and `value_after` the anchor. The source is the latest run's link evidence with the most impressions. Checks: the sentence is on the source page, and the anchor (2 to 80 characters, at most 8 words) is in the sentence. `getTicket` and the GitHub issue add a "Suggested link" section from the newest checked anchor.
+2. Titles are drafts of kind `meta_title`. The 30 to 60 rule applies to the final title. When the page file is known, the layout template's extra characters come off the limits, and the prompt says to leave out the site name.
+3. The daily limit of 3 counts each kind separately for an opportunity. The project limit of 30 counts all kinds.
+4. Drafts, anchors, briefs and investigation summaries share one helper, `generateChecked`. It runs the model with structured output, retries once with the failure reasons, and bills each step.
+
 ### 5.8 Brief capability map
 
 | Brief capability             | Where                                                  |
@@ -298,8 +305,8 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 - [x] Optional summary uses only stored findings (test).
 - [x] Content briefs and their tables, with Markdown export.
 - [x] Brief output states which facts the writer must supply (test on the prompt contract).
-- [ ] Internal-link anchor drafts with the same checks.
-- [ ] Title drafts after RFC-0005 phase 1.
+- [x] Internal-link anchor drafts with the same checks.
+- [x] Title drafts after RFC-0005 phase 1.
 - [ ] Live check of each phase 3 feature on a real project.
 
 ## 10. Open questions
