@@ -43,6 +43,11 @@ import type { Plugin } from "vite";
  *   scratchpad (RFC-0002 internal links;
  *   src/server/features/opportunities/audit/). The workflow file was at the
  *   400-line lint limit, so its seam also turns that rule off for the file.
+ * - src/server/mcp/server.ts and src/server/features/sam/samChatTools.ts:
+ *   register the growth tools for agents (RFC-0004;
+ *   src/server/mcp/tools/growth-tools.ts).
+ * - src/server/features/sam/samSystemPrompt.ts: adds the growth workflow rules
+ *   (src/server/features/sam/growthPrompt.ts).
  */
 const RELAY = "https://relay.playbookmedia.io";
 

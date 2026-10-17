@@ -1,6 +1,6 @@
 # RFC-0004: AI SEO engineer
 
-- **Status:** Phase 1 built; live checks pending
+- **Status:** Phases 1 and 2 built; live checks pending
 - **Date:** 2026-10-15
 - **Brief section:** 5 (Feature C)
 - **Depends on:** RFC-0001 (B2, the model key) and RFC-0005 phase 1a (route groups and metadata helper calls, needed to read the current description on real sites). Phase 3 briefs use RFC-0002 content gaps.
@@ -202,6 +202,7 @@ Rules:
 4. No tool approves, prepares a pull request, merges, deploys or reverts. The tool descriptions say that a person does these in the app, and give the app link.
 5. Write a fork-owned prompt section in `src/server/features/sam/growthPrompt.ts`. It explains the workflow, the no-new-facts rule and the human-approval rule. Append it in the upstream `samSystemPrompt.ts` with one `// playbook-seam` line.
 6. Bump the plugin version in the three manifests (new MCP tools). Run `pnpm sync-plugin-skills` if a shipped skill changes.
+7. When an agent leaves the file path out, the draft service locates the file itself, after the permission, limit and credit checks. A member who cannot draft spends no GitHub requests.
 
 ### 5.7 Phase 3 capabilities
 
@@ -279,15 +280,15 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 
 ### Phase 2
 
-- [ ] `growth-tools.ts` with the five tools, each calling the service layer.
-- [ ] Registered in MCP and the assistant with `// playbook-seam` lines.
-- [ ] Output schemas added and covered by the existing output-schema contract test.
-- [ ] Test: no tool can approve or execute.
-- [ ] Test: the draft tool enforces the manage permission through MCP project auth.
-- [ ] `growthPrompt.ts` added and appended through one seam line.
-- [ ] Plugin version bumped in all three manifests.
+- [x] `growth-tools.ts` with the five tools, each calling the service layer.
+- [x] Registered in MCP and the assistant with `// playbook-seam` lines.
+- [x] Output schemas added and covered by the existing output-schema contract test.
+- [x] Test: no tool can approve or execute.
+- [x] Test: the draft tool enforces the manage permission through MCP project auth.
+- [x] `growthPrompt.ts` added and appended through one seam line.
+- [x] Plugin version bumped in all three manifests.
 - [ ] Live check in Claude Code: list, read and draft on a real project.
-- [ ] `content/docs/mcp.mdx` lists the new tools.
+- [x] `content/docs/mcp.mdx` lists the new tools.
 
 ### Phase 3
 
