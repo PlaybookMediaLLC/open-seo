@@ -34,6 +34,11 @@ vi.mock("@/server/lib/chatAgent", () => ({
 vi.mock("@/server/billing/researchSpend", () => ({
   billResearchSpend: vi.fn(),
 }));
+// playbook-seam: RFC-0009 research holds have their own tests.
+vi.mock("@/server/billing/researchHold", () => ({
+  holdResearch: async () => null,
+  settleResearch: vi.fn(),
+}));
 vi.mock(
   "@/server/features/project-context/repositories/ProjectContextRepository",
   () => ({ ProjectContextRepository: { listSections, listCompetitors } }),

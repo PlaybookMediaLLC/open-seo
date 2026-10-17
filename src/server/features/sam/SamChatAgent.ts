@@ -1,3 +1,5 @@
+// playbook-seam: the RFC-0009 spend lines push this upstream file past 400 lines.
+/* oxlint-disable max-lines */
 import { Think } from "@cloudflare/think";
 import type {
   ChatErrorContext,
@@ -42,6 +44,7 @@ import {
   trackUsageCreditSpend,
 } from "@/server/billing/subscription";
 import { getPublicOrigin } from "@/server/mcp/public-origin";
+import * as spend from "@/server/billing/assistantSpend"; // playbook-seam
 import { MCP_SCOPE } from "@/lib/oauth-resource";
 import { AuthRepository } from "@/server/auth/repositories/AuthRepository";
 import type { ToolAuthContext } from "@/server/mcp/context";
@@ -146,6 +149,7 @@ export class SamChatAgent extends Think {
   private turnUnbilledUsd = 0;
   private turnMonthlyRemaining: number | null = null;
   private billing: Promise<void> = Promise.resolve();
+  private turnSpendId: string | null = null; // playbook-seam
 
   // Turn telemetry: armed in beforeTurn, fed by the step and tool hooks,
   // reported once as `sam:turn` when the turn ends by any route (response,
@@ -344,6 +348,13 @@ export class SamChatAgent extends Think {
             "You're out of credits. Upgrade your plan or buy more credits on the Billing page to keep using SAM.",
           );
         }
+        // playbook-seam: RFC-0009 reserves the turn inside the monthly limits.
+        const admission = await spend.admitTurn(ctx);
+        if (admission.refusal) {
+          turn.refusal = "credits";
+          return this.refusalTurn(admission.refusal);
+        }
+        this.turnSpendId = admission.id;
         this.turnMonthlyRemaining = monthlyRemaining;
       }
 
@@ -446,12 +457,14 @@ export class SamChatAgent extends Think {
       properties: { provider: "openrouter", turn_id: turn?.turnId },
     });
     if (turn) turn.credits += monthlyCredits + topupCredits;
+    await spend.recordTurnSpend(ctx, monthlyCredits + topupCredits, costUsd); // playbook-seam
     if (this.turnMonthlyRemaining !== null)
       this.turnMonthlyRemaining -= monthlyCredits;
   }
 
   async onChatResponse(result: ChatResponseResult): Promise<void> {
     this.flushSpend();
+    this.ctx.waitUntil(spend.releaseTurn(this.turnSpendId, this.billing)); // playbook-seam
     this.ctx.waitUntil(
       this.telemetry.report(
         result.status,

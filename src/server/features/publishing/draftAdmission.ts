@@ -73,7 +73,8 @@ export async function admitDraft(
     projectId: input.projectId,
   };
   // The per-project lease of one draft at a time bounds the small overdraft
-  // race of checking before and billing after (RFC-0009 replaces it).
+  // race of checking before and billing after; the RFC-0009 hold in
+  // generateChecked is the atomic check.
   if (
     (await isHostedServerAuthMode()) &&
     (await checkUsageCreditsDepleted(customer)).depleted

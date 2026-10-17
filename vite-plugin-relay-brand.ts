@@ -65,6 +65,23 @@ import type { Plugin } from "vite";
  *   plan banner (src/client/features/spend/SpendLimitBanner.tsx).
  * - src/client/components/QueryState.tsx: a refused paid action links to
  *   Billing (src/client/features/spend/SpendLimitError.tsx).
+ * - src/server/billing/subscription.ts: reserveUsageCredits and
+ *   settleUsageCredits take an optional provider (RFC-0009 5.3).
+ * - src/server/features/ai-visibility/services/aiPromptSuggestions.ts and
+ *   src/server/features/projects/services/websiteResearch.ts: AI research
+ *   holds its estimate first (src/server/billing/researchHold.ts); the
+ *   website research test mocks that module.
+ * - src/server/features/sam/SamChatAgent.ts: each turn reserves 50 credits,
+ *   records its metered chunks and releases the reservation
+ *   (src/server/billing/assistantSpend.ts). The seams push the file past the
+ *   line limit, so it carries a max-lines exemption.
+ * - src/server/lib/dataforseo/envelope.ts: parseTaskItems keeps the cost of a
+ *   billed task whose payload fails validation (RFC-0009 debt 1).
+ * - src/server/workflows/RankCheckWorkflow.ts,
+ *   src/server/features/ai-visibility/services/scheduledAiVisibility.ts,
+ *   src/shared/rank-tracking.ts and the two rank-tracking views: scheduled
+ *   checks at a monthly limit skip with their reason. The rank workflow test
+ *   mocks the room check.
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

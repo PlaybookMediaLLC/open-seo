@@ -247,6 +247,16 @@ export function RankTrackingDomainDetail({
           </AlertDescription>
         </Alert>
       )}
+      {/* playbook-seam: RFC-0009 monthly spending limit */}
+      {config.lastSkipReason === "spend_limit" && (
+        <Alert variant="warning">
+          <AlertTriangle />
+          <AlertDescription className="text-foreground">
+            Last scheduled check was skipped: the project reached its monthly
+            credit limit. An owner can change it in Billing.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <RankRunAlerts run={latestRun} />
 

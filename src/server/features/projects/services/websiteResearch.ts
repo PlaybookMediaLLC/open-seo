@@ -1,10 +1,8 @@
 import { generateText, Output, stepCountIs, tool } from "ai";
 import { z } from "zod";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
-import {
-  billResearchSpend,
-  type ResearchSpend,
-} from "@/server/billing/researchSpend";
+import type { ResearchSpend } from "@/server/billing/researchSpend"; // playbook-seam
+import { holdResearch, settleResearch } from "@/server/billing/researchHold"; // playbook-seam
 import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
 import { fetchLiveSerp } from "@/server/lib/dataforseo/serp";
 import { DataforseoChargedTaskError } from "@/server/lib/dataforseo/envelope";
@@ -116,6 +114,11 @@ export async function researchWebsite(
           suggestedKeywords: z.array(z.string()),
         }
       : {}),
+  });
+  // playbook-seam: RFC-0009 holds the estimate inside the limits.
+  const hold = await holdResearch(customer, {
+    estimatedCredits: 200,
+    ledgerFeature: "ai_research",
   });
   try {
     const result = await generateText({
@@ -344,6 +347,6 @@ export async function researchWebsite(
     }
     return research;
   } finally {
-    await billResearchSpend(customer, spend);
+    await settleResearch(customer, hold, spend); // playbook-seam
   }
 }

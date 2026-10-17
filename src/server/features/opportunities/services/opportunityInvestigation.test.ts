@@ -45,8 +45,9 @@ vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<typeof Ai>()),
   generateText: mocks.generate,
 }));
-vi.mock("@/server/billing/researchSpend", () => ({
-  billResearchSpend: vi.fn(),
+vi.mock("@/server/billing/researchHold", () => ({
+  holdResearch: async () => null,
+  settleResearch: vi.fn(),
 }));
 vi.mock("@/server/billing/subscription", () => ({
   checkUsageCreditsDepleted: async () => ({ depleted: false }),

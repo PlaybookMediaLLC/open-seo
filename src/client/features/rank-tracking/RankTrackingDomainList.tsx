@@ -264,6 +264,13 @@ function DomainRow({
             Scheduled check skipped — insufficient credits
           </p>
         )}
+        {/* playbook-seam: RFC-0009 monthly spending limit */}
+        {summary.lastSkipReason === "spend_limit" && (
+          <p className="flex items-center gap-1 text-xs text-warning">
+            <AlertTriangle className="size-3" />
+            Scheduled check skipped — monthly limit reached
+          </p>
+        )}
         {summary.lastSkipReason === "plan_required" && (
           <p className="flex items-center gap-1 text-xs text-warning">
             <AlertTriangle className="size-3" />
