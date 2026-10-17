@@ -1,9 +1,11 @@
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
+import { runBatch } from "@/db/runBatch";
 import { GROWTH_JOB_KINDS } from "@/db/growth-jobs.schema";
 import { growthJobLogs, growthJobRuns, growthSchedules } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
+import { auditInsert } from "@/server/features/activity/auditLog";
 import {
   authorize,
   type OpportunityContext,
@@ -127,18 +129,29 @@ async function save(context: OpportunityContext, input: SaveScheduleInput) {
     updatedBy: context.userId,
     updatedAt: now,
   };
-  await db
-    .insert(growthSchedules)
-    .values({
-      id: crypto.randomUUID(),
+  await runBatch((tx) => [
+    tx
+      .insert(growthSchedules)
+      .values({
+        id: crypto.randomUUID(),
+        projectId: input.projectId,
+        kind: input.kind,
+        ...values,
+      })
+      .onConflictDoUpdate({
+        target: [growthSchedules.projectId, growthSchedules.kind],
+        set: values,
+      }),
+    auditInsert(tx, {
+      organizationId: context.organizationId,
       projectId: input.projectId,
-      kind: input.kind,
-      ...values,
-    })
-    .onConflictDoUpdate({
-      target: [growthSchedules.projectId, growthSchedules.kind],
-      set: values,
-    });
+      actor: context,
+      action: "schedule.changed",
+      targetType: "schedule",
+      targetId: input.kind,
+      summary: `${input.enabled ? "Turned on" : "Turned off"} ${input.kind.replaceAll("_", " ")}, ${input.interval} at ${input.hourUtc}:00 UTC`,
+    }),
+  ]);
 }
 
 async function runLogs(

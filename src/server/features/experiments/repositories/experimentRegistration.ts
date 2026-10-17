@@ -10,6 +10,10 @@ import {
 } from "@/db/schema";
 import type { GrowthExperiment } from "@/types/schemas/experiments";
 import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
+import {
   claimExists,
   lockClaim,
   selectedValues,
@@ -26,6 +30,7 @@ export async function register(input: {
   experiment: GrowthExperiment;
   claimToken: string;
   organizationId: string;
+  audit: AuditInput;
 }): Promise<boolean> {
   const { experiment } = input;
   const scope = { ...input, projectId: experiment.projectId };
@@ -116,6 +121,22 @@ export async function register(input: {
           ),
         )
         .onConflictDoNothing(),
+      auditInsert(
+        tx,
+        input.audit,
+        exists(
+          tx
+            .select({ id: growthExperiments.id })
+            .from(growthExperiments)
+            .where(
+              and(
+                eq(growthExperiments.projectId, experiment.projectId),
+                eq(growthExperiments.id, experiment.id),
+                eq(growthExperiments.lastEventId, eventId),
+              ),
+            ),
+        ),
+      ),
     ];
   });
   return experimentAccepted(experiment.projectId, experiment.id, eventId);

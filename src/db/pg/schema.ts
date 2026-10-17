@@ -18,6 +18,7 @@ export * from "./content-briefs.schema";
 export * from "./measurement-ga4.schema";
 export * from "./growth-jobs.schema";
 export * from "./spend.schema";
+export * from "./audit-events.schema";
 export * from "./publishing.schema";
 export * from "./proposal-drafts.schema";
 export * from "./experiments.schema";

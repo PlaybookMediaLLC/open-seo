@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) and part C (AI paths, scheduled skips, debts 1 and 3) built
+- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) part C (AI paths, scheduled skips, debts 1 to 3) and part D1 (audit log, Activity page, first events) built
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -209,6 +209,14 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 4. Keep events for 1 year. Delete older rows in the RFC-0008 daily `growth-retention` task.
 5. **UI:** Organization settings → **Activity** for owners and admins. Filters for project, action and actor. CSV export with formula escaping.
 
+**As built (part D1).**
+
+1. Fork paths add the event as one more statement of the change's batch. The event is an insert that selects from the same fence the change set (for example `last_decision_id` or `last_event_id`), so a refused change writes no event.
+2. The actor type comes from the caller: MCP contexts carry a client id (`mcp`), scheduled jobs mark themselves (`system`), everything else is `user`.
+3. Part D1 writes the opportunity decisions, `ticket.created` (only a new ticket, not a repeat), `experiment.registered`, `schedule.changed` and `spend_limit.changed`. Part D2 adds the other actions.
+4. The Activity tab lists the newest 200 events. The filters are project, action and person. The CSV export holds up to 5,000 rows and reuses the RFC-0006 formula escaping.
+5. The daily `growth-retention` task deletes events older than 365 days.
+
 ### 5.7 Repository token key
 
 1. Add `PUBLISHING_TOKEN_KEY` (at least 32 random bytes) and `PUBLISHING_TOKEN_KEY_VERSION` (integer, starting at 1).
@@ -263,11 +271,11 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ### Audit log
 
-- [ ] `audit_events` table and migrations.
+- [x] `audit_events` table and migrations.
 - [ ] Every listed action writes an event (one test per action group).
-- [ ] Fork paths write in the same operation as the change (test that a failed change writes no event).
-- [ ] Activity page with filters and CSV export.
-- [ ] Retention deletes events older than 1 year.
+- [x] Fork paths write in the same operation as the change (test that a failed change writes no event).
+- [x] Activity page with filters and CSV export.
+- [x] Retention deletes events older than 1 year.
 
 ### Credentials and rate limits
 

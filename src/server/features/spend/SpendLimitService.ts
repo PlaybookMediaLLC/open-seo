@@ -4,6 +4,7 @@ import { runBatch } from "@/db/runBatch";
 import { projects, spendLedger, spendLimits } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
+import { auditInsert } from "@/server/features/activity/auditLog";
 import {
   committedCredits,
   limitUse,
@@ -109,6 +110,18 @@ async function save(
   );
   const limit = input.monthlyLimitCredits;
   await runBatch((tx) => [
+    auditInsert(tx, {
+      organizationId: context.organizationId,
+      projectId: input.projectId,
+      actor: context,
+      action: "spend_limit.changed",
+      targetType: input.projectId ? "project" : "organization",
+      targetId: input.projectId ?? context.organizationId,
+      summary:
+        limit === null
+          ? "Removed the monthly credit limit"
+          : `Set the monthly credit limit to ${limit} credits`,
+    }),
     tx.delete(spendLimits).where(scope),
     ...(limit === null
       ? []
