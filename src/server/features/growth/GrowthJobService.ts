@@ -11,12 +11,14 @@ import {
   GrowthJobRepository as repo,
   type LogLine,
 } from "./repositories/GrowthJobRepository";
+import { deleteAuditEventsBefore } from "@/server/features/activity/ActivityService";
 
 // RFC-0008 5.1: the Worker side of scheduled growth jobs. Trigger.dev asks
 // what is due, then asks the Worker to run each item; the Worker does all
 // data work with its bindings and keeps the history.
 const DUE_LIMIT = 200;
 const RETENTION_DAYS = 180;
+const AUDIT_RETENTION_DAYS = 365;
 const DAY_MS = 86_400_000;
 type Schedule = NonNullable<Awaited<ReturnType<typeof repo.getSchedule>>>;
 type RunResult = {
@@ -220,9 +222,14 @@ async function run(
 }
 
 async function retention(now = new Date()) {
-  return repo.deleteBefore(
+  const deleted = await repo.deleteBefore(
     new Date(now.getTime() - RETENTION_DAYS * DAY_MS).toISOString(),
   );
+  // RFC-0009 5.6: audit events stay for one year.
+  const auditEvents = await deleteAuditEventsBefore(
+    new Date(now.getTime() - AUDIT_RETENTION_DAYS * DAY_MS).toISOString(),
+  );
+  return { ...deleted, auditEvents };
 }
 
 export const GrowthJobService = { due, run, retention };

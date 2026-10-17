@@ -154,6 +154,15 @@ async function register(
         experiment,
         claimToken,
         organizationId: context.organizationId,
+        audit: {
+          organizationId: context.organizationId,
+          projectId: input.projectId,
+          actor: context,
+          action: "experiment.registered",
+          targetType: "experiment",
+          targetId: experiment.id,
+          summary: `Started tracking ${experiment.targetUrl}`,
+        },
       }))
     )
       throw new AppError("CONFLICT");

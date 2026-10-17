@@ -22,6 +22,7 @@ import * as sqlitePublishing from "./publishing.schema";
 import * as sqliteProposalDrafts from "./proposal-drafts.schema";
 import * as sqliteExperiments from "./experiments.schema";
 import * as sqliteSpend from "./spend.schema";
+import * as sqliteAuditEvents from "./audit-events.schema";
 import * as pgApp from "./pg/app.schema";
 import * as pgProjectContext from "./pg/project-context.schema";
 import * as pgReports from "./pg/reports.schema";
@@ -45,6 +46,7 @@ import * as pgPublishing from "./pg/publishing.schema";
 import * as pgProposalDrafts from "./pg/proposal-drafts.schema";
 import * as pgExperiments from "./pg/experiments.schema";
 import * as pgSpend from "./pg/spend.schema";
+import * as pgAuditEvents from "./pg/audit-events.schema";
 
 // Canonical schema barrel. Repositories import their tables from here and the
 // provider-aware `db` from "@/db", so each repository is written ONCE for both
@@ -78,7 +80,8 @@ type AppSchema = typeof sqliteApp &
   typeof sqlitePublishing &
   typeof sqliteProposalDrafts &
   typeof sqliteExperiments &
-  typeof sqliteSpend;
+  typeof sqliteSpend &
+  typeof sqliteAuditEvents;
 
 const runtimeSchema =
   getDatabaseProvider() === "postgres"
@@ -106,6 +109,7 @@ const runtimeSchema =
         ...pgProposalDrafts,
         ...pgExperiments,
         ...pgSpend,
+        ...pgAuditEvents,
       }
     : {
         ...sqliteApp,
@@ -131,6 +135,7 @@ const runtimeSchema =
         ...sqliteProposalDrafts,
         ...sqliteExperiments,
         ...sqliteSpend,
+        ...sqliteAuditEvents,
       };
 
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by schema-parity.test.ts
@@ -227,4 +232,5 @@ export const {
   measurementDays,
   spendLimits,
   spendLedger,
+  auditEvents,
 } = schema;

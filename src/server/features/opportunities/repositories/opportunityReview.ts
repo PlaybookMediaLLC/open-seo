@@ -2,6 +2,10 @@ import { and, eq, exists, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
+import {
   gscConnections,
   opportunities,
   opportunityDecisions,
@@ -23,6 +27,8 @@ export async function review(input: {
   fromStatus: OpportunityStatus;
   toStatus: OpportunityStatus;
   deferredUntil: string | null;
+  /** RFC-0009: lands with the decision, never without it. */
+  audit: AuditInput;
 }): Promise<boolean> {
   const decisionId = crypto.randomUUID();
   const scope = and(
@@ -115,6 +121,16 @@ export async function review(input: {
         })
         .from(opportunities)
         .where(and(scope, eq(opportunities.lastDecisionId, decisionId))),
+    ),
+    auditInsert(
+      tx,
+      input.audit,
+      exists(
+        tx
+          .select({ id: opportunities.id })
+          .from(opportunities)
+          .where(and(scope, eq(opportunities.lastDecisionId, decisionId))),
+      ),
     ),
   ]);
   const [decision] = await db

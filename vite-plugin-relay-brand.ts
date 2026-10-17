@@ -82,6 +82,8 @@ import type { Plugin } from "vite";
  *   src/shared/rank-tracking.ts and the two rank-tracking views: scheduled
  *   checks at a monthly limit skip with their reason. The rank workflow test
  *   mocks the room check.
+ * - src/routes/_app/settings.tsx: adds the Activity tab
+ *   (src/client/features/activity/ActivityLog.tsx).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

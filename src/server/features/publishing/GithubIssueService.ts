@@ -112,6 +112,15 @@ async function create(
         const id = crypto.randomUUID();
         const ticket = await PublishingRepository.claimTicket({
           ...scope,
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "ticket.created",
+            targetType: "opportunity",
+            targetId: opportunity.id,
+            summary: `Created a GitHub issue for: ${opportunity.title}`,
+          },
           ticket: {
             id,
             projectId: input.projectId,

@@ -1,3 +1,4 @@
+import { reviewAudit } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { PublishingRepository as repo } from "./PublishingRepository";
 import { OpportunityRepository } from "../../opportunities/repositories/OpportunityRepository";
@@ -113,6 +114,7 @@ describe(`Publishing recovery real ${database.isPostgres ? "Postgres" : "SQLite"
     ).toBe(true);
     expect(
       await OpportunityRepository.review({
+        audit: reviewAudit,
         projectId: input.projectId,
         opportunityId: input.proposal.opportunityId,
         expectedVersion: 5,

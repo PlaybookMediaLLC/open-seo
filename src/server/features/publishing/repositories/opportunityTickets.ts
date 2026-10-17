@@ -10,11 +10,15 @@ import {
   selectedValues,
   type ClaimScope,
 } from "./publishingSql";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 
 // Stores the approval before the GitHub call. The unique text hash per
 // opportunity returns the first row on a repeat, so one approval makes one issue.
 export async function claimTicket(
-  input: ClaimScope & { ticket: OpportunityTicket },
+  input: ClaimScope & { ticket: OpportunityTicket; audit: AuditInput },
 ): Promise<OpportunityTicket | null> {
   const { ticket } = input;
   await runBatch((tx) => [
@@ -43,6 +47,22 @@ export async function claimTicket(
         ),
       )
       .onConflictDoNothing(),
+    // Only a new ticket, not the first row of a repeat, is an event.
+    auditInsert(
+      tx,
+      input.audit,
+      exists(
+        tx
+          .select({ id: opportunityTickets.id })
+          .from(opportunityTickets)
+          .where(
+            and(
+              eq(opportunityTickets.projectId, ticket.projectId),
+              eq(opportunityTickets.id, ticket.id),
+            ),
+          ),
+      ),
+    ),
   ]);
   const [row] = await db
     .select()

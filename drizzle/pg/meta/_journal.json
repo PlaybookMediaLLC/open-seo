@@ -393,6 +393,13 @@
       "when": 1792266011214,
       "tag": "0055_first_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792269155231,
+      "tag": "0056_wide_quasar",
+      "breakpoints": true
     }
   ]
 }
