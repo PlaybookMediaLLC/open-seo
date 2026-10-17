@@ -232,6 +232,15 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
   4. Call `/api/internal/growth/due` with `{}` every 15 minutes. For each item, call `/api/internal/growth/run` with the item plus `attempt` and `maxAttempts`. Retry on `503`; stop on `422`.
   5. Call `/api/internal/growth/retention` with `{}` once a day.
      Every failure answers `404`, with no reason. Audit follow-ups wait as queued rows until the next `due` call.
+- **Failed credit settlements (RFC-0009):** the Trigger.dev task `spend-reconcile` retries failed Autumn settlements every 15 minutes, through `/api/internal/billing/reconcile`. A row stops after 10 attempts. List the stopped rows:
+
+  ```sql
+  SELECT id, organization_id, project_id, feature, actual_credits, cost_usd, attempts, last_error, created_at
+  FROM spend_ledger WHERE status = 'settle_failed' AND attempts >= 10 ORDER BY created_at;
+  ```
+
+  Charge each one by hand in Autumn, then set its `status` to `settled`.
+
 - **Edge rules outside the code:** two Response Header Transform Rules on the `playbookmedia.io` zone (Rules, Transform Rules) apply to `relay.playbookmedia.io` only. The Alchemy deploy does not upload `_headers`, so these rules set the headers instead.
   - "Relay hashed assets: browser cache one year" sets `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` 200 responses.
   - "Relay security headers" sets `Strict-Transport-Security` (no `includeSubDomains`), `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.

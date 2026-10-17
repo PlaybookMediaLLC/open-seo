@@ -67,6 +67,7 @@ import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$proj
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
 import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/callback'
+import { Route as ApiInternalBillingReconcileRouteImport } from './routes/api/internal/billing/reconcile'
 import { Route as ApiInternalGrowthDueRouteImport } from './routes/api/internal/growth/due'
 import { Route as ApiInternalGrowthRetentionRouteImport } from './routes/api/internal/growth/retention'
 import { Route as ApiInternalGrowthRunRouteImport } from './routes/api/internal/growth/run'
@@ -385,6 +386,12 @@ const ApiGscOauthCallbackRoute = ApiGscOauthCallbackRouteImport.update({
   path: '/api/gsc/oauth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalBillingReconcileRoute =
+  ApiInternalBillingReconcileRouteImport.update({
+    id: '/api/internal/billing/reconcile',
+    path: '/api/internal/billing/reconcile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiInternalGrowthDueRoute = ApiInternalGrowthDueRouteImport.update({
   id: '/api/internal/growth/due',
   path: '/api/internal/growth/due',
@@ -570,6 +577,7 @@ export interface FileRoutesByFullPath {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -644,6 +652,7 @@ export interface FileRoutesByTo {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -727,6 +736,7 @@ export interface FileRoutesById {
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -808,6 +818,7 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -882,6 +893,7 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -964,6 +976,7 @@ export interface FileRouteTypes {
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -1017,6 +1030,7 @@ export interface RootRouteChildren {
   ApiGa4OauthCallbackRoute: typeof ApiGa4OauthCallbackRoute
   ApiGithubAppSetupRoute: typeof ApiGithubAppSetupRoute
   ApiGscOauthCallbackRoute: typeof ApiGscOauthCallbackRoute
+  ApiInternalBillingReconcileRoute: typeof ApiInternalBillingReconcileRoute
   ApiInternalGrowthDueRoute: typeof ApiInternalGrowthDueRoute
   ApiInternalGrowthRetentionRoute: typeof ApiInternalGrowthRetentionRoute
   ApiInternalGrowthRunRoute: typeof ApiInternalGrowthRunRoute
@@ -1430,6 +1444,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGscOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/billing/reconcile': {
+      id: '/api/internal/billing/reconcile'
+      path: '/api/internal/billing/reconcile'
+      fullPath: '/api/internal/billing/reconcile'
+      preLoaderRoute: typeof ApiInternalBillingReconcileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/growth/due': {
       id: '/api/internal/growth/due'
       path: '/api/internal/growth/due'
@@ -1804,6 +1825,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGa4OauthCallbackRoute: ApiGa4OauthCallbackRoute,
   ApiGithubAppSetupRoute: ApiGithubAppSetupRoute,
   ApiGscOauthCallbackRoute: ApiGscOauthCallbackRoute,
+  ApiInternalBillingReconcileRoute: ApiInternalBillingReconcileRoute,
   ApiInternalGrowthDueRoute: ApiInternalGrowthDueRoute,
   ApiInternalGrowthRetentionRoute: ApiInternalGrowthRetentionRoute,
   ApiInternalGrowthRunRoute: ApiInternalGrowthRunRoute,

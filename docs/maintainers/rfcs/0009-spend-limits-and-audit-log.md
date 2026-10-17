@@ -133,7 +133,8 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 3. Content gaps make DataForSEO calls, so each call already passes admission. No separate job-level admission was added.
 4. Scheduled work checks for room before it starts (`assertSpendRoom`): rank checks with their credit estimate, AI visibility checks with 1 credit. A refusal stores the reason `spend_limit` (rank) or "Project monthly limit reached" (AI visibility). Each provider call during the run still admits.
 5. Debt 1 is fixed once, in `parseTaskItems`: a billed task with an invalid payload throws `DataforseoChargedTaskError` with its cost, which the metering wrapper already settles. One test at that function replaces the per-caller tests.
-6. Debt 3: the hold is atomic in Autumn, so parallel requests cannot all pass one balance reading. The limit side is covered by the part A race test; the balance side is checked live (section 11).
+6. Debt 2: `reconcileSpend` claims each attempt with a conditional update, so two runs never charge one row. It also releases `admitted` rows whose hold expired without a settlement, such as an assistant turn that never ended. Until the Trigger.dev account exists (RFC-0008 follow-up), the task does not run.
+7. Debt 3: the hold is atomic in Autumn, so parallel requests cannot all pass one balance reading. The limit side is covered by the part A race test; the balance side is checked live (section 11).
 
 ### 5.4 Billing debt fixes
 
@@ -256,7 +257,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 ### Billing debts
 
 - [x] Debt 1 fixed, with one test per DataForSEO caller.
-- [ ] Debt 2: `reconcileSpend` with tests for valid hold, expired hold and the 10-attempt stop.
+- [x] Debt 2: `reconcileSpend` with tests for valid hold, expired hold and the 10-attempt stop.
 - [x] Debt 3 fixed by admission, with a parallel-request test.
 - [ ] Review guidelines updated if the fixes add a new invariant.
 

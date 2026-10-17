@@ -111,6 +111,19 @@ export const growthDispatch = schedules.task({
   },
 });
 
+/** RFC-0009: every 15 minutes, retry credit settlements that failed. */
+export const spendReconcile = schedules.task({
+  id: "spend-reconcile",
+  cron: "*/15 * * * *",
+  maxDuration: 120,
+  retry: { maxAttempts: 2 },
+  run: async () => {
+    const response = await callWorker("/api/internal/billing/reconcile", {});
+    if (!response.ok) throw new Error(`Relay answered ${response.status}.`);
+    return response.json();
+  },
+});
+
 /** Daily: delete job history older than 180 days. */
 export const growthRetention = schedules.task({
   id: "growth-retention",
