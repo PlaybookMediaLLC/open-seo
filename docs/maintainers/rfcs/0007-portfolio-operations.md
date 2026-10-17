@@ -1,6 +1,6 @@
 # RFC-0007: Portfolio operations (deferred)
 
-- **Status:** Draft. Deferred by decision.
+- **Status:** Done on 2026-10-17 for section 4, the only work for now (PR #83). Portfolio features stay deferred until an entry criterion in section 5 is met. The owner decided on 2026-10-17 that the follow-ups in section 11 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 8 (Feature F)
 - **Depends on:** RFC-0001 to RFC-0006 in production, and the entry criteria in section 5.
@@ -92,3 +92,18 @@ Only section 4 applies now.
 - The tenancy suite covers 100% of growth service functions. A count of exported service functions equals the count of tested ones.
 - Manual checks find no cross-organization data in the UI, server functions, MCP tools, CSV exports, notifications or share links.
 - The schema guard fails on a temporary growth table without `project_id`, then passes after its removal.
+
+## 11. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] The tenancy suite runs on Postgres in CI. Trigger: the maintainer reviews and merges PR #84, which adds a fork-owned Postgres workflow.
+- [ ] Real-site acceptance (section 9) with two real Google accounts in two organizations. Trigger: a second organization exists with its own project. The invitation to the second account is still pending.
+- [ ] Schedules and notifications join the suite. Trigger: RFC-0008 adds their services.
+- [ ] Review this RFC again. Trigger: one entry criterion in section 5 is met.
+
+Evidence for the completion criteria that code can show:
+
+- **Coverage:** the suite calls every exported function of the 18 growth services, and a coverage check fails when a service gains a function that the suite does not call.
+- **Isolation:** every call from another organization answers "not found", and no growth table changes, on SQLite (CI) and Postgres (local run, 2026-10-17).
+- **Schema guard:** the check failed on a temporary growth table without `project_id`, and passed after its removal. A temporary service without its authorization call also failed the suite.
