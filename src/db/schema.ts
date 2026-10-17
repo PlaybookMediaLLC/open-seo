@@ -17,6 +17,7 @@ import * as sqliteOpportunityContentGap from "./opportunity-content-gap.schema";
 import * as sqliteOpportunityInvestigations from "./opportunity-investigations.schema";
 import * as sqliteContentBriefs from "./content-briefs.schema";
 import * as sqliteMeasurementGa4 from "./measurement-ga4.schema";
+import * as sqliteGrowthJobs from "./growth-jobs.schema";
 import * as sqlitePublishing from "./publishing.schema";
 import * as sqliteProposalDrafts from "./proposal-drafts.schema";
 import * as sqliteExperiments from "./experiments.schema";
@@ -38,6 +39,7 @@ import * as pgOpportunityContentGap from "./pg/opportunity-content-gap.schema";
 import * as pgOpportunityInvestigations from "./pg/opportunity-investigations.schema";
 import * as pgContentBriefs from "./pg/content-briefs.schema";
 import * as pgMeasurementGa4 from "./pg/measurement-ga4.schema";
+import * as pgGrowthJobs from "./pg/growth-jobs.schema";
 import * as pgPublishing from "./pg/publishing.schema";
 import * as pgProposalDrafts from "./pg/proposal-drafts.schema";
 import * as pgExperiments from "./pg/experiments.schema";
@@ -70,6 +72,7 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteOpportunityInvestigations &
   typeof sqliteContentBriefs &
   typeof sqliteMeasurementGa4 &
+  typeof sqliteGrowthJobs &
   typeof sqlitePublishing &
   typeof sqliteProposalDrafts &
   typeof sqliteExperiments;
@@ -95,6 +98,7 @@ const runtimeSchema =
         ...pgOpportunityInvestigations,
         ...pgContentBriefs,
         ...pgMeasurementGa4,
+        ...pgGrowthJobs,
         ...pgPublishing,
         ...pgProposalDrafts,
         ...pgExperiments,
@@ -118,6 +122,7 @@ const runtimeSchema =
         ...sqliteOpportunityInvestigations,
         ...sqliteContentBriefs,
         ...sqliteMeasurementGa4,
+        ...sqliteGrowthJobs,
         ...sqlitePublishing,
         ...sqliteProposalDrafts,
         ...sqliteExperiments,
@@ -202,6 +207,11 @@ export const {
   experimentKeyEvents,
   measurementGa4Days,
   measurementGa4EventTotals,
+  growthSchedules,
+  growthJobRuns,
+  growthJobLogs,
+  growthNotifications,
+  growthNotificationReads,
   githubAppInstallations,
   proposalApprovals,
   proposalExecutions,

@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** Draft
+- **Status:** In progress. Part A (tables, signed endpoints, runner, measurement refresh, Trigger.dev tasks) built
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -160,6 +160,15 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 6. When Trigger.dev is down, schedules stay due. The next dispatch catches up. Nothing is lost.
 7. When the audit hook cannot reach Trigger.dev, it inserts a `queued` row. The due endpoint returns queued rows too. A failed insert never fails the audit.
 
+**As built (part A).**
+
+1. The window key is the date of the schedule's `next_run_at` (`2026-10-17`), for daily and weekly schedules alike; a weekly schedule moves 7 days, so its keys stay unique.
+2. A final failure also moves the schedule to its next slot and notifies the project. Otherwise the same window would stay due, and the idempotency key would hold it for 7 days.
+3. A late run moves the schedule to the next future slot, so a pause never queues a backlog.
+4. Run logs are kept in memory during the run and written, at most 50, when it ends.
+5. `GROWTH_JOBS_SECRET_PREVIOUS` holds the old secret during a rotation.
+6. The run endpoint finishes a window's `queued` rows when it succeeds or skips that window.
+
 ### 5.7 Permissions
 
 1. Each schedule has an `owner_user_id`. Jobs run with that user's current membership and role in the project's organization.
@@ -260,16 +269,16 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 ### Phase 1
 
 - [ ] RFC-0009 audit log and limits are live.
-- [ ] Five tables with D1 and Postgres migrations and the parity test.
-- [ ] Internal endpoints with signature, timestamp, size and mode checks (one test each).
-- [ ] Due endpoint never changes data (test).
-- [ ] Run endpoint: "already done" for a succeeded window, conditional schedule advance, `503` and `422` mapping (tests).
-- [ ] Test: a removed schedule owner causes a skip with the reason and a notification.
-- [ ] Test: a free plan skips `traffic_watch`.
+- [x] Five tables with D1 and Postgres migrations and the parity test.
+- [x] Internal endpoints with signature, timestamp, size and mode checks (one test each).
+- [x] Due endpoint never changes data (test).
+- [x] Run endpoint: "already done" for a succeeded window, conditional schedule advance, `503` and `422` mapping (tests).
+- [x] Test: a removed schedule owner causes a skip with the reason and a notification.
+- [x] Test: a free plan skips `traffic_watch`.
 - [ ] Each job has a service test with mocked providers.
 - [ ] Traffic drop rule tests at each threshold, and the incomplete-data skip.
 - [ ] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
-- [ ] Task files with the retry, concurrency and duration settings from 5.3.
+- [x] Task files with the retry, concurrency and duration settings from 5.3.
 - [ ] `trigger-deploy-playbook.yml` deploys the tasks after the Worker deploy.
 - [ ] Default schedules created on Search Console connect and on tracking start.
 - [ ] Automation tab with toggles, history and logs.
