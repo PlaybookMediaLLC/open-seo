@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** In progress. Parts A (runner, endpoints, Trigger.dev tasks), B (all jobs, notifications) and C (audit hook, Automation tab, default schedules) built
+- **Status:** Done on 2026-10-17 for phase 1 code: part A (runner, endpoints, Trigger.dev tasks, PR #86), part B (all jobs, notifications, PR #87) and part C (audit hook, Automation tab, default schedules, PR #88). The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -359,3 +359,24 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 **Value**
 
 - During the week, the owner gets at least one notification on S1 to S3 that leads to an action (a review, a ticket or a proposal).
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 0 spike: idempotency, concurrency, the signed staging call, plan and cost. Trigger: the owner creates the Trigger.dev project with staging and production environments.
+- [ ] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists.
+- [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`.
+- [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production.
+- [ ] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Until then, the jobs use no credits, so no spend limit applies to them.
+- [ ] Phase 2 email digest (section 5.11). Trigger: Loops is configured.
+- [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab.
+
+Evidence for the phase 1 items that code can show:
+
+- **Endpoints:** a wrong signature, an old timestamp, a large body and the off mode each answer `404` (tests). The due endpoint changes no data.
+- **Runs:** a succeeded window answers "already done". The schedule advance is conditional. A retryable failure answers `503` and a final failure answers `422` (tests on SQLite and Postgres).
+- **Permissions and plans:** a removed owner causes a skip with the reason and a `job_failed` notification. A free plan skips the traffic watch. An audit follow-up runs as the member who started the audit (tests).
+- **Audit hook:** it triggers `audit-followup` once per audit, writes a queued row when Trigger.dev fails, does nothing when jobs are off, and never fails the audit (tests).
+- **Production, 2026-10-17:** the Automation tab shows the five jobs, their defaults and the "not available" notice, and the Edit sheet opens. The notification bell is in the sidebar.

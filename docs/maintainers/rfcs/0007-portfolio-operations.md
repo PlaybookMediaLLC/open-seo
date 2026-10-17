@@ -99,7 +99,7 @@ Each follow-up names its trigger. Check it here when it passes.
 
 - [ ] The tenancy suite runs on Postgres in CI. Trigger: the maintainer reviews and merges PR #84, which adds a fork-owned Postgres workflow.
 - [ ] Real-site acceptance (section 9) with two real Google accounts in two organizations. Trigger: a second organization exists with its own project. The invitation to the second account is still pending.
-- [ ] Schedules and notifications join the suite. Trigger: RFC-0008 adds their services.
+- [x] Schedules and notifications join the suite. Trigger: RFC-0008 adds their services. The schedule service joined the suite (PR #88). Notifications belong to an organization, and their own test proves that one organization never sees another's (PR #87).
 - [ ] Review this RFC again. Trigger: one entry criterion in section 5 is met.
 
 Evidence for the completion criteria that code can show:
