@@ -8,7 +8,7 @@ import { Button } from "@/client/components/ui/button";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { experimentDetailOptions } from "./queries";
 import { ExperimentActions } from "./ExperimentActions";
-import { Ga4Results } from "./Ga4Measurement";
+import { DownloadCsvButton, Ga4Results } from "./Ga4Measurement";
 import { MeasurementResults } from "./MeasurementResults";
 import { PrepareRevert } from "./PrepareRevert";
 
@@ -137,7 +137,15 @@ export function ExperimentDetailPage({
             />
           )}
         <section className="space-y-3" aria-label="Measurement run history">
-          <h2 className="text-lg font-semibold">Measurement run history</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold">Measurement run history</h2>
+            {detail.latestRun && (
+              <DownloadCsvButton
+                projectId={projectId}
+                experimentId={experiment.id}
+              />
+            )}
+          </div>
           {!runs.length ? (
             <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
               No measurement attempts. Loading this page does not call Search

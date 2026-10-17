@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { IconFlask as FlaskConical } from "@tabler/icons-react";
 import { PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";
@@ -17,11 +17,26 @@ import {
   TableRow,
 } from "@/client/components/ui/table";
 import { dateLabel } from "@/client/features/opportunities/shared";
+import {
+  EXPERIMENT_LABELS,
+  type ExperimentLabel,
+} from "@/types/schemas/experiments";
 import { experimentListOptions } from "./queries";
+
+const LABEL_TEXT: Record<ExperimentLabel, string> = {
+  encouraging: "Encouraging",
+  inconclusive: "Inconclusive",
+  negative: "Negative",
+  measuring: "Still measuring",
+};
 
 export function ExperimentsPage({ projectId }: { projectId: string }) {
   const [offset, setOffset] = useState(0);
-  const query = useQuery(experimentListOptions(projectId, offset));
+  const [label, setLabel] = useState<ExperimentLabel>();
+  const query = useQuery({
+    ...experimentListOptions(projectId, offset, label),
+    placeholderData: keepPreviousData,
+  });
   return (
     <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-7xl space-y-5">
@@ -56,6 +71,27 @@ export function ExperimentsPage({ projectId }: { projectId: string }) {
                 deployment attestations and refreshes.
               </p>
             )}
+            <div
+              className="flex flex-wrap gap-2"
+              role="group"
+              aria-label="Filter by result"
+            >
+              {EXPERIMENT_LABELS.map((name) => (
+                <Button
+                  key={name}
+                  type="button"
+                  size="sm"
+                  variant={label === name ? "default" : "outline"}
+                  aria-pressed={label === name}
+                  onClick={() => {
+                    setOffset(0);
+                    setLabel(label === name ? undefined : name);
+                  }}
+                >
+                  {LABEL_TEXT[name]}: {query.data.summary[name]}
+                </Button>
+              ))}
+            </div>
             {!query.data.items.length ? (
               <EmptyState
                 icon={FlaskConical}

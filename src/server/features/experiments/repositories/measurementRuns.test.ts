@@ -112,6 +112,33 @@ describe(`Experiment measurement runs real ${database.isPostgres ? "Postgres" : 
     ).toBe("completed");
   });
 
+  it("labels an experiment by its final result, filters by label and counts the project", async () => {
+    const { input, experiment } = await deployed(database);
+    const list = (label?: "encouraging" | "measuring") =>
+      repo.list({ projectId: input.projectId, limit: 50, offset: 0, label });
+    // No completed run yet: still measuring.
+    expect((await list()).summary).toEqual({
+      encouraging: 0,
+      inconclusive: 0,
+      negative: 0,
+      measuring: 1,
+    });
+    const run = runningMeasurement(experiment, input.claimToken);
+    expect(await repo.startRun({ ...input, run })).toBe(true);
+    expect(
+      await repo.completeRun({
+        ...input,
+        run: { ...completed(run), outcome: "encouraging" },
+        days: [...days(run, "baseline"), ...days(run, "observation")],
+      }),
+    ).toBe(true);
+    const all = await list();
+    expect(all.summary).toMatchObject({ encouraging: 1, measuring: 0 });
+    expect((await list("encouraging")).total).toBe(1);
+    const measuring = await list("measuring");
+    expect([measuring.total, measuring.items]).toEqual([0, []]);
+  });
+
   it("stores the run's GA4 rows and GA4 reason, and reads them back", async () => {
     const { input, experiment } = await deployed(database);
     const run = runningMeasurement(experiment, input.claimToken);

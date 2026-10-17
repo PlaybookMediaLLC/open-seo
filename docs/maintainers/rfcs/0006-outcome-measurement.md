@@ -1,6 +1,6 @@
 # RFC-0006: Outcome measurement with GA4 and scheduled refresh
 
-- **Status:** Phase 1a (GA4 data) built; phase 1b and phase 2 in progress
+- **Status:** Phases 1a (GA4 data) and 1b (summary, filter, CSV) built; phase 2 in progress
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E)
 - **Depends on:** RFC-0001. Scheduled refresh depends on RFC-0008. Notifications depend on RFC-0008.
@@ -117,8 +117,9 @@ Use the RFC-0008 Trigger.dev task `measurement-refresh` (job kind `measurement_r
    - The last successful run is older than 24 hours, or no run exists.
    - The final observation date plus 3 days has not passed, or the final result is not stored yet.
 3. The job calls `MeasurementService.refresh` with a system actor `system:schedule`. It uses the same claim, cache and 5-per-day allowance.
-4. After the final result is stored, the job stops for that experiment.
-5. A failed scheduled run follows the RFC-0008 retry rules. It never bypasses the 5-minute retry delay.
+4. As built: the `auto_refresh` column exists (default true). The due rule, its tests and the switch ship with the RFC-0008 job, because a rule that nothing calls would be dead code until then.
+5. After the final result is stored, the job stops for that experiment.
+6. A failed scheduled run follows the RFC-0008 retry rules. It never bypasses the 5-minute retry delay.
 
 ### 5.4 Long-term check (optional, phase 2)
 
@@ -134,6 +135,8 @@ Use the RFC-0008 Trigger.dev task `measurement-refresh` (job kind `measurement_r
 2. Add a label filter to the list.
 3. Add "Download CSV" on the detail page. It contains the daily Search Console rows and, when present, the daily GA4 rows, with the period of each date.
 4. Build the CSV on the server from stored rows. Escape every cell.
+
+As built (phase 1b): a result is final only when its observation window is complete; until then the experiment counts as "still measuring". The strip counts the whole project, and its counts are the label filter. The CSV has one row per date, with the Search Console and GA4 columns side by side. Text cells are quoted, and text that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading apostrophe. A page path always starts with `/`, so GA4 text is the real risk. Numbers stay plain, so a negative revenue stays a number.
 
 ### 5.6 Notifications
 
@@ -171,8 +174,8 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 - [x] Results page shows GA4 numbers, the time-zone note and the caveat.
 - [ ] Scheduled `measurement_refresh` job through RFC-0008, with tests for each due condition.
 - [ ] Test: the job stops after the final result.
-- [ ] Summary strip and label filter on the list.
-- [ ] CSV export with formula escaping (test).
+- [x] Summary strip and label filter on the list.
+- [x] CSV export with formula escaping (test).
 - [ ] Result notification through RFC-0008.
 - [ ] Live check: one experiment on a GA4-connected project refreshes daily for 3 days without a click.
 - [ ] Live check: the CSV opens in a spreadsheet with correct periods.

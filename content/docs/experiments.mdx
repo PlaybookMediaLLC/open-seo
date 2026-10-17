@@ -84,6 +84,12 @@ Otherwise Relay shows "Too few sessions or events to compare."
 - **Key events:** click **Key events** to choose up to 5 key events to report separately. Without a choice, Relay reports the total of all key events.
 - **Failures:** when GA4 fails, or the project now uses a different GA4 property, Relay still saves the Search Console result and shows "GA4 data unavailable" with the reason.
 
+## Compare and export results
+
+The top of **Experiments & Results** counts the project's experiments by result: encouraging, inconclusive, negative, and still measuring. An experiment is still measuring until its observation window is complete. Click a count to show only those experiments. Click it again to show all.
+
+On an experiment, click **Download CSV** to get one row for each day: the page, the date, the window, the Search Console clicks, impressions, click-through rate and position, and the GA4 numbers when there are any. Relay builds the file from saved rows and makes no Google request. A day without GA4 data has empty GA4 cells. Text that a spreadsheet would run as a formula starts with an apostrophe.
+
 ## Revert a change
 
 When a result is negative, or you change your mind, click **Prepare revert**. Relay checks that the page still shows the approved text. Then it prepares the exact inverse change as a new proposal, which you approve like any other change. Nothing is reverted on its own.

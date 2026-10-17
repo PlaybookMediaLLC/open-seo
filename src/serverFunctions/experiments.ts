@@ -125,3 +125,12 @@ export const saveMeasurementSettings = createServerFn({ method: "POST" })
       projectId: context.projectId,
     }),
   );
+export const exportExperimentCsv = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    MeasurementSettingsService.exportCsv(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
