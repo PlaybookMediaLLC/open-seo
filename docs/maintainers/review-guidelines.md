@@ -58,6 +58,18 @@ Every billable hosted provider path must check organization credits before paid 
 
 Build every Autumn billing request (attach, subscription updates, the customer portal, customer creation) on the server from fixed plan IDs and server-chosen parameters; a client may supply only narrow validated values such as a bounded top-up amount or a sanitized return path. Never forward a client-supplied request body to an Autumn call made with the secret key: its parameters include ways to change prices, skip payment, or enable a plan before it is paid, and an owner check does not help because every user owns their own organization.
 
+### Spend limits and the spend ledger (Playbook fork)
+
+Applies to: `src/server/billing/**`, `src/server/lib/dataforseo/**`, `src/server/features/**`, `src/server/workflows/**`.
+
+Every hosted paid provider call passes the monthly spend limits before the call: DataForSEO through the reservation in `meterDataforseoCalls`, AI research through `holdResearch` and `settleResearch`, the assistant through its turn reservation. A new paid path uses one of these, not a direct balance check. Each Autumn hold is linked to one `spend_ledger` row, and its settlement stores the real cost before the outcome, so reconciliation can charge a failed finalize.
+
+### Audit events in the same operation (Playbook fork)
+
+Applies to: `src/server/features/**`, `src/serverFunctions/**`, `src/lib/auth.ts`.
+
+A change that RFC-0009 lists as an audit action writes its `audit_events` row in the same `runBatch` as the change, conditioned on the fence that the change set (a `last_event_id`, a `last_decision_id` or a new row's id), so a refused or repeated change writes no event. Upstream paths record the event after the change with one seam line. Summaries hold no tokens, secrets or email addresses.
+
 ### Untrusted outbound URLs
 
 Applies to: `src/server/**`, `src/serverFunctions/**`, `src/routes/api/**`.
