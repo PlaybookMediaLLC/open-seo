@@ -84,6 +84,11 @@ import type { Plugin } from "vite";
  *   mocks the room check.
  * - src/routes/_app/settings.tsx: adds the Activity tab
  *   (src/client/features/activity/ActivityLog.tsx).
+ * - src/serverFunctions/gsc.ts, src/serverFunctions/ga4.ts and
+ *   src/serverFunctions/organization.ts: record integration and invitation
+ *   audit events after the change (src/server/features/activity/auditLog.ts).
+ * - src/lib/auth.ts: a hooks.after middleware records member removal and
+ *   API key changes (src/server/features/activity/authAudit.ts).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

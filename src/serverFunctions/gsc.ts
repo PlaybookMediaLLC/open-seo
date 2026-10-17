@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { auditAfter } from "@/server/features/activity/auditLog"; // playbook-seam
 import { getRequest } from "@tanstack/react-start/server";
 import { waitUntil } from "cloudflare:workers";
 import { z } from "zod";
@@ -107,6 +108,7 @@ export const setGscSite = createServerFn({ method: "POST" })
       siteUrl: data.siteUrl,
       userId: context.userId,
     });
+    await auditAfter(context, "integration.gsc_connected"); // playbook-seam
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,
@@ -129,6 +131,7 @@ export const disconnectGsc = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     requireOrgPermission(context, { integration: ["manage"] });
     await GscService.disconnect({ projectId: context.projectId });
+    await auditAfter(context, "integration.gsc_disconnected"); // playbook-seam
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,

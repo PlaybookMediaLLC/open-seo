@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { auditAfter } from "@/server/features/activity/auditLog"; // playbook-seam
 import { getRequest } from "@tanstack/react-start/server";
 import { waitUntil } from "cloudflare:workers";
 import { z } from "zod";
@@ -171,6 +172,7 @@ export const setGa4Property = createServerFn({ method: "POST" })
       propertyId: data.propertyId,
       userId: context.userId,
     });
+    await auditAfter(context, "integration.ga4_connected"); // playbook-seam
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,
@@ -196,6 +198,7 @@ export const disconnectGa4 = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     requireOrgPermission(context, { integration: ["manage"] });
     await Ga4Service.disconnect({ projectId: context.projectId });
+    await auditAfter(context, "integration.ga4_disconnected"); // playbook-seam
     waitUntil(
       captureServerEvent({
         distinctId: context.userId,

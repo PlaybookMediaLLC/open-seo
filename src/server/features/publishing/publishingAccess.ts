@@ -78,7 +78,15 @@ export async function connectedGithub(
         error instanceof AppError &&
         (error.code === "NOT_FOUND" || error.code === "FORBIDDEN")
       ) {
-        await PublishingRepository.revokeInstallation(installation.id);
+        await PublishingRepository.revokeInstallation(installation.id, {
+          organizationId: installation.organizationId,
+          projectId: connection.projectId,
+          actor: { userId: "github", scheduled: true },
+          action: "github_app.revoked",
+          targetType: "github_installation",
+          targetId: String(installation.installationId),
+          summary: `GitHub no longer grants the App access to ${installation.accountLogin}`,
+        });
         throw new AppError("CONFLICT", "Reconnect the GitHub App.");
       }
       throw error;
