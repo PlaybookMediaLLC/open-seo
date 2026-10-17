@@ -35,6 +35,8 @@ One task: prove isolation with one automated suite.
 4. Assert `NOT_FOUND` for reads and no row change for writes.
 5. Add a check that fails when a new growth table lacks `project_id`. Read the table list from the Drizzle schema objects.
 
+As built: `src/server/features/growth/tenancy.test.ts` calls every exported function of the 18 growth services with organization A's context and organization B's ids. It expects "not found" from each, and no change in the row count of any growth table. A coverage check fails when a growth service gains a function that the suite does not call. Two functions have no project boundary of their own and are left out: the GitHub App setup callback, which is signed, and the brand-term store, whose entry points authorize. Schedules and notifications do not exist yet; RFC-0008 adds their services to the suite. The only growth table without `project_id` is `github_app_installations`, which is organization-level by design.
+
 ## 5. Entry criteria to start portfolio work
 
 Start when any one of these is true:
@@ -64,9 +66,9 @@ These are boundaries, not a final design.
 
 Only section 4 applies now.
 
-- [ ] `tenancy.test.ts` covers every growth service read and write.
-- [ ] The suite runs on D1 and Postgres in CI.
-- [ ] The schema check fails for a growth table without `project_id` (prove it with a temporary failing case, then remove it).
+- [x] `tenancy.test.ts` covers every growth service read and write.
+- [ ] The suite runs on D1 and Postgres in CI. It runs on SQLite in CI and passed on Postgres locally on 2026-10-17. A Postgres job in CI changes `.github/**`, which needs the maintainer's review.
+- [x] The schema check fails for a growth table without `project_id` (prove it with a temporary failing case, then remove it).
 - [ ] This RFC is reviewed again when an entry criterion is met.
 
 ## 9. Real-site acceptance test
