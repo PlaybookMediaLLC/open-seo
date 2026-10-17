@@ -11,6 +11,7 @@ import {
   experimentInputSchema,
   experimentListInputSchema,
   measurementSettingsInputSchema,
+  refreshMeasurementInputSchema,
   registerExperimentInputSchema,
 } from "@/types/schemas/experiments";
 import { confirmRevertInputSchema } from "@/types/schemas/publishing";
@@ -56,7 +57,7 @@ export const confirmExperimentDeployment = createServerFn({ method: "POST" })
   );
 export const refreshExperimentMeasurements = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
-  .validator(experimentInputSchema)
+  .validator(refreshMeasurementInputSchema)
   .handler(({ context, data }) =>
     MeasurementService.refresh(context, {
       ...data,

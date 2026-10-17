@@ -1,0 +1,1 @@
+ALTER TABLE `measurement_runs` ADD `measurement_window` text DEFAULT 'primary' NOT NULL;

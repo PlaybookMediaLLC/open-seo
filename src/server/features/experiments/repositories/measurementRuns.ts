@@ -101,6 +101,7 @@ export async function startRun(input: {
                     and(
                       runScope,
                       eq(measurementRuns.status, "completed"),
+                      eq(measurementRuns.window, run.window),
                       gt(measurementRuns.finishedAt, dayAgo),
                     ),
                   ),

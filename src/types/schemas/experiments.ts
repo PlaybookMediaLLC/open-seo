@@ -32,6 +32,13 @@ export const measurementSettingsInputSchema = experimentInputSchema.extend({
 export type MeasurementSettingsInput = z.infer<
   typeof measurementSettingsInputSchema
 >;
+// RFC-0006 5.4: the primary window, or the long-term check at days 63 to 90.
+export const refreshMeasurementInputSchema = experimentInputSchema.extend({
+  window: z.enum(["primary", "long_term"]).default("primary"),
+});
+export type RefreshMeasurementInput = z.input<
+  typeof refreshMeasurementInputSchema
+>;
 export const registerExperimentInputSchema = project.extend({
   executionId: z.string().min(1),
 });
@@ -106,6 +113,7 @@ export type MeasurementRun = {
   windowComplete: boolean;
   error: string | null;
   ga4Error: string | null;
+  window: "primary" | "long_term";
 };
 export type MeasurementDay = {
   id: string;
@@ -159,6 +167,8 @@ export type ExperimentDetail = {
   baselineDays: MeasurementDay[];
   observationDays: MeasurementDay[];
   latestRun: MeasurementRun | null;
+  longTermRun: MeasurementRun | null;
+  longTermDays: MeasurementDay[];
   keyEvents: string[];
   ga4Days: MeasurementGa4Day[];
   ga4EventTotals: MeasurementGa4EventTotal[];

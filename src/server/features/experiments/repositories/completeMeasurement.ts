@@ -162,35 +162,40 @@ export async function completeRun(input: {
               ),
           ]
         : []),
-      tx
-        .update(opportunities)
-        .set({
-          status: run.windowComplete ? "completed" : "measuring",
-          version: sql`${opportunities.version} + 1`,
-        })
-        .where(
-          and(
-            eq(opportunities.projectId, run.projectId),
-            // Only advance the deployed lifecycle; keep later human decisions.
-            inArray(opportunities.status, [
-              "implemented",
-              "measuring",
-              "completed",
-            ]),
-            accepted,
-            exists(
-              tx
-                .select({ id: growthExperiments.id })
-                .from(growthExperiments)
-                .where(
-                  and(
-                    experimentScope(run.projectId, run.experimentId),
-                    eq(growthExperiments.opportunityId, opportunities.id),
+      // RFC-0006 5.4: a long-term check never moves the opportunity again.
+      ...(run.window === "long_term"
+        ? []
+        : [
+            tx
+              .update(opportunities)
+              .set({
+                status: run.windowComplete ? "completed" : "measuring",
+                version: sql`${opportunities.version} + 1`,
+              })
+              .where(
+                and(
+                  eq(opportunities.projectId, run.projectId),
+                  // Only advance the deployed lifecycle; keep later human decisions.
+                  inArray(opportunities.status, [
+                    "implemented",
+                    "measuring",
+                    "completed",
+                  ]),
+                  accepted,
+                  exists(
+                    tx
+                      .select({ id: growthExperiments.id })
+                      .from(growthExperiments)
+                      .where(
+                        and(
+                          experimentScope(run.projectId, run.experimentId),
+                          eq(growthExperiments.opportunityId, opportunities.id),
+                        ),
+                      ),
                   ),
                 ),
-            ),
-          ),
-        ),
+              ),
+          ]),
     ];
   });
   return runAccepted(run.projectId, run.experimentId, run.id, completionToken);
