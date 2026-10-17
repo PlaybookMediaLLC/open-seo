@@ -222,6 +222,7 @@ Rules:
 1. Store `content_briefs` (`id`, `project_id`, `opportunity_id`, `status`, `title`, `audience`, `search_intent`, `outline_markdown`, `model`, `prompt_version`, `cost_usd`, `created_by`, `created_at`) and `content_brief_keywords` (`brief_id`, `keyword`, `search_volume`, `role` `primary`/`secondary`).
 2. The outline uses only keyword evidence and project context. It states which facts the writer must supply.
 3. Briefs export as Markdown. They are never published.
+4. As built: `ContentBriefService` for approved `content_gap`, `declining_page`, `striking_distance` and `low_ctr` items. Content gaps use the latest keyword evidence; refreshes use the page's Search Console queries (`search_volume` is null). The model returns a structured brief; Relay renders the Markdown, so keyword volumes come from the data. Checks: keywords must come from the data, and numbers and risky phrases must appear in the keyword data or the project context (`checkGroundedText`). One retry, then the brief is stored as `rejected_by_validation` and hidden. Limit: 20 briefs per project per 24 hours. `content_brief_keywords` also has `id` and `project_id`, like the other child tables.
 
 **Internal-link anchor drafts.** For `internal_link`, draft one anchor phrase and one sentence location from the source page text. Use the same checks. Show them in the ticket.
 
@@ -295,8 +296,8 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 
 - [x] Investigation service and its two tables, with tests for each finding kind.
 - [x] Optional summary uses only stored findings (test).
-- [ ] Content briefs and their tables, with Markdown export.
-- [ ] Brief output states which facts the writer must supply (test on the prompt contract).
+- [x] Content briefs and their tables, with Markdown export.
+- [x] Brief output states which facts the writer must supply (test on the prompt contract).
 - [ ] Internal-link anchor drafts with the same checks.
 - [ ] Title drafts after RFC-0005 phase 1.
 - [ ] Live check of each phase 3 feature on a real project.

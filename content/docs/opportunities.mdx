@@ -54,6 +54,19 @@ When a check cannot run, for example because the URL Inspection quota is used up
 
 Click **Summarize with AI** to get a short paragraph about the most likely cause. The model sees only the findings. Relay rejects a summary that adds a number or a claim that the findings do not state. A summary costs about 1 to 5 credits.
 
+### Content briefs
+
+For an approved content gap, declining page, striking-distance or low click-through item, click **Write a brief**. Relay writes an outline for a writer:
+
+- A title, the audience and the search intent.
+- A primary keyword and up to 8 secondary keywords. For a content gap they come from the paid keyword data, with monthly searches. For an existing page they come from its Search Console queries.
+- 3 to 12 outline sections.
+- **Facts the writer must supply**, such as a price or a customer example. Relay never invents these facts.
+
+Relay checks each brief before you see it. A brief may use only keywords from the data, and only numbers and claims that appear in the keyword data or your project context. When a brief fails twice, Relay shows nothing and asks you to try again.
+
+Click **Download Markdown** or **Copy** to hand the brief to a writer. Relay never publishes a brief. A brief costs about 3 to 12 credits, and a project can write 20 briefs in 24 hours.
+
 ### Brand terms
 
 Searches for your brand are not a sign of a weak page. Low click-through and competing pages leave out every query that contains a brand term as a whole word. Until you save your own terms, Relay uses the first part of your domain, for example `acme` for `acme.com`. Edit the terms at the bottom of the project **Context** page, or ask your AI client to update them. A project can have up to 20 terms.
