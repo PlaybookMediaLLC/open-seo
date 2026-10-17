@@ -1,6 +1,6 @@
 # RFC-0006: Outcome measurement with GA4 and scheduled refresh
 
-- **Status:** Phases 1a, 1b and 2 built; scheduled refresh and notifications ship with RFC-0008
+- **Status:** Done on 2026-10-17 for every item that Relay's code can close (PRs #79, #80 and #81). The daily automatic refresh and the result notification ship with RFC-0008's scheduler. The live checks need a GA4 connection and real Search Console data. The owner decided on 2026-10-17 that these do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E)
 - **Depends on:** RFC-0001. Scheduled refresh depends on RFC-0008. Notifications depend on RFC-0008.
@@ -250,3 +250,22 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 **Value**
 
 - From the results page alone, the owner answers four questions: what changed, when it went live, what happened, and how confident the result is.
+
+## 13. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Daily automatic refresh (section 5.3): the due rule with a test for each condition, the stop after the final result, and the **Refresh measurements automatically** switch. The `auto_refresh` column already exists and defaults to true. Trigger: RFC-0008 adds the scheduled job.
+- [ ] Result notification (section 5.6). Trigger: RFC-0008 adds notifications.
+- [ ] Live check: one experiment on a GA4-connected project refreshes daily for 3 days without a click. Trigger: the daily refresh exists, and a project has GA4 connected and a deployed experiment.
+- [ ] Live check: the CSV opens in Google Sheets and Excel with correct periods and no formula warnings. Trigger: an experiment with at least one completed measurement.
+- [ ] Accuracy checks (section 12): 14 days of Search Console and GA4 rows against their own UIs. Trigger: the same, for 14 days.
+
+Evidence for the completion criteria that code can show:
+
+- **Honesty:** tests prove that missing GA4 dates stay missing, and that each statement appears only above its threshold, otherwise "Too few sessions or events to compare". The caveat and the GA4 time zone show beside the GA4 numbers.
+- **Isolation:** tests prove that a GA4 failure and a changed GA4 property keep the Search Console result and record the reason, and that GA4 data never changes the label.
+- **Requests:** a test proves the two GA4 request bodies: organic search, exact landing page, and the chosen key events.
+- **Export:** tests prove that the CSV merges Search Console and GA4 rows by date, leaves missing GA4 days empty, and escapes formula text.
+- **Long-term check:** a real-SQL test on SQLite and Postgres proves that a long-term run keeps the primary result, the summary and the opportunity status.
+- **Summary:** a real-SQL test on SQLite and Postgres proves the labels, the label filter and the project counts.
