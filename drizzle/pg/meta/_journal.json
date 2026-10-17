@@ -351,6 +351,13 @@
       "when": 1792180106098,
       "tag": "0049_talented_meggan",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1792250275198,
+      "tag": "0050_old_dreadnoughts",
+      "breakpoints": true
     }
   ]
 }

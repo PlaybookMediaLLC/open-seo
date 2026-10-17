@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
+import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
 import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
 import { get as getOpportunity } from "@/server/features/opportunities/services/opportunityAccess";
 import { MetadataProposalService } from "@/server/features/publishing/MetadataProposalService";
@@ -110,23 +111,26 @@ export const getOpportunityTool = {
   name: "get_opportunity",
   config: {
     title: "Get opportunity",
-    description: `Reads one opportunity with its evidence, review decisions, metadata proposals and their pull requests, AI drafts, and measured results. Uses no credits. ${HUMAN_ONLY}`,
+    description: `Reads one opportunity with its evidence, review decisions, latest investigation, metadata proposals and their pull requests, AI drafts, and measured results. Uses no credits. ${HUMAN_ONLY}`,
     inputSchema: opportunityInputSchema,
     outputSchema: looseOutputSchema,
     annotations: READ_ONLY,
   },
   handler: withMcpProjectAuth(async (args: OpportunityArgs, context) => {
     const { projectId, opportunityId } = args;
-    const [detail, publishing, drafts, experiments] = await Promise.all([
-      getOpportunity(context.auth, projectId, opportunityId),
-      MetadataProposalService.get(context.auth, projectId, opportunityId),
-      ProposalDraftService.list(context.auth, args),
-      ExperimentService.list(context.auth, {
-        projectId,
-        limit: 100,
-        offset: 0,
-      }),
-    ]);
+    const [detail, publishing, drafts, experiments, investigations] =
+      await Promise.all([
+        getOpportunity(context.auth, projectId, opportunityId),
+        MetadataProposalService.get(context.auth, projectId, opportunityId),
+        ProposalDraftService.list(context.auth, args),
+        ExperimentService.list(context.auth, {
+          projectId,
+          limit: 100,
+          offset: 0,
+        }),
+        OpportunityInvestigationService.listInvestigations(context.auth, args),
+      ]);
+    const [investigation] = investigations;
     const { opportunity } = detail;
     const results = experiments.items.filter(
       (item) => item.opportunityId === opportunityId,
@@ -161,6 +165,17 @@ export const getOpportunityTool = {
               `- ${proposal.filePath}: "${proposal.descriptionBefore ?? ""}" → "${proposal.descriptionAfter ?? ""}" · ${executions[0] ? `${executions[0].status}${executions[0].pullRequestUrl ? ` ${executions[0].pullRequestUrl}` : ""}` : "not approved yet"}`,
           )
         : ["- None."]),
+      `## Investigation`,
+      ...(investigation
+        ? [
+            ...(investigation.summary
+              ? [`AI summary: ${investigation.summary}`]
+              : []),
+            ...investigation.findings.map(
+              (finding) => `- [${finding.severity}] ${finding.summary}`,
+            ),
+          ]
+        : ["- None."]),
       `## Drafts`,
       ...(drafts.length ? drafts.map(draftLine) : ["- None."]),
       `## Results`,
@@ -184,6 +199,7 @@ export const getOpportunityTool = {
         ...detail,
         proposals: publishing.proposals,
         drafts,
+        investigation: investigation ?? null,
         experiments: results,
       },
     });

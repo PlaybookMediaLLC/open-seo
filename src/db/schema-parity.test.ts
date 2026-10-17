@@ -20,6 +20,7 @@ import * as sqliteAiVisibility from "./ai-visibility.schema";
 import * as sqliteOpportunities from "./opportunities.schema";
 import * as sqliteOpportunitySignals from "./opportunity-signals.schema";
 import * as sqliteOpportunityContentGap from "./opportunity-content-gap.schema";
+import * as sqliteOpportunityInvestigations from "./opportunity-investigations.schema";
 import * as sqlitePublishing from "./publishing.schema";
 import * as sqliteProposalDrafts from "./proposal-drafts.schema";
 import * as sqliteExperiments from "./experiments.schema";
@@ -38,6 +39,7 @@ import * as pgAiVisibility from "./pg/ai-visibility.schema";
 import * as pgOpportunities from "./pg/opportunities.schema";
 import * as pgOpportunitySignals from "./pg/opportunity-signals.schema";
 import * as pgOpportunityContentGap from "./pg/opportunity-content-gap.schema";
+import * as pgOpportunityInvestigations from "./pg/opportunity-investigations.schema";
 import * as pgPublishing from "./pg/publishing.schema";
 import * as pgProposalDrafts from "./pg/proposal-drafts.schema";
 import * as pgExperiments from "./pg/experiments.schema";
@@ -177,6 +179,7 @@ const sqliteAppTables = tablesFrom(
   sqliteOpportunities,
   sqliteOpportunitySignals,
   sqliteOpportunityContentGap,
+  sqliteOpportunityInvestigations,
   sqlitePublishing,
   sqliteProposalDrafts,
   sqliteExperiments,
@@ -196,6 +199,7 @@ const pgAppTables = tablesFrom(
   pgOpportunities,
   pgOpportunitySignals,
   pgOpportunityContentGap,
+  pgOpportunityInvestigations,
   pgPublishing,
   pgProposalDrafts,
   pgExperiments,

@@ -120,3 +120,36 @@ export function checkDraft(output: DraftOutput, inputs: DraftInputs): string[] {
     );
   return failures;
 }
+
+/**
+ * The checks for model text that may only restate its source, such as an
+ * investigation summary. An empty list means the text passed.
+ */
+export function checkGroundedText(
+  text: string,
+  source: string,
+  max: number,
+): string[] {
+  const trimmed = text.trim();
+  const failures: string[] = [];
+  if (!trimmed.length || trimmed.length > max)
+    failures.push(
+      `The text has ${trimmed.length} characters. Use 1 to ${max}.`,
+    );
+  if (/[\p{Cc}\p{Cf}\u2028\u2029]/u.test(text))
+    failures.push("The text contains a control or format character.");
+  const missing = (trimmed.match(/\d+(?:[.,]\d+)*/g) ?? []).filter(
+    (number) => !containsPhrase(source, number),
+  );
+  if (missing.length)
+    failures.push(
+      `These numbers are not in the source: ${missing.join(", ")}.`,
+    );
+  const risky = RISKY_PHRASES.filter(
+    (phrase) =>
+      containsPhrase(trimmed, phrase) && !containsPhrase(source, phrase),
+  );
+  if (risky.length)
+    failures.push(`Remove these unsupported claims: ${risky.join(", ")}.`);
+  return failures;
+}

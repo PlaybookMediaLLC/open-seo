@@ -41,6 +41,19 @@ For a declining page, Relay also reads the same two windows one year earlier (36
 
 The diagnosis is a rule of thumb from Search Console totals. It does not check page edits or the layout of the search results.
 
+### Investigate a declining page
+
+To look deeper, open a declining page and click **Investigate**. You need permission to manage integrations. Relay runs four checks and lists what it found, most severe first:
+
+1. **Query mix:** the queries that lost the most clicks between the two periods of the analysis. Relay uses the same dates as the analysis, so you can compare the numbers in Search Console.
+2. **Index state:** what URL Inspection says now: indexed or not, a robots.txt block, and a canonical that Google chose differently.
+3. **Site audit:** the issues that the latest completed site audit found on the page.
+4. **Rank history:** how your tracked keywords that are also the page's queries moved.
+
+When a check cannot run, for example because the URL Inspection quota is used up, the list says so and the other checks still run. An investigation uses no credits.
+
+Click **Summarize with AI** to get a short paragraph about the most likely cause. The model sees only the findings. Relay rejects a summary that adds a number or a claim that the findings do not state. A summary costs about 1 to 5 credits.
+
 ### Brand terms
 
 Searches for your brand are not a sign of a weak page. Low click-through and competing pages leave out every query that contains a brand term as a whole word. Until you save your own terms, Relay uses the first part of your domain, for example `acme` for `acme.com`. Edit the terms at the bottom of the project **Context** page, or ask your AI client to update them. A project can have up to 20 terms.
