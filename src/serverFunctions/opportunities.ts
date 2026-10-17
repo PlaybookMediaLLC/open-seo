@@ -4,6 +4,7 @@ import { ContentGapService } from "@/server/features/opportunities/services/Cont
 import { SerpCheckService } from "@/server/features/opportunities/services/SerpCheckService";
 import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
+import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   assignOpportunityInputSchema,
@@ -17,6 +18,10 @@ import {
   reviewOpportunityInputSchema,
   updateBrandTermsInputSchema,
 } from "@/types/schemas/opportunities";
+import {
+  investigateInputSchema,
+  summarizeInvestigationInputSchema,
+} from "@/types/schemas/investigations";
 
 export const listOpportunities = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
@@ -112,4 +117,39 @@ export const getOpportunityTicket = createServerFn({ method: "POST" })
   .validator(opportunityDetailInputSchema)
   .handler(({ data, context }) =>
     getTicket(context, context.projectId, data.opportunityId),
+  );
+
+// RFC-0004 phase 3: investigate a declining page, then summarize the findings.
+export const investigateOpportunity = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(investigateInputSchema)
+  .handler(({ data, context }) =>
+    OpportunityInvestigationService.investigate(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const listOpportunityInvestigations = createServerFn({
+  method: "POST",
+})
+  .middleware(requireProjectContext)
+  .validator(investigateInputSchema)
+  .handler(({ data, context }) =>
+    OpportunityInvestigationService.listInvestigations(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const summarizeOpportunityInvestigation = createServerFn({
+  method: "POST",
+})
+  .middleware(requireProjectContext)
+  .validator(summarizeInvestigationInputSchema)
+  .handler(({ data, context }) =>
+    OpportunityInvestigationService.summarizeInvestigation(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
   );

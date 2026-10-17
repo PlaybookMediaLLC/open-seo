@@ -8,6 +8,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { getErrorCode } from "@/client/lib/error-messages";
 import { OpportunityEvidenceHistory } from "@/client/features/opportunities/OpportunityEvidenceHistory";
 import { OpportunityReview } from "@/client/features/opportunities/OpportunityReview";
+import { OpportunityInvestigation } from "@/client/features/opportunities/OpportunityInvestigation";
 import {
   OwnerSelect,
   TicketSheet,
@@ -223,6 +224,13 @@ function OpportunityDetailPage() {
         />
         <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
         <PaidEvidence detail={query.data} projectId={projectId} />
+        {item.type === "declining_page" && (
+          <OpportunityInvestigation
+            projectId={projectId}
+            opportunityId={item.id}
+            canRun={access.isSuccess && access.data.canReview && !query.isError}
+          />
+        )}
         {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
         <OpportunityReview
           key={`review-${item.id}`}

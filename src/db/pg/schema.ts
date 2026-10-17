@@ -13,6 +13,7 @@ export * from "./ai-visibility.schema";
 export * from "./opportunities.schema";
 export * from "./opportunity-signals.schema";
 export * from "./opportunity-content-gap.schema";
+export * from "./opportunity-investigations.schema";
 export * from "./publishing.schema";
 export * from "./proposal-drafts.schema";
 export * from "./experiments.schema";

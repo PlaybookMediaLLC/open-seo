@@ -215,6 +215,7 @@ Rules:
    - Rank history for tracked keywords on the page.
 2. Store `opportunity_investigations` (`id`, `project_id`, `opportunity_id`, `run_id`, `created_by`, `created_at`, `status`) and `opportunity_investigation_findings` (`id`, `investigation_id`, `kind`, `severity`, `summary`, `metric_before`, `metric_after`).
 3. An optional "Summarize" button writes a short model summary from the stored findings only. It uses the same checks and billing as drafts.
+4. As built: `OpportunityInvestigationService.investigate` in `opportunityInvestigation.ts`, for `declining_page` items, with the integration manage permission. A check that fails becomes a `check_unavailable` finding, and the other checks still run. The summary is stored on the investigation (`summary`, `summary_model`, `summary_cost_usd`, `summarized_at`). It shares the per-project model lease `drafts:{projectId}` with description drafts. `get_opportunity` returns the latest investigation to agents.
 
 **Content briefs** for `content_gap` and refresh work.
 
@@ -292,8 +293,8 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 
 ### Phase 3
 
-- [ ] Investigation service and its two tables, with tests for each finding kind.
-- [ ] Optional summary uses only stored findings (test).
+- [x] Investigation service and its two tables, with tests for each finding kind.
+- [x] Optional summary uses only stored findings (test).
 - [ ] Content briefs and their tables, with Markdown export.
 - [ ] Brief output states which facts the writer must supply (test on the prompt contract).
 - [ ] Internal-link anchor drafts with the same checks.
