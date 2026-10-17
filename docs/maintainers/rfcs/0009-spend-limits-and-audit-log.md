@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO) built
+- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO) and part B (limit settings, spend views, 80% warnings) built
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -152,6 +152,13 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 4. At 100%, paid actions show the `SPEND_LIMIT_REACHED` message with a link to the setting.
 5. Every paid action that has a confirm step shows the estimate before the user confirms. Check each existing paid action, and list any without an estimate in this RFC's follow-up.
 
+**As built (part B).**
+
+1. Every member sees the limits and this month's committed spend, as they already see usage on the Billing page. Only owners change a limit.
+2. The project limit lives in a new **Project settings → Spending** tab. The Billing page shows the organization limit, spend by project and spend by feature.
+3. The 80% notification uses the RFC-0008 bell. An organization limit notifies once a month, on the project whose spend crossed 80%.
+4. A refused action shows a generic message with a link to Billing, because the client receives only the error code.
+
 ### 5.6 Audit log
 
 `audit_events`:
@@ -233,8 +240,8 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 - [ ] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
 - [ ] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
 - [ ] `settleUsageCredits` accepts a provider argument.
-- [ ] Billing page and project settings show limits and month-to-date spend.
-- [ ] 80% banner and one notification per period.
+- [x] Billing page and project settings show limits and month-to-date spend.
+- [x] 80% banner and one notification per period.
 - [ ] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
 
 ### Billing debts

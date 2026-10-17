@@ -116,6 +116,7 @@ export const growthNotifications = sqliteTable(
         "stale_recommendations",
         "new_technical_issues",
         "job_failed",
+        "spend_warning",
       ],
     }).notNull(),
     title: text("title").notNull(),

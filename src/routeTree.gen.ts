@@ -86,6 +86,7 @@ import { Route as AppPProjectIdSettingsIndexRouteImport } from './routes/_app/p/
 import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_app/p/$projectId/settings/automation'
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
+import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
 import { Route as AppPProjectIdAuditIssuesResultIdRouteImport } from './routes/_app/p/$projectId/audit/issues/$resultId'
 
@@ -495,6 +496,12 @@ const AppPProjectIdSettingsIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsSpendingRoute =
+  AppPProjectIdSettingsSpendingRouteImport.update({
+    id: '/spending',
+    path: '/spending',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdAiVisibilityPromptsPromptIdRoute =
   AppPProjectIdAiVisibilityPromptsPromptIdRouteImport.update({
     id: '/prompts/$promptId',
@@ -576,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -649,6 +657,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments': typeof AppPProjectIdExperimentsIndexRoute
@@ -731,6 +740,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/_app/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/_app/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -811,6 +821,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/spending'
     | '/p/$projectId/ai-visibility/'
     | '/p/$projectId/audit/'
     | '/p/$projectId/experiments/'
@@ -884,6 +895,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/spending'
     | '/p/$projectId/ai-visibility'
     | '/p/$projectId/audit'
     | '/p/$projectId/experiments'
@@ -965,6 +977,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/automation'
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/integrations'
+    | '/_app/p/$projectId/settings/spending'
     | '/_app/p/$projectId/ai-visibility/'
     | '/_app/p/$projectId/audit/'
     | '/_app/p/$projectId/experiments/'
@@ -1550,6 +1563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsIntegrationsRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/spending': {
+      id: '/_app/p/$projectId/settings/spending'
+      path: '/spending'
+      fullPath: '/p/$projectId/settings/spending'
+      preLoaderRoute: typeof AppPProjectIdSettingsSpendingRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/ai-visibility/prompts/$promptId': {
       id: '/_app/p/$projectId/ai-visibility/prompts/$promptId'
       path: '/prompts/$promptId'
@@ -1622,6 +1642,7 @@ interface AppPProjectIdSettingsRouteChildren {
   AppPProjectIdSettingsAutomationRoute: typeof AppPProjectIdSettingsAutomationRoute
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
+  AppPProjectIdSettingsSpendingRoute: typeof AppPProjectIdSettingsSpendingRoute
   AppPProjectIdSettingsIndexRoute: typeof AppPProjectIdSettingsIndexRoute
 }
 
@@ -1630,6 +1651,7 @@ const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
   AppPProjectIdSettingsContextRoute: AppPProjectIdSettingsContextRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,
+  AppPProjectIdSettingsSpendingRoute: AppPProjectIdSettingsSpendingRoute,
   AppPProjectIdSettingsIndexRoute: AppPProjectIdSettingsIndexRoute,
 }
 
