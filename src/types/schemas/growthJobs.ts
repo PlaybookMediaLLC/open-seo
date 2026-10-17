@@ -13,3 +13,19 @@ export const growthRunInputSchema = z.object({
 });
 export type GrowthRunInput = z.infer<typeof growthRunInputSchema>;
 export type GrowthJobKind = GrowthRunInput["kind"];
+
+// RFC-0008 5.10: one row of the Automation tab.
+export const saveScheduleInputSchema = z.object({
+  projectId: z.string().min(1),
+  kind: z.enum(GROWTH_JOB_KINDS),
+  enabled: z.boolean(),
+  interval: z.enum(["daily", "weekly"]),
+  hourUtc: z.number().int().min(0).max(23),
+});
+export type SaveScheduleInput = z.infer<typeof saveScheduleInputSchema>;
+export const automationProjectInputSchema = z.object({
+  projectId: z.string().min(1),
+});
+export const runLogsInputSchema = automationProjectInputSchema.extend({
+  runId: z.string().min(1),
+});

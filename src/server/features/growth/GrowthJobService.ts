@@ -5,6 +5,7 @@ import { ProjectRepository } from "@/server/features/projects/repositories/Proje
 import { AppError } from "@/server/lib/errors";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type { GrowthRunInput } from "@/types/schemas/growthJobs";
+import { auditStarter } from "./jobs/auditFollowup";
 import { GROWTH_JOBS } from "./growthJobs";
 import {
   GrowthJobRepository as repo,
@@ -148,15 +149,22 @@ async function run(
     return { status: 200, body: { status: "skipped", summary: reason } };
   };
 
-  // RFC-0008 5.7: the job uses a real member's current permissions.
-  const ownerId = schedule?.ownerUserId;
+  // RFC-0008 5.7: the job uses a real member's current permissions. An
+  // audit follow-up uses the member who started the audit.
+  const ownerId =
+    schedule?.ownerUserId ??
+    (kind === "audit_followup"
+      ? await auditStarter(projectId, windowKey)
+      : null);
   const membership = ownerId
     ? await AuthRepository.getMembership(ownerId, project.organizationId)
     : null;
+  // Any member can start an audit, so its follow-up needs membership only.
   if (
     !ownerId ||
     !membership ||
-    !hasOrgPermission(membership.role, { integration: ["manage"] })
+    (kind !== "audit_followup" &&
+      !hasOrgPermission(membership.role, { integration: ["manage"] }))
   ) {
     await notifyFailure(
       "A scheduled job was skipped",
@@ -180,6 +188,7 @@ async function run(
   try {
     const { summary } = await job({
       projectId,
+      windowKey,
       organizationId: project.organizationId,
       actor: {
         organizationId: project.organizationId,

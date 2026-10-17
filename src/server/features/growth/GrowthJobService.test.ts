@@ -27,7 +27,11 @@ vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("./growthJobs", () => ({
-  GROWTH_JOBS: { measurement_refresh: mocks.job, traffic_watch: mocks.job },
+  GROWTH_JOBS: {
+    measurement_refresh: mocks.job,
+    traffic_watch: mocks.job,
+    audit_followup: mocks.job,
+  },
 }));
 // The project and member tables of the test database are minimal.
 vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
@@ -177,6 +181,26 @@ it("skips the job when the schedule owner lost access, and says so", async () =>
   });
   expect(mocks.job).not.toHaveBeenCalled();
   expect((await notices())[0]?.kind).toBe("job_failed");
+});
+
+it("runs an audit follow-up as the member who started the audit", async () => {
+  const { projectId, request } = await project();
+  const auditId = crypto.randomUUID();
+  await database.client.execute({
+    sql: "INSERT INTO audits (id, project_id, started_by_user_id, start_url, status) VALUES (?, ?, 'starter', 'https://example.com/', 'completed')",
+    args: [auditId, projectId],
+  });
+  mocks.membership.mockResolvedValue({ role: "member" });
+  const followup = {
+    ...request(),
+    kind: "audit_followup" as const,
+    scheduleId: null,
+    windowKey: auditId,
+  };
+  expect(await GrowthJobService.run(followup, now)).toMatchObject({
+    body: { status: "succeeded" },
+  });
+  expect(mocks.membership).toHaveBeenCalledWith("starter", projectId);
 });
 
 it("skips traffic watch on a free plan", async () => {

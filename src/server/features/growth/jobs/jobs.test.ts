@@ -48,6 +48,7 @@ vi.mock("../repositories/GrowthJobRepository", () => ({
 
 const context = {
   projectId: "project",
+  windowKey: "2026-10-17",
   organizationId: "org",
   actor: { organizationId: "org", userId: "owner", role: "owner" },
   now: new Date("2026-10-17T12:00:00.000Z"),

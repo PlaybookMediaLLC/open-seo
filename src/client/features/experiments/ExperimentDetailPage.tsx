@@ -7,6 +7,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { experimentDetailOptions } from "./queries";
+import { AutoRefreshToggle } from "./AutoRefreshToggle";
 import { ExperimentActions } from "./ExperimentActions";
 import { DownloadCsvButton, Ga4Results } from "./Ga4Measurement";
 import { LongTermCheck } from "./LongTermCheck";
@@ -125,6 +126,12 @@ export function ExperimentDetailPage({
           connected={detail.connected}
           githubConnected={detail.githubConnected}
         />
+        {experiment.deployedAt && (
+          <AutoRefreshToggle
+            projectId={projectId}
+            experimentId={experiment.id}
+          />
+        )}
         <MeasurementResults detail={detail} assessment={detail.assessment} />
         <Ga4Results detail={detail} />
         <LongTermCheck detail={detail} canManage={detail.canManage} />

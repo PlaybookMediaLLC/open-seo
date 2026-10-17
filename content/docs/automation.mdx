@@ -1,0 +1,55 @@
+---
+title: "Scheduled jobs"
+description: "The jobs that Relay runs on a schedule, when they start, what they cost and how to turn them off."
+---
+
+Relay can run some checks on a schedule and tell you what it finds. Open **Project settings → Automation** to see each job, its schedule and its run history.
+
+Scheduled jobs use no credits. They never change your site, approve a change or confirm a deployment. You still make every decision.
+
+## The jobs
+
+| Job                     | Starts                           | Default           | What it does                                                                                                          |
+| ----------------------- | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Opportunity refresh     | When you connect Search Console  | Weekly, 06:00 UTC | Runs the Search Console analysis. Tells you about new items with priority 50 or more. Daily needs a paid plan.        |
+| Traffic watch           | When you connect Search Console  | Daily, 07:00 UTC  | Compares search clicks in the last 7 days with the 4 weeks before them. Paid plans only.                              |
+| Recommendation re-check | When you connect Search Console  | Weekly, 08:00 UTC | Counts open items that the latest analysis no longer found. It changes no status.                                     |
+| Measurement refresh     | When you start tracking a change | Daily, 09:00 UTC  | Refreshes each tracked change once a day until its result is final.                                                   |
+| Deployment check        | When you start tracking a change | Daily, 10:00 UTC  | Looks for deployment signals on merged changes. Tells you when it finds one. You still confirm the deployment.        |
+| Audit follow-up         | After each site audit            | Once per audit    | Tells you about new critical issues on pages that get search impressions. Then refreshes the analysis when it is due. |
+
+A job turns on only once. If you turn a job off, connecting Search Console again or tracking another change does not turn it back on.
+
+## Traffic alerts
+
+Traffic watch tells you when:
+
+- Site clicks in the last 7 days fell by 25% or more, and by 100 clicks or more.
+- A page lost 30% or more of its clicks, and 30 clicks or more. The alert lists at most 10 pages.
+
+Both compare the last 7 days with the 28 days before them, scaled to 7 days. When Search Console has missing dates, the job skips the comparison and logs "Incomplete data".
+
+## Whose permissions a job uses
+
+A job runs with the permissions of the member who last changed it. When you change a job, it runs as you. If that member leaves the organization or loses the owner or administrator role, the job skips its runs and posts a notification. To fix it, an owner or administrator saves the job again.
+
+The audit follow-up runs as the member who started the audit.
+
+Only owners and administrators can change a job.
+
+## Notifications
+
+The bell in the sidebar shows what the jobs found. Each notification links to the page it is about. Click **Mark all read** to clear the count. Each member has their own read state.
+
+## Turn a job off
+
+1. Open **Project settings → Automation**.
+2. Turn off the switch next to the job.
+
+To change the time or interval, click **Edit**. Times are in UTC.
+
+## Run history
+
+The Automation tab shows the last 20 runs with their status and summary. Click **Logs** to see at most 50 log lines for a run. Relay deletes runs, logs and notifications after 180 days.
+
+Self-hosted installs do not run scheduled jobs unless the operator sets them up. The tab then says "Scheduled jobs are not available on this installation."

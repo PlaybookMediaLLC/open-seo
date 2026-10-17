@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** In progress. Parts A (runner, endpoints, Trigger.dev tasks) and B (all jobs, notifications) built
+- **Status:** In progress. Parts A (runner, endpoints, Trigger.dev tasks), B (all jobs, notifications) and C (audit hook, Automation tab, default schedules) built
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -198,6 +198,8 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 
 **Audit hook.** At the end of the site-audit workflow's successful finalize step, call a fork function that triggers `audit-followup` with the idempotency key `audit:{auditId}`. Add it with one `// playbook-seam` line in the upstream workflow file.
 
+**As built (part C).** The Worker triggers `audit-followup` through the Trigger.dev REST API, with the idempotency key `audit:{auditId}` and the concurrency key `projectId`. It needs no SDK. When the key is missing or the request fails, it writes a queued run that the next dispatch picks up. It does nothing when `GROWTH_JOBS_MODE` is `off`, and it never fails the audit. The follow-up runs as the member who started the audit. Membership is enough, because any member can start an audit; scheduled jobs still need a member who can manage integrations. Connecting Search Console turns on the opportunity refresh, the traffic watch and the recommendation re-check. Starting tracking turns on the measurement refresh and the deployment check, because tracking is where the experiment exists. Each default turns on once; a job that a member turned off stays off.
+
 ### 5.9 Plan rules
 
 1. Free plan: `opportunity_refresh` weekly, `measurement_refresh`, `deployment_check`, `recommendation_recheck`.
@@ -279,15 +281,15 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 - [x] Test: a free plan skips `traffic_watch`.
 - [x] Each job has a service test with mocked providers.
 - [x] Traffic drop rule tests at each threshold, and the incomplete-data skip.
-- [ ] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
+- [x] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
 - [x] Task files with the retry, concurrency and duration settings from 5.3.
 - [ ] `trigger-deploy-playbook.yml` deploys the tasks after the Worker deploy.
-- [ ] Default schedules created on Search Console connect and on tracking start.
-- [ ] Automation tab with toggles, history and logs.
+- [x] Default schedules created on Search Console connect and on tracking start.
+- [x] Automation tab with toggles, history and logs.
 - [x] Notification bell, list and read state.
 - [ ] Trigger.dev alerts reach the team's email.
-- [ ] Privacy policy lists Trigger.dev.
-- [ ] `content/docs/automation.mdx` lists each job, its default, its cost and how to turn it off.
+- [x] Privacy policy lists Trigger.dev.
+- [x] `content/docs/automation.mdx` lists each job, its default, its cost and how to turn it off.
 
 ### Phase 2
 

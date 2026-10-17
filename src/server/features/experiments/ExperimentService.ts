@@ -5,6 +5,10 @@ import {
 } from "@/server/features/ga4/services/Ga4Dates";
 import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { GscService } from "@/server/features/gsc/services/GscService";
+import {
+  ensureDefaultSchedules,
+  TRACKING_JOBS,
+} from "@/server/features/growth/AutomationService";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import {
   authorizePublishing,
@@ -153,6 +157,12 @@ async function register(
       }))
     )
       throw new AppError("CONFLICT");
+    // RFC-0008: tracking turns on the daily measurement and deployment jobs.
+    await ensureDefaultSchedules(
+      input.projectId,
+      context.userId,
+      TRACKING_JOBS,
+    ).catch(() => undefined);
     return {
       ok: true,
       experimentId: experiment.id,

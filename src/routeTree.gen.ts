@@ -83,6 +83,7 @@ import { Route as AppPProjectIdReportsIndexRouteImport } from './routes/_app/p/$
 import { Route as AppPProjectIdReportsReportIdRouteImport } from './routes/_app/p/$projectId/reports/$reportId'
 import { Route as AppPProjectIdReportsTemplatesRouteImport } from './routes/_app/p/$projectId/reports/templates'
 import { Route as AppPProjectIdSettingsIndexRouteImport } from './routes/_app/p/$projectId/settings/index'
+import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_app/p/$projectId/settings/automation'
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
@@ -476,6 +477,12 @@ const AppPProjectIdSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsAutomationRoute =
+  AppPProjectIdSettingsAutomationRouteImport.update({
+    id: '/automation',
+    path: '/automation',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdSettingsContextRoute =
   AppPProjectIdSettingsContextRouteImport.update({
     id: '/context',
@@ -566,6 +573,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -638,6 +646,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -719,6 +728,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/_app/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/_app/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/_app/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -798,6 +808,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
     | '/p/$projectId/reports/templates'
+    | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/ai-visibility/'
@@ -870,6 +881,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
     | '/p/$projectId/reports/templates'
+    | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/ai-visibility'
@@ -950,6 +962,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/rank-tracking/$configId'
     | '/_app/p/$projectId/reports/$reportId'
     | '/_app/p/$projectId/reports/templates'
+    | '/_app/p/$projectId/settings/automation'
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/integrations'
     | '/_app/p/$projectId/ai-visibility/'
@@ -1516,6 +1529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsIndexRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/automation': {
+      id: '/_app/p/$projectId/settings/automation'
+      path: '/automation'
+      fullPath: '/p/$projectId/settings/automation'
+      preLoaderRoute: typeof AppPProjectIdSettingsAutomationRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/settings/context': {
       id: '/_app/p/$projectId/settings/context'
       path: '/context'
@@ -1599,12 +1619,14 @@ const AppPProjectIdRankTrackingRouteWithChildren =
   )
 
 interface AppPProjectIdSettingsRouteChildren {
+  AppPProjectIdSettingsAutomationRoute: typeof AppPProjectIdSettingsAutomationRoute
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
   AppPProjectIdSettingsIndexRoute: typeof AppPProjectIdSettingsIndexRoute
 }
 
 const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
+  AppPProjectIdSettingsAutomationRoute: AppPProjectIdSettingsAutomationRoute,
   AppPProjectIdSettingsContextRoute: AppPProjectIdSettingsContextRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,

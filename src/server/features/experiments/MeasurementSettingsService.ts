@@ -10,6 +10,7 @@ import type {
   MeasurementSettingsInput,
 } from "@/types/schemas/experiments";
 import { experimentCsv } from "./experimentCsv";
+import { growthJobsMode } from "@/server/features/growth/internalAuth";
 import { fetchKeyEventNames, ga4Failure } from "./measurementGa4";
 import { ExperimentRepository } from "./repositories/ExperimentRepository";
 import { MeasurementGa4Repository } from "./repositories/measurementGa4Rows";
@@ -41,6 +42,8 @@ async function get(context: PublishingContext, input: ExperimentInput) {
     hasGa4: Boolean(detail.experiment.ga4PropertyId),
     timeZone: property?.propertyTimeZone ?? null,
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    // RFC-0008: the daily refresh needs scheduled jobs on this installation.
+    scheduledJobs: (await growthJobsMode()) !== "off",
   };
 }
 

@@ -4,6 +4,7 @@ import { ExperimentService } from "@/server/features/experiments/ExperimentServi
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { MeasurementSettingsService } from "@/server/features/experiments/MeasurementSettingsService";
 import { RevertService } from "@/server/features/experiments/RevertService";
+import { AutomationService } from "@/server/features/growth/AutomationService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
@@ -270,6 +271,18 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           note: "Live.",
           confirmProductionDeployment: true,
         }),
+    },
+    AutomationService: {
+      get: () => AutomationService.get(ctx, projectId),
+      save: () =>
+        AutomationService.save(ctx, {
+          projectId,
+          kind: "traffic_watch",
+          enabled: true,
+          interval: "daily",
+          hourUtc: 7,
+        }),
+      runLogs: () => AutomationService.runLogs(ctx, { projectId, runId: "x" }),
     },
   };
 }
