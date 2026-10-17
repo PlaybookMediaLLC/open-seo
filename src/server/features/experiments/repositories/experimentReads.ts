@@ -19,6 +19,7 @@ import type {
 } from "@/types/schemas/experiments";
 import type { ProposalWithHistory } from "@/types/schemas/publishing";
 import { PublishingRepository } from "../../publishing/repositories/PublishingRepository";
+import { MeasurementGa4Repository } from "./measurementGa4Rows";
 import {
   experimentColumns,
   experimentScope,
@@ -135,8 +136,17 @@ export async function get(
           .limit(28)
       : [],
   ]);
+  const [keyEvents, ga4] = await Promise.all([
+    MeasurementGa4Repository.keyEvents(projectId, experimentId),
+    completed[0]
+      ? MeasurementGa4Repository.forRun(projectId, completed[0].id)
+      : { days: [], eventTotals: [] },
+  ]);
   // latestRun is the newest completed snapshot so its flags always describe observationDays.
   return {
+    keyEvents,
+    ga4Days: ga4.days,
+    ga4EventTotals: ga4.eventTotals,
     experiment,
     publishing,
     signals,

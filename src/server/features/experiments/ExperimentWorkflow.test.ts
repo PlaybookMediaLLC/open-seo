@@ -32,6 +32,10 @@ vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: mocks,
 }));
+// No GA4 property here; GA4 measurement has its own tests.
+vi.mock("@/server/features/ga4/repositories/Ga4ConnectionRepository", () => ({
+  Ga4ConnectionRepository: { getByProjectId: async () => null },
+}));
 
 const transport = vi.fn<typeof fetch>();
 const afterSource =

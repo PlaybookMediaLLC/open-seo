@@ -112,6 +112,62 @@ describe(`Experiment measurement runs real ${database.isPostgres ? "Postgres" : 
     ).toBe("completed");
   });
 
+  it("stores the run's GA4 rows and GA4 reason, and reads them back", async () => {
+    const { input, experiment } = await deployed(database);
+    const run = runningMeasurement(experiment, input.claimToken);
+    expect(await repo.startRun({ ...input, run })).toBe(true);
+    const ids = {
+      projectId: run.projectId,
+      runId: run.id,
+      experimentId: run.experimentId,
+    };
+    expect(
+      await repo.completeRun({
+        ...input,
+        run: {
+          ...completed(run),
+          ga4Error: "Google Analytics reporting quota was exhausted.",
+          requestCount: 3,
+        },
+        days: [...days(run, "baseline"), ...days(run, "observation")],
+        ga4Days: [
+          {
+            ...ids,
+            id: crypto.randomUUID(),
+            date: "2026-01-02",
+            period: "baseline",
+            sessions: 40,
+            engagedSessions: 30,
+            keyEvents: 2,
+            revenue: null,
+            currency: null,
+          },
+        ],
+        ga4EventTotals: [
+          {
+            projectId: ids.projectId,
+            runId: ids.runId,
+            id: crypto.randomUUID(),
+            period: "baseline",
+            eventName: "contact",
+            keyEvents: 3,
+          },
+        ],
+      }),
+    ).toBe(true);
+    const detail = await repo.get(run.projectId, run.experimentId);
+    expect(detail?.latestRun).toMatchObject({
+      ga4Error: "Google Analytics reporting quota was exhausted.",
+      requestCount: 3,
+    });
+    expect(detail?.ga4Days.map((day) => [day.date, day.sessions])).toEqual([
+      ["2026-01-02", 40],
+    ]);
+    expect(detail?.ga4EventTotals).toMatchObject([
+      { eventName: "contact", keyEvents: 3 },
+    ]);
+  });
+
   it("enforces cache, failure cooldown and the five-attempt project budget before admission", async () => {
     const { input, experiment } = await deployed(database);
     const first = runningMeasurement(experiment, input.claimToken);

@@ -3,6 +3,7 @@ import {
   ga4DateInTimeZone,
   shiftGa4Date,
 } from "@/server/features/ga4/services/Ga4Dates";
+import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import {
@@ -108,7 +109,10 @@ async function register(
       input.projectId,
       history.proposal.opportunityId,
     );
-    const gsc = await GscService.getConnection(input.projectId);
+    const [gsc, ga4] = await Promise.all([
+      GscService.getConnection(input.projectId),
+      Ga4ConnectionRepository.getByProjectId(input.projectId),
+    ]);
     if (!detail || gsc?.siteUrl !== detail.opportunity.siteUrl)
       throw new AppError("CONFLICT");
     const experiment: GrowthExperiment = {
@@ -137,6 +141,9 @@ async function register(
       observationStart: null,
       observationEnd: null,
       baselineRunId: null,
+      // RFC-0006: GA4 numbers come only from the property at registration.
+      ga4PropertyId: ga4?.propertyId ?? null,
+      autoRefresh: true,
     };
     if (
       !(await ExperimentRepository.register({

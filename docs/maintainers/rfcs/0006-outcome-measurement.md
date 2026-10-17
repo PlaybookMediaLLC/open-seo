@@ -1,6 +1,6 @@
 # RFC-0006: Outcome measurement with GA4 and scheduled refresh
 
-- **Status:** Draft
+- **Status:** Phase 1a (GA4 data) built; phase 1b and phase 2 in progress
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E)
 - **Depends on:** RFC-0001. Scheduled refresh depends on RFC-0008. Notifications depend on RFC-0008.
@@ -85,6 +85,12 @@ Missing dates stay missing. Never store a zero for a date GA4 did not return.
 
 **Request accounting.** GA4 requests count in the run's `request_count`. They do not change the 5-per-day measurement allowance, because one run still counts as one measurement request.
 
+**As built (phase 1a).**
+
+1. Registration stays one click. A manager chooses key events afterwards, on the experiment page (**Key events**), from the key events that the property counted in the last 28 days. The choice applies from the next measurement on.
+2. Each run stores the GA4 rows for the whole window it measured (baseline and observation), so the newest completed run alone describes both periods.
+3. `auto_refresh` exists and defaults to true, but the page does not show the switch yet. A switch without the scheduler would promise something that does not happen; RFC-0008 adds both.
+
 ### 5.2 Supporting statements
 
 The label rule does not change. Below the label, show GA4 statements only when the data supports them:
@@ -153,16 +159,16 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 
 ### Phase 1
 
-- [ ] `ga4_property_id`, `auto_refresh` on experiments, and `ga4_error` on runs, in D1 and Postgres.
-- [ ] `experiment_key_events`, `measurement_ga4_days` and `measurement_ga4_event_totals`, with the parity test.
-- [ ] Key event picker at registration, limited to 5.
-- [ ] Two GA4 report requests with the organic and exact landing-page filters (request-body test).
-- [ ] Test: missing GA4 dates stay missing.
-- [ ] Test: a GA4 failure keeps the Search Console result and stores `ga4_error`.
-- [ ] Test: a changed GA4 property fails closed for GA4 only.
-- [ ] Supporting statements follow the thresholds (one test per row of the table).
-- [ ] Label results do not change when GA4 data is added (regression test).
-- [ ] Results page shows GA4 numbers, the time-zone note and the caveat.
+- [x] `ga4_property_id`, `auto_refresh` on experiments, and `ga4_error` on runs, in D1 and Postgres.
+- [x] `experiment_key_events`, `measurement_ga4_days` and `measurement_ga4_event_totals`, with the parity test.
+- [x] Key event picker at registration, limited to 5.
+- [x] Two GA4 report requests with the organic and exact landing-page filters (request-body test).
+- [x] Test: missing GA4 dates stay missing.
+- [x] Test: a GA4 failure keeps the Search Console result and stores `ga4_error`.
+- [x] Test: a changed GA4 property fails closed for GA4 only.
+- [x] Supporting statements follow the thresholds (one test per row of the table).
+- [x] Label results do not change when GA4 data is added (regression test).
+- [x] Results page shows GA4 numbers, the time-zone note and the caveat.
 - [ ] Scheduled `measurement_refresh` job through RFC-0008, with tests for each due condition.
 - [ ] Test: the job stops after the final result.
 - [ ] Summary strip and label filter on the list.

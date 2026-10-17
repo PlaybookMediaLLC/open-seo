@@ -9,6 +9,20 @@ export const experimentListInputSchema = project.extend({
 export const experimentInputSchema = project.extend({
   experimentId: z.string().min(1),
 });
+// RFC-0006: GA4 event names are letters, digits and underscores.
+const ga4EventName = z.string().regex(/^[A-Za-z][A-Za-z0-9_]{0,39}$/);
+export const measurementSettingsInputSchema = experimentInputSchema.extend({
+  autoRefresh: z.boolean(),
+  keyEvents: z
+    .array(ga4EventName)
+    .max(5)
+    .refine((names) => new Set(names).size === names.length, {
+      message: "Choose each key event once.",
+    }),
+});
+export type MeasurementSettingsInput = z.infer<
+  typeof measurementSettingsInputSchema
+>;
 export const registerExperimentInputSchema = project.extend({
   executionId: z.string().min(1),
 });
@@ -63,6 +77,8 @@ export type GrowthExperiment = {
   observationStart: string | null;
   observationEnd: string | null;
   baselineRunId: string | null;
+  ga4PropertyId: string | null;
+  autoRefresh: boolean;
 };
 export type MeasurementRun = {
   id: string;
@@ -80,6 +96,7 @@ export type MeasurementRun = {
   overlappingChanges: boolean;
   windowComplete: boolean;
   error: string | null;
+  ga4Error: string | null;
 };
 export type MeasurementDay = {
   id: string;
@@ -133,6 +150,32 @@ export type ExperimentDetail = {
   baselineDays: MeasurementDay[];
   observationDays: MeasurementDay[];
   latestRun: MeasurementRun | null;
+  keyEvents: string[];
+  ga4Days: MeasurementGa4Day[];
+  ga4EventTotals: MeasurementGa4EventTotal[];
+};
+
+// RFC-0006: GA4 supporting metrics, stored per run.
+export type MeasurementGa4Day = {
+  id: string;
+  projectId: string;
+  runId: string;
+  experimentId: string;
+  date: string;
+  period: "baseline" | "observation";
+  sessions: number;
+  engagedSessions: number;
+  keyEvents: number;
+  revenue: number | null;
+  currency: string | null;
+};
+export type MeasurementGa4EventTotal = {
+  id: string;
+  projectId: string;
+  runId: string;
+  period: "baseline" | "observation";
+  eventName: string;
+  keyEvents: number;
 };
 export type ExperimentMutationResult = {
   ok: boolean;

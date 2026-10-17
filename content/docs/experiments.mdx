@@ -64,6 +64,26 @@ A label other than Inconclusive also needs all 28 days in both windows, at least
 
 These are product rules, not statistical tests. Search demand, ranking updates and other site changes can move the numbers.
 
+## GA4 supporting evidence
+
+When the project has a Google Analytics 4 connection at the time you start tracking, each refresh also reads GA4 for the changed page. Relay counts sessions from organic search that started on that page, with the same baseline and observation dates. It uses at most 2 GA4 requests per refresh, and they do not count toward the daily limit of 5 refreshes.
+
+GA4 never changes the label. Below it, Relay shows a statement only when the data supports it:
+
+| Statement                      | Shown when                                                  |
+| ------------------------------ | ----------------------------------------------------------- |
+| Organic sessions changed by X% | Both windows have all 28 days and at least 100 sessions.    |
+| Key events changed by X%       | Both windows have at least 20 key events.                   |
+| Key event rate changed         | Both rules above hold.                                      |
+| Revenue changed                | Both windows have revenue, and at least 20 key events each. |
+
+Otherwise Relay shows "Too few sessions or events to compare."
+
+- **Time zone:** GA4 reports in the property's time zone, and Search Console in Pacific time. Relay uses the same calendar dates for both and names the GA4 time zone on the page.
+- **Missing days:** a day that GA4 did not report stays empty. Relay never stores it as zero.
+- **Key events:** click **Key events** to choose up to 5 key events to report separately. Without a choice, Relay reports the total of all key events.
+- **Failures:** when GA4 fails, or the project now uses a different GA4 property, Relay still saves the Search Console result and shows "GA4 data unavailable" with the reason.
+
 ## Revert a change
 
 When a result is negative, or you change your mind, click **Prepare revert**. Relay checks that the page still shows the approved text. Then it prepares the exact inverse change as a new proposal, which you approve like any other change. Nothing is reverted on its own.
