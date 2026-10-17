@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useHostedAuthRouteGuard } from "@/client/features/auth/useHostedAuthRouteGuard";
 import { prefetchBillingAccount } from "@/client/features/billing/billingAccountQuery";
 import { FreePlanBanner } from "@/client/features/billing/FreePlanBanner";
+import { SpendLimitBanner } from "@/client/features/spend/SpendLimitBanner"; // playbook-seam
 import { SkeletonPage } from "@/client/components/SkeletonPresets";
 import { AuthenticatedAppLayout } from "@/client/layout/AppShell";
 import { useOnboardingRedirect } from "@/client/features/onboarding/useOnboardingRedirect";
@@ -34,7 +35,10 @@ function AppRouteLayout() {
       ready={ready}
       banner={
         ready && projectId && authGate.isHostedMode ? (
-          <FreePlanBanner />
+          <>
+            <SpendLimitBanner projectId={projectId} /> {/* playbook-seam */}
+            <FreePlanBanner />
+          </>
         ) : undefined
       }
     >

@@ -1,10 +1,12 @@
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
-import { spendLedger, spendLimits } from "@/db/schema";
+import { growthNotifications, spendLedger, spendLimits } from "@/db/schema";
+import { GrowthJobRepository } from "@/server/features/growth/repositories/GrowthJobRepository";
 import { selectedValues } from "@/server/features/publishing/repositories/publishingSql";
 import { AppError } from "@/server/lib/errors";
 import { attachHolds, closeSpend } from "./spendLedger";
+import { committedIn, limitUse, periodOf, type LimitUse } from "./spendQueries";
 import {
   reserveUsageCredits,
   type BillingCustomerContext,
@@ -15,11 +17,7 @@ import {
 // that only the Autumn balance applies.
 
 type Provider = "dataforseo" | "openrouter";
-
-/** Credits a scope committed this period: the real cost once known. */
-function committed(scope: SQL, periodMonth: string) {
-  return sql`(select coalesce(sum(case when ${spendLedger.status} = 'admitted' then ${spendLedger.estimatedCredits} when ${spendLedger.status} in ('settled', 'settle_failed') then coalesce(${spendLedger.actualCredits}, 0) else 0 end), 0) from ${spendLedger} where ${scope} and ${spendLedger.periodMonth} = ${periodMonth})`;
-}
+const WARN_SHARE = 0.8;
 
 /** True when no limit row for the scope would be exceeded. */
 function withinLimit(
@@ -28,39 +26,59 @@ function withinLimit(
   periodMonth: string,
   estimatedCredits: number,
 ) {
-  return sql`not exists (select 1 from ${spendLimits} where ${limitScope} and ${spendLimits.monthlyLimitCredits} < ${committed(ledgerScope, periodMonth)} + ${estimatedCredits})`;
+  return sql`not exists (select 1 from ${spendLimits} where ${limitScope} and ${spendLimits.monthlyLimitCredits} < ${committedIn(ledgerScope, periodMonth)} + ${estimatedCredits})`;
 }
 
-async function refusalMessage(
+const scopeName = (use: LimitUse) =>
+  use.scope === "project" ? "This project" : "This organization";
+
+function refusalMessage(uses: LimitUse[], estimatedCredits: number) {
+  const reached =
+    uses.find((use) => use.committed + estimatedCredits > use.limit) ?? uses[0];
+  return `${reached ? scopeName(reached) : "This organization"} reached its monthly limit of ${reached?.limit ?? 0} credits. An owner can change it in Billing.`;
+}
+
+/**
+ * RFC-0009 5.5: one notification per limit and month once 80% is
+ * committed. An organization limit notifies once, on the project that
+ * crossed it.
+ */
+async function warnNearLimit(
   customer: BillingCustomerContext,
   periodMonth: string,
-  estimatedCredits: number,
 ) {
-  const limits = await db
-    .select()
-    .from(spendLimits)
-    .where(eq(spendLimits.organizationId, customer.organizationId));
-  const project = limits.find(
-    (row) => row.projectId !== null && row.projectId === customer.projectId,
-  );
-  if (project) {
-    const [row] = await db
-      .select({
-        total: committed(
-          eq(spendLedger.projectId, project.projectId ?? ""),
-          periodMonth,
-        ),
-      })
-      .from(spendLimits)
-      .limit(1);
-    if (
-      Number(row?.total ?? 0) + estimatedCredits >
-      project.monthlyLimitCredits
-    )
-      return `This project reached its monthly limit of ${project.monthlyLimitCredits} credits. An owner can change it in Billing.`;
+  const { organizationId, projectId } = customer;
+  if (!projectId) return;
+  for (const use of await limitUse(organizationId, projectId, periodMonth)) {
+    if (use.committed < use.limit * WARN_SHARE) continue;
+    const dedupeKey = `${use.scope}:${periodMonth}`;
+    if (use.scope === "organization") {
+      const [sent] = await db
+        .select({ id: growthNotifications.id })
+        .from(growthNotifications)
+        .where(
+          and(
+            eq(growthNotifications.organizationId, organizationId),
+            eq(growthNotifications.kind, "spend_warning"),
+            eq(growthNotifications.dedupeKey, dedupeKey),
+          ),
+        )
+        .limit(1);
+      if (sent) continue;
+    }
+    await GrowthJobRepository.notify({
+      organizationId,
+      projectId,
+      kind: "spend_warning",
+      title: `${scopeName(use)} used ${Math.floor((use.committed / use.limit) * 100)}% of its monthly credit limit`,
+      body: `${use.committed} of ${use.limit} credits are committed this month. Paid actions stop at the limit.`,
+      linkPath:
+        use.scope === "project"
+          ? `/p/${projectId}/settings/spending`
+          : "/billing",
+      dedupeKey,
+    });
   }
-  const organization = limits.find((row) => row.projectId === null);
-  return `This organization reached its monthly limit of ${organization?.monthlyLimitCredits ?? 0} credits. An owner can change it in Billing.`;
 }
 
 /**
@@ -76,7 +94,7 @@ export async function admitSpend(input: {
 }) {
   const { customer, estimatedCredits } = input;
   const now = input.now ?? new Date();
-  const periodMonth = now.toISOString().slice(0, 7);
+  const periodMonth = periodOf(now);
   const id = crypto.randomUUID();
   const values = {
     id,
@@ -134,13 +152,27 @@ export async function admitSpend(input: {
     .select({ id: spendLedger.id })
     .from(spendLedger)
     .where(eq(spendLedger.id, id));
-  if (admitted) return id;
+  if (admitted) {
+    await warnNearLimit(customer, periodMonth).catch((error: unknown) =>
+      console.error("[spend] limit warning failed", {
+        error: error instanceof Error ? error.name : "unknown",
+      }),
+    );
+    return id;
+  }
   await db
     .insert(spendLedger)
     .values({ ...values, status: "refused", settledAt: now.toISOString() });
   throw new AppError(
     "SPEND_LIMIT_REACHED",
-    await refusalMessage(customer, periodMonth, estimatedCredits),
+    refusalMessage(
+      await limitUse(
+        customer.organizationId,
+        customer.projectId ?? null,
+        periodMonth,
+      ),
+      estimatedCredits,
+    ),
   );
 }
 

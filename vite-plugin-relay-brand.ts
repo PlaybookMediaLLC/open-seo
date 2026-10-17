@@ -57,7 +57,14 @@ import type { Plugin } from "vite";
  * - src/server/features/gsc/services/GscService.ts: connecting Search Console
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
- *   (src/client/features/automation/AutomationSettings.tsx).
+ *   (src/client/features/automation/AutomationSettings.tsx) and the Spending
+ *   tab (src/client/features/spend/ProjectSpending.tsx).
+ * - src/routes/_app/billing.tsx: mounts the spending limit card
+ *   (src/client/features/spend/SpendLimitsCard.tsx).
+ * - src/routes/_app/route.tsx: shows the spending limit banner above the
+ *   plan banner (src/client/features/spend/SpendLimitBanner.tsx).
+ * - src/client/components/QueryState.tsx: a refused paid action links to
+ *   Billing (src/client/features/spend/SpendLimitError.tsx).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

@@ -1,7 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { spendLedger, spendLimits } from "@/db/schema";
+import { growthNotifications, spendLedger, spendLimits } from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { AppError } from "@/server/lib/errors";
 import { creditsForProviderUsd } from "@/shared/billing";
@@ -167,6 +167,30 @@ it("keeps one row per credit hold and records each settlement", async () => {
       estimated: 7,
       actual: creditsForProviderUsd(0.005),
       lockId: topup.lockId,
+    },
+  ]);
+});
+
+it("notifies once when a project passes 80% of its limit", async () => {
+  const buyer = await customer({ project: 100 });
+  for (const estimatedCredits of [50, 35, 5])
+    await admitSpend({
+      customer: buyer,
+      provider: "dataforseo",
+      estimatedCredits,
+    });
+  expect(
+    await db
+      .select({
+        title: growthNotifications.title,
+        linkPath: growthNotifications.linkPath,
+      })
+      .from(growthNotifications)
+      .where(eq(growthNotifications.projectId, buyer.projectId)),
+  ).toEqual([
+    {
+      title: "This project used 85% of its monthly credit limit",
+      linkPath: `/p/${buyer.projectId}/settings/spending`,
     },
   ]);
 });
