@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** In progress. Part A (tables, signed endpoints, runner, measurement refresh, Trigger.dev tasks) built
+- **Status:** In progress. Parts A (runner, endpoints, Trigger.dev tasks) and B (all jobs, notifications) built
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -194,6 +194,8 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 3. Skip the comparison when either window has missing dates. Log "Incomplete data".
 4. The notification shows the numbers and links to Opportunities. Dedupe key: the 7-day window end date.
 
+**As built (part B).** New opportunities are the discovered items with priority 50 or more whose first detection equals the run's end time. The deployment check refreshes the pull request first, then the deployment signals for merged changes; any signal other than a human attestation creates `deployment_detected`, and it never confirms the deployment. The traffic watch reads 35 days by date and page in one request. Notifications belong to the organization; each member has their own read state.
+
 **Audit hook.** At the end of the site-audit workflow's successful finalize step, call a fork function that triggers `audit-followup` with the idempotency key `audit:{auditId}`. Add it with one `// playbook-seam` line in the upstream workflow file.
 
 ### 5.9 Plan rules
@@ -275,14 +277,14 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 - [x] Run endpoint: "already done" for a succeeded window, conditional schedule advance, `503` and `422` mapping (tests).
 - [x] Test: a removed schedule owner causes a skip with the reason and a notification.
 - [x] Test: a free plan skips `traffic_watch`.
-- [ ] Each job has a service test with mocked providers.
-- [ ] Traffic drop rule tests at each threshold, and the incomplete-data skip.
+- [x] Each job has a service test with mocked providers.
+- [x] Traffic drop rule tests at each threshold, and the incomplete-data skip.
 - [ ] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
 - [x] Task files with the retry, concurrency and duration settings from 5.3.
 - [ ] `trigger-deploy-playbook.yml` deploys the tasks after the Worker deploy.
 - [ ] Default schedules created on Search Console connect and on tracking start.
 - [ ] Automation tab with toggles, history and logs.
-- [ ] Notification bell, list and read state.
+- [x] Notification bell, list and read state.
 - [ ] Trigger.dev alerts reach the team's email.
 - [ ] Privacy policy lists Trigger.dev.
 - [ ] `content/docs/automation.mdx` lists each job, its default, its cost and how to turn it off.
