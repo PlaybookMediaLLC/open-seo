@@ -58,6 +58,15 @@ import type { Plugin } from "vite";
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
  *   (src/client/features/automation/AutomationSettings.tsx).
+ * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
+ *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
+ *   upstream's reserveUsageCredits is removed there.
+ * - src/server/billing/subscription.ts: each hold settlement is recorded on
+ *   the spend ledger (src/server/billing/spendLedger.ts).
+ * - src/server/lib/dataforseo/client.test.ts: the spend limit and ledger
+ *   modules pass through to upstream's billing in this test.
+ * - src/shared/error-codes.ts and src/client/lib/error-messages.ts: the
+ *   SPEND_LIMIT_REACHED code and its copy (src/shared/spendLimits.ts).
  */
 const RELAY = "https://relay.playbookmedia.io";
 

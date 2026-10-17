@@ -386,6 +386,13 @@
       "when": 1792260919210,
       "tag": "0054_lyrical_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1792266011214,
+      "tag": "0055_first_vulcan",
+      "breakpoints": true
     }
   ]
 }
