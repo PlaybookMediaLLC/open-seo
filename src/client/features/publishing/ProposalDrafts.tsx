@@ -76,18 +76,25 @@ export function useProposalFilePath(
   return [filePath, setTypedPath, note] as const;
 }
 
-/** RFC-0004 5.5: draft the description with a model, then check it. */
+const FIELD = { meta_description: "description", meta_title: "title" };
+
+/** RFC-0004 5.5: draft the description or title with a model, then check it. */
 export function ProposalDrafts({
   opportunity,
   filePath,
+  kind,
   onUse,
 }: {
   opportunity: Pick<Opportunity, "id" | "projectId" | "version">;
   filePath: string;
+  kind: "meta_description" | "meta_title";
   onUse: (draft: ProposalDraft) => void;
 }) {
   const { projectId, id } = opportunity;
-  const drafts = useQuery(proposalDraftsOptions(projectId, id));
+  const drafts = useQuery({
+    ...proposalDraftsOptions(projectId, id),
+    select: (rows) => rows.filter((row) => row.kind === kind),
+  });
   const refresh = useRefreshPublishing(projectId);
   const draft = useMutation({
     mutationFn: () =>
@@ -97,6 +104,7 @@ export function ProposalDrafts({
           opportunityId: id,
           expectedOpportunityVersion: opportunity.version,
           filePath: filePath.trim() || undefined,
+          kind,
         },
       }),
     onSettled: () => void refresh(),
@@ -110,12 +118,12 @@ export function ProposalDrafts({
     <div className="space-y-3 rounded-lg border p-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="space-y-1">
-          <p className="text-sm font-medium">Draft the description with AI</p>
+          <p className="text-sm font-medium">Draft the {FIELD[kind]} with AI</p>
           <p className="text-xs text-muted-foreground">
             {COST_ESTIMATE} Relay checks each draft against the page, your
             project context and your Search Console queries before you see it.
-            You can draft 3 times for each opportunity and 30 times for each
-            project in 24 hours.
+            You can draft each field 3 times for each opportunity, and 30 times
+            for each project, in 24 hours.
           </p>
         </div>
         <Button

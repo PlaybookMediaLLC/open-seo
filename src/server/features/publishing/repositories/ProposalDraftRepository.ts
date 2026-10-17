@@ -10,15 +10,17 @@ import type { ProposalDraft } from "@/types/schemas/proposalDrafts";
 
 type DraftRow = Omit<ProposalDraft, "sources" | "claims">;
 
-/** Drafts made since a time, for the opportunity and for the project. */
+/** Drafts made since a time: of one kind for the opportunity, and in all. */
 async function countSince(
   projectId: string,
   opportunityId: string,
   since: string,
+  kind: ProposalDraft["kind"],
 ) {
   const rows = await db
     .select({
       opportunityId: proposalDrafts.opportunityId,
+      kind: proposalDrafts.kind,
       total: count(),
     })
     .from(proposalDrafts)
@@ -28,10 +30,12 @@ async function countSince(
         gte(proposalDrafts.createdAt, since),
       ),
     )
-    .groupBy(proposalDrafts.opportunityId);
+    .groupBy(proposalDrafts.opportunityId, proposalDrafts.kind);
   return {
     opportunity: Number(
-      rows.find((row) => row.opportunityId === opportunityId)?.total ?? 0,
+      rows.find(
+        (row) => row.opportunityId === opportunityId && row.kind === kind,
+      )?.total ?? 0,
     ),
     project: rows.reduce((sum, row) => sum + Number(row.total), 0),
   };
@@ -149,4 +153,24 @@ async function discard(projectId: string, draftId: string): Promise<void> {
     );
 }
 
-export const ProposalDraftRepository = { countSince, save, list, discard };
+/** The newest checked anchor of an internal-link item, for its ticket. */
+async function latestAnchor(
+  projectId: string,
+  opportunity: { id: string; type: string },
+) {
+  if (opportunity.type !== "internal_link") return null;
+  return (
+    (await list(projectId, opportunity.id)).find(
+      (draft) =>
+        draft.kind === "internal_link_anchor" && draft.status === "generated",
+    ) ?? null
+  );
+}
+
+export const ProposalDraftRepository = {
+  countSince,
+  save,
+  list,
+  latestAnchor,
+  discard,
+};

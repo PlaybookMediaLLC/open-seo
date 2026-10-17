@@ -1,3 +1,4 @@
+import type { ProposalDraft } from "@/types/schemas/proposalDrafts";
 import { sort } from "remeda";
 import type {
   EvidencePeriod,
@@ -39,11 +40,21 @@ const VERIFY: Record<OpportunityType, string> = {
     "After the page ships, track the topic's keywords for 28 days and compare their positions with the competitor positions above.",
 };
 
+/** RFC-0004 phase 3: a checked internal-link anchor draft. */
+type TicketAnchor = Pick<
+  ProposalDraft,
+  "targetUrl" | "valueBefore" | "valueAfter"
+>;
+
 /**
- * Plain ticket text from stored fields only: no model, no note text, no
- * provider body and no token can reach it.
+ * Plain ticket text from stored fields only: no note text, no provider body
+ * and no token can reach it. The only model text is a checked anchor draft,
+ * whose words are copied from the source page.
  */
-export function opportunityTicket(detail: OpportunityDetail) {
+export function opportunityTicket(
+  detail: OpportunityDetail,
+  anchor: TicketAnchor | null = null,
+) {
   const { opportunity: item } = detail;
   const latest = <T extends { runId: string }>(rows: T[]) =>
     rows.filter((row) => row.runId === item.evidenceRunId);
@@ -98,6 +109,11 @@ export function opportunityTicket(detail: OpportunityDetail) {
       `## Pages\n\n${pages.join("\n")}`,
       `## Evidence\n\n${evidence.join("\n") || "No stored evidence rows."}`,
       `## Proposed change\n\n${item.recommendedAction}`,
+      ...(anchor
+        ? [
+            `## Suggested link\n\nOn ${anchor.targetUrl}, link the words "${anchor.valueAfter}" to ${item.url}. They stand in this sentence:\n\n> ${anchor.valueBefore ?? ""}\n\nRelay drafted this with AI and checked that the sentence is on the page.`,
+          ]
+        : []),
       `## Risk\n\n${item.uncertainty} Estimated effort: ${item.effortHours} hours.`,
       `## How to verify\n\n${VERIFY[item.type]}`,
     ].join("\n\n"),

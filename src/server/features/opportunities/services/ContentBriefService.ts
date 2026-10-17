@@ -1,19 +1,12 @@
-import { generateText, NoObjectGeneratedError, Output } from "ai";
 import { sortBy } from "remeda";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { requireOrgPermission } from "@/server/auth/org-gate";
-import { billResearchSpend } from "@/server/billing/researchSpend";
 import { checkUsageCreditsDepleted } from "@/server/billing/subscription";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
+import { generateChecked } from "@/server/features/publishing/checkedGeneration";
 import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
-import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
 import { AppError } from "@/server/lib/errors";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
-import {
-  getOptionalEnvValue,
-  getRequiredEnvValue,
-  isHostedServerAuthMode,
-} from "@/server/lib/runtime-env";
+import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import {
   BRIEF_OPPORTUNITY_TYPES,
   type ContentBrief,
@@ -27,7 +20,6 @@ import {
   checkBrief,
   renderBrief,
   type BriefKeyword,
-  type BriefOutput,
 } from "./contentBriefOutput";
 import { authorize, get, type OpportunityContext } from "./opportunityAccess";
 import { TICKET_STATUSES } from "./opportunityTicket";
@@ -147,57 +139,22 @@ async function create(
           `${section.key}: ${section.content.slice(0, CONTEXT_LIMIT)}`,
       )
       .join("\n\n");
-    const model = buildChatAgentModel(
-      await getRequiredEnvValue("OPENROUTER_API_KEY"),
-      await getOptionalEnvValue("OPENROUTER_MODEL"),
-      "low",
-    );
-    let output: BriefOutput | null = null;
-    let failures: string[] = [];
-    let modelId = "unknown";
-    let costUsd = 0;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const result = await generateText({
-          model,
-          output: Output.object({ schema: briefOutputSchema }),
-          maxOutputTokens: 4_000,
-          abortSignal: AbortSignal.timeout(60_000),
-          system: BRIEF_PROMPT,
-          prompt: [
-            `Page: ${opportunity.url}\nOpportunity: ${opportunity.title}`,
-            `<keywords>\n${keywords.map((item) => `${item.keyword}${item.searchVolume === null ? "" : ` (${item.searchVolume} monthly searches)`}`).join("\n")}\n</keywords>`,
-            `<project_context untrusted="true">\n${contextText}\n</project_context>`,
-            failures.length
-              ? `Your previous brief failed these checks. Fix every one:\n- ${failures.join("\n- ")}`
-              : "",
-          ]
-            .filter(Boolean)
-            .join("\n\n"),
-          onStepFinish: async (step) => {
-            const stepCost = requireOpenRouterCostUsd(step.providerMetadata);
-            costUsd += stepCost;
-            await billResearchSpend(customer, [
-              {
-                provider: "openrouter",
-                creditFeature: "agent",
-                operation: "content_brief",
-                costUsd: stepCost,
-              },
-            ]);
-          },
-        });
-        modelId = result.response.modelId;
-        output = result.output;
-        failures = checkBrief(output, keywords, contextText);
-      } catch (error) {
-        if (!NoObjectGeneratedError.isInstance(error)) throw error;
-        output = null;
-        failures = ["The answer did not match the required JSON format."];
-      }
-      if (!failures.length) break;
-    }
-    const passed = output !== null && !failures.length;
+    const result = await generateChecked({
+      customer,
+      operation: "content_brief",
+      schema: briefOutputSchema,
+      system: BRIEF_PROMPT,
+      prompt: [
+        `Page: ${opportunity.url}\nOpportunity: ${opportunity.title}`,
+        `<keywords>\n${keywords.map((item) => `${item.keyword}${item.searchVolume === null ? "" : ` (${item.searchVolume} monthly searches)`}`).join("\n")}\n</keywords>`,
+        `<project_context untrusted="true">\n${contextText}\n</project_context>`,
+      ].join("\n\n"),
+      check: (output) => checkBrief(output, keywords, contextText),
+      maxOutputTokens: 4_000,
+      timeoutMs: 60_000,
+    });
+    const output = result.output ?? result.rejected;
+    const passed = result.output !== null;
     const volumes = new Map(
       keywords.map((item) => [item.keyword.toLowerCase(), item.searchVolume]),
     );
@@ -209,9 +166,9 @@ async function create(
       audience: output?.audience ?? "",
       searchIntent: output?.searchIntent ?? "",
       outlineMarkdown: output && passed ? renderBrief(output, keywords) : "",
-      model: modelId,
+      model: result.modelId,
       promptVersion: BRIEF_PROMPT_VERSION,
-      costUsd,
+      costUsd: result.costUsd,
       createdBy: context.userId,
       createdAt: new Date().toISOString(),
       keywords:

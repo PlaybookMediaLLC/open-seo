@@ -198,7 +198,11 @@ function PrepareForm({
     rootDirectory,
   );
   const [description, setDescription] = useState("");
-  const [draftId, setDraftId] = useState<string | null>(null);
+  // ponytail: a proposal records one draft; the description's wins.
+  const [draftIds, setDraftIds] = useState<{
+    description?: string;
+    title?: string;
+  }>({});
   const [title, setTitle] = useState("");
   const [indexing, setIndexing] = useState<IndexingValues | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -222,7 +226,10 @@ function PrepareForm({
           : {
               newDescription: description.trim() || undefined,
               newTitle: title.trim() || undefined,
-              draftId: (description.trim() && draftId) || undefined,
+              draftId:
+                (description.trim() && draftIds.description) ||
+                (title.trim() && draftIds.title) ||
+                undefined,
             }),
       });
       if (!input.success)
@@ -236,7 +243,7 @@ function PrepareForm({
       if (result.ok) {
         setDescription("");
         setTitle("");
-        setDraftId(null);
+        setDraftIds({});
       }
     },
     onError: () =>
@@ -323,6 +330,15 @@ function PrepareForm({
                 and checks that the final title has 10 to 60 characters.
               </p>
             </div>
+            <ProposalDrafts
+              opportunity={opportunity}
+              filePath={filePath}
+              kind="meta_title"
+              onUse={(draft) => {
+                setTitle(draft.valueAfter);
+                setDraftIds((ids) => ({ ...ids, title: draft.id }));
+              }}
+            />
             <div className="space-y-2">
               <Label htmlFor="publishing-description">
                 Your replacement description (optional)
@@ -343,9 +359,10 @@ function PrepareForm({
             <ProposalDrafts
               opportunity={opportunity}
               filePath={filePath}
+              kind="meta_description"
               onUse={(draft) => {
                 setDescription(draft.valueAfter);
-                setDraftId(draft.id);
+                setDraftIds((ids) => ({ ...ids, description: draft.id }));
               }}
             />
           </>

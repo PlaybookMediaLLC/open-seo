@@ -22,6 +22,7 @@ import {
 } from "@/types/schemas/publishing";
 import {
   discardDraftInputSchema,
+  draftAnchorInputSchema,
   draftProposalTextInputSchema,
   opportunityDraftInputSchema,
 } from "@/types/schemas/proposalDrafts";
@@ -175,6 +176,15 @@ export const discardProposalDraft = createServerFn({ method: "POST" })
   .validator(discardDraftInputSchema)
   .handler(({ context, data }) =>
     ProposalDraftService.discard(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+export const draftOpportunityAnchor = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(draftAnchorInputSchema)
+  .handler(({ context, data }) =>
+    ProposalDraftService.draftAnchor(context, {
       ...data,
       projectId: context.projectId,
     }),

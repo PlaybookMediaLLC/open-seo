@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { OpportunityService } from "@/server/features/opportunities/services/OpportunityService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
-import { getTicket } from "@/server/features/opportunities/services/opportunityDecisions";
+import { getTicket } from "@/server/features/opportunities/services/opportunityTicketService";
 import { get as getOpportunity } from "@/server/features/opportunities/services/opportunityAccess";
 import { MetadataProposalService } from "@/server/features/publishing/MetadataProposalService";
 import { ProposalDraftService } from "@/server/features/publishing/ProposalDraftService";

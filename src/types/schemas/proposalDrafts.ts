@@ -1,7 +1,11 @@
 import { z } from "zod";
 
 // RFC-0004: drafts written by a model and checked before a person sees them.
-export const DRAFT_KINDS = ["meta_description"] as const;
+export const DRAFT_KINDS = [
+  "meta_description",
+  "meta_title",
+  "internal_link_anchor",
+] as const;
 export const DRAFT_STATUSES = [
   "generated",
   "rejected_by_validation",
@@ -19,17 +23,21 @@ const projectScope = z.object({ projectId: z.string().min(1) });
 export const opportunityDraftInputSchema = projectScope.extend({
   opportunityId: z.string().min(1),
 });
-export const draftProposalTextInputSchema = opportunityDraftInputSchema.extend({
+export const draftAnchorInputSchema = opportunityDraftInputSchema.extend({
   expectedOpportunityVersion: z.number().int().min(1),
+});
+export const draftProposalTextInputSchema = draftAnchorInputSchema.extend({
+  kind: z.enum(["meta_description", "meta_title"]).default("meta_description"),
   /** The page file, when the locator or the person found it. */
   filePath: z.string().trim().min(1).max(512).optional(),
 });
 export const discardDraftInputSchema = projectScope.extend({
   draftId: z.string().min(1),
 });
-export type DraftProposalTextInput = z.infer<
+export type DraftProposalTextInput = z.input<
   typeof draftProposalTextInputSchema
 >;
+export type DraftAnchorInput = z.infer<typeof draftAnchorInputSchema>;
 
 export type DraftSource = {
   id: string;
