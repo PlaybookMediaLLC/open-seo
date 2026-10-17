@@ -137,6 +137,11 @@ async function draft(
       "INSUFFICIENT_CREDITS",
       "You need usage credits to draft a description.",
     );
+  // An agent may leave the path out; the app always sends what it shows.
+  const located = input.filePath ? null : await locate(context, input);
+  const filePath =
+    input.filePath ??
+    (located?.status === "found" ? located.filePath : undefined);
   const claimKey = `drafts:${input.projectId}`;
   const token = await DataRefreshClaimRepository.claim(
     claimKey,
@@ -153,7 +158,7 @@ async function draft(
       context,
       input.projectId,
       detail,
-      input.filePath,
+      filePath,
     );
     const model = buildChatAgentModel(
       await getRequiredEnvValue("OPENROUTER_API_KEY"),
@@ -213,7 +218,7 @@ async function draft(
       kind: "meta_description",
       status: passed ? "generated" : "rejected_by_validation",
       targetUrl: opportunity.url,
-      filePath: input.filePath ?? null,
+      filePath: filePath ?? null,
       valueBefore: inputs.currentDescription,
       valueAfter: output?.description.trim() ?? "",
       rationale: output?.rationale ?? "",

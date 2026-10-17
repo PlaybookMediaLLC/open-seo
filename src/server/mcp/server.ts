@@ -109,6 +109,13 @@ import {
 } from "@/server/mcp/tools/site-audit-cleanup-tools";
 import { whoamiTool } from "@/server/mcp/tools/whoami";
 import { explorePromptTool } from "@/server/mcp/tools/explore-prompt";
+import {
+  listOpportunitiesTool, // playbook-seam
+  getOpportunityTool, // playbook-seam
+  draftOpportunityDescriptionTool, // playbook-seam
+  getOpportunityTicketTool, // playbook-seam
+  getExperimentResultsTool, // playbook-seam
+} from "@/server/mcp/tools/growth-tools"; // playbook-seam
 
 type ToolSchema = z.ZodType | z.ZodRawShape;
 
@@ -276,6 +283,11 @@ export function createOpenSeoMcpServer(authProps: McpProps) {
   register(listReportTemplatesTool);
   register(saveReportTemplateTool);
   register(deleteReportTemplateTool);
+  register(listOpportunitiesTool); // playbook-seam
+  register(getOpportunityTool); // playbook-seam
+  register(draftOpportunityDescriptionTool); // playbook-seam
+  register(getOpportunityTicketTool); // playbook-seam
+  register(getExperimentResultsTool); // playbook-seam
 
   return server;
 }

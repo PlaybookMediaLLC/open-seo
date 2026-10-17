@@ -43,6 +43,13 @@ import { listSavedKeywordsTool } from "@/server/mcp/tools/list-saved-keywords";
 import { removeSavedKeywordsTool } from "@/server/mcp/tools/remove-saved-keywords";
 import { buildUpdateProjectContextTool } from "@/server/mcp/tools/project-context";
 import {
+  listOpportunitiesTool, // playbook-seam
+  getOpportunityTool, // playbook-seam
+  draftOpportunityDescriptionTool, // playbook-seam
+  getOpportunityTicketTool, // playbook-seam
+  getExperimentResultsTool, // playbook-seam
+} from "@/server/mcp/tools/growth-tools"; // playbook-seam
+import {
   getGoogleAnalyticsAudienceBreakdownTool,
   getGoogleAnalyticsEcommercePerformanceTool,
   getGoogleAnalyticsKeyEventsTool,
@@ -460,5 +467,10 @@ export function buildSamMcpTools(
     get_audit_status: waitingAuditStatusTool(adaptTool),
     get_audit_issues: adaptTool(getAuditIssuesTool),
     get_audit_pages: adaptTool(getAuditPagesTool),
+    list_opportunities: adaptTool(listOpportunitiesTool), // playbook-seam
+    get_opportunity: adaptTool(getOpportunityTool), // playbook-seam
+    draft_opportunity_description: adaptTool(draftOpportunityDescriptionTool), // playbook-seam
+    get_opportunity_ticket: adaptTool(getOpportunityTicketTool), // playbook-seam
+    get_experiment_results: adaptTool(getExperimentResultsTool), // playbook-seam
   };
 }

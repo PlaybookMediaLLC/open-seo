@@ -3,7 +3,7 @@ title: "Connect with MCP"
 description: "Connect Relay to Claude, Cursor, Codex, ChatGPT, and any other MCP client."
 ---
 
-Relay's MCP server gives compatible AI clients the same tools you use in the app: keyword research, live search results, domain and backlink research, rank tracking, saved keywords, Search Console performance, URL inspection, AI visibility, reports, and your shared project context.
+Relay's MCP server gives compatible AI clients the same tools you use in the app: keyword research, live search results, domain and backlink research, rank tracking, saved keywords, Search Console performance, URL inspection, AI visibility, reports, your shared project context, and your growth queue.
 
 The MCP server address is:
 
@@ -108,6 +108,28 @@ Use Relay to check my connection and list my projects. Do not run SEO research o
 ```
 
 These reads are free. An empty project list still means the connection works.
+
+## Work the growth queue
+
+These tools read your saved [opportunities](/docs/opportunities) and their results:
+
+| Tool                            | What it does                                                                                                | Credits      |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------ |
+| `list_opportunities`            | Lists opportunities, highest priority first, with their status and version.                                 | None         |
+| `get_opportunity`               | Reads one opportunity: evidence, decisions, proposals and pull requests, drafts and measured results.       | None         |
+| `get_opportunity_ticket`        | Returns the plain-text ticket for an approved opportunity.                                                  | None         |
+| `get_experiment_results`        | Lists shipped changes with their latest measured result, or reads one.                                      | None         |
+| `draft_opportunity_description` | Writes a checked description draft for an approved opportunity. It needs permission to manage integrations. | About 1 to 5 |
+
+The draft is saved in Relay. It changes nothing on your site. See [Draft a description with AI](/docs/github-publishing#draft-a-description-with-ai) for its checks and limits.
+
+An agent cannot approve an opportunity, prepare or approve a pull request, merge, deploy or revert. You do these in the app. When you ask the agent for one, it gives you the app link.
+
+Try:
+
+```text
+List my top Relay opportunities for this project and draft a description for the best approved one.
+```
 
 ## Troubleshooting
 

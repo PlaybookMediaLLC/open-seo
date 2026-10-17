@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type * as Ai from "ai";
+import type * as Access from "./publishingAccess";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
 import { dataRefreshClaims, opportunities } from "@/db/schema";
@@ -26,6 +27,7 @@ const mocks = vi.hoisted(() => ({
   bill: vi.fn(),
   depleted: vi.fn(),
   project: vi.fn(),
+  locate: vi.fn(),
 }));
 vi.mock("cloudflare:workers", () => ({
   env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
@@ -36,6 +38,26 @@ vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("ai", async (importOriginal) => ({
   ...(await importOriginal<typeof Ai>()),
   generateText: mocks.generate,
+}));
+// GitHub stays outside: the lease wrapper runs the step, the locator and the
+// file parser answer from the test.
+vi.mock("./publishingAccess", async (importOriginal) => ({
+  ...(await importOriginal<typeof Access>()),
+  withPublishingClaim: (
+    _context: unknown,
+    _projectId: string,
+    operation: (token: string, signal: AbortSignal) => Promise<unknown>,
+  ) => operation("lease", new AbortController().signal),
+  connectedGithub: async () => ({
+    request: vi.fn(),
+    getRef: async () => ({ sha: "c".repeat(40) }),
+  }),
+}));
+vi.mock("./fileLocator", () => ({ locateMetadataFile: mocks.locate }));
+vi.mock("./publishingTarget", () => ({
+  prepareChangeAt: async () => ({
+    patch: { beforeDescription: "How Playbook Media approaches software." },
+  }),
 }));
 vi.mock("@/server/billing/researchSpend", () => ({
   billResearchSpend: mocks.bill,
@@ -133,6 +155,7 @@ async function project(role = "owner") {
 
 beforeEach(() => {
   mocks.depleted.mockResolvedValue({ depleted: false });
+  mocks.locate.mockResolvedValue({ status: "not_found", message: "None." });
   mocks.project.mockImplementation(
     async (projectId: string, organizationId: string) =>
       projectId === organizationId ? { id: projectId } : null,
@@ -155,6 +178,20 @@ it("drafts a checked description with its sources and bills the reported cost", 
     [expect.objectContaining({ provider: "openrouter", costUsd: COST })],
   );
   expect(await ProposalDraftService.list(context, request)).toEqual([draft]);
+});
+
+it("finds the page file for an agent that leaves the path out", async () => {
+  const { context, request } = await project();
+  mocks.locate.mockResolvedValue({
+    status: "found",
+    filePath: "app/(site)/approach/page.tsx",
+  });
+  answers(good);
+  expect(await ProposalDraftService.draft(context, request)).toMatchObject({
+    status: "generated",
+    filePath: "app/(site)/approach/page.tsx",
+    valueBefore: "How Playbook Media approaches software.",
+  });
 });
 
 it("retries once, then stores an injected draft as rejected and never shows it", async () => {
