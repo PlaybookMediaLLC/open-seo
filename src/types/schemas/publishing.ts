@@ -142,6 +142,7 @@ export type PublishingConnection = {
 };
 export type PublishingConnectionRecord = PublishingConnection & {
   encryptedToken: string | null;
+  tokenKeyVersion: number;
 };
 export type MetadataProposal = {
   id: string;

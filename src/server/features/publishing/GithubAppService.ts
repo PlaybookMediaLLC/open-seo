@@ -190,6 +190,7 @@ async function connect(context: PublishingContext, raw: ConnectGithubAppInput) {
             transport: "github_app",
             installationRef: installation.id,
             encryptedToken: null,
+            tokenKeyVersion: 0,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),
             revokedAt: null,

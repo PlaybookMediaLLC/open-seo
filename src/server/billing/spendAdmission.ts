@@ -1,3 +1,4 @@
+import { env } from "cloudflare:workers";
 import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
@@ -81,6 +82,30 @@ async function warnNearLimit(
   }
 }
 
+let warnedNoLimiter = false;
+
+/**
+ * RFC-0009 5.8: 30 paid actions a minute per user and feature. Installs
+ * without the binding skip the check and warn once.
+ */
+async function assertPaidActionRate(userId: string, feature: string) {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- declared as a rate limiter in deploy/alchemy/alchemy.run.ts; absent outside hosted prod
+  const limiter = (env as { PAID_ACTION_RATE_LIMIT?: RateLimit })
+    .PAID_ACTION_RATE_LIMIT;
+  if (!limiter) {
+    if (!warnedNoLimiter) console.warn("[spend] no paid action rate limit");
+    warnedNoLimiter = true;
+    return;
+  }
+  const { success } = await limiter.limit({ key: `${userId}:${feature}` });
+  if (!success)
+    throw new AppError(
+      "RATE_LIMITED",
+      "Too many paid actions. Try again in 60 seconds.",
+      { tryAgainIn: "60000" },
+    );
+}
+
 /**
  * Writes an `admitted` ledger row when both monthly limits allow the
  * estimate, or a `refused` row and throws SPEND_LIMIT_REACHED.
@@ -93,6 +118,7 @@ export async function admitSpend(input: {
   now?: Date;
 }) {
   const { customer, estimatedCredits } = input;
+  await assertPaidActionRate(customer.userId, input.feature ?? input.provider);
   const now = input.now ?? new Date();
   const periodMonth = periodOf(now);
   const id = crypto.randomUUID();

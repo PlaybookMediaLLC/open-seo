@@ -199,3 +199,30 @@ export async function setProductionEnvironment(
     );
   return Boolean(accepted);
 }
+
+/**
+ * RFC-0009 5.7: stores a token re-encrypted under the current key, only
+ * when the row still holds the ciphertext that was opened.
+ */
+export async function rewrapToken(input: {
+  projectId: string;
+  connectionId: string;
+  from: string;
+  encryptedToken: string;
+  tokenKeyVersion: number;
+}) {
+  await db
+    .update(publishingConnections)
+    .set({
+      encryptedToken: input.encryptedToken,
+      tokenKeyVersion: input.tokenKeyVersion,
+    })
+    .where(
+      and(
+        eq(publishingConnections.projectId, input.projectId),
+        eq(publishingConnections.id, input.connectionId),
+        eq(publishingConnections.encryptedToken, input.from),
+        isNull(publishingConnections.revokedAt),
+      ),
+    );
+}

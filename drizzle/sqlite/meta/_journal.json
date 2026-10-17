@@ -554,6 +554,13 @@
       "when": 1792269154254,
       "tag": "0078_unknown_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "6",
+      "when": 1792271423038,
+      "tag": "0079_safe_stranger",
+      "breakpoints": true
     }
   ]
 }
