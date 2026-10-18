@@ -124,7 +124,10 @@ it("refuses a small group with the gap and creates nothing", async () => {
     failures: [
       "9 pages have a click in the 56-day baseline. A test needs at least 30, so 21 more.",
     ],
-    summary: null,
+    // The refusal names the MDE too (10, phase 1a).
+    summary: expect.stringMatching(
+      /^This group can detect a change of \d+% or more/,
+    ),
   });
   expect(
     await db

@@ -32,6 +32,7 @@ import {
   assign,
   eligibility,
   minimumDetectableEffect,
+  pairPages,
   randomizationTest,
 } from "./splitStats";
 
@@ -189,8 +190,16 @@ async function create(
   const pages = (
     await loadBaseline(input.projectId, input.pagePattern, window)
   ).filter((page) => page.clicks >= 1);
-  const thresholds = eligibility(pages, null);
-  if (!thresholds.eligible) return refuse(thresholds.failures);
+  // 10 phase 1a: a refusal names the MDE too, from neighbour pairs.
+  const neighbours = pairPages(pages, 0);
+  const thresholds = eligibility(
+    pages,
+    neighbours.length >= 3
+      ? minimumDetectableEffect(prePeriodDifferences(neighbours, pages))
+      : null,
+  );
+  if (!thresholds.eligible)
+    return refuse(thresholds.failures, thresholds.summary);
 
   const connection = await getConnection(input.projectId);
   if (!connection)

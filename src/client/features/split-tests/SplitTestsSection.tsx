@@ -189,6 +189,9 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
               {refused.failures.map((failure) => (
                 <p key={failure}>{failure}</p>
               ))}
+              {refused.summary && (
+                <p className="text-muted-foreground">{refused.summary}</p>
+              )}
               {backtest.data ? (
                 <p className="text-muted-foreground">
                   Backtest of {backtest.data.pairs} pairs from{" "}
