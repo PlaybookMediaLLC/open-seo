@@ -231,6 +231,57 @@ export function createGithubReader(request: GithubRequest) {
         truncated: tree.truncated,
       };
     },
+    /** RFC-0012 5.4: one commit on the base that modifies exactly these files. */
+    async verifyCommitFiles({
+      baseSha,
+      headSha,
+      files,
+    }: {
+      baseSha: string;
+      headSha: string;
+      files: Array<{ path: string; blobSha: string }>;
+    }) {
+      for (const file of files) {
+        validateGithubPath(file.path);
+        validateGithubSha(file.blobSha);
+      }
+      const value = await request(
+        `/compare/${validateGithubSha(baseSha)}...${validateGithubSha(headSha)}?per_page=2`,
+        z.object({
+          status: z.string(),
+          ahead_by: z.number().int(),
+          behind_by: z.number().int(),
+          total_commits: z.number().int(),
+          merge_base_commit: z.object({ sha: githubShaSchema }),
+          commits: z.array(z.object({ sha: githubShaSchema })),
+          files: z.array(
+            z.object({
+              filename: z.string(),
+              status: z.string(),
+              sha: githubShaSchema,
+              previous_filename: z.string().optional(),
+            }),
+          ),
+        }),
+      );
+      const expected = new Map(files.map((file) => [file.path, file.blobSha]));
+      return (
+        value.status === "ahead" &&
+        value.ahead_by === 1 &&
+        value.behind_by === 0 &&
+        value.total_commits === 1 &&
+        value.merge_base_commit.sha === baseSha &&
+        value.commits.length === 1 &&
+        value.commits[0].sha === headSha &&
+        value.files.length === expected.size &&
+        value.files.every(
+          (file) =>
+            file.status === "modified" &&
+            file.previous_filename === undefined &&
+            expected.get(file.filename) === file.sha,
+        )
+      );
+    },
     async verifySingleFileCommit({
       baseSha,
       headSha,

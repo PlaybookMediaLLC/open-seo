@@ -19,6 +19,7 @@ import {
   withPublishingClaim,
   type PublishingContext,
 } from "./publishingAccess";
+import { publishCopyProposal } from "./publishCopyProposal";
 import { publishProposal } from "./publishProposal";
 import { PublishingRepository } from "./repositories/PublishingRepository";
 
@@ -60,7 +61,8 @@ async function execute(
         const { proposal } = history;
         if (
           input.changeHash !== proposal.changeHash ||
-          (await proposalFingerprint(proposal)) !== proposal.changeHash
+          (await proposalFingerprint(proposal, history.textEdits)) !==
+            proposal.changeHash
         )
           throw new AppError("CONFLICT");
         const succeeded = history.executions.find(
@@ -172,6 +174,22 @@ async function execute(
             !repository.canPush
           )
             throw new AppError("CONFLICT");
+          // RFC-0012 5.4: a page text change commits every edit at once.
+          if (proposal.changeKind === "copy_text") {
+            await publishCopyProposal(
+              client,
+              proposal,
+              history.textEdits,
+              connection,
+              checkpoint,
+            );
+            return {
+              ok: true,
+              message:
+                "The exact-change pull request is recorded. Review and merge it in GitHub when ready. No auto-merge or deployment was requested.",
+              executionId: execution.id,
+            };
+          }
           const { adapterId, file, helper, patch } = await prepareChangeAt(
             client,
             connection,

@@ -117,7 +117,7 @@ export function PublishingOpportunityPanel({
                 opportunity={opportunity}
                 rootDirectory={connection.rootDirectory}
               />
-              <CopyTextSheet projectId={projectId} opportunityId={id} />
+              <CopyTextSheet opportunity={opportunity} />
             </>
           ) : (
             opportunity.status !== "approved" && (

@@ -13,6 +13,7 @@ import type { PublishingRepository } from "./repositories/PublishingRepository";
 import { MetadataExecutionService } from "./MetadataExecutionService";
 import { prepareMetadataChange } from "./nextMetadata";
 import { AppError } from "@/server/lib/errors";
+import { applyCopyEdits } from "./copyChange";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
   makePublishingFixture,
@@ -99,6 +100,8 @@ beforeEach(async () => {
     listDirectory: vi.fn<GithubClient["listDirectory"]>(),
     listFiles: vi.fn<GithubClient["listFiles"]>(),
     deleteFile: vi.fn<GithubClient["deleteFile"]>(),
+    commitFiles: vi.fn<GithubClient["commitFiles"]>(),
+    verifyCommitFiles: vi.fn<GithubClient["verifyCommitFiles"]>(),
     getRef: vi
       .fn<GithubClient["getRef"]>()
       .mockImplementation(async (branch) =>
@@ -489,5 +492,99 @@ describe("MetadataExecutionService interruption recovery", () => {
       "file_committed",
       "pull_request_created",
     ]);
+  });
+});
+
+// RFC-0012 5.4: a page text change commits every edit at once.
+describe("MetadataExecutionService page text changes", () => {
+  const page =
+    "export default function Page() {\n  return <h1>Book a call</h1>;\n}\n";
+  const content = "export const hero = { cta: 'Start free' };\n";
+  async function copyProposal() {
+    const sources = new Map([
+      [
+        "app/pricing/page.tsx",
+        { source: page, blobSha: await gitBlobHash(page) },
+      ],
+      [
+        "lib/content.ts",
+        { source: content, blobSha: await gitBlobHash(content) },
+      ],
+    ]);
+    const { textEdits, files } = await applyCopyEdits(sources, [
+      {
+        filePath: "app/pricing/page.tsx",
+        beforeText: "Book a call",
+        afterText: "Talk to sales",
+      },
+      {
+        filePath: "lib/content.ts",
+        beforeText: "Start free",
+        afterText: "Start your free trial",
+      },
+    ]);
+    const proposal = {
+      ...fixture.proposal,
+      changeKind: "copy_text" as const,
+      fingerprintVersion: 6,
+      filePath: "app/pricing/page.tsx",
+      beforeBlobSha: await gitBlobHash(page),
+      afterBlobSha: files[0].blobSha,
+    };
+    proposal.changeHash = await proposalFingerprint(proposal, textEdits);
+    fixture.executeInput.changeHash = proposal.changeHash;
+    mocks.history.mockResolvedValue({
+      proposal,
+      connection: fixture.connection,
+      executions: [],
+      approvals: [],
+      events: [],
+      textEdits,
+    });
+    github.readFile.mockImplementation(
+      async (path) =>
+        sources.get(path) ?? Promise.reject(new AppError("NOT_FOUND")),
+    );
+    github.commitFiles.mockResolvedValue({ commitSha: headSha });
+    github.verifyCommitFiles.mockResolvedValue(true);
+    github.createRef.mockImplementation(async (_branch, sha) => {
+      branchSha = sha;
+      return { sha };
+    });
+    github.createPullRequest.mockResolvedValue({
+      ...fixture.pullRequest,
+      body: `<!-- OpenSEO proposal:${proposal.id} change:${proposal.changeHash} -->`,
+    });
+    return { proposal, sources };
+  }
+
+  it("writes every text edit in one commit, then opens one pull request", async () => {
+    const { proposal } = await copyProposal();
+    expect((await execute()).ok).toBe(true);
+    expect(github.commitFiles).toHaveBeenCalledOnce();
+    expect(
+      github.commitFiles.mock.calls[0][0].files.map((file) => file.path),
+    ).toEqual(["app/pricing/page.tsx", "lib/content.ts"]);
+    expect(github.commitFiles.mock.calls[0][0].files[1].source).toContain(
+      "'Start your free trial'",
+    );
+    expect(github.createRef).toHaveBeenCalledWith(
+      `growth/${proposal.id}`,
+      headSha,
+    );
+    expect(github.updateFile).not.toHaveBeenCalled();
+    expect(github.createPullRequest).toHaveBeenCalledOnce();
+  });
+
+  it("writes nothing when a file changed after the person approved", async () => {
+    const { sources } = await copyProposal();
+    const changed = content.replace("Start free", "Start now");
+    sources.set("lib/content.ts", {
+      source: changed,
+      blobSha: await gitBlobHash(changed),
+    });
+    expect((await execute()).ok).toBe(false);
+    expect(github.commitFiles).not.toHaveBeenCalled();
+    expect(github.createRef).not.toHaveBeenCalled();
   });
 });

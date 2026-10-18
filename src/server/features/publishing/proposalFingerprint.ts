@@ -1,4 +1,7 @@
-import type { MetadataProposal } from "@/types/schemas/publishing";
+import type {
+  MetadataProposal,
+  ProposalTextEdit,
+} from "@/types/schemas/publishing";
 
 async function digest(algorithm: "SHA-1" | "SHA-256", value: string) {
   const hash = await crypto.subtle.digest(
@@ -19,6 +22,7 @@ export function gitBlobHash(source: string) {
 
 export function proposalFingerprint(
   proposal: Omit<MetadataProposal, "changeHash">,
+  textEdits: ProposalTextEdit[] = [],
 ) {
   // Explicit ordered tuple, not JSON persistence. All reviewed fields are bound.
   return digest(
@@ -73,6 +77,23 @@ export function proposalFingerprint(
                   proposal.robotsAfter,
                   proposal.robotsBeforeSnippet,
                   proposal.robotsAfterSnippet,
+                ]
+              : []),
+            // RFC-0012 5.4: version 6 binds the change kind and every edit.
+            ...(proposal.fingerprintVersion >= 6
+              ? [
+                  proposal.changeKind,
+                  textEdits.map((edit) => [
+                    edit.ordinal,
+                    edit.filePath,
+                    edit.nodeKind,
+                    edit.beforeBlobSha,
+                    edit.afterBlobSha,
+                    edit.beforeText,
+                    edit.afterText,
+                    edit.beforeSnippet,
+                    edit.afterSnippet,
+                  ]),
                 ]
               : []),
           ]

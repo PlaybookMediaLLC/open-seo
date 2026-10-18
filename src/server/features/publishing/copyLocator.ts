@@ -17,9 +17,9 @@ const EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".mdx"];
 const PAGE_FILE = /(?:^|\/)page\.(?:tsx|ts|jsx|js)$/;
 // A Markdown line's prefix: a heading, list or quote marker.
 const MARKDOWN_PREFIX = /^(\s*(?:#{1,6}\s+|[-*+]\s+|\d+\.\s+|>\s+)?)(.*?)\s*$/;
-const MARKDOWN_MARKUP = /[*_`[\]()<>{}]/;
+export const MARKDOWN_MARKUP = /[*_`[\]()<>{}]/;
 
-type TextNodeKind =
+export type TextNodeKind =
   | "string_literal"
   | "template_literal"
   | "jsx_text"
@@ -72,7 +72,11 @@ function exportNameAt(program: Program, offset: number) {
 }
 
 /** Nodes whose whitespace-normalized text equals `text`, in one file. */
-function findTextNodes(source: string, path: string, text: string): TextNode[] {
+export function findTextNodes(
+  source: string,
+  path: string,
+  text: string,
+): TextNode[] {
   const wanted = normalizeText(text);
   if (MARKDOWN.test(path)) {
     const nodes: TextNode[] = [];

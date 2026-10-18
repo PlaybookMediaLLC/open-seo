@@ -177,6 +177,8 @@ export type MetadataProposal = {
   robotsAfterSnippet: string | null;
   adapterId: "app_router_metadata" | "pages_router_head";
   fingerprintVersion: number;
+  /** RFC-0012 5.4: "copy_text" edits page text through ProposalTextEdit rows. */
+  changeKind: "metadata" | "copy_text" | "jsx_attribute" | "markdown";
   revertsProposalId: string | null;
   /** RFC-0004: the AI draft the person started from, if any. */
   draftId: string | null;
@@ -228,8 +230,26 @@ export type ExecutionEvent = {
   message: string;
   createdAt: string;
 };
+/** RFC-0012 5.4: one replaced text node of a copy change. */
+export type ProposalTextEdit = {
+  ordinal: number;
+  filePath: string;
+  nodeKind:
+    | "string_literal"
+    | "template_literal"
+    | "jsx_text"
+    | "markdown_text";
+  /** The file at the base commit, and after all of the proposal's edits. */
+  beforeBlobSha: string;
+  afterBlobSha: string;
+  beforeText: string;
+  afterText: string;
+  beforeSnippet: string;
+  afterSnippet: string;
+};
 export type ProposalWithHistory = {
   proposal: MetadataProposal;
+  textEdits: ProposalTextEdit[];
   connection: PublishingConnection;
   approvals: ProposalApproval[];
   executions: ProposalExecution[];

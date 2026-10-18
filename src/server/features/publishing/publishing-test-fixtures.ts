@@ -92,6 +92,7 @@ export async function makePublishingFixture() {
     draftId: null,
     adapterId: "app_router_metadata",
     fingerprintVersion: 5,
+    changeKind: "metadata",
     changeHash: "",
     reason: detail.opportunity.explanation,
     expectedEffect: "Clearer search snippet, without guaranteed results.",

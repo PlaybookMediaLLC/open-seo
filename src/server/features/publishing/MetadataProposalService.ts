@@ -1,4 +1,3 @@
-import { GscService } from "@/server/features/gsc/services/GscService";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import { AppError } from "@/server/lib/errors";
 import {
@@ -17,6 +16,7 @@ import {
   type PublishingContext,
 } from "./publishingAccess";
 import { PublishingConnectionService } from "./PublishingConnectionService";
+import { proposableOpportunity } from "./proposalEligibility";
 import { prepareChangeAt, validateTarget } from "./publishingTarget";
 import { PublishingRepository } from "./repositories/PublishingRepository";
 
@@ -48,25 +48,7 @@ async function prepare(
       context,
       input.projectId,
       async (claimToken, signal) => {
-        const detail = await OpportunityRepository.getDetail(
-          input.projectId,
-          input.opportunityId,
-        );
-        if (!detail) throw new AppError("NOT_FOUND");
-        const opportunity = detail.opportunity;
-        const gsc = await GscService.getConnection(input.projectId);
-        if (
-          opportunity.status !== "approved" ||
-          !detail.decisions.some(
-            (decision) =>
-              decision.decision === "approved" &&
-              decision.evidenceRunId === opportunity.evidenceRunId,
-          ) ||
-          opportunity.version !== input.expectedOpportunityVersion ||
-          gsc?.siteUrl !== opportunity.siteUrl ||
-          Date.now() - Date.parse(opportunity.lastDetectedAt) > 14 * 86_400_000
-        )
-          throw new AppError("CONFLICT");
+        const opportunity = await proposableOpportunity(input);
         const indexing =
           input.newCanonical !== undefined || input.newRobots !== undefined;
         // Canonical and robots changes can remove a page from Google.
@@ -156,6 +138,7 @@ async function prepare(
           robotsAfterSnippet: patch.robotsAfterSnippet,
           adapterId,
           fingerprintVersion: 5,
+          changeKind: "metadata",
           revertsProposalId: null,
           draftId: input.draftId ?? null,
           changeHash: "",

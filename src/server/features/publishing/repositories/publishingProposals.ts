@@ -18,9 +18,11 @@ import {
   proposalExecutionEvents,
   publishingConnections,
   proposalDrafts,
+  proposalTextEdits,
 } from "@/db/schema";
 import type {
   MetadataProposal,
+  ProposalTextEdit,
   ProposalWithHistory,
 } from "@/types/schemas/publishing";
 import {
@@ -42,6 +44,12 @@ const {
 } = getTableColumns(publishingConnections);
 const { lastEventId: _executionFence, ...publicExecution } =
   getTableColumns(proposalExecutions);
+const {
+  id: _editId,
+  projectId: _editProjectId,
+  proposalId: _editProposalId,
+  ...textEditColumns
+} = getTableColumns(proposalTextEdits);
 
 async function history(
   proposal: MetadataProposal,
@@ -57,7 +65,7 @@ async function history(
       ),
     );
   if (!connection) return null;
-  const [approvals, executions, events] = await Promise.all([
+  const [approvals, executions, events, textEdits] = await Promise.all([
     db
       .select()
       .from(proposalApprovals)
@@ -101,8 +109,19 @@ async function history(
         desc(proposalExecutionEvents.id),
       )
       .limit(100),
+    // RFC-0012 5.4: the edits of a copy change; none for metadata.
+    db
+      .select(textEditColumns)
+      .from(proposalTextEdits)
+      .where(
+        and(
+          eq(proposalTextEdits.projectId, projectId),
+          eq(proposalTextEdits.proposalId, id),
+        ),
+      )
+      .orderBy(proposalTextEdits.ordinal),
   ]);
-  return { proposal, connection, approvals, executions, events };
+  return { proposal, connection, approvals, executions, events, textEdits };
 }
 
 export async function listProposals(
@@ -205,6 +224,8 @@ function revertEligible(tx: Executor, proposal: MetadataProposal) {
 
 export async function saveProposal(input: {
   proposal: MetadataProposal;
+  /** RFC-0012 5.4: a copy change's edits, saved only with the proposal. */
+  textEdits?: ProposalTextEdit[];
   claimToken: string;
   organizationId: string;
   audit?: AuditInput;
@@ -258,6 +279,25 @@ export async function saveProposal(input: {
               ),
           ]
         : []),
+      ...(input.textEdits ?? []).map((edit) =>
+        tx.insert(proposalTextEdits).select(
+          selectedValues(
+            proposalTextEdits,
+            {
+              id: crypto.randomUUID(),
+              projectId: proposal.projectId,
+              proposalId: proposal.id,
+              ...edit,
+            },
+            exists(
+              tx
+                .select({ id: opportunityProposals.id })
+                .from(opportunityProposals)
+                .where(eq(opportunityProposals.id, proposal.id)),
+            ),
+          ),
+        ),
+      ),
       // RFC-0009: services pass the event; it lands only with the proposal.
       ...(input.audit
         ? [

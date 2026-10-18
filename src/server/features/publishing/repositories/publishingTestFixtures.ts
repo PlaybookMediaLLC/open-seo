@@ -142,6 +142,7 @@ export async function fixture(database: TestDatabase) {
     draftId: null,
     adapterId: "app_router_metadata",
     fingerprintVersion: 1,
+    changeKind: "metadata",
     changeHash: "a".repeat(64),
     reason: "Low CTR",
     expectedEffect: "Clearer snippet",

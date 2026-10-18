@@ -67,6 +67,7 @@ beforeEach(() => {
       connection: { repositoryId: "repo-1" },
       proposal: {
         id: "proposal-1",
+        changeKind: "metadata",
         opportunityId: "opportunity-1",
         filePath: "app/pricing/page.tsx",
         targetUrl: "https://example.com/pricing",

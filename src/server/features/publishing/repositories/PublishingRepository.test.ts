@@ -20,6 +20,28 @@ afterAll(() => database.close());
 const { client } = database;
 
 describe(`PublishingRepository real ${database.isPostgres ? "Postgres" : "SQLite"}`, () => {
+  it("saves a page text change's edits with its proposal", async () => {
+    const input = await fixture(database);
+    const edit = {
+      ordinal: 0,
+      filePath: "lib/content.ts",
+      nodeKind: "string_literal" as const,
+      beforeBlobSha: "a".repeat(40),
+      afterBlobSha: "b".repeat(40),
+      beforeText: "Book a call",
+      afterText: "Talk to sales",
+      beforeSnippet: "cta: 'Book a call',",
+      afterSnippet: "cta: 'Talk to sales',",
+    };
+    const proposal = { ...input.proposal, changeKind: "copy_text" as const };
+    expect(
+      await repo.saveProposal({ ...input, proposal, textEdits: [edit] }),
+    ).toBe(true);
+    const saved = await repo.getProposal(input.projectId, proposal.id);
+    expect(saved?.proposal.changeKind).toBe("copy_text");
+    expect(saved?.textEdits).toEqual([edit]);
+  });
+
   it("replaces and disconnects immutable configuration revisions without exposing private fields", async () => {
     const input = await fixture(database);
     expect(await repo.saveProposal(input)).toBe(true);
