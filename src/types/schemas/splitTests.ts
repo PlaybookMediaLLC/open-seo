@@ -5,6 +5,12 @@ import { SPLIT_TEST_FIELDS } from "@/db/split-tests.schema";
 const project = z.object({ projectId: z.string().min(1) });
 export const splitTestProjectSchema = project;
 export const splitTestSchema = project.extend({ testId: z.string().min(1) });
+export const openSplitTestPullSchema = splitTestSchema.extend({
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+});
+export const confirmSplitTestDeploymentSchema = splitTestSchema.extend({
+  attest: z.boolean(),
+});
 export const createSplitTestSchema = project.extend({
   name: z.string().trim().min(1).max(120),
   hypothesis: z.string().trim().min(1).max(500),

@@ -29,4 +29,6 @@ export const AUDIT_ACTIONS = [
   "api_key.deleted",
   "seo_check.overridden",
   "seo_check.ignore_changed",
+  "split_test.pr_opened",
+  "split_test.deployment_confirmed",
 ] as const;

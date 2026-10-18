@@ -194,6 +194,7 @@ async function create(
       field: input.field,
       pagePattern: input.pagePattern,
       origin,
+      templatePath: [...templates.keys()][0] ?? null,
       status: "eligible",
       seed: assignment.seed,
       pairs: assignment.pairs.length,
