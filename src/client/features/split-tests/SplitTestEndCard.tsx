@@ -48,7 +48,7 @@ export function SplitTestEndCard({ data }: { data: Data }) {
           <>
             <p className="text-muted-foreground">
               {analysis?.label === "positive"
-                ? "The variant won. Apply it to every page."
+                ? "The estimated effect is positive. You can apply the variant to every page."
                 : analysis?.label === "negative" || test.status === "stopped"
                   ? "Remove the test and keep the current values."
                   : test.status === "concluded"
