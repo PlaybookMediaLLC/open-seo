@@ -89,6 +89,8 @@ import type { Plugin } from "vite";
  *   audit events after the change (src/server/features/activity/auditLog.ts).
  * - src/lib/auth.ts: a hooks.after middleware records member removal and
  *   API key changes (src/server/features/activity/authAudit.ts).
+ * - deploy/alchemy/alchemy.run.ts: spreads the fork bindings, the paid
+ *   action rate limit (deploy/alchemy/relay-env.ts).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

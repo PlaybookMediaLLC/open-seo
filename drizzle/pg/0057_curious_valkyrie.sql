@@ -1,0 +1,1 @@
+ALTER TABLE "publishing_connections" ADD COLUMN "token_key_version" integer DEFAULT 0 NOT NULL;

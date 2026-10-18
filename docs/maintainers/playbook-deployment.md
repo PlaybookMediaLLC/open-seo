@@ -211,6 +211,20 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
    - Deploy the tasks with `TRIGGER_PROJECT_REF=<ref> pnpm dlx trigger.dev@4.6.4 deploy`. Configure an alert for failed runs to the team's email, and a monthly spend alert.
    - To rotate the secret, move the old value to `GROWTH_JOBS_SECRET_PREVIOUS` for one deploy, then remove it.
 
+9. **Repository token key (RFC-0009 5.7):** repository tokens use `BETTER_AUTH_SECRET` until `PUBLISHING_TOKEN_KEY` is set. To start or rotate the key:
+   1. Generate a key with `openssl rand -base64 48`.
+   2. In `ENV_PLAYBOOK`, move the current `PUBLISHING_TOKEN_KEY` to `PUBLISHING_TOKEN_KEY_PREVIOUS` (leave it empty the first time).
+   3. Set the new key as `PUBLISHING_TOKEN_KEY` and raise `PUBLISHING_TOKEN_KEY_VERSION` by 1 (start at 1).
+   4. Deploy. Each connection re-encrypts its token with the new key the next time Relay uses it.
+   5. After every active connection shows the new version, remove `PUBLISHING_TOKEN_KEY_PREVIOUS` and deploy again:
+
+      ```sql
+      SELECT token_key_version, count(*) FROM publishing_connections
+      WHERE revoked_at IS NULL AND transport = 'pat' GROUP BY token_key_version;
+      ```
+
+   A token whose key is gone asks the member to reconnect the repository.
+
 Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the stored GitHub publishing tokens, which must then be reconnected.
 
 ## Operating notes

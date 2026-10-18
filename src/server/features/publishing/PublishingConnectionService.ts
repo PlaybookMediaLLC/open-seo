@@ -1,4 +1,4 @@
-import { symmetricEncrypt } from "better-auth/crypto";
+import { encryptToken } from "./tokenKeys";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { AppError } from "@/server/lib/errors";
 import {
@@ -58,10 +58,7 @@ async function connect(
           throw new AppError("FORBIDDEN");
         if (!(await client.getRef(input.baseBranch)))
           throw new AppError("NOT_FOUND");
-        const encryptedToken = await symmetricEncrypt({
-          key,
-          data: input.token,
-        });
+        const sealed = await encryptToken(input.token);
         signal.throwIfAborted();
         const saved = await PublishingRepository.replaceConnection({
           connection: {
@@ -75,7 +72,7 @@ async function connect(
             productionEnvironment: input.productionEnvironment,
             transport: "pat",
             installationRef: null,
-            encryptedToken,
+            ...sealed,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),
             revokedAt: null,

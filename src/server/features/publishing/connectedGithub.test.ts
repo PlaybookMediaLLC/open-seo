@@ -32,6 +32,7 @@ const connection: PublishingConnectionRecord = {
   transport: "github_app",
   installationRef: "installation-1",
   encryptedToken: null,
+  tokenKeyVersion: 0,
   createdBy: "user-1",
   createdAt: new Date().toISOString(),
   revokedAt: null,

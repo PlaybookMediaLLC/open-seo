@@ -1,3 +1,4 @@
+import * as Cloudflare from "alchemy/Cloudflare";
 import * as Config from "effect/Config";
 import { Redacted } from "effect";
 
@@ -24,4 +25,20 @@ export const relayDataEnv = {
   GROWTH_JOBS_SECRET: optionalSecret("GROWTH_JOBS_SECRET"),
   GROWTH_JOBS_SECRET_PREVIOUS: optionalSecret("GROWTH_JOBS_SECRET_PREVIOUS"),
   TRIGGER_SECRET_KEY: optionalSecret("TRIGGER_SECRET_KEY"),
+  // Repository token encryption (RFC-0009 5.7). Empty keeps BETTER_AUTH_SECRET.
+  PUBLISHING_TOKEN_KEY: optionalSecret("PUBLISHING_TOKEN_KEY"),
+  PUBLISHING_TOKEN_KEY_VERSION: optionalVar("PUBLISHING_TOKEN_KEY_VERSION"),
+  PUBLISHING_TOKEN_KEY_PREVIOUS: optionalSecret(
+    "PUBLISHING_TOKEN_KEY_PREVIOUS",
+  ),
 };
+
+// Fork bindings of the app worker, created in the stack's own scope.
+export const relayBindings = () => ({
+  // RFC-0009 5.8: 30 paid actions a minute per user and feature
+  // (src/server/billing/spendAdmission.ts). Other surfaces skip the check.
+  PAID_ACTION_RATE_LIMIT: Cloudflare.RateLimit("PAID_ACTION_RATE_LIMIT", {
+    namespaceId: 1002,
+    simple: { limit: 30, period: 60 },
+  }),
+});
