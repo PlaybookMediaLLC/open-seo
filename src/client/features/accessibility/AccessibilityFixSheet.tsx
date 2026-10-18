@@ -13,7 +13,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/client/components/ui/sheet";
-import { prepareAccessibilityFix } from "@/serverFunctions/accessibility";
+import {
+  draftAltText,
+  prepareAccessibilityFix,
+} from "@/serverFunctions/accessibility";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
 
 const LANG_RULES = new Set(["html-has-lang", "html-lang-valid"]);
@@ -28,17 +31,32 @@ export function AccessibilityFixSheet(props: {
   const [open, setOpen] = useState(false);
   const [decorative, setDecorative] = useState(false);
   const [text, setText] = useState("");
+  const [draftId, setDraftId] = useState<string | undefined>();
+  const scope = {
+    projectId: props.opportunity.projectId,
+    opportunityId: props.opportunity.id,
+    expectedOpportunityVersion: props.opportunity.version,
+  };
+  // A checked draft fills the field; the person edits and approves it.
+  const draft = useMutation({
+    meta: { errorToast: false },
+    mutationFn: () => draftAltText({ data: scope }),
+    onSuccess: (result) => {
+      if (result.status !== "generated") return;
+      setText(result.valueAfter);
+      setDraftId(result.id);
+    },
+  });
   const prepare = useMutation({
     meta: { errorToast: false },
     mutationFn: () =>
       prepareAccessibilityFix({
         data: {
-          projectId: props.opportunity.projectId,
-          opportunityId: props.opportunity.id,
-          expectedOpportunityVersion: props.opportunity.version,
+          ...scope,
           fix: lang
             ? { kind: "lang", language: text.trim() }
             : { kind: "alt", decorative, text },
+          draftId,
         },
       }),
     onSuccess: (result) => {
@@ -102,6 +120,26 @@ export function AccessibilityFixSheet(props: {
                     value={text}
                     onChange={(event) => setText(event.target.value)}
                   />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    pending={draft.isPending}
+                    onClick={() => draft.mutate()}
+                  >
+                    Draft with AI
+                  </Button>
+                  {draft.isError && (
+                    <p role="alert" className="text-destructive">
+                      {draft.error.message}
+                    </p>
+                  )}
+                  {draft.data && (
+                    <p className="text-xs text-muted-foreground">
+                      {draft.data.status === "generated"
+                        ? draft.data.validationSummary
+                        : draft.data.rationale}
+                    </p>
+                  )}
                 </>
               )}
             </>

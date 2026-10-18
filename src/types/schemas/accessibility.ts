@@ -22,5 +22,7 @@ export const accessibilityFixInputSchema = z.object({
         ),
     }),
   ]),
+  /** The alt text draft the person started from, if any. */
+  draftId: z.string().min(1).optional(),
 });
 export type AccessibilityFixInput = z.infer<typeof accessibilityFixInputSchema>;
