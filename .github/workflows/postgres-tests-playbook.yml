@@ -64,4 +64,6 @@ jobs:
           src/server/features/publishing
           src/server/features/experiments
           src/server/features/growth
+          src/server/features/seo-checks
+          src/server/features/split-tests
           --no-file-parallelism
