@@ -7,6 +7,8 @@ export const DRAFT_KINDS = [
   "internal_link_anchor",
   // RFC-0012 5.5: new text for one picked block on the page.
   "page_copy",
+  // RFC-0013 5.4: alt text for one image.
+  "alt_text",
 ] as const;
 export const DRAFT_STATUSES = [
   "generated",

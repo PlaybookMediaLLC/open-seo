@@ -1,4 +1,3 @@
-import { Parser } from "htmlparser2";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
 import { applyCopyEdits } from "@/server/features/publishing/copyChange";
 import { pagesSharing } from "@/server/features/publishing/copyLocator";
@@ -25,6 +24,7 @@ import type {
   MetadataProposal,
   PublishingMutationResult,
 } from "@/types/schemas/publishing";
+import { altTextProblems, snippetSrc } from "./altText";
 
 // RFC-0013 5.4 phase 1: alt text and the page language, fixed in code by a
 // reviewed pull request. Every value comes from the person who approves.
@@ -35,19 +35,6 @@ const LAYOUTS = ["app", "src/app"].flatMap((directory) =>
   ["tsx", "jsx", "js"].map((extension) => `${directory}/layout.${extension}`),
 );
 
-/** The src of the first image in a stored snippet. */
-function snippetSrc(snippet: string) {
-  let src: string | null = null;
-  const parser = new Parser({
-    onopentag(name, attributes) {
-      if (!src && name === "img" && attributes.src) src = attributes.src;
-    },
-  });
-  parser.write(snippet);
-  parser.end();
-  return src as string | null;
-}
-
 function checkedValue(fix: AccessibilityFixInput["fix"]) {
   if (fix.kind === "lang") return fix.language;
   if (fix.decorative) return "";
@@ -57,16 +44,8 @@ function checkedValue(fix: AccessibilityFixInput["fix"]) {
       "VALIDATION_ERROR",
       'Describe the image, or mark it as decorative to set alt="".',
     );
-  if (/^(image|picture|photo|graphic|icon) of\b/i.test(text))
-    throw new AppError(
-      "VALIDATION_ERROR",
-      'Leave out "image of": a screen reader already says that it is an image.',
-    );
-  if ((text.match(/,/g) ?? []).length >= 3)
-    throw new AppError(
-      "VALIDATION_ERROR",
-      "Write a short description, not a list of keywords.",
-    );
+  const [problem] = altTextProblems(text);
+  if (problem) throw new AppError("VALIDATION_ERROR", problem);
   return text;
 }
 
@@ -242,7 +221,7 @@ async function prepare(
           fingerprintVersion: 6,
           changeKind: "jsx_attribute",
           revertsProposalId: null,
-          draftId: null,
+          draftId: input.fix.kind === "alt" ? (input.draftId ?? null) : null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect: lang
