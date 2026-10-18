@@ -52,6 +52,16 @@ const words = (count: number) => "word ".repeat(count);
 const html = (robots: string, count: number) =>
   `<html><head><title>Page</title><meta name="robots" content="${robots}"></head><body><h1>Page</h1><p>${words(count)}</p></body></html>`;
 
+const pageFetch = vi.fn(async (url: string) => {
+  const onPreview = url.startsWith(preview);
+  const pricing = url.endsWith("/pricing");
+  const body = html(
+    onPreview && pricing ? "noindex" : "index",
+    onPreview && pricing ? 60 : 300,
+  );
+  return new Response(body, { headers: { "content-type": "text/html" } });
+});
+
 beforeAll(async () => {
   await database.prepare();
   if (!database.isPostgres)
@@ -63,15 +73,7 @@ beforeAll(async () => {
       .split("--> statement-breakpoint")
       .filter((sql) => sql.includes("`project_key_pages`")))
       await database.client.execute(statement);
-  vi.stubGlobal("fetch", async (url: string) => {
-    const onPreview = url.startsWith(preview);
-    const pricing = url.endsWith("/pricing");
-    const body = html(
-      onPreview && pricing ? "noindex" : "index",
-      onPreview && pricing ? 60 : 300,
-    );
-    return new Response(body, { headers: { "content-type": "text/html" } });
-  });
+  vi.stubGlobal("fetch", pageFetch);
 });
 afterAll(async () => {
   vi.unstubAllGlobals();
@@ -114,6 +116,8 @@ it("finds the regressions, weighs them by traffic and stores the run", async () 
     impressions: 2000,
   });
   await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  // 5.4: at most 2 page requests per URL; no new links to check here.
+  expect(pageFetch).toHaveBeenCalledTimes(2 * plan.urls.length);
 
   const [run] = await db
     .select()

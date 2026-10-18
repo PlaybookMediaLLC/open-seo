@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { auditEvents, ciCheckRuns } from "@/db/schema";
+import { auditEvents, ciCheckRuns, ciPreviewHosts } from "@/db/schema";
+import type * as UrlPolicy from "@/server/lib/audit/url-policy";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { createCheck, getCheck } from "./CheckApi";
 import { createCiToken, revokeCiToken, verifyCiToken } from "./ciTokens";
@@ -35,6 +36,9 @@ vi.mock("@/server/billing/subscription", () => ({
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: mocks.validate,
 }));
+const urlPolicy = await vi.importActual<typeof UrlPolicy>(
+  "@/server/lib/audit/url-policy",
+);
 beforeAll(async () => {
   await database.prepare();
   if (!database.isPostgres)
@@ -93,6 +97,49 @@ it("refuses a preview host outside the allowlist before any fetch", async () => 
   expect(result.status).toBe(400);
   expect(result.body.error).toBe("preview_host_not_allowed");
   expect(mocks.validate).not.toHaveBeenCalled();
+  expect(fetchSpy).not.toHaveBeenCalled();
+  fetchSpy.mockRestore();
+});
+
+it("refuses 20 disallowed hosts, private addresses included, before any fetch", async () => {
+  const { projectId, context } = await project();
+  // Owner-added private addresses pass the allowlist; the URL policy stops them.
+  const owner = ["127.0.0.1", "10.0.0.8", "169.254.169.254", "192.168.1.1"];
+  await db.insert(ciPreviewHosts).values(
+    owner.map((host) => ({
+      id: crypto.randomUUID(),
+      projectId,
+      host,
+      createdBy: "owner",
+      createdAt: new Date().toISOString(),
+    })),
+  );
+  mocks.validate.mockImplementation(urlPolicy.normalizeAndValidateStartUrl);
+  const fetchSpy = vi.spyOn(globalThis, "fetch");
+  const hosts = [
+    ...owner,
+    "attacker.example.net",
+    "example.com.evil.net",
+    "evilexample.com",
+    "example.co",
+    "vercel.app.evil.net",
+    "pages.dev",
+    "netlify.app",
+    "localhost",
+    "172.16.0.1",
+    "0.0.0.0",
+    "[::1]",
+    "metadata.google.internal",
+    "github.com",
+    "relay.playbookmedia.io",
+    "pr-7.example.com.attacker.dev",
+    "xn--exmple-cua.com",
+  ];
+  expect(hosts).toHaveLength(20);
+  for (const host of hosts)
+    expect(
+      (await createCheck(context, body(sha("9"), `https://${host}`))).status,
+    ).toBe(400);
   expect(fetchSpy).not.toHaveBeenCalled();
   fetchSpy.mockRestore();
 });
