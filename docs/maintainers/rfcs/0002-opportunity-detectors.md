@@ -378,7 +378,7 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 
 ### Phase 3
 
-- [ ] RFC-0009 spending limits are live. Until then, the credit hold is the only admission check.
+- [x] RFC-0009 spending limits are live. Until then, the credit hold is the only admission check. Done 2026-10-18: every DataForSEO call reserves inside the monthly limits (`src/server/lib/dataforseo/client.ts`).
 - [x] Content-gap dialog shows the estimate before any paid request.
 - [x] Admission refusal shows a clear message and makes no provider call (test). The metering tests prove that a refused hold makes no provider call; the content-gap test proves the message and that nothing is saved.
 - [x] `competitor_keyword_snapshots` and `competitor_keyword_rows`, with 30-day reuse (test proves no second purchase).
@@ -529,4 +529,4 @@ Each follow-up names its trigger. Check it here when it passes.
 
 **RFC-0009.**
 
-- [ ] Content-gap and live-check admission go through the RFC-0009 spending check. Until then, the credit hold is the only admission check. Trigger: RFC-0009 ships its spending limits.
+- [x] Content-gap and live-check admission go through the RFC-0009 spending check. Until then, the credit hold is the only admission check. Trigger: RFC-0009 ships its spending limits. Done 2026-10-18: both use `createDataforseoClient`, which reserves inside the monthly limits.

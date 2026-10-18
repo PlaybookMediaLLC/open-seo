@@ -173,14 +173,14 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 - [x] Supporting statements follow the thresholds (one test per row of the table).
 - [x] Label results do not change when GA4 data is added (regression test).
 - [x] Results page shows GA4 numbers, the time-zone note and the caveat.
-- [ ] Scheduled `measurement_refresh` job through RFC-0008, with tests for each due condition.
-- [ ] Test: the job stops after the final result.
+- [x] Scheduled `measurement_refresh` job through RFC-0008, with tests for each due condition. Built in RFC-0008 (`measurementRefresh.ts`, `measurementSchedule.test.ts`); it runs on the Worker cron since 2026-10-18.
+- [x] Test: the job stops after the final result. `measurementSchedule.test.ts`.
 - [x] Summary strip and label filter on the list.
 - [x] CSV export with formula escaping (test).
-- [ ] Result notification through RFC-0008.
+- [x] Result notification through RFC-0008. Built in RFC-0008 (`result_ready`).
 - [ ] Live check: one experiment on a GA4-connected project refreshes daily for 3 days without a click.
 - [ ] Live check: the CSV opens in a spreadsheet with correct periods.
-- [ ] `content/docs/experiments.mdx` explains GA4 metrics, thresholds, time zones and automatic refresh.
+- [x] `content/docs/experiments.mdx` explains GA4 metrics, thresholds, time zones and automatic refresh.
 
 ### Phase 2
 
@@ -255,8 +255,8 @@ GA4 and Search Console requests are free. Google quotas apply. A daily refresh u
 
 Each follow-up names its trigger. Check it here when it passes.
 
-- [ ] Daily automatic refresh (section 5.3): the due rule with a test for each condition, the stop after the final result, and the **Refresh measurements automatically** switch. The `auto_refresh` column already exists and defaults to true. Trigger: RFC-0008 adds the scheduled job.
-- [ ] Result notification (section 5.6). Trigger: RFC-0008 adds notifications.
+- [x] Daily automatic refresh (section 5.3): the due rule with a test for each condition, the stop after the final result, and the **Refresh measurements automatically** switch. The `auto_refresh` column already exists and defaults to true. Trigger: RFC-0008 adds the scheduled job. Done: RFC-0008 built the job and the switch; the Worker cron runs it since 2026-10-18.
+- [x] Result notification (section 5.6). Trigger: RFC-0008 adds notifications. Done in RFC-0008.
 - [ ] Live check: one experiment on a GA4-connected project refreshes daily for 3 days without a click. Trigger: the daily refresh exists, and a project has GA4 connected and a deployed experiment.
 - [ ] Live check: the CSV opens in Google Sheets and Excel with correct periods and no formula warnings. Trigger: an experiment with at least one completed measurement.
 - [ ] Accuracy checks (section 12): 14 days of Search Console and GA4 rows against their own UIs. Trigger: the same, for 14 days.

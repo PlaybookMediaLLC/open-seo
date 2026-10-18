@@ -342,5 +342,5 @@ Justification for `analytics.readonly` (821 of 1,000 characters):
 
 **Other RFCs**
 
-- [ ] RFC-0004 phase 1 is done, so the system drafts the change. Tracked in RFC-0004.
-- [ ] RFC-0009 billing debts are fixed, and project and organization spending limits work. Tracked in RFC-0009.
+- [x] RFC-0004 phase 1 is done, so the system drafts the change. Tracked in RFC-0004. Done: RFC-0004 closed on 2026-10-17.
+- [x] RFC-0009 billing debts are fixed, and project and organization spending limits work. Tracked in RFC-0009. Done: RFC-0009 closed on 2026-10-18 after its live check.
