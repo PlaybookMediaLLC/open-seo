@@ -59,7 +59,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | E. Experiments and results                                           | Done: follow-ups in its section 13         | [RFC-0006](0006-outcome-measurement.md)                      |
 | F. Portfolio operations                                              | Done: isolation proven; portfolio deferred | [RFC-0007](0007-portfolio-operations.md)                     |
 | 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
-| 10. Costs, limits and audit log                                      | Partial                                    | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
+| 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
 | Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                    | [RFC-0010](0010-seo-checks-in-ci.md)                         |
 | Controlled page-group split tests (beyond the brief)                 | Missing                                    | [RFC-0011](0011-page-group-split-tests.md)                   |
 | Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
@@ -87,7 +87,7 @@ Each step depends on the steps before it.
 2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
 3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
-5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this.
+5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this. Done; staging checks and the token key setup are follow-ups in its section 12.
 6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications. Done; the Trigger.dev account and live checks are follow-ups in its section 12.
 7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
 8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it.
