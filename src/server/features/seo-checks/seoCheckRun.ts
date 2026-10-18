@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
 import { linkStatus, fetchSnapshot } from "./pageSnapshot";
-import { previewAccess, type CheckPlan } from "./seoCheckPlan";
+import { pageUrl, previewAccess, type CheckPlan } from "./seoCheckPlan";
 import { renderPages } from "./seoCheckRender";
 import {
   comparePage,
@@ -56,8 +56,14 @@ export async function checkBatch(
   const access = await previewAccess(plan.projectId, plan.previewOrigin);
   const fetched = await inPool(batch, async (url) => ({
     url,
-    base: await fetchSnapshot(`${plan.baseOrigin}${url.path}`, null),
-    preview: await fetchSnapshot(`${plan.previewOrigin}${url.path}`, access),
+    base: await fetchSnapshot(
+      pageUrl(plan.baseOrigin, url.path, plan.trailingSlash),
+      null,
+    ),
+    preview: await fetchSnapshot(
+      pageUrl(plan.previewOrigin, url.path, plan.trailingSlash),
+      access,
+    ),
   }));
   // A renderer cannot carry the preview access secret, so protected
   // previews keep the raw comparison.
@@ -97,7 +103,7 @@ export async function checkBatch(
     const checks = added.slice(0, Math.max(0, linkBudget - linksChecked));
     linksChecked += checks.length;
     const statuses = await inPool(checks, (link) =>
-      linkStatus(`${plan.previewOrigin}${link}`, access),
+      linkStatus(pageUrl(plan.previewOrigin, link, plan.trailingSlash), access),
     );
     checks.forEach((link, index) => {
       const status = statuses[index];
