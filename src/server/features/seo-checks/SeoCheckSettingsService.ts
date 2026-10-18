@@ -90,6 +90,7 @@ async function get(context: OpportunityContext, projectId: string) {
     ignores,
     raiseOnHighTraffic: settings?.raiseOnHighTraffic ?? true,
     checkPreviewRobotsHeader: settings?.checkPreviewRobotsHeader ?? false,
+    renderedMode: settings?.renderedMode ?? false,
     runs: runs.map(({ changedFiles: _files, tokenId: _token, ...row }) => row),
   };
 }
@@ -255,12 +256,14 @@ async function saveSettings(
     projectId: string;
     raiseOnHighTraffic: boolean;
     checkPreviewRobotsHeader: boolean;
+    renderedMode: boolean;
   },
 ) {
   await manage(context, input.projectId);
   const values = {
     raiseOnHighTraffic: input.raiseOnHighTraffic,
     checkPreviewRobotsHeader: input.checkPreviewRobotsHeader,
+    renderedMode: input.renderedMode,
     updatedAt: new Date().toISOString(),
   };
   await db

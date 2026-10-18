@@ -2,7 +2,12 @@ import { readFileSync } from "node:fs";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
+import {
+  ciCheckFindings,
+  ciCheckRuns,
+  ciCheckUrls,
+  ciProjectSettings,
+} from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { planCheck } from "./seoCheckPlan";
 import { checkBatch, finishCheck } from "./seoCheckRun";
@@ -13,14 +18,19 @@ const database = await vi.hoisted(async () => {
     await import("@/server/features/experiments/repositories/experimentTestDb");
   return createExperimentTestDatabase();
 });
+const quickAction = vi.hoisted(() => vi.fn());
 vi.mock("cloudflare:workers", () => ({
-  env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
+  env: {
+    DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1",
+    BROWSER: { quickAction },
+  },
 }));
 vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: async (url: string) => url,
+  isCrawlableUrl: () => true,
 }));
 const base = "https://example.com";
 const preview = "https://pr-7.vercel.app";
@@ -39,6 +49,8 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
   },
 }));
 const words = (count: number) => "word ".repeat(count);
+const html = (robots: string, count: number) =>
+  `<html><head><title>Page</title><meta name="robots" content="${robots}"></head><body><h1>Page</h1><p>${words(count)}</p></body></html>`;
 
 beforeAll(async () => {
   await database.prepare();
@@ -54,8 +66,10 @@ beforeAll(async () => {
   vi.stubGlobal("fetch", async (url: string) => {
     const onPreview = url.startsWith(preview);
     const pricing = url.endsWith("/pricing");
-    const robots = onPreview && pricing ? "noindex" : "index";
-    const body = `<html><head><title>Page</title><meta name="robots" content="${robots}"></head><body><h1>Page</h1><p>${words(onPreview && pricing ? 60 : 300)}</p></body></html>`;
+    const body = html(
+      onPreview && pricing ? "noindex" : "index",
+      onPreview && pricing ? 60 : 300,
+    );
     return new Response(body, { headers: { "content-type": "text/html" } });
   });
 });
@@ -64,7 +78,7 @@ afterAll(async () => {
   await database.close();
 });
 
-it("finds the regressions, weighs them by traffic and stores the run", async () => {
+async function queuedRun() {
   const { run } = await setupRun(database.client, database.slugPrefix);
   const runId = crypto.randomUUID();
   await db.insert(ciCheckRuns).values({
@@ -78,20 +92,10 @@ it("finds the regressions, weighs them by traffic and stores the run", async () 
     status: "queued",
     createdAt: new Date().toISOString(),
   });
-  const plan = await planCheck(runId);
-  expect(plan.urls[0]).toMatchObject({
-    path: "/pricing",
-    reason: "changed_file",
-    impressions: 2000,
-  });
-  await finishCheck(plan, [await checkBatch(plan, plan.urls, 200)]);
-
-  const [stored] = await db
-    .select()
-    .from(ciCheckRuns)
-    .where(eq(ciCheckRuns.id, runId));
-  expect(stored).toMatchObject({ status: "succeeded", urlCount: 3 });
-  const findings = await db
+  return { runId, projectId: run.projectId };
+}
+const stored = (runId: string) =>
+  db
     .select({
       path: ciCheckFindings.path,
       rule: ciCheckFindings.rule,
@@ -99,7 +103,24 @@ it("finds the regressions, weighs them by traffic and stores the run", async () 
     })
     .from(ciCheckFindings)
     .where(eq(ciCheckFindings.runId, runId));
-  expect(findings).toEqual(
+const budget = { links: 200, renders: 5 };
+
+it("finds the regressions, weighs them by traffic and stores the run", async () => {
+  const { runId } = await queuedRun();
+  const plan = await planCheck(runId);
+  expect(plan.urls[0]).toMatchObject({
+    path: "/pricing",
+    reason: "changed_file",
+    impressions: 2000,
+  });
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+
+  const [run] = await db
+    .select()
+    .from(ciCheckRuns)
+    .where(eq(ciCheckRuns.id, runId));
+  expect(run).toMatchObject({ status: "succeeded", urlCount: 3 });
+  expect(await stored(runId)).toEqual(
     expect.arrayContaining([
       { path: "/pricing", rule: "newly-noindex", severity: "blocking" },
       // A high-traffic page: the content drop rises to blocking.
@@ -107,10 +128,34 @@ it("finds the regressions, weighs them by traffic and stores the run", async () 
       { path: "/docs", rule: "robots-txt-blocks", severity: "blocking" },
     ]),
   );
-  expect(stored?.blockingCount).toBe(3);
+  expect(run?.blockingCount).toBe(3);
+  expect(quickAction).not.toHaveBeenCalled();
   const [pricing] = await db
     .select({ clicks: ciCheckUrls.clicks28d })
     .from(ciCheckUrls)
     .where(eq(ciCheckUrls.path, "/pricing"));
   expect(pricing?.clicks).toBe(40);
+});
+
+it("compares the rendered HTML of a flagged page in rendered mode", async () => {
+  const { runId, projectId } = await queuedRun();
+  await db.insert(ciProjectSettings).values({
+    projectId,
+    renderedMode: true,
+    updatedAt: new Date().toISOString(),
+  });
+  // In a browser, the preview's thin /pricing renders in full.
+  quickAction.mockImplementation(async (_action, options: { url: string }) =>
+    Response.json({
+      success: true,
+      result: html("index", 300),
+      meta: { status: 200, finalUrl: options.url },
+    }),
+  );
+  const plan = await planCheck(runId);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  expect(quickAction).toHaveBeenCalledTimes(2);
+  expect(await stored(runId)).toEqual([
+    { path: "/docs", rule: "robots-txt-blocks", severity: "blocking" },
+  ]);
 });

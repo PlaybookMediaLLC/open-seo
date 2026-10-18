@@ -15,6 +15,8 @@ export type PageFacts = {
   hreflang: string[];
   words: number;
   jsonLd: Array<{ parses: boolean; types: string[] }>;
+  /** The raw HTML looks like a client-rendered app shell (5.13). */
+  shell?: boolean;
 };
 
 export type Snapshot = {
@@ -48,6 +50,10 @@ const squash = (value: string | null | undefined) =>
   (value ?? "").replace(/\s+/g, " ").trim();
 const noindex = (value: string | null | undefined) =>
   /(^|[\s,])(noindex|none)($|[\s,])/i.test(value ?? "");
+
+/** Visible text fell by half or more: the content-shrunk rule. */
+export const shrunk = (before: PageFacts, after: PageFacts) =>
+  before.words >= 50 && after.words <= before.words * 0.5;
 
 /** 5.5: the preview origin becomes production's; only the path counts. */
 function normalizeUrl(value: string | null, context: Context) {
@@ -202,7 +208,7 @@ export function comparePage(
       "og:title or og:image was removed.",
       before.ogTitle ?? before.ogImage,
     );
-  if (before.words >= 50 && after.words <= before.words * 0.5)
+  if (shrunk(before, after))
     add(
       "content-shrunk",
       "warning",

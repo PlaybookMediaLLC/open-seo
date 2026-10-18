@@ -70,6 +70,14 @@ Warnings cover changed titles, descriptions and H1s, dropped internal links, new
 
 Relay ignores the `X-Robots-Tag: noindex` header that preview platforms add, unless you turn the check on.
 
+## Client-rendered pages
+
+Relay reads the HTML that your server sends. If a page builds its content in the browser, the raw HTML can look empty, and the check reports shrunk content. Turn on **Render up to 5 client-rendered pages in a browser** to check those pages as a browser sees them:
+
+- Relay renders a page on production and on the preview only when its raw HTML looks client-rendered or lost half its text.
+- Each check renders at most 5 pages. Rendering uses credits, at the same price as rendering in site audits.
+- Relay does not render protected previews, because the renderer cannot send your preview access secret.
+
 ## Overrides and ignore rules
 
 - To merge on purpose, add the label `relay-seo-override` to the pull request. The check passes, and the Activity page records the override.

@@ -198,6 +198,8 @@ Project settings → new **SEO checks** tab:
 
 For pages flagged `content-shrunk` or `javascript-rendering-suspected`, render both versions in a headless browser and compare the rendered HTML. Use it only for those pages, because rendering is slow and costs more.
 
+**As built (part F).** A project switch turns rendered mode on. Inside each check batch, a page is flagged when the preview's raw HTML is an app shell (the audit analyzer's `javascriptShell`) or fails the `content-shrunk` test. Flagged pages render on both hosts with Cloudflare Browser Run through the audit's `RenderedPageService`, and the rules compare the rendered facts; status, redirect and header findings still come from the raw responses. The cap is 5 pages a run (10 renders, each with a 20-second timeout). Context is not used: it costs more and would receive the preview. Protected previews are not rendered, because the renderer cannot carry the access secret. Billing reuses the audit's rendering holds after a spend-limit room check; no room or no credits keeps the raw comparison. The app worker gains a `BROWSER` binding.
+
 ### 5.14 Use it ourselves
 
 1. Add the action to Relay's own preview workflow (S3), with a Cloudflare Access service token.
@@ -252,7 +254,7 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 
 ### Phase 3
 
-- [ ] Rendered mode for flagged pages, with a time and cost cap.
+- [x] Rendered mode for flagged pages, with a time and cost cap (test; live check after deploy).
 
 ## 10. Real-site acceptance test
 

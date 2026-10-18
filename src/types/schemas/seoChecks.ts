@@ -61,4 +61,5 @@ export const changeIgnoreSchema = project.extend({
 export const saveSeoCheckSettingsSchema = project.extend({
   raiseOnHighTraffic: z.boolean(),
   checkPreviewRobotsHeader: z.boolean(),
+  renderedMode: z.boolean(),
 });

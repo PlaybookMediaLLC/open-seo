@@ -311,6 +311,7 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           projectId,
           raiseOnHighTraffic: false,
           checkPreviewRobotsHeader: true,
+          renderedMode: false,
         }),
     },
   };
