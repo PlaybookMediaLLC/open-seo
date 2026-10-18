@@ -48,6 +48,14 @@ async function prepare(
         );
         if (!detail) throw new AppError("NOT_FOUND");
         const original = detail.publishing.proposal;
+        // ponytail: copy changes revert in GitHub; a copy revert proposal
+        // can reuse the stored edits if owners need it in Relay.
+        if (original.changeKind !== "metadata")
+          return {
+            ok: false,
+            message:
+              "Relay reverts metadata changes only. Revert this page text change with the Revert button on its pull request in GitHub.",
+          };
         if (
           detail.experiment.pullRequestState !== "merged" ||
           original.revertsProposalId
@@ -166,6 +174,7 @@ async function prepare(
           robotsAfterSnippet: patch.robotsAfterSnippet,
           adapterId,
           fingerprintVersion: 5,
+          changeKind: "metadata",
           revertsProposalId: original.id,
           draftId: null,
           changeHash: "",

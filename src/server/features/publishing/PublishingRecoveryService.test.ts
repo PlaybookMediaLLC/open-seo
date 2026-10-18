@@ -71,6 +71,7 @@ beforeEach(async () => {
     connection: connectionSummary(fixture.connection),
     approvals: [],
     events: [],
+    textEdits: [],
     executions: [
       {
         id: "failed-execution",

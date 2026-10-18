@@ -12,6 +12,7 @@ import { SplitTestPullService as splitPulls } from "@/server/features/split-test
 import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
 import { ConversionDetectionService } from "@/server/features/conversion/ConversionDetectionService";
 import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
+import { CopyProposalService } from "@/server/features/publishing/CopyProposalService";
 import { ConversionGateService as conversion } from "@/server/features/conversion/ConversionGateService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
@@ -389,6 +390,16 @@ function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
           projectId,
           opportunityId: "x",
           text: "Book a call",
+        }),
+    },
+    CopyProposalService: {
+      prepare: () =>
+        CopyProposalService.prepare(ctx, {
+          projectId,
+          opportunityId: "x",
+          expectedOpportunityVersion: 1,
+          edits: [{ text: "Book a call", newText: "Talk to sales" }],
+          confirmSharedPages: false,
         }),
     },
   };

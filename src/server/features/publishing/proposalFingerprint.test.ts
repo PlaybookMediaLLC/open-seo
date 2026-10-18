@@ -37,6 +37,7 @@ const v1: Omit<MetadataProposal, "changeHash"> = {
   draftId: null,
   adapterId: "app_router_metadata",
   fingerprintVersion: 1,
+  changeKind: "metadata",
   reason: "r",
   expectedEffect: "e",
   risk: "k",
@@ -51,6 +52,28 @@ describe("proposalFingerprint", () => {
     // Computed with the fingerprint code before version 2 was added.
     expect(await proposalFingerprint(v1)).toBe(
       "c3ea6750bebde6f7dc8d7e8dbdb2cfb8c0d1abdfae1a08b359cb08558539fdc1",
+    );
+  });
+
+  it("binds the change kind and every text edit in version 6", async () => {
+    const v6 = {
+      ...v1,
+      fingerprintVersion: 6,
+      changeKind: "copy_text" as const,
+    };
+    const edit = {
+      ordinal: 0,
+      filePath: "lib/content.ts",
+      nodeKind: "string_literal" as const,
+      beforeBlobSha: "a".repeat(40),
+      afterBlobSha: "b".repeat(40),
+      beforeText: "Book a call",
+      afterText: "Talk to sales",
+      beforeSnippet: "cta: 'Book a call',",
+      afterSnippet: "cta: 'Talk to sales',",
+    };
+    expect(await proposalFingerprint(v6, [edit])).not.toBe(
+      await proposalFingerprint(v6, [{ ...edit, afterText: "Call us" }]),
     );
   });
 

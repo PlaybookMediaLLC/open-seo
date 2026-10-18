@@ -97,6 +97,12 @@ export const opportunityProposals = pgTable(
     robotsBeforeSnippet: text("robots_before_snippet"),
     robotsAfterSnippet: text("robots_after_snippet"),
     fingerprintVersion: integer("fingerprint_version").notNull().default(1),
+    // RFC-0012 5.4: a copy change keeps its edits in proposal_text_edits.
+    changeKind: text("change_kind", {
+      enum: ["metadata", "copy_text", "jsx_attribute", "markdown"],
+    })
+      .notNull()
+      .default("metadata"),
     adapterId: text("adapter_id", {
       enum: ["app_router_metadata", "pages_router_head"],
     })
@@ -125,6 +131,37 @@ export const opportunityProposals = pgTable(
       t.projectId,
       t.opportunityId,
       t.createdAt,
+    ),
+  ],
+);
+
+// RFC-0012 5.4: the text edits of one copy change, at most 5 in 3 files.
+export const proposalTextEdits = pgTable(
+  "proposal_text_edits",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    proposalId: text("proposal_id")
+      .notNull()
+      .references(() => opportunityProposals.id, { onDelete: "cascade" }),
+    ordinal: integer("ordinal").notNull(),
+    filePath: text("file_path").notNull(),
+    nodeKind: text("node_kind", {
+      enum: ["string_literal", "template_literal", "jsx_text", "markdown_text"],
+    }).notNull(),
+    beforeBlobSha: text("before_blob_sha").notNull(),
+    afterBlobSha: text("after_blob_sha").notNull(),
+    beforeText: text("before_text").notNull(),
+    afterText: text("after_text").notNull(),
+    beforeSnippet: text("before_snippet").notNull(),
+    afterSnippet: text("after_snippet").notNull(),
+  },
+  (t) => [
+    uniqueIndex("proposal_text_edits_proposal_ordinal_idx").on(
+      t.proposalId,
+      t.ordinal,
     ),
   ],
 );

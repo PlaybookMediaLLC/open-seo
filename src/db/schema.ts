@@ -217,6 +217,7 @@ export const {
   opportunitySerpChecks,
   publishingConnections,
   opportunityProposals,
+  proposalTextEdits,
   opportunityTickets,
   proposalDrafts,
   proposalDraftSources,

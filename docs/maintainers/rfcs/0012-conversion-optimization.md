@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -101,6 +101,8 @@ On S1, the `/approach` hero text resolves to `apps/www/lib/content.ts`.
 
 **As built (part C1).** "Change page text" in the publishing panel of an approved opportunity reads the live page once, without following a redirect, and lists up to 100 headings, links, buttons, form labels and paragraphs of 300 characters or fewer. It uses the page analyzer's streaming HTML parser, because `analyzeHtml` keeps headings only. The locator starts at the page file that RFC-0004 finds. It resolves relative imports and `@/` from the root directory, tries the usual extensions and `index` files, and skips type-only imports. Files over GitHub's 32 KB read limit are skipped. In Markdown, a node is one heading, list item, quote or paragraph line without markup. The S1 hero title carries an underscore accent in the source, so it is markup and the locator refuses it; the hero introduction resolves to `apps/www/lib/content.ts`. The sharing check reads the app directory's file list in one request and up to 30 other page files. A page shares the text when it imports the module that holds it, and the export that holds it, if there is one. Nothing is written in this step.
 
+**As built (part C2).** After the locator finds the text, the person enters the new text in the same sheet. When other pages share the text, the person must confirm that they change too, and the proposal's risk lists them. A copy change can be prepared for any approved opportunity, because the text picker works on any page. The sheet sends one edit; the service accepts up to 5 edits in up to 3 files. Each edit escapes the new text for its node: quotes in string literals, backticks and `${` in template literals. It refuses `{`, `}`, `<` and `>` in JSX text, and Markdown markup in Markdown text. The edited file must parse again with the new text in the same node. Versions 3 to 5 of the fingerprint were already taken by metadata changes, so a copy change uses version 6: it binds the change kind, every edit, and the blob SHA of the page file. Execution builds the edits again from the base commit and refuses any difference. It then writes one commit with every changed file through the Git trees API, points the new branch at that commit, checks that the commit changes exactly those files, and opens one pull request. Relay does not prepare a revert for a copy change; the owner uses the pull request's Revert button in GitHub.
+
 ### 5.5 Drafted copy
 
 Reuse the RFC-0004 drafting service with a conversion prompt.
@@ -168,8 +170,8 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - [x] Evidence columns added in D1 and Postgres, with the parity test.
 - [x] Value text with the "not a forecast" label.
 - [x] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`). The test copy is trimmed, because S1's repository is private and this one is public.
-- [ ] `change_kind`, `proposal_text_edits` and fingerprint version 3.
-- [ ] Execution writes the text edits in one commit (test against the GitHub mock).
+- [x] `change_kind`, `proposal_text_edits` and fingerprint version 3. Built as version 6, because metadata changes already use versions 3 to 5.
+- [x] Execution writes the text edits in one commit (test against the GitHub mock).
 - [ ] Conversion drafting with one test per dark-pattern rule.
 - [ ] Conversion metric in experiments with the directional thresholds.
 - [ ] UI: filter group, settings section, text picker and copy diff.

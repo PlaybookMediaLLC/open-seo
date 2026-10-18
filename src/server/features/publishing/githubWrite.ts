@@ -29,6 +29,8 @@ type Identity = {
   owner: { login: string };
 };
 
+const byteSize = (text: string) => new TextEncoder().encode(text).length;
+
 export function createGithubWriter(
   request: GithubRequest,
   owner: string,
@@ -161,6 +163,72 @@ export function createGithubWriter(
           "GitHub file identity did not match.",
         );
       return { commitSha: value.commit.sha, blobSha: value.content.sha };
+    },
+    /**
+     * RFC-0012 5.4: one commit that changes several files, on top of
+     * `baseSha`. The caller points a branch at it.
+     */
+    async commitFiles({
+      baseSha,
+      files,
+      message,
+    }: {
+      baseSha: string;
+      files: Array<{ path: string; source: string }>;
+      message: string;
+    }) {
+      validateGithubSha(baseSha);
+      if (files.some((file) => byteSize(file.source) > 32 * 1024) || !message)
+        throw new AppError(
+          "VALIDATION_ERROR",
+          "GitHub file update is invalid.",
+        );
+      for (const file of files) validateGithubPath(file.path);
+      const base = await request(
+        `/git/commits/${baseSha}`,
+        z.object({
+          sha: githubShaSchema,
+          tree: z.object({ sha: githubShaSchema }),
+        }),
+      );
+      const tree = await request(
+        "/git/trees",
+        z.object({ sha: githubShaSchema }),
+        {
+          method: "POST",
+          body: {
+            base_tree: base.tree.sha,
+            tree: files.map((file) => ({
+              path: file.path,
+              mode: "100644",
+              type: "blob",
+              content: file.source,
+            })),
+          },
+        },
+      );
+      const commit = await request(
+        "/git/commits",
+        z.object({
+          sha: githubShaSchema,
+          tree: z.object({ sha: githubShaSchema }),
+          parents: z.array(z.object({ sha: githubShaSchema })),
+        }),
+        {
+          method: "POST",
+          body: { message, tree: tree.sha, parents: [baseSha] },
+        },
+      );
+      if (
+        commit.tree.sha !== tree.sha ||
+        commit.parents.length !== 1 ||
+        commit.parents[0].sha !== baseSha
+      )
+        throw new AppError(
+          "UPSTREAM_UNAVAILABLE",
+          "GitHub commit identity did not match.",
+        );
+      return { commitSha: commit.sha };
     },
     /** RFC-0011 5.7: removes a file the branch no longer needs. */
     async deleteFile({

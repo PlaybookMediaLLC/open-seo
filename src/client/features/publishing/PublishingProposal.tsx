@@ -27,7 +27,7 @@ export function PublishingProposal({
   canConfirmRevert: boolean;
   blockedReason: string | null;
 }) {
-  const { proposal, connection, executions } = history;
+  const { proposal, connection, executions, textEdits } = history;
   const refresh = useRefreshPublishing(proposal.projectId);
   const [authorized, setAuthorized] = useState(false);
   const [note, setNote] = useState("");
@@ -85,7 +85,11 @@ export function PublishingProposal({
       <div className="space-y-4 p-5">
         <div className="flex flex-wrap justify-between gap-2">
           <div>
-            <h3 className="font-semibold">Verified metadata proposal</h3>
+            <h3 className="font-semibold">
+              {proposal.changeKind === "copy_text"
+                ? "Verified page text proposal"
+                : "Verified metadata proposal"}
+            </h3>
             <p className="text-xs text-muted-foreground">
               Prepared {dateLabel(proposal.createdAt)} · Immutable snapshot
             </p>
@@ -134,6 +138,15 @@ export function PublishingProposal({
               proposal.robotsBeforeSnippet,
               proposal.robotsAfterSnippet,
             ],
+            // RFC-0012 5.4: each page text edit, with its file.
+            ...textEdits.map(
+              (edit) =>
+                [
+                  `Text ${edit.ordinal + 1} in ${edit.filePath}`,
+                  edit.beforeSnippet,
+                  edit.afterSnippet,
+                ] as const,
+            ),
           ] as const
         )
           .filter((diff) => diff !== false)
