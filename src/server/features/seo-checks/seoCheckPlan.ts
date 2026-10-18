@@ -19,6 +19,17 @@ import { selectUrls } from "./urlSelection";
 // state, so it holds paths, traffic and booleans, never preview secrets.
 const MAX_SITEMAP_URLS = 50;
 
+/**
+ * A page's URL in the site's own style: sites whose sitemap paths end in a
+ * slash redirect the bare path, and a redirect on both hosts would skip it.
+ */
+export const pageUrl = (origin: string, path: string, trailingSlash: boolean) =>
+  `${origin}${path}${
+    trailingSlash && !path.endsWith("/") && !/\.[a-z0-9]+$/i.test(path)
+      ? "/"
+      : ""
+  }`;
+
 /** The protected-preview access, bound to the preview host only. */
 export async function previewAccess(
   projectId: string,
@@ -133,9 +144,15 @@ export async function planCheck(runId: string) {
     })
     .from(ciCheckIgnores)
     .where(eq(ciCheckIgnores.projectId, run.projectId));
+  const nested = baseSite.urls.flatMap((url) => {
+    const path = new URL(url).pathname;
+    return path === "/" ? [] : [path];
+  });
   return {
     runId,
     projectId: run.projectId,
+    trailingSlash:
+      nested.filter((path) => path.endsWith("/")).length > nested.length / 2,
     organizationId: project.organizationId,
     baseOrigin: run.baseOrigin,
     previewOrigin: run.previewOrigin,

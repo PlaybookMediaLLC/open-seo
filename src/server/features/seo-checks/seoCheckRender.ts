@@ -7,7 +7,7 @@ import {
 } from "@/server/lib/audit/rendering-billing";
 import { estimateRenderingCredits } from "@/shared/audit-rendering";
 import { pageFacts } from "./pageSnapshot";
-import type { CheckPlan } from "./seoCheckPlan";
+import { pageUrl, type CheckPlan } from "./seoCheckPlan";
 import type { PageFacts } from "./seoRules";
 
 // RFC-0010 5.13: rendered mode. A flagged page is rendered on both hosts in
@@ -58,8 +58,8 @@ export async function renderPages(plan: CheckPlan, paths: string[]) {
     await Promise.all(
       paths.map(async (path) => {
         const [base, preview] = await Promise.all([
-          facts(`${plan.baseOrigin}${path}`),
-          facts(`${plan.previewOrigin}${path}`),
+          facts(pageUrl(plan.baseOrigin, path, plan.trailingSlash)),
+          facts(pageUrl(plan.previewOrigin, path, plan.trailingSlash)),
         ]);
         if (base && preview) rendered.set(path, { base, preview });
       }),

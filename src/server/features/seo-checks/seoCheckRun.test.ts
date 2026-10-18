@@ -33,10 +33,15 @@ vi.mock("@/server/lib/audit/url-policy", () => ({
   isCrawlableUrl: () => true,
 }));
 const base = "https://example.com";
+// A trailing-slash site lists /pricing/ and redirects /pricing (bug found
+// on the Relay Lab live check).
+const site = vi.hoisted(() => ({ slash: false }));
 const preview = "https://pr-7.vercel.app";
 vi.mock("@/server/lib/audit/discovery", () => ({
   discoverUrls: async (origin: string) => ({
-    urls: ["/", "/pricing", "/docs"].map((path) => `${origin}${path}`),
+    urls: ["/", "/pricing", "/docs"].map(
+      (path) => `${origin}${path}${site.slash && path !== "/" ? "/" : ""}`,
+    ),
     robotsText:
       origin === preview ? "User-agent: Googlebot\nDisallow: /docs" : "",
   }),
@@ -53,6 +58,12 @@ const html = (robots: string, count: number) =>
   `<html><head><title>Page</title><meta name="robots" content="${robots}"></head><body><h1>Page</h1><p>${words(count)}</p></body></html>`;
 
 const pageFetch = vi.fn(async (url: string) => {
+  const { pathname } = new URL(url);
+  if (site.slash && pathname !== "/" && !pathname.endsWith("/"))
+    return new Response(null, {
+      status: 301,
+      headers: { location: `${url}/` },
+    });
   const onPreview = url.startsWith(preview);
   const pricing = url.endsWith("/pricing");
   const body = html(
@@ -162,4 +173,18 @@ it("compares the rendered HTML of a flagged page in rendered mode", async () => 
   expect(await stored(runId)).toEqual([
     { path: "/docs", rule: "robots-txt-blocks", severity: "blocking" },
   ]);
+});
+
+it("fetches a trailing-slash site in its own style instead of skipping redirects", async () => {
+  site.slash = true;
+  const { runId } = await queuedRun();
+  const plan = await planCheck(runId);
+  expect(plan.trailingSlash).toBe(true);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  const statuses = await db
+    .select({ status: ciCheckUrls.baseStatus })
+    .from(ciCheckUrls)
+    .where(eq(ciCheckUrls.runId, runId));
+  expect(statuses.map((row) => row.status)).toEqual([200, 200, 200]);
+  site.slash = false;
 });
