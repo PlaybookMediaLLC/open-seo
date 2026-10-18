@@ -238,14 +238,23 @@ export async function refreshSplitTest(
         eq(splitTestDays.testId, test.id),
       ),
     );
-  const result = analyzeDays(test, pages, days, finalDate);
-  if (!result) return "The observation window has not started yet.";
+  // A GA4 failure leaves the secondary metrics empty, never a clicks result.
+  const ga4 = await ga4Secondary(test, pages, finalDate, now).catch(() => null);
+  // RFC-0012 phase 2: a conversion test's label comes from its conversions.
+  const conversions = test.metric === "conversions";
+  const result = conversions
+    ? (ga4?.keyEvents ?? null)
+    : analyzeDays(test, pages, days, finalDate);
+  if (!result)
+    return conversions
+      ? "GA4 conversions are not available yet. The result waits for the next refresh."
+      : "The observation window has not started yet.";
+  // A conversion test's key events are its result, not a second metric.
+  const keyEvents = conversions ? null : ga4?.keyEvents;
   const [fresh] = await db
     .select({ contaminated: splitTests.contaminated })
     .from(splitTests)
     .where(eq(splitTests.id, test.id));
-  // A GA4 failure leaves the secondary metrics empty, never the result.
-  const ga4 = await ga4Secondary(test, pages, finalDate, now).catch(() => null);
   const notes = [
     result.prePeriodP <= 0.2 && "imbalanced",
     fresh?.contaminated && "contaminated",
@@ -268,9 +277,9 @@ export async function refreshSplitTest(
     sessionsEstimatePct: finite(ga4?.sessions?.estimatePct),
     sessionsCiLowPct: finite(ga4?.sessions?.ciLowPct),
     sessionsCiHighPct: finite(ga4?.sessions?.ciHighPct),
-    keyEventsEstimatePct: finite(ga4?.keyEvents?.estimatePct),
-    keyEventsCiLowPct: finite(ga4?.keyEvents?.ciLowPct),
-    keyEventsCiHighPct: finite(ga4?.keyEvents?.ciHighPct),
+    keyEventsEstimatePct: finite(keyEvents?.estimatePct),
+    keyEventsCiLowPct: finite(keyEvents?.ciLowPct),
+    keyEventsCiHighPct: finite(keyEvents?.ciHighPct),
   });
   const estimate = `${result.estimatePct.toFixed(1)}% (90% interval ${result.ciLowPct.toFixed(1)}% to ${result.ciHighPct.toFixed(1)}%)`;
   if (result.harmful && !result.windowComplete)

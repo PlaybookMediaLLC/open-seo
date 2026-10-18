@@ -1,7 +1,12 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { publishingConnections, splitTestPages, splitTests } from "@/db/schema";
+import {
+  projectConversionEvents,
+  publishingConnections,
+  splitTestPages,
+  splitTests,
+} from "@/db/schema";
 import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { baselineWindow } from "./splitTestBaseline";
@@ -13,7 +18,11 @@ const database = await vi.hoisted(async () => {
     await import("@/server/features/experiments/repositories/experimentTestDb");
   return createExperimentTestDatabase();
 });
-const mocks = vi.hoisted(() => ({ performance: vi.fn(), tree: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  performance: vi.fn(),
+  tree: vi.fn(),
+  ga4Report: vi.fn(),
+}));
 vi.mock("cloudflare:workers", () => ({
   env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
 }));
@@ -29,6 +38,18 @@ vi.mock("@/server/features/publishing/publishingAccess", () => ({
     getCommit: async () => ({ treeSha: "b".repeat(40) }),
     request: mocks.tree,
   }),
+}));
+vi.mock("@/server/features/ga4/repositories/Ga4ConnectionRepository", () => ({
+  Ga4ConnectionRepository: {
+    getByProjectId: async () => ({
+      propertyId: "properties/1",
+      connectedByUserId: "owner",
+      ga4AccountId: "a",
+    }),
+  },
+}));
+vi.mock("@/server/lib/ga4Client", () => ({
+  createGa4DataClient: () => ({ runReport: mocks.ga4Report }),
 }));
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: async (url: string) => url,
@@ -253,4 +274,47 @@ it("stores a balanced test with its pairs and the original titles", async () => 
     .where(eq(splitTestPages.testId, result.testId))
     .limit(1);
   expect(first?.originalTitle).toBe(`Old ${first?.path}`);
+});
+
+// RFC-0012 phase 2: a conversion test checks the MDE on the conversion.
+it("checks the MDE of a conversion test on the chosen conversion", async () => {
+  const { projectId, context } = await project();
+  await db.insert(projectConversionEvents).values({
+    projectId,
+    eventName: "sign_up",
+    createdBy: "owner",
+    updatedAt: new Date().toISOString(),
+  });
+  const search = rows(61);
+  mocks.performance.mockResolvedValue(search);
+  // GA4 dates are YYYYMMDD, and conversions follow the conversion factor.
+  const conversions = (factor: (index: number) => number) => ({
+    rows: search.rows.map((row, index) => ({
+      dimensionValues: [
+        { value: new URL(row.keys[0]).pathname },
+        { value: row.keys[1].replaceAll("-", "") },
+      ],
+      metricValues: [{ value: String(factor(index)) }],
+    })),
+  });
+  const conversionInput = {
+    ...input(projectId),
+    metric: "conversions" as const,
+  };
+  mocks.ga4Report.mockResolvedValue(
+    conversions((index) => (index % 97 ? 0 : 1)),
+  );
+  const sparse = await SplitTestService.create(context, conversionInput);
+  expect(sparse.created).toBe(false);
+
+  mocks.ga4Report.mockResolvedValue(
+    conversions((index) => search.rows[index].clicks),
+  );
+  const result = await SplitTestService.create(context, conversionInput);
+  if (!result.created) throw new Error(result.failures.join(" "));
+  const [test] = await db
+    .select({ metric: splitTests.metric, metricEvent: splitTests.metricEvent })
+    .from(splitTests)
+    .where(eq(splitTests.id, result.testId));
+  expect(test).toEqual({ metric: "conversions", metricEvent: "sign_up" });
 });

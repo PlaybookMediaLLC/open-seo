@@ -105,10 +105,13 @@ export function SplitTestResultsCard({ data }: { data: Data }) {
                 <Badge variant="outline">Interim</Badge>
               )}
               <span>
-                Estimated effect {pct(analysis.estimatePct)} on clicks, 90%
-                interval {pct(analysis.ciLowPct)} to {pct(analysis.ciHighPct)},
-                p = {analysis.pValue?.toFixed(3)}, after{" "}
-                {analysis.observationDays} of 28 days.
+                Estimated effect {pct(analysis.estimatePct)} on{" "}
+                {test.metric === "conversions"
+                  ? `${test.metricEvent ?? "conversion"} conversions`
+                  : "clicks"}
+                , 90% interval {pct(analysis.ciLowPct)} to{" "}
+                {pct(analysis.ciHighPct)}, p = {analysis.pValue?.toFixed(3)},
+                after {analysis.observationDays} of 28 days.
               </span>
             </p>
             {notes.includes("imbalanced") && (

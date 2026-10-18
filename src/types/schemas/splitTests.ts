@@ -44,8 +44,10 @@ export const createSplitTestSchema = project.extend({
         return false;
       }
     }, "Enter a valid regular expression."),
+  // RFC-0012 phase 2: test the chosen conversion instead of clicks.
+  metric: z.enum(["clicks", "conversions"]).default("clicks"),
 });
-export type CreateSplitTestInput = z.infer<typeof createSplitTestSchema>;
+export type CreateSplitTestInput = z.input<typeof createSplitTestSchema>;
 export const backtestPatternSchema = createSplitTestSchema.pick({
   projectId: true,
   pagePattern: true,

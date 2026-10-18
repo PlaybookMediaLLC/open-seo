@@ -6,6 +6,7 @@ import { splitTestDays, splitTestPages, splitTests } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { fetchLiveMetadata } from "@/server/features/experiments/liveMetadata";
+import { MeasurementGa4Repository } from "@/server/features/experiments/repositories/measurementGa4Rows";
 import {
   authorize,
   type OpportunityContext,
@@ -27,6 +28,7 @@ import { groupSeries, pairCsv } from "./splitTestAnalysis";
 import { backtest, type PastPage } from "./splitTestBacktest";
 import { neighbourPairs, pastClicks } from "./splitTestHistory";
 import { latestResults, refreshSplitTest } from "./splitTestRefresh";
+import { loadConversionBaseline } from "./splitTestGa4";
 import { testTemplate } from "./splitTestTemplate";
 import {
   assign,
@@ -193,12 +195,41 @@ async function create(
     window,
   );
   const pages = matched.filter((page) => page.clicks >= 1);
+  // RFC-0012 phase 2: a conversion test checks the MDE on the chosen
+  // conversion; the group rules stay on clicks.
+  let metricEvent: string | null = null;
+  let metricPages = pages;
+  if (input.metric === "conversions") {
+    metricEvent = await MeasurementGa4Repository.conversionEvent(
+      input.projectId,
+    );
+    if (!metricEvent)
+      return refuse([
+        "Choose the conversion in Project settings → Conversion first.",
+      ]);
+    const conversions = await loadConversionBaseline({
+      projectId: input.projectId,
+      eventName: metricEvent,
+      paths: pages.map((page) => page.path),
+      window,
+    });
+    if (!conversions)
+      return refuse([
+        "Connect Google Analytics first. A conversion test reads GA4.",
+      ]);
+    metricPages = pages.map((page) => ({
+      ...page,
+      clicks: conversions.get(page.path)?.conversions ?? 0,
+      firstHalf: conversions.get(page.path)?.firstHalf ?? 0,
+      secondHalf: conversions.get(page.path)?.secondHalf ?? 0,
+    }));
+  }
   // 10 phase 1a: a refusal names the MDE too, from neighbour pairs.
   const neighbours = pairPages(pages, 0);
   const thresholds = eligibility(
     matched,
     neighbours.length >= 3
-      ? minimumDetectableEffect(prePeriodDifferences(neighbours, pages))
+      ? minimumDetectableEffect(prePeriodDifferences(neighbours, metricPages))
       : null,
   );
   if (!thresholds.eligible)
@@ -234,10 +265,18 @@ async function create(
       "Relay could not balance the two groups in 20 draws. Their clicks moved too differently before the test.",
     ]);
   const mdePct = minimumDetectableEffect(
-    prePeriodDifferences(assignment.pairs, pages),
+    prePeriodDifferences(assignment.pairs, metricPages),
   );
-  const result = eligibility(pages, mdePct);
-  if (!result.eligible) return refuse(result.failures, result.summary);
+  // A conversion test also needs enough conversions, not only a small MDE.
+  const result = eligibility(pages, metricEvent ? null : mdePct);
+  const volume = metricEvent
+    ? eligibility(metricPages, mdePct, "conversion")
+    : null;
+  if (!result.eligible || (volume && !volume.eligible))
+    return refuse(
+      [...result.failures, ...(volume?.failures ?? [])],
+      volume?.summary ?? result.summary,
+    );
 
   // The origin that brings the most clicks; live checks fetch it later.
   const origin = sortBy(pages, [(page) => page.clicks, "desc"])[0].origin;
@@ -266,6 +305,8 @@ async function create(
       seed: assignment.seed,
       pairs: assignment.pairs.length,
       mdePct,
+      metric: input.metric ?? "clicks",
+      metricEvent,
       baselineStart: window.start,
       baselineEnd: window.end,
       createdBy: context.userId,
@@ -285,7 +326,11 @@ async function create(
       PAGE_ROWS_PER_INSERT,
     ).map((rows) => tx.insert(splitTestPages).values(rows)),
   ]);
-  return { created: true as const, testId, summary: result.summary };
+  return {
+    created: true as const,
+    testId,
+    summary: volume?.summary ?? result.summary,
+  };
 }
 
 /**

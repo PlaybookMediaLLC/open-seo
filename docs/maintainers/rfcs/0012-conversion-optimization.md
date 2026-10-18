@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group. Part E1 built: the conversion metric in experiments and `content/docs/conversion.mdx`.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group. Part E1 built: the conversion metric in experiments and `content/docs/conversion.mdx`. Phase 2 built: split tests on the chosen conversion.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -129,6 +129,8 @@ Each draft lists its claims with sources, as in RFC-0004.
 
 **Phase 2, split tests.** For copy that lives in a template shared by 30 or more pages, run an RFC-0011 test with the metric `ln(1 + conversions per day)`. Eligibility uses the same MDE rule on conversions.
 
+**As built (phase 2).** A new split test chooses clicks or the chosen conversion. A conversion test stores its metric and the event name. The group must pass RFC-0011's click rules, and the same page, volume and MDE rules on its 56-day conversions from GA4: zeros have no spread, so the MDE alone would pass a group with almost no conversions. The daily refresh runs RFC-0011's paired analysis on the chosen event's organic conversions by landing page and day, so the label, interval and harm notice use conversions. Sessions stay the secondary metric.
+
 ### 5.7 Phase 3: visitor-level tests
 
 Some pages have no group, for example the home page. Phase 3 adds visitor-level tests:
@@ -183,7 +185,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 
 ### Phase 2
 
-- [ ] RFC-0011 tests with the conversion metric, and the eligibility check on conversions.
+- [x] RFC-0011 tests with the conversion metric, and the eligibility check on conversions.
 
 ### Phase 3
 

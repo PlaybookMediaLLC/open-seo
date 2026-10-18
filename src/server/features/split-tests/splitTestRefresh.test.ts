@@ -215,3 +215,54 @@ it("adds GA4 sessions and key events beside the result", async () => {
   expect(analysis?.sessionsEstimatePct).toBeGreaterThan(10);
   expect(analysis?.keyEventsEstimatePct).toBe(0);
 });
+
+it("labels a conversion test from its conversions, not its clicks (RFC-0012)", async () => {
+  const seeded = await seededTest("running");
+  await db
+    .update(splitTests)
+    .set({ metric: "conversions", metricEvent: "sign_up" })
+    .where(eq(splitTests.id, seeded.id));
+  const test = {
+    ...seeded,
+    metric: "conversions" as const,
+    metricEvent: "sign_up",
+  };
+  mocks.performance.mockResolvedValue({ rows: [] });
+  mocks.ga4Connection.mockResolvedValue({
+    propertyTimeZone: "America/Los_Angeles",
+    connectedByUserId: "owner",
+    ga4AccountId: "account",
+    propertyId: "1",
+  });
+  const rows = [];
+  for (
+    let date = "2026-09-01";
+    date <= "2026-11-30";
+    date = shiftGa4Date(date, 1)
+  )
+    for (const [index, path] of PATHS.entries())
+      rows.push({
+        dimensionValues: [{ value: path }, { value: date.replaceAll("-", "") }],
+        metricValues: [
+          { value: "40" },
+          {
+            value: String(
+              5 +
+                (index % 3) +
+                (index % 2 === 0 && date >= "2026-11-03" ? 3 : 0),
+            ),
+          },
+        ],
+      });
+  mocks.runReport.mockResolvedValue({ rows });
+  await refreshSplitTest(test, test.projectId, NOW);
+  const [analysis] = await db
+    .select()
+    .from(splitTestAnalyses)
+    .where(eq(splitTestAnalyses.testId, test.id));
+  expect(analysis?.estimatePct).toBeGreaterThan(20);
+  expect(analysis?.keyEventsEstimatePct).toBeNull();
+  expect(JSON.stringify(mocks.runReport.mock.calls.at(-1))).toContain(
+    "keyEvents:sign_up",
+  );
+});

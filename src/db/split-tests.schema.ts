@@ -49,6 +49,11 @@ export const splitTests = sqliteTable(
     seed: integer("seed"),
     pairs: integer("pairs"),
     mdePct: real("mde_pct"),
+    // RFC-0012 5.6 phase 2: a test on the chosen conversion instead of clicks.
+    metric: text("metric", { enum: ["clicks", "conversions"] })
+      .notNull()
+      .default("clicks"),
+    metricEvent: text("metric_event"),
     baselineStart: text("baseline_start"),
     baselineEnd: text("baseline_end"),
     deployedAt: text("deployed_at"),
