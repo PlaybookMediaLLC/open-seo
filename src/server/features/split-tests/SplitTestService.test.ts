@@ -123,7 +123,7 @@ it("refuses a small group with the gap and creates nothing", async () => {
   expect(result).toMatchObject({
     created: false,
     failures: [
-      "9 pages have a click in the 56-day baseline. A test needs at least 30, so 21 more.",
+      "9 pages match the pattern, and 9 have a click in the 56-day baseline. A test needs at least 30 with a click, so 21 more.",
     ],
   });
   // The refusal names the MDE too (10, phase 1a).

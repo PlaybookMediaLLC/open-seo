@@ -57,6 +57,9 @@ function balanced(oriented: Oriented, seed: number) {
  * lifted runs labeled positive.
  */
 export function backtest(pairs: Array<[PastPage, PastPage]>, seed: number) {
+  // Fewer than 2 pairs cannot show anything; report no runs.
+  if (pairs.length < 2)
+    return { runs: 0, falsePositiveRate: 0, liftDetectedRate: 0 };
   const random = seededRandom(seed);
   let falsePositives = 0;
   let detected = 0;

@@ -74,6 +74,8 @@ function sampleSd(values: number[]) {
  * pass over the draws.
  */
 export function randomizationTest(d: number[], seed: number, draws = DRAWS) {
+  // No pairs, no evidence: the test never rejects.
+  if (!d.length) return { mean: 0, pValue: 1, harmP: 1, pAt: () => 1 };
   const random = seededRandom(seed);
   const a = new Float64Array(draws);
   const b = new Float64Array(draws);
@@ -224,7 +226,7 @@ export function eligibility(pages: BaselinePage[], mdePct: number | null) {
   const failures: string[] = [];
   if (active.length < MIN_PAGES)
     failures.push(
-      `${active.length} pages have a click in the 56-day baseline. A test needs at least ${MIN_PAGES}, so ${MIN_PAGES - active.length} more.`,
+      `${pages.length} pages match the pattern, and ${active.length} have a click in the 56-day baseline. A test needs at least ${MIN_PAGES} with a click, so ${MIN_PAGES - active.length} more.`,
     );
   if (active.length > MAX_PAGES)
     failures.push(

@@ -187,13 +187,16 @@ async function create(
   await authorize(context, input.projectId);
   requireOrgPermission(context, { integration: ["manage"] });
   const window = baselineWindow();
-  const pages = (
-    await loadBaseline(input.projectId, input.pagePattern, window)
-  ).filter((page) => page.clicks >= 1);
+  const matched = await loadBaseline(
+    input.projectId,
+    input.pagePattern,
+    window,
+  );
+  const pages = matched.filter((page) => page.clicks >= 1);
   // 10 phase 1a: a refusal names the MDE too, from neighbour pairs.
   const neighbours = pairPages(pages, 0);
   const thresholds = eligibility(
-    pages,
+    matched,
     neighbours.length >= 3
       ? minimumDetectableEffect(prePeriodDifferences(neighbours, pages))
       : null,

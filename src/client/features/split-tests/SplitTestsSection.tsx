@@ -192,7 +192,12 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
               {refused.summary && (
                 <p className="text-muted-foreground">{refused.summary}</p>
               )}
-              {backtest.data ? (
+              {backtest.data?.runs === 0 ? (
+                <p className="text-muted-foreground">
+                  Too few pages with clicks to backtest ({backtest.data.pairs}{" "}
+                  pairs).
+                </p>
+              ) : backtest.data ? (
                 <p className="text-muted-foreground">
                   Backtest of {backtest.data.pairs} pairs from{" "}
                   {backtest.data.start} to {backtest.data.end}: the 90% interval

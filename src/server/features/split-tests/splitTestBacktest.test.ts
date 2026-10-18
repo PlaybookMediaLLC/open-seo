@@ -27,3 +27,12 @@ it("finds few false results and detects a +15% lift on stable history", () => {
   expect(report.falsePositiveRate).toBeLessThanOrEqual(0.15);
   expect(report.liftDetectedRate).toBeGreaterThanOrEqual(0.8);
 }, 60_000);
+
+it("reports no runs when there are too few pairs to show anything", () => {
+  // Found in production: no pages with clicks once counted as 100% false.
+  expect(backtest([], 1)).toEqual({
+    runs: 0,
+    falsePositiveRate: 0,
+    liftDetectedRate: 0,
+  });
+});
