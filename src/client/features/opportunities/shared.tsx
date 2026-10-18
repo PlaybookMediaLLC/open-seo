@@ -50,6 +50,7 @@ export const typeLabels: Record<OpportunityType, string> = {
   technical_blocker: "Technical blocker",
   internal_link: "Internal link",
   content_gap: "Content gap",
+  accessibility_issue: "Accessibility issue",
   cro_low_conversion: "Low conversion",
   cro_form_drop_off: "Form drop-off",
   cro_device_gap: "Mobile conversion gap",
@@ -70,6 +71,8 @@ export const typeHelp: Record<OpportunityType, string> = {
     "A page that ranks for a key page's searches does not link to it yet.",
   content_gap:
     "Competitors rank in the top 10 for these commercial searches, and this site barely appears. Found with paid competitor data.",
+  accessibility_issue:
+    "Automated checks in the latest audit found the same accessibility problem in one component, on one or more pages.",
   cro_low_conversion:
     "A landing page with 300 or more sessions converts at half or less of the median for pages with the same role, and the gap is 5 or more conversions.",
   cro_form_drop_off:

@@ -1,0 +1,41 @@
+---
+title: "Accessibility checks"
+description: "What Relay's automated accessibility checks find, what they cannot find, and how Relay groups issues by component."
+---
+
+**Automated checks find only some accessibility issues. Manual testing with assistive technology is still needed.** Relay reports the violations that automated checks found. It gives no legal advice, adds no overlay script, and never says that a site meets an accessibility law or standard.
+
+## What Relay checks
+
+Each site audit runs [axe-core](https://github.com/dequelabs/axe-core) 4.13.0 in a browser on up to 50 pages:
+
+1. The key pages in your project context.
+2. The 20 pages with the most organic clicks in Search Console.
+3. One page for each route template, for example one page under `/blog/`.
+
+The checks cover the WCAG 2.0, 2.1 and 2.2 rules at levels A and AA that axe-core can test automatically. Examples are missing image alt text, a missing page language, links and buttons without a name, form fields without a label, and low-contrast text.
+
+A page whose security policy blocks injected scripts cannot be checked. Relay shows the reason for that page.
+
+## Cost
+
+The checks use browser time, which Relay bills like rendered audit pages. Relay holds the credits before the checks start. If your spending limits or credits have no room, the audit runs without the accessibility checks.
+
+## Issues grouped by component
+
+The same broken component often appears on many pages, such as a card image without alt text. Relay groups those violations into one cluster: the same rule, the same element shape, and the same HTML without page-specific values. One fix in the component resolves the whole cluster.
+
+Each cluster becomes an **Accessibility issue** on the **Opportunities** page. Use the **Accessibility** group of the type filter to see them. Each item shows:
+
+- the axe-core rule, its impact and its WCAG criteria;
+- how many pages it affects;
+- an example page, element and HTML snippet;
+- why the issue matters to people who use assistive technology.
+
+Relay orders the items by impact, by the organic clicks of the affected pages, and by the role of the most important affected page.
+
+## Limits
+
+- Automated checks cannot judge most WCAG criteria, such as whether alt text describes the image well or whether a keyboard user can complete a task.
+- Relay does not check PDF files or other documents.
+- Relay stores HTML snippets of at most 300 characters.

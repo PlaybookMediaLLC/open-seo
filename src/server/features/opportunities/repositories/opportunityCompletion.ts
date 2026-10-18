@@ -15,6 +15,7 @@ import {
   dataRefreshClaims,
   gscConnections,
   opportunities,
+  opportunityAccessibilityEvidence,
   opportunityAiEvidence,
   opportunityAuditEvidence,
   opportunityEvidence,
@@ -161,6 +162,7 @@ export async function completeRun(input: {
         urls,
         ga4,
         audit,
+        accessibility,
         inspection,
         link,
         rank,
@@ -270,6 +272,7 @@ export async function completeRun(input: {
       const child = { projectId: run.projectId, opportunityId, runId: run.id };
       const singles = [
         [opportunityAuditEvidence, audit],
+        [opportunityAccessibilityEvidence, accessibility],
         [opportunityInspectionEvidence, inspection],
         [opportunityLinkEvidence, link],
         ...(rank ?? []).map((item) => [opportunityRankEvidence, item] as const),

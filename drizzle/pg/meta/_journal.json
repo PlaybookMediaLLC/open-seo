@@ -505,6 +505,13 @@
       "when": 1792333386569,
       "tag": "0071_right_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1792334129965,
+      "tag": "0072_thankful_shriek",
+      "breakpoints": true
     }
   ]
 }

@@ -15,6 +15,7 @@ import type {
   OpportunityGa4Evidence,
   OpportunityUrl,
 } from "@/types/schemas/opportunities";
+import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
 
 export const diagnosisLabels: Record<OpportunityDiagnosis, string> = {
   ranking_drop: "Ranking drop",
@@ -148,7 +149,11 @@ export function AuditAndLinkEvidence({
 }: {
   detail: Pick<
     OpportunityDetail,
-    "auditEvidence" | "inspectionEvidence" | "linkEvidence" | "rankEvidence"
+    | "auditEvidence"
+    | "inspectionEvidence"
+    | "linkEvidence"
+    | "rankEvidence"
+    | "accessibilityEvidence"
   >;
   latestRunId: string;
 }) {
@@ -158,8 +163,28 @@ export function AuditAndLinkEvidence({
   const [inspection] = latest(detail.inspectionEvidence);
   const [link] = latest(detail.linkEvidence);
   const ranks = latest(detail.rankEvidence);
+  const [accessibility] = latest(detail.accessibilityEvidence);
   return (
     <>
+      {accessibility ? (
+        <>
+          <Facts
+            title="Accessibility (automated checks)"
+            rows={[
+              ["Rule", accessibility.ruleId],
+              ["Impact", accessibility.impact],
+              ["WCAG tags", accessibility.wcagTags],
+              ["Pages affected", accessibility.pagesAffected],
+              ["Example page", accessibility.exampleUrl],
+              ["Example element", accessibility.exampleSelector],
+              ["Example HTML", accessibility.exampleSnippet],
+            ]}
+          />
+          <p className="text-sm text-muted-foreground">
+            {ACCESSIBILITY_LIMITS}
+          </p>
+        </>
+      ) : null}
       {audit ? (
         <Facts
           title="Site audit"

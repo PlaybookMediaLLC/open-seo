@@ -101,6 +101,41 @@ describe(`Opportunity signals real ${database.isPostgres ? "Postgres" : "SQLite"
     ).toBeNull();
   });
 
+  it("groups the audit's axe-core violations into clusters with their pages (RFC-0013)", async () => {
+    const { run: own } = await setupRun(client, PREFIX);
+    const auditId = await addAudit(own.projectId, "completed", daysAgo(1));
+    for (const [path, impact] of [
+      ["a", "serious"],
+      ["b", "critical"],
+    ] as const) {
+      const pageId = await addPage(auditId, page(path));
+      const resultId = crypto.randomUUID();
+      await run(
+        "INSERT INTO audit_accessibility_results (id, audit_id, page_id, axe_version, ran_at, violation_count) VALUES (?, ?, ?, '4.13.0', ?, 1)",
+        [resultId, auditId, pageId, daysAgo(1)],
+      );
+      await run(
+        "INSERT INTO audit_accessibility_violations (id, result_id, rule_id, impact, wcag_tags, target_selector, html_snippet, failure_summary, cluster_key) VALUES (?, ?, 'image-alt', ?, 'wcag2a wcag111', 'img.card', '<img class=\"card\">', 'Add alt', 'cluster-1')",
+        [crypto.randomUUID(), resultId, impact],
+      );
+    }
+    const latest = await signals.latestAudit(own.projectId, daysAgo(30), []);
+    expect(latest?.accessibility).toEqual([
+      {
+        clusterKey: "cluster-1",
+        ruleId: "image-alt",
+        impact: "critical",
+        wcagTags: "wcag2a wcag111",
+        pageUrls: [page("a"), page("b")],
+        example: {
+          url: page("a"),
+          selector: "img.card",
+          snippet: '<img class="card">',
+        },
+      },
+    ]);
+  });
+
   it("keeps the first and last rank check per keyword and device, for the project only", async () => {
     const { run: own } = await setupRun(client, PREFIX);
     const { run: other } = await setupRun(client, PREFIX);
@@ -192,6 +227,17 @@ describe(`Opportunity signals real ${database.isPostgres ? "Postgres" : "SQLite"
           sourceImpressions: 300,
           sourcePosition: 12,
         },
+        accessibility: {
+          auditId,
+          clusterKey: "cluster-1",
+          ruleId: "image-alt",
+          impact: "critical",
+          wcagTags: "wcag2a wcag111",
+          pagesAffected: 3,
+          exampleUrl: page("a"),
+          exampleSelector: "img.card",
+          exampleSnippet: '<img class="card">',
+        },
         rank: [
           {
             trackingKeywordId: "keyword-1",
@@ -209,6 +255,7 @@ describe(`Opportunity signals real ${database.isPostgres ? "Postgres" : "SQLite"
       inspectionEvidence: [{ verdict: "FAIL" }],
       linkEvidence: [{ sharedQuery: "widgets", sourcePosition: 12 }],
       rankEvidence: [{ firstPosition: null, lastPosition: 8 }],
+      accessibilityEvidence: [{ ruleId: "image-alt", pagesAffected: 3 }],
     });
     const { run: foreign } = await setupRun(client, PREFIX);
     expect(
@@ -218,6 +265,7 @@ describe(`Opportunity signals real ${database.isPostgres ? "Postgres" : "SQLite"
       inspectionEvidence: [],
       linkEvidence: [],
       rankEvidence: [],
+      accessibilityEvidence: [],
     });
     // Deleting the audit removes its evidence and keeps the run.
     await run("DELETE FROM audits WHERE id = ?", [auditId]);

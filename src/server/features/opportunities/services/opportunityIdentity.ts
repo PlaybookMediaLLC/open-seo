@@ -24,6 +24,8 @@ function identityTuple(
       return [...base, candidate.url, candidate.link?.sourceUrl ?? null];
     case "content_gap":
       return [...base, candidate.topic ?? null];
+    case "accessibility_issue":
+      return [...base, candidate.accessibility?.clusterKey ?? null];
     default:
       return [...base, candidate.url, candidate.query];
   }

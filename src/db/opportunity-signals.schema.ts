@@ -182,3 +182,39 @@ export const opportunityRankEvidence = sqliteTable(
     ),
   ],
 );
+
+// RFC-0013 5.3: one accessibility cluster of the latest audit.
+export const opportunityAccessibilityEvidence = sqliteTable(
+  "opportunity_accessibility_evidence",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    runId: text("run_id")
+      .notNull()
+      .references(() => opportunityRuns.id, { onDelete: "cascade" }),
+    auditId: text("audit_id")
+      .notNull()
+      .references(() => audits.id, { onDelete: "cascade" }),
+    clusterKey: text("cluster_key").notNull(),
+    ruleId: text("rule_id").notNull(),
+    impact: text("impact", {
+      enum: ["minor", "moderate", "serious", "critical"],
+    }).notNull(),
+    wcagTags: text("wcag_tags").notNull(),
+    pagesAffected: integer("pages_affected").notNull(),
+    exampleUrl: text("example_url").notNull(),
+    exampleSelector: text("example_selector").notNull(),
+    exampleSnippet: text("example_snippet").notNull(),
+  },
+  (t) => [
+    uniqueIndex("opportunity_accessibility_evidence_opportunity_run_idx").on(
+      t.opportunityId,
+      t.runId,
+    ),
+  ],
+);
