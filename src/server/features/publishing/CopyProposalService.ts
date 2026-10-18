@@ -151,7 +151,7 @@ async function prepare(
           fingerprintVersion: 6,
           changeKind: "copy_text",
           revertsProposalId: null,
-          draftId: null,
+          draftId: input.draftId ?? null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:

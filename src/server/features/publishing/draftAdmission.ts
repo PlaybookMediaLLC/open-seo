@@ -23,6 +23,7 @@ const WRITE_YOURSELF: Record<ProposalDraft["kind"], string> = {
   meta_description: "description",
   meta_title: "title",
   internal_link_anchor: "link",
+  page_copy: "text",
 };
 
 /** Manage permission, an approved and unchanged item, the limits, credits. */

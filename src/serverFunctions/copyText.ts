@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
+import { CopyDraftService } from "@/server/features/conversion/CopyDraftService";
 import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
 import { CopyProposalService } from "@/server/features/publishing/CopyProposalService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  draftCopyInputSchema,
   locateCopyInputSchema,
   pageTextsInputSchema,
   prepareCopyInputSchema,
@@ -37,4 +39,11 @@ export const prepareCopyProposal = createServerFn({ method: "POST" })
       ...data,
       projectId: context.projectId,
     }),
+  );
+
+export const draftCopyText = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(draftCopyInputSchema)
+  .handler(({ context, data }) =>
+    CopyDraftService.draft(context, { ...data, projectId: context.projectId }),
   );

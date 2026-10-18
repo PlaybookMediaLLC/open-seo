@@ -115,7 +115,7 @@ async function draft(
       sections,
       output ?? { text: "", rationale: "", usedQueries: [], claims: [] },
       passed,
-      kind,
+      LENGTH_RULES[kind].label,
     );
     const record: ProposalDraft = {
       id: crypto.randomUUID(),

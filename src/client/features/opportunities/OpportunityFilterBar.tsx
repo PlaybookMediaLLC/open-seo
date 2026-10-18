@@ -5,7 +5,9 @@ import { Checkbox } from "@/client/components/ui/checkbox";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/client/components/ui/select";
@@ -151,10 +153,19 @@ export function OpportunityFilterBar({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
-            {OPPORTUNITY_TYPES.map((type) => (
-              <SelectItem key={type} value={type}>
-                {typeLabels[type]}
-              </SelectItem>
+            {/* RFC-0012 5.8: search types, then the conversion group. */}
+            {(["Search", "Conversion"] as const).map((group) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{group}</SelectLabel>
+                {OPPORTUNITY_TYPES.filter(
+                  (type) =>
+                    type.startsWith("cro_") === (group === "Conversion"),
+                ).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {typeLabels[type]}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>

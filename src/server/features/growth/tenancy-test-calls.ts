@@ -10,10 +10,6 @@ import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-chec
 import { SplitTestEndService as splitEnds } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService as splitPulls } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
-import { ConversionDetectionService } from "@/server/features/conversion/ConversionDetectionService";
-import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
-import { CopyProposalService } from "@/server/features/publishing/CopyProposalService";
-import { ConversionGateService as conversion } from "@/server/features/conversion/ConversionGateService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
@@ -27,6 +23,8 @@ import { MetadataProposalService } from "@/server/features/publishing/MetadataPr
 import { ProposalDraftService } from "@/server/features/publishing/ProposalDraftService";
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
+
+import { conversionCalls } from "./tenancy-test-calls-conversion";
 
 // RFC-0007: every growth service function, called by one organization with
 // another organization's ids. Used by tenancy.test.ts.
@@ -322,6 +320,7 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
         }),
     },
     ...splitTestCalls(projectId, ctx),
+    ...conversionCalls(projectId, ctx),
   };
 }
 
@@ -366,40 +365,6 @@ function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
           testId: "x",
           action: "remove",
           hash: "0".repeat(64),
-        }),
-    },
-    ConversionGateService: {
-      get: () => conversion.get(ctx, projectId),
-      save: () =>
-        conversion.save(ctx, {
-          projectId,
-          eventName: "sign_up",
-          valueMinor: null,
-          currency: null,
-          channel: "organic_search",
-        }),
-    },
-    ConversionDetectionService: {
-      detect: () => ConversionDetectionService.detect(ctx, projectId),
-    },
-    CopyLocatorService: {
-      pageTexts: () =>
-        CopyLocatorService.pageTexts(ctx, { projectId, opportunityId: "x" }),
-      locate: () =>
-        CopyLocatorService.locate(ctx, {
-          projectId,
-          opportunityId: "x",
-          text: "Book a call",
-        }),
-    },
-    CopyProposalService: {
-      prepare: () =>
-        CopyProposalService.prepare(ctx, {
-          projectId,
-          opportunityId: "x",
-          expectedOpportunityVersion: 1,
-          edits: [{ text: "Book a call", newText: "Talk to sales" }],
-          confirmSharedPages: false,
         }),
     },
   };

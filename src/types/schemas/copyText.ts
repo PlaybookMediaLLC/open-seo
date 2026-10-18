@@ -24,5 +24,12 @@ export const prepareCopyInputSchema = opportunity.extend({
   // The person confirmed that the listed pages that share the text change too.
   confirmSharedPages: z.boolean().default(false),
   filePath: z.string().trim().min(1).max(500).optional(),
+  // RFC-0012 5.5: the AI draft the new text started from, if any.
+  draftId: z.string().min(1).optional(),
+});
+export const draftCopyInputSchema = opportunity.extend({
+  expectedOpportunityVersion: z.number().int().positive(),
+  text: z.string().trim().min(1).max(500),
+  blockKind: z.enum(["heading", "button", "link", "label", "paragraph"]),
 });
 export type PrepareCopyInput = z.infer<typeof prepareCopyInputSchema>;
