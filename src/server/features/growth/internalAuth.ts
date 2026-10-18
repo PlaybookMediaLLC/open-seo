@@ -6,12 +6,17 @@ const MAX_BODY_BYTES = 64 * 1024;
 const MAX_SKEW_SECONDS = 300;
 const encoder = new TextEncoder();
 
-/** "off" unless a signing secret exists; without Trigger.dev it defaults off. */
-export async function growthJobsMode(): Promise<"trigger" | "off"> {
-  if (!(await getOptionalEnvValue("GROWTH_JOBS_SECRET"))) return "off";
+/**
+ * "trigger" when Trigger.dev is configured (a signing secret and its key, or
+ * GROWTH_JOBS_MODE=trigger with a secret); "off" when GROWTH_JOBS_MODE=off;
+ * otherwise "cron": the Worker's own cron runs the jobs (cronScheduler.ts).
+ */
+export async function growthJobsMode(): Promise<"trigger" | "cron" | "off"> {
   const mode = await getOptionalEnvValue("GROWTH_JOBS_MODE");
-  if (mode) return mode === "trigger" ? "trigger" : "off";
-  return (await getOptionalEnvValue("TRIGGER_SECRET_KEY")) ? "trigger" : "off";
+  if (mode === "off") return "off";
+  if (!(await getOptionalEnvValue("GROWTH_JOBS_SECRET"))) return "cron";
+  if (mode) return mode === "trigger" ? "trigger" : "cron";
+  return (await getOptionalEnvValue("TRIGGER_SECRET_KEY")) ? "trigger" : "cron";
 }
 
 function hexBytes(hex: string) {
@@ -34,7 +39,8 @@ async function signatureMatches(secret: string, data: string, hex: string) {
 
 /** The parsed JSON body of a valid signed request, or null. */
 export async function readSignedBody(request: Request): Promise<unknown> {
-  if (request.method !== "POST" || (await growthJobsMode()) === "off")
+  // Only Trigger.dev calls the signed endpoints; cron runs in the Worker.
+  if (request.method !== "POST" || (await growthJobsMode()) !== "trigger")
     return null;
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES)
     return null;

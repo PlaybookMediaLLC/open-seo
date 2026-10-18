@@ -94,6 +94,9 @@ import type { Plugin } from "vite";
  *   action and CI check rate limits (deploy/alchemy/relay-env.ts).
  * - wrangler.jsonc and src/server.ts: declare and export the SEO check
  *   Workflow (src/server/features/seo-checks/SeoCheckWorkflow.ts).
+ * - src/server.ts: the scheduled handler runs the due growth jobs, the spend
+ *   reconcile and the retention on the Worker cron when Trigger.dev is not
+ *   configured (src/server/features/growth/cronScheduler.ts).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.

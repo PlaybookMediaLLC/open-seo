@@ -55,6 +55,8 @@ Trigger.dev tasks run on Trigger.dev machines, outside Cloudflare. D1, KV, R2 an
 4. **Run.** Each child task calls `POST /api/internal/growth/run`. The Worker runs the job with its bindings and the existing services. It writes the run row, logs and notifications, and advances the schedule.
 5. **Events.** At the end of a successful audit, the Worker triggers the `audit-followup` task through the Trigger.dev API.
 
+**As built (owner decision, 2026-10-18): the Worker cron.** The Trigger.dev account does not exist yet, so the owner chose Cloudflare cron. The Worker's existing five-minute cron acts on the :00, :15, :30 and :45 ticks. It reconciles failed credit settlements, deletes old history on the 03:30 tick, and runs the due jobs one at a time through the same `GrowthJobService.run`. A failed window is retried on later ticks, up to 3 attempts; the third failure tells the project and moves the schedule on, as a final Trigger.dev failure does. A tick stops starting jobs after 10 minutes. `GROWTH_JOBS_MODE` is now `cron` by default, `trigger` when Trigger.dev is configured (which turns the cron off), or `off`. The signed endpoints answer only in `trigger` mode. Audit follow-ups wait as queued rows for the next tick.
+
 ### 5.2 Trigger.dev project
 
 1. Add `trigger.config.ts` at the repository root and task files in `trigger/`. Both are fork-owned.

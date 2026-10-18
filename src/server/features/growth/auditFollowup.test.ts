@@ -97,9 +97,16 @@ it("queues the follow-up when Trigger.dev is down, and never fails the audit", a
 });
 
 it("queues nothing when scheduled jobs are off", async () => {
+  env.values = { GROWTH_JOBS_MODE: "off" };
   const { run } = await setupRun(database.client, database.slugPrefix);
   await queueAuditFollowup(run.projectId, "audit-off");
   expect(await queued(run.projectId)).toEqual([]);
+});
+
+it("queues the follow-up for the Worker cron when Trigger.dev is not set", async () => {
+  const { run } = await setupRun(database.client, database.slugPrefix);
+  await queueAuditFollowup(run.projectId, "audit-cron");
+  expect(await queued(run.projectId)).toEqual([{ windowKey: "audit-cron" }]);
 });
 
 it("announces new critical issues on pages with impressions only", async () => {
