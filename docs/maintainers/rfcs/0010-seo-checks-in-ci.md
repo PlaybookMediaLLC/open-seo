@@ -337,7 +337,8 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 Each follow-up names its trigger. Check it here when it passes.
 
 - [ ] Phase 2 live check (section 10). Trigger: the owner adds the webhook URL, the `GITHUB_APP_WEBHOOK_SECRET`, the "Deployment status" event and Checks write to the App, following `playbook-deployment.md`, and a Vercel test repository has the App installed.
-- [ ] Phase 3 live check: a flagged page renders on both hosts and the run settles its rendering hold. Trigger: a client-rendered site with previews is connected to a project.
+- [x] Phase 3 live check: a flagged page renders on both hosts and the run settles its rendering hold. Trigger: a client-rendered site with previews is connected to a project. Done on 2026-10-18 on the Relay Lab project: run `54db68f5` checked 5 URLs, and `/spa-check` (an empty shell that a script fills) rendered on both hosts (`pagesRendered` 1). The rendering hold settles in the step's `finally`. The first try rendered 0 pages because the site redirected bare paths to their trailing-slash form; the check now uses the slash form that most sitemap paths use.
+- [ ] Sites that mix both forms: a page whose path form differs from most sitemap paths redirects on both hosts and is skipped. Trigger: a user's site mixes trailing-slash and bare paths.
 - [ ] Phase 1 acceptance on S1 and S3 (section 10) and the detection and speed criteria of section 11. Trigger: the monorepo's GitHub billing is fixed (S1), and Relay has previews (S3, RFC-0025).
 - [ ] Usability: a developer new to Relay installs the action from the docs in under 10 minutes. Trigger: the first outside install.
 - [ ] Adoption: the check runs on every pull request of Relay and the monorepo for 2 weeks with no manual retry. Trigger: the S1 and S3 installs.

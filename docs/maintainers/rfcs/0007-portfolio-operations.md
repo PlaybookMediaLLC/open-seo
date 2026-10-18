@@ -67,7 +67,7 @@ These are boundaries, not a final design.
 Only section 4 applies now.
 
 - [x] `tenancy.test.ts` covers every growth service read and write.
-- [ ] The suite runs on D1 and Postgres in CI. It runs on SQLite in CI and passed on Postgres locally on 2026-10-17. A Postgres job in CI changes `.github/**`, which needs the maintainer's review.
+- [x] The suite runs on D1 and Postgres in CI. It runs on SQLite in CI and passed on Postgres locally on 2026-10-17. A Postgres job in CI changes `.github/**`, which needs the maintainer's review. Done 2026-10-18: PR #84 added the Postgres job; it passed 729 tests on its first run.
 - [x] The schema check fails for a growth table without `project_id` (prove it with a temporary failing case, then remove it).
 - [ ] This RFC is reviewed again when an entry criterion is met.
 
@@ -97,7 +97,7 @@ Only section 4 applies now.
 
 Each follow-up names its trigger. Check it here when it passes.
 
-- [ ] The tenancy suite runs on Postgres in CI. Trigger: the maintainer reviews and merges PR #84, which adds a fork-owned Postgres workflow.
+- [x] The tenancy suite runs on Postgres in CI. Trigger: the maintainer reviews and merges PR #84, which adds a fork-owned Postgres workflow. Done 2026-10-18 (PR #84).
 - [ ] Real-site acceptance (section 9) with two real Google accounts in two organizations. Trigger: a second organization exists with its own project. The invitation to the second account is still pending.
 - [x] Schedules and notifications join the suite. Trigger: RFC-0008 adds their services. The schedule service joined the suite (PR #88). Notifications belong to an organization, and their own test proves that one organization never sees another's (PR #87).
 - [ ] Review this RFC again. Trigger: one entry criterion in section 5 is met.

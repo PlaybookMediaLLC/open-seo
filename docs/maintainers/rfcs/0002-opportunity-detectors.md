@@ -365,7 +365,7 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 ### Phase 2
 
 - [x] `audit_page_inlinks`, written at audit finalize (`inbound_link_count` is left out; see `internal_link`).
-- [ ] Audit finalize stays inside its current time limits on a 5,000-page site. The inlinks query takes about 1.5 seconds on a synthetic graph of that size; the live write time is not measured yet.
+- [ ] Audit finalize stays inside its current time limits on a 5,000-page site. The inlinks query takes about 1.5 seconds on a synthetic graph of that size; the live write time is not measured yet. The free plan audits at most 50 pages (a paid plan audits 10,000), so the live run needs a paid plan.
 - [x] `technical_blocker` detector with the URL normalization tests.
 - [x] `opportunity_audit_evidence` and `opportunity_inspection_evidence` tables.
 - [x] URL inspection limited per project per day, with a test.
@@ -378,7 +378,7 @@ A new `OpportunityService.detectContentGaps` runs phase 3 under its own claim ke
 
 ### Phase 3
 
-- [ ] RFC-0009 spending limits are live. Until then, the credit hold is the only admission check.
+- [x] RFC-0009 spending limits are live. Until then, the credit hold is the only admission check. Done 2026-10-18: every DataForSEO call reserves inside the monthly limits (`src/server/lib/dataforseo/client.ts`).
 - [x] Content-gap dialog shows the estimate before any paid request.
 - [x] Admission refusal shows a clear message and makes no provider call (test). The metering tests prove that a refused hold makes no provider call; the content-gap test proves the message and that nothing is saved.
 - [x] `competitor_keyword_snapshots` and `competitor_keyword_rows`, with 30-day reuse (test proves no second purchase).
@@ -517,10 +517,10 @@ Each follow-up names its trigger. Check it here when it passes.
 **Search Console data.** The only connected property, `sc-domain:playbookmedia.io`, had 0 clicks and 0 impressions over 3 months on 2026-10-16, and no signed-in Google account had another property. The detection code runs in production with no rows: the brand-terms editor, the detail sections and the content-gap estimate were checked live.
 
 - [ ] Phase 1 acceptance (section 11) on a property with traffic. Trigger: the owner verifies a site with search traffic (for example `conduitt.io`, `eigenn.io` or `solomonhq.io`) in Search Console for the account that Relay uses, or adds that account as a user on an existing property.
-- [ ] Phase 1 thin-data run (S3 step) on `playbookmedia.io`. Trigger: the 24-hour cache of its last run ends, after 2026-10-17 11:10 UTC.
+- [x] Phase 1 thin-data run (S3 step) on `playbookmedia.io`. Trigger: the 24-hour cache of its last run ends, after 2026-10-17 11:10 UTC. Done at 11:00 UTC on 2026-10-18: the scheduled opportunity refresh found no qualifying opportunities and said so. It also said that the result is not a complete assessment, that GA4 is not connected, and that the latest audit has no internal-link data. It made 0 new high-priority items.
 - [ ] Phase 1 checklist: live run on two real properties, and a person reviews 20 sampled opportunities (at least 14 worth reviewing).
 - [ ] Phase 2 acceptance: fresh audits on S1 and S3, every technical item checked against the live page, no internal link that already exists, and a fixed item that disappears after a new audit. Mark money or hub key pages first, so the audit saves inlinks.
-- [ ] Phase 2 checklist: audit finalize stays inside its time limits on a 5,000-page site (the inlinks query takes about 1.5 seconds on a synthetic graph of that size).
+- [ ] Phase 2 checklist: audit finalize stays inside its time limits on a 5,000-page site (the inlinks query takes about 1.5 seconds on a synthetic graph of that size). Trigger: a paid plan, because the free plan audits at most 50 pages.
 - [ ] Section 12 completion criteria: accuracy against Search Console, usefulness reviews, three runs on three days, and the performance targets.
 
 **Paid run.** The owner approved on 2026-10-16 one content-gap run with up to 3 competitors (about 507 credits at 169 each), one live results check and one site audit, once a property with data is connected.
@@ -529,4 +529,4 @@ Each follow-up names its trigger. Check it here when it passes.
 
 **RFC-0009.**
 
-- [ ] Content-gap and live-check admission go through the RFC-0009 spending check. Until then, the credit hold is the only admission check. Trigger: RFC-0009 ships its spending limits.
+- [x] Content-gap and live-check admission go through the RFC-0009 spending check. Until then, the credit hold is the only admission check. Trigger: RFC-0009 ships its spending limits. Done 2026-10-18: both use `createDataforseoClient`, which reserves inside the monthly limits.
