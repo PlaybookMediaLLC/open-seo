@@ -99,6 +99,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 **Alt text drafts.** Phase 1 drafts from the file name, the surrounding text and the page topic, with the RFC-0004 checks. Phase 2 adds an optional vision model that sees the image. Every alt text needs a person's approval. Alt text never contains "image of" or keyword lists.
 
+**As built (part C1).** An `image-alt` or language item has a **Fix in code** sheet. For an image, the person picks "describe" and writes the text, or picks "decorative" for `alt=""`; drafted text comes in part C2. Text that starts with "image of" (or picture, photo, graphic, icon) or has three or more commas is refused. Relay takes the `src` of the stored snippet and maps Next.js image URLs (`/_next/image?url=…` and hashed `/_next/static/media/` names) back to the file name. It matches `<img>` and `<Image>` elements in `.tsx` and `.jsx` files reached from the page file. For the language, Relay reads the root layout at `app/layout` or `src/app/layout` (`.tsx`, `.jsx` or `.js`) and matches `<html>`; a Pages Router `_document` is fixed by hand. A new attribute goes last, so no spread can override it. An existing attribute is replaced in place, unless a spread follows it. More than one match lists each file and line and stops. When the element is in a shared component, the risk text names the other pages that render it. The edit is an RFC-0012 text edit with node kind `jsx_attribute`: it binds to fingerprint version 6, and execution rebuilds it exactly and commits it through the same one-commit path.
+
 ### 5.5 Verification and tracking
 
 1. After the deployment is confirmed, run axe-core again on the affected pages in the cluster (at most 10).
@@ -142,8 +144,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 - [x] Two result tables and the evidence table, in D1 and Postgres, with the parity test.
 - [x] Cluster keys with tests: the same component on different pages gives one key, different components give different keys.
 - [x] `accessibility_issue` opportunities with the priority inputs.
-- [ ] `jsx_attribute` change kind with element matching tests (literal `src`, imported image, spread rejection, multiple matches).
-- [ ] Alt text and `lang` fixes, including the decorative choice.
+- [x] `jsx_attribute` change kind with element matching tests (literal `src`, imported image, spread rejection, multiple matches).
+- [x] Alt text and `lang` fixes, including the decorative choice.
 - [ ] Live verification after deploy.
 - [x] Wording rules enforced (test that no UI string contains "compliant").
 - [x] `content/docs/accessibility.mdx` with the limits stated first.

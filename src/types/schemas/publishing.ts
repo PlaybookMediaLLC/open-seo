@@ -238,7 +238,8 @@ export type ProposalTextEdit = {
     | "string_literal"
     | "template_literal"
     | "jsx_text"
-    | "markdown_text";
+    | "markdown_text"
+    | "jsx_attribute";
   /** The file at the base commit, and after all of the proposal's edits. */
   beforeBlobSha: string;
   afterBlobSha: string;

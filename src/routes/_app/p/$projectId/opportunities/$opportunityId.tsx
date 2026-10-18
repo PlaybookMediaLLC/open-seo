@@ -263,7 +263,12 @@ function OpportunityDetailPage() {
         />
         <PublishingOpportunityPanel
           key={`publishing-${item.id}`}
-          opportunity={item}
+          opportunity={{
+            ...item,
+            accessibilityRule: query.data.accessibilityEvidence.find(
+              (row) => row.runId === item.evidenceRunId,
+            )?.ruleId,
+          }}
           readOnly={query.isError}
         />
         <section className="space-y-3">

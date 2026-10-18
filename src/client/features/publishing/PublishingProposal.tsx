@@ -88,7 +88,9 @@ export function PublishingProposal({
             <h3 className="font-semibold">
               {proposal.changeKind === "copy_text"
                 ? "Verified page text proposal"
-                : "Verified metadata proposal"}
+                : proposal.changeKind === "jsx_attribute"
+                  ? "Verified accessibility fix proposal"
+                  : "Verified metadata proposal"}
             </h3>
             <p className="text-xs text-muted-foreground">
               Prepared {dateLabel(proposal.createdAt)} · Immutable snapshot
