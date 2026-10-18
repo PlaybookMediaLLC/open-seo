@@ -220,13 +220,21 @@ export function assign(
 }
 
 /** 5.2 step 4: the thresholds, each failure with its gap in numbers. */
-export function eligibility(pages: BaselinePage[], mdePct: number | null) {
+/**
+ * RFC-0012 phase 2: a conversion test passes the same rules on its
+ * conversions, so `clicks` holds conversions and the unit names them.
+ */
+export function eligibility(
+  pages: BaselinePage[],
+  mdePct: number | null,
+  unit: "click" | "conversion" = "click",
+) {
   const active = pages.filter((page) => page.clicks >= 1);
   const clicks = sum(active.map((page) => page.clicks));
   const failures: string[] = [];
   if (active.length < MIN_PAGES)
     failures.push(
-      `${pages.length} pages match the pattern, and ${active.length} have a click in the 56-day baseline. A test needs at least ${MIN_PAGES} with a click, so ${MIN_PAGES - active.length} more.`,
+      `${pages.length} pages match the pattern, and ${active.length} have a ${unit} in the 56-day baseline. A test needs at least ${MIN_PAGES} with a ${unit}, so ${MIN_PAGES - active.length} more.`,
     );
   if (active.length > MAX_PAGES)
     failures.push(
@@ -234,7 +242,7 @@ export function eligibility(pages: BaselinePage[], mdePct: number | null) {
     );
   if (clicks < MIN_CLICKS)
     failures.push(
-      `The pages have ${clicks.toLocaleString("en-US")} clicks in the 56-day baseline. A test needs at least ${MIN_CLICKS.toLocaleString("en-US")}, so ${(MIN_CLICKS - clicks).toLocaleString("en-US")} more.`,
+      `The pages have ${clicks.toLocaleString("en-US")} ${unit}s in the 56-day baseline. A test needs at least ${MIN_CLICKS.toLocaleString("en-US")}, so ${(MIN_CLICKS - clicks).toLocaleString("en-US")} more.`,
     );
   if (mdePct !== null && mdePct > MAX_MDE_PCT)
     failures.push(

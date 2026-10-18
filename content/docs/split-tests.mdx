@@ -21,6 +21,14 @@ A test needs one group of pages that share a template, such as every page under 
 
 **The minimum detectable effect (MDE)** is the smallest change the group can reliably show. "This group can detect a change of 11% or more" means that a smaller real effect will probably show as inconclusive.
 
+### Test conversions instead of clicks
+
+For a change that should win customers, not clicks, choose **Measure the chosen conversion (GA4)** in the new test sheet. This needs Google Analytics and the conversion that you chose in **Project settings → Conversion** (see [Conversion optimization](/docs/conversion)).
+
+- The group must still pass the click requirements above.
+- The group must also have at least 30 pages with a conversion and at least 1,000 conversions in the 56-day baseline. The minimum detectable effect is computed on conversions.
+- The result is the estimated effect on the conversions of organic search sessions that start on the test pages, with the same method and interval as clicks.
+
 ## How the groups are made
 
 Relay sorts the pages by clicks, pairs neighbours, and puts one page of each pair in the variant group at random. It draws again until the two groups have similar clicks and moved alike before the test. The seed is stored, so anyone can repeat the assignment. A page never changes group during a test.

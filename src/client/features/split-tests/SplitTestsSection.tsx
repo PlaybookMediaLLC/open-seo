@@ -103,6 +103,7 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
   const [hypothesis, setHypothesis] = useState("");
   const [field, setField] = useState<(typeof FIELDS)[number]["value"]>("title");
   const [pagePattern, setPagePattern] = useState("^/");
+  const [metric, setMetric] = useState<"clicks" | "conversions">("clicks");
   const create = useMutation({
     mutationFn: () =>
       createSplitTest({
@@ -112,6 +113,7 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
           hypothesis,
           field,
           pagePattern,
+          metric,
         },
       }),
     onSuccess: async (result) => {
@@ -171,6 +173,21 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
                 {option.label}
               </option>
             ))}
+          </select>
+          <select
+            aria-label="Metric"
+            className="h-9 w-full rounded-md border bg-background px-2"
+            value={metric}
+            onChange={(event) =>
+              setMetric(
+                event.target.value === "conversions" ? "conversions" : "clicks",
+              )
+            }
+          >
+            <option value="clicks">Measure clicks from search</option>
+            <option value="conversions">
+              Measure the chosen conversion (GA4)
+            </option>
           </select>
           <Input
             aria-label="Page pattern"
