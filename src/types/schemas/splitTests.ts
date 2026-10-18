@@ -32,3 +32,11 @@ export const createSplitTestSchema = project.extend({
     }, "Enter a valid regular expression."),
 });
 export type CreateSplitTestInput = z.infer<typeof createSplitTestSchema>;
+
+// RFC-0011 5.7: the end actions.
+export const splitTestEndSchema = splitTestSchema.extend({
+  action: z.enum(["apply", "remove"]),
+});
+export const endSplitTestSchema = splitTestEndSchema.extend({
+  hash: z.string().regex(/^[0-9a-f]{64}$/),
+});

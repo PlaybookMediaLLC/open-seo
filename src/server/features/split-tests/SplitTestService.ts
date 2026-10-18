@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { chunk, sortBy, sum } from "remeda";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
-import { splitTestPages, splitTests } from "@/db/schema";
+import { splitTestDays, splitTestPages, splitTests } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { fetchLiveMetadata } from "@/server/features/experiments/liveMetadata";
@@ -19,6 +19,11 @@ import {
   loadBaseline,
   prePeriodDifferences,
 } from "./splitTestBaseline";
+import {
+  ga4DateInTimeZone,
+  shiftGa4Date,
+} from "@/server/features/ga4/services/Ga4Dates";
+import { groupSeries, pairCsv } from "./splitTestAnalysis";
 import { latestResults, refreshSplitTest } from "./splitTestRefresh";
 import { routeFiles } from "./splitTestTemplate";
 import {
@@ -70,6 +75,7 @@ async function get(
         eq(splitTestPages.testId, input.testId),
       ),
     );
+  const days = await storedDays(input.projectId, input.testId);
   const total = (bucket: "variant" | "control") =>
     sum(
       pages
@@ -82,7 +88,44 @@ async function get(
     variantClicks: total("variant"),
     controlClicks: total("control"),
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    series: groupSeries(test, pages, days),
     ...(await latestResults(input.projectId, input.testId)),
+  };
+}
+
+const storedDays = (projectId: string, testId: string) =>
+  db
+    .select({
+      path: splitTestDays.path,
+      date: splitTestDays.date,
+      clicks: splitTestDays.clicks,
+    })
+    .from(splitTestDays)
+    .where(
+      and(
+        eq(splitTestDays.projectId, projectId),
+        eq(splitTestDays.testId, testId),
+      ),
+    );
+
+/** One row per pair for scripts/split-test-reference.py (5.5, 10 phase 1b). */
+async function csv(
+  context: OpportunityContext,
+  input: { projectId: string; testId: string },
+) {
+  const { test, pages } = await get(context, input);
+  const through = shiftGa4Date(
+    ga4DateInTimeZone(new Date(), "America/Los_Angeles"),
+    -3,
+  );
+  return {
+    filename: `split-test-${test.id.slice(0, 8)}.csv`,
+    csv: pairCsv(
+      test,
+      pages,
+      await storedDays(input.projectId, input.testId),
+      through,
+    ),
   };
 }
 
@@ -244,4 +287,4 @@ async function create(
   return { created: true as const, testId, summary: result.summary };
 }
 
-export const SplitTestService = { list, get, create, refresh };
+export const SplitTestService = { list, get, create, refresh, csv };

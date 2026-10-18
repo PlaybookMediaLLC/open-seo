@@ -68,6 +68,9 @@ export const splitTests = sqliteTable(
     contaminated: integer("contaminated", { mode: "boolean" })
       .notNull()
       .default(false),
+    // RFC-0011 5.7: the pull request that applies or removes the change.
+    endAction: text("end_action", { enum: ["apply", "remove"] }),
+    endPullRequestUrl: text("end_pull_request_url"),
     proposalId: text("proposal_id").references(() => opportunityProposals.id, {
       onDelete: "set null",
     }),

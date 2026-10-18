@@ -31,4 +31,5 @@ export const AUDIT_ACTIONS = [
   "seo_check.ignore_changed",
   "split_test.pr_opened",
   "split_test.deployment_confirmed",
+  "split_test.ended",
 ] as const;

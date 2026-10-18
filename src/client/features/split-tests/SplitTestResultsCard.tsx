@@ -3,9 +3,20 @@ import { CardShell } from "@/client/components/CardShell";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import {
+  exportSplitTestCsv,
   refreshSplitTestFn,
   type getSplitTest,
 } from "@/serverFunctions/splitTests";
+import { SplitTestChart } from "./SplitTestChart";
+
+async function downloadCsv(ids: { projectId: string; testId: string }) {
+  const { filename, csv } = await exportSplitTestCsv({ data: ids });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
 
 // RFC-0011 5.5, 5.6 and 5.9: live verification, the current estimate with
 // its interval, and the limits. Results never claim more than an estimate.
@@ -76,6 +87,10 @@ export function SplitTestResultsCard({ data }: { data: Data }) {
             the start. Treat the estimate with caution.
           </p>
         )}
+        <SplitTestChart
+          series={data.series}
+          deployedOn={test.deployedAt?.slice(0, 10) ?? null}
+        />
         {analysis ? (
           <div className="space-y-1">
             <p className="flex flex-wrap items-center gap-2">
@@ -116,6 +131,17 @@ export function SplitTestResultsCard({ data }: { data: Data }) {
               {test.observationStart ?? "after the deployment is confirmed"}.
             </p>
           )
+        )}
+        {analysis && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              void downloadCsv({ projectId: test.projectId, testId: test.id })
+            }
+          >
+            Download CSV for the reference script
+          </Button>
         )}
         <p className="text-xs text-muted-foreground">
           Limits: Search Console data only. Internal links and cannibalization

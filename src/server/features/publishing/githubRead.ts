@@ -3,7 +3,7 @@ import { AppError } from "@/server/lib/errors";
 export type GithubRequest = <T>(
   route: string,
   schema: z.ZodType<T>,
-  options?: { method: "POST" | "PUT"; body: unknown },
+  options?: { method: "POST" | "PUT" | "DELETE"; body: unknown },
 ) => Promise<T>;
 export const githubShaSchema = z.string().regex(/^[a-f0-9]{40}$/);
 

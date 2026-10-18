@@ -7,6 +7,7 @@ import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "@/server/features/growth/AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
 import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestEndService as splitEnds } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService as splitPulls } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -320,6 +321,7 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
       list: () => splitTests.list(ctx, projectId),
       get: () => splitTests.get(ctx, { projectId, testId: "x" }),
       refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),
+      csv: () => splitTests.csv(ctx, { projectId, testId: "x" }),
       create: () =>
         splitTests.create(ctx, {
           projectId,
@@ -339,6 +341,17 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           projectId,
           testId: "x",
           attest: true,
+        }),
+    },
+    SplitTestEndService: {
+      preview: () =>
+        splitEnds.preview(ctx, { projectId, testId: "x", action: "remove" }),
+      end: () =>
+        splitEnds.end(ctx, {
+          projectId,
+          testId: "x",
+          action: "remove",
+          hash: "0".repeat(64),
         }),
     },
   };
