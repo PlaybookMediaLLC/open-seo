@@ -4,6 +4,7 @@ import {
   replaceConnection,
   disconnect,
   setProductionEnvironment,
+  rewrapToken,
 } from "./publishingConnections";
 import {
   getProposal,
@@ -28,6 +29,7 @@ export const PublishingRepository = {
   replaceConnection,
   disconnect,
   setProductionEnvironment,
+  rewrapToken,
   listProposals,
   getProposal,
   saveProposal,

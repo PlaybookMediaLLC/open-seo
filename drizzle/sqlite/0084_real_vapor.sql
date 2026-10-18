@@ -1,0 +1,1 @@
+ALTER TABLE `split_tests` ADD `contaminated` integer DEFAULT false NOT NULL;

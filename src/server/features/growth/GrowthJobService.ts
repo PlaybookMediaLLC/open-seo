@@ -12,6 +12,7 @@ import {
   type LogLine,
 } from "./repositories/GrowthJobRepository";
 import { deleteAuditEventsBefore } from "@/server/features/activity/ActivityService";
+import { deleteCheckRunsBefore } from "@/server/features/seo-checks/SeoCheckSettingsService";
 
 // RFC-0008 5.1: the Worker side of scheduled growth jobs. Trigger.dev asks
 // what is due, then asks the Worker to run each item; the Worker does all
@@ -19,6 +20,7 @@ import { deleteAuditEventsBefore } from "@/server/features/activity/ActivityServ
 const DUE_LIMIT = 200;
 const RETENTION_DAYS = 180;
 const AUDIT_RETENTION_DAYS = 365;
+const SEO_CHECK_RETENTION_DAYS = 90;
 const DAY_MS = 86_400_000;
 type Schedule = NonNullable<Awaited<ReturnType<typeof repo.getSchedule>>>;
 type RunResult = {
@@ -230,7 +232,11 @@ async function retention(now = new Date()) {
   const auditEvents = await deleteAuditEventsBefore(
     new Date(now.getTime() - AUDIT_RETENTION_DAYS * DAY_MS).toISOString(),
   );
-  return { ...deleted, auditEvents };
+  // RFC-0010 5.9: SEO check runs stay for 90 days.
+  const seoCheckRuns = await deleteCheckRunsBefore(
+    new Date(now.getTime() - SEO_CHECK_RETENTION_DAYS * DAY_MS).toISOString(),
+  );
+  return { ...deleted, auditEvents, seoCheckRuns };
 }
 
 export const GrowthJobService = { due, run, retention };

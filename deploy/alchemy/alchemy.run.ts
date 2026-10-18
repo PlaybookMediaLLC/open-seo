@@ -8,7 +8,7 @@ import * as Effect from "effect/Effect";
 import { Redacted } from "effect";
 import { unstable_readConfig } from "wrangler";
 import { z } from "zod";
-import { relayDataEnv } from "./relay-env.ts"; // playbook-seam
+import { relayBindings, relayDataEnv } from "./relay-env.ts"; // playbook-seam
 import {
   emailAccessGate,
   HOSTED_PROD_STAGE,
@@ -523,6 +523,7 @@ export default Alchemy.Stack(
           namespaceId: 1001,
           simple: { limit: 5000, period: 60 },
         }),
+        ...relayBindings(), // playbook-seam: RFC-0009 paid action rate limit
 
         // Durable Objects (the chat agents; the audit scratchpad lives
         // privately in the open-seo-audit worker). Alchemy backs new DO

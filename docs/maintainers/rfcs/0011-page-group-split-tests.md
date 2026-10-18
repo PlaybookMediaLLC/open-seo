@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** Draft
+- **Status:** Done on 2026-10-18. Built in PRs #106 to #112: tables and statistics (A), eligibility and assignment (B), the pull request and its checks (C), verification, refresh and analysis (D), end actions, chart, CSV and docs (E), drafted variants (phase 2), GA4 metrics and backtests (phase 3), and the fixes from the phase 1a live check. The owner decided on 2026-10-18 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -61,6 +61,8 @@ A test needs a group of pages that share one template.
    - A minimum detectable effect (MDE) of 15% or less, at 80% power and a two-sided 90% interval (see 5.5).
 5. Show the result in plain words. Example: "This group can detect a change of 11% or more. Smaller effects will show as inconclusive." When the group fails, show which requirement failed and by how much.
 
+**As built (part B).** The one Search Console request uses the dimensions `page` and `date`, so the same rows give the 56-day totals and the two 28-day halves of the pre-period check. Relay's client filters with `contains`, so the request asks for the literal start of the pattern, such as `/integrations/`, and Relay applies the full pattern to each path. An ineligible group creates nothing and returns each failed requirement, as the S1 acceptance step expects; the `ineligible` status stays unused. The template check reads the repository tree once and maps each path to the most specific App Router or Pages Router page file. The metadata-helper case (separate static files that share one helper) is not built yet. The original title and description of each page are captured when the test is created, 8 pages at a time. Seeds stay below 2^31 so both databases store them as an integer.
+
 ### 5.3 Assignment
 
 1. Sort the pages by baseline clicks.
@@ -104,6 +106,10 @@ title: inSplitVariant(`/integrations/${params.slug}`)
 
 The same exact-change approval and execution rules from RFC-0005 apply.
 
+**As built (phase 2).** The review sheet offers "A developer writes the edit" or a draft: text after the current value, text before it, or another plain field such as `integration.name`. Relay reads the template at the head of the base branch and finds the one object literal that `generateMetadata` returns. It wraps only the targeted property in `inSplitVariant(path) ? variant : current` and adds the import. The page path comes from the `await params` destructuring or from `params.name`; when Relay cannot find it, the owner writes the edit by hand. The AST check re-parses the result and compares every other property of the object with the original. Each variant page's final value (its live original plus the text) passes the RFC-0004 checks: length, control characters, unchanged text and unsupported claims. A swap has no known values, so it has no text checks. The drafted template is part of the approved hash and goes into the same pull request, and the part C diff check still runs.
+
+**As built (part C).** "Review pull request" shows the exact files and the description; "Approve and open" sends their hash, and Relay refuses to write when the files changed since the review. Relay creates the branch `relay/split-test-{id}`, adds both files, opens the pull request and records `split_test.pr_opened` with the hash. The description names the template, the import path from its folder and the page path built from its dynamic segments. "Check pull request" reads the pull request's files and its head: only the two files and the template may change, the variant list must equal the stored assignment, and every use of `inSplitVariant` must sit inside the `metadata` export or `generateMetadata`. The check covers App Router templates. The result is kept with the head SHA. "Confirm deployment" needs a merged pull request whose merged head passed the last check, then takes GitHub's successful production deployment of the merge commit, or the owner's attestation when GitHub reports none. It records `split_test.deployment_confirmed` and sets the windows: the deployment day and the next 6 days are excluded, and the observation covers the next 28 days.
+
 ### 5.5 Analysis
 
 **Data.** One Search Console request per refresh: dimensions `date` and `page`, the page regex filter, final data, the Pacific calendar. Store daily clicks, impressions and position per page.
@@ -141,6 +147,10 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 
 **Early stop for harm only.** After 14 observation days, if the estimate is −10% or worse and the one-sided p-value for harm is below 0.05, notify the owner and offer a removal pull request. A positive label is never given before the window ends.
 
+**As built (part A).** `splitStats.ts` holds the pure functions, and `scripts/split-test-reference.py` reproduces them with the same seeded generator (mulberry32). Each generator output gives 32 signs, bit by bit, so 10,000 draws stay fast. The p-value at any δ reuses the same draws, because each draw's mean of `d − δ` is `a − δ·b`. The balance check measures the click gap against the mean of the two group totals. Two changes to the MDE keep "can detect" true for 15 to 100 pairs, because the plain formula gave 73% to 79% power in simulation: t quantiles replace 1.645 and 0.842, and the spread is its 80% upper confidence bound. With them, an effect equal to the reported MDE is labeled positive in 82% to 87% of simulated runs. The four child tables also carry `project_id`, so every query stays scoped to its project.
+
+**As built (phase 3).** When GA4 is connected, each analysis also estimates organic sessions and key events that start on the test pages, with the same paired method on one GA4 request (landing page and date). They are stored beside the result and never change the label; a GA4 failure leaves them empty. "Run backtest" replays the test 200 times on the 91 days that end with its baseline: each run draws the side of every pair again until the groups balance, as in 5.3, and counts how often the 90% interval excludes 0 with no change, and how often a synthetic +15% lift on the variant side is labeled positive. Backtests use 2,000 draws per test instead of 10,000, which still resolves the p-value to 0.0005. One Search Console request; nothing changes. A refused pattern offers "Run a backtest anyway", which pairs the matching pages by clicks and runs the same backtest without storing anything, as the phase 1a acceptance test needs.
+
 **Wording.** Results say "estimated effect", show the interval, and list the limits: Search Console data only, internal links and cannibalization between groups, and other changes to only one group.
 
 ### 5.6 Live verification
@@ -150,12 +160,16 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 3. Store each check. The test starts only when at least 95% of pages pass. Otherwise show the failing pages and stop.
 4. Check again on days 7 and 21 of the observation window. A drift above 5% marks the result "contaminated".
 
+**As built (part D).** Split tests refresh in the daily RFC-0008 `measurement_refresh` job, and an owner can run the same step with "Verify now" or "Refresh now". A test in `verifying` fetches every page 8 at a time and starts when at least 95% pass; otherwise it lists the failing pages and stays in `verifying`. A running test checks again on observation days 7 and 21, once each, and a failure rate above 5% sets `contaminated`. A field of type `other` cannot be read, so its verification is skipped and the results page says so. Each refresh stores the final days after the last stored one (one Search Console request), then stores an analysis row with its label and notes (`interim`, `imbalanced`, `contaminated`). Days without a row count as zero clicks. An interval end that the pairs cannot bound is stored empty. A harmful interim estimate notifies the project once; a finished window concludes the test and notifies its label.
+
 ### 5.7 Ending a test
 
 1. **Positive:** "Apply to all pages" opens a pull request that removes `inSplitVariant` and keeps the variant expression.
 2. **Negative or stopped:** "Remove test" opens a pull request that removes the split files and the variant branch.
 3. **Inconclusive:** offer both, and say that no effect larger than the MDE was found.
 4. Every option uses the exact-change approval.
+
+**As built (part E).** Each end action reads the template at the head of the base branch and rewrites it from its syntax tree: every `inSplitVariant(...) ? variant : current` keeps the variant ("Apply to all pages") or the current value ("Remove test"), and the import goes. Any other use of the helper is refused with a request to finish the change by hand. The pull request also deletes both split files, so no split code is left after the merge. The owner approves the hash of the exact change; Relay records `split_test.ended`. "Apply to all pages" is offered only after the window ends without a negative label; "Remove test" at any time after the deployment, which also covers the early harm stop. Removing a running test sets it to `stopped`.
 
 ### 5.8 Data model
 
@@ -176,6 +190,8 @@ Unique on `split_test_pages` (`test_id`, `path`) and `split_test_days` (`test_id
 3. Assignment view: both groups with their baseline totals and the balance result.
 4. Test page: status, verification results, a chart of the variant and control groups (indexed to 100 at the baseline), the current estimate with its interval (marked "interim" before the window ends), and the limits.
 5. End actions from 5.7.
+
+**As built (parts B to E).** The Split tests section sits at the top of Experiments & Results rather than in a separate tab. The test page shows the results first, then the end actions, the pull request and the groups. The chart shows each group's daily clicks as a 7-day average, indexed to the group's baseline mean. "Download CSV" gives one row per pair (`variant`, `control`, `d`, `pre_d`, `seed`), which `scripts/split-test-reference.py` reads.
 
 ## 6. Security and integrity
 
@@ -199,30 +215,30 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 
 ### Phase 1
 
-- [ ] Five tables with D1 and Postgres migrations and the parity test.
-- [ ] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary).
-- [ ] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
-- [ ] Generated files and the pull request description with the template instruction.
-- [ ] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
-- [ ] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
-- [ ] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results.
-- [ ] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
-- [ ] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
-- [ ] Early harm stop with notification and the removal pull request.
-- [ ] End actions with exact-change approval.
-- [ ] Daily refresh through an RFC-0008 task.
-- [ ] Split tests tab, chart and result wording with limits.
-- [ ] `content/docs/split-tests.mdx` explains eligibility, MDE, labels and limits in plain words.
+- [x] Five tables with D1 and Postgres migrations and the parity test.
+- [x] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary). The shared-template check covers one route file; the metadata-helper case is open.
+- [x] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
+- [x] Generated files and the pull request description with the template instruction.
+- [x] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
+- [x] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
+- [x] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results. The reference is `scripts/split-test-reference.py`; 5 fixed datasets match to 2 decimal places.
+- [x] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
+- [x] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
+- [x] Early harm stop with notification and the removal pull request.
+- [x] End actions with exact-change approval.
+- [x] Daily refresh through an RFC-0008 task. It runs in `measurement_refresh`, which needs the RFC-0008 Trigger.dev account; "Refresh now" runs the same step by hand.
+- [x] Split tests tab, chart and result wording with limits. Built as a section of Experiments & Results.
+- [x] `content/docs/split-tests.mdx` explains eligibility, MDE, labels and limits in plain words.
 
 ### Phase 2
 
-- [ ] Drafted variant expressions for suffix, prefix and field swap patterns.
-- [ ] AST check that only the targeted property changed (tests).
+- [x] Drafted variant expressions for suffix, prefix and field swap patterns.
+- [x] AST check that only the targeted property changed (tests).
 
 ### Phase 3
 
-- [ ] GA4 sessions and key events as secondary metrics, without changing the label rule.
-- [ ] Backtest report: the test's false-positive rate on the customer's own historical data.
+- [x] GA4 sessions and key events as secondary metrics, without changing the label rule.
+- [x] Backtest report: the test's false-positive rate on the customer's own historical data.
 
 ## 10. Real-site acceptance test
 
@@ -243,6 +259,8 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 - When the group is eligible, the synthetic lift is labeled positive in at least 80% of backtests. When it is not eligible, Relay refuses it with the MDE.
 
 **Value check:** the owner can trust that a "positive" label is not noise, measured on their own data.
+
+**Result, production, 2026-10-18 (S1, `playbookmedia.io`).** The pattern `^/[a-z-]+$` was refused: "0 pages match the pattern, and 0 have a click in the 56-day baseline. A test needs at least 30 with a click, so 30 more." It also failed the 1,000-click requirement. No test was created. The property had 0 clicks and 1 impression in the last 28 days. "Run a backtest anyway" answered "Too few pages with clicks to backtest (0 pairs)." The first run found two bugs, both fixed in PR #112: the backtest reported "excluded 0 in 100% of runs" for 0 pairs, and the refusal did not name the matching pages. S4 has no Search Console connection in Relay and S2 has no project, so no own site has a group to backtest; that step is a follow-up in section 12.
 
 ### Phase 1b: a live test
 
@@ -294,3 +312,18 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 **Value**
 
 - At least one live test concludes on a real site, and the owner applies or removes the change based on the result.
+
+**Met now (2026-10-18):**
+
+- Statistics: 5 fixed datasets match `scripts/split-test-reference.py` to 2 decimal places; 1,000 simulated A/A runs give 8% to 12% false results; an effect equal to the reported MDE is labeled positive in more than 80% of simulated runs; a positive label never appears before the window ends (tests).
+- Integrity: the same seed gives the same assignment; the final diff check refuses a variant list that differs from the stored assignment; the helper reads only the path; live verification catches a control page changed outside its group (tests).
+- Honesty: every refusal names the failed requirement, the gap and the MDE; results show the interval, the MDE and the limits; a search of the split test UI finds no causal wording outside "estimated effect".
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 1b live test (section 10), the usability criteria and the value criterion. Trigger: an own or partner site with an eligible template group (30 or more pages with clicks, 1,000 clicks, MDE of 15% or less), the site owner's written approval, and 28 days of observation.
+- [ ] 200 backtests on a real eligible group, with at most 12% false results. Trigger: the same eligible group; "Run backtest" on its test.
+- [ ] The daily refresh runs on its own. Trigger: the RFC-0008 Trigger.dev account exists and `measurement_refresh` runs. Until then, "Refresh now" advances a test.
+- [ ] Templates where separate static files share one metadata helper (RFC-0005 phase 1a) pass the template check. Trigger: a site whose test group uses that pattern.

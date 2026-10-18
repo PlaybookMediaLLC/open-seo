@@ -59,9 +59,9 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | E. Experiments and results                                           | Done: follow-ups in its section 13         | [RFC-0006](0006-outcome-measurement.md)                      |
 | F. Portfolio operations                                              | Done: isolation proven; portfolio deferred | [RFC-0007](0007-portfolio-operations.md)                     |
 | 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
-| 10. Costs, limits and audit log                                      | Partial                                    | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
-| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                    | [RFC-0010](0010-seo-checks-in-ci.md)                         |
-| Controlled page-group split tests (beyond the brief)                 | Missing                                    | [RFC-0011](0011-page-group-split-tests.md)                   |
+| 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
+| Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
+| Controlled page-group split tests (beyond the brief)                 | Done: follow-ups in its section 12         | [RFC-0011](0011-page-group-split-tests.md)                   |
 | Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
 | Beyond SEO: accessibility fixes in code                              | Missing                                    | [RFC-0013](0013-accessibility-fixes.md)                      |
 | Beyond SEO: web performance                                          | Missing                                    | [RFC-0014](0014-web-performance.md)                          |
@@ -87,7 +87,7 @@ Each step depends on the steps before it.
 2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
 3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
-5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this.
+5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this. Done; staging checks and the token key setup are follow-ups in its section 12.
 6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications. Done; the Trigger.dev account and live checks are follow-ups in its section 12.
 7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
 8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it.
@@ -103,7 +103,7 @@ Each step depends on the steps before it.
 ### Release 2: growth, launches and revenue
 
 17. **RFC-0025, phase 1.** Previews for every Relay change: the customer's own previews first, Relay-built previews on Cloudflare otherwise. This unlocks `open_pr` for content classes.
-18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules.
+18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules. Done with phases 2 and 3; the installs and live checks are follow-ups in its section 12.
 19. **RFC-0020, phase 2.** Content refresh steps and JSX link insertion.
 20. **RFC-0021, phase 1.** New pages from verified facts.
 21. **RFC-0023, phase 1.** Launch workflows.
@@ -111,7 +111,7 @@ Each step depends on the steps before it.
 23. **RFC-0022, phase 1.** Competitor change response.
 24. **RFC-0024, phase 2.** Track records per change class.
 25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
-26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.**
+26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.** RFC-0011 is done through phase 3; its live test and backtests on a real group are follow-ups in its section 12.
 
 ### Release 3: beyond SEO
 

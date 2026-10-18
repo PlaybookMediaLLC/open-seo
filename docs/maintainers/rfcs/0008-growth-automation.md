@@ -272,7 +272,7 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 ### Phase 1
 
-- [ ] RFC-0009 audit log and limits are live.
+- [x] RFC-0009 audit log and limits are live.
 - [x] Five tables with D1 and Postgres migrations and the parity test.
 - [x] Internal endpoints with signature, timestamp, size and mode checks (one test each).
 - [x] Due endpoint never changes data (test).
@@ -369,7 +369,7 @@ Each follow-up names its trigger. Check it here when it passes.
 - [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`.
 - [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists.
 - [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production.
-- [ ] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Until then, the jobs use no credits, so no spend limit applies to them.
+- [x] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Done on 2026-10-18; scheduled jobs that spend now pass the limits, and their audit events show as Scheduled.
 - [ ] Phase 2 email digest (section 5.11). Trigger: Loops is configured.
 - [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab.
 

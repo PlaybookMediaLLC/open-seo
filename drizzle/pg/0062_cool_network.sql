@@ -1,0 +1,1 @@
+ALTER TABLE "split_tests" ADD COLUMN "contaminated" boolean DEFAULT false NOT NULL;

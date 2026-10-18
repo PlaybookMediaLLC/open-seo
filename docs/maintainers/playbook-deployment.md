@@ -200,8 +200,9 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
 5. **GitHub environment:** create an environment named `playbook` and optionally require reviewers to approve each production deploy.
 6. Run the workflow manually (Actions, "Deploy (Playbook Media)", Run workflow). The first run creates every resource, and the custom domain's certificate can take a few minutes to issue.
 7. **GitHub App (optional, RFC-0005 5.7):** create the "Relay SEO" app under the PlaybookMediaLLC organization.
-   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read, Commit statuses read, Issues read and write. Nothing else.
-   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation". No webhook.
+   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read and write, Commit statuses read, Issues read and write. Nothing else.
+   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation".
+   - Webhook (RFC-0010 SEO checks in App mode): URL `https://relay.playbookmedia.io/api/github/app/webhook`, a secret from `openssl rand -hex 32`, and the "Deployment status" event. Add the secret as `GITHUB_APP_WEBHOOK_SECRET` to `ENV_PLAYBOOK`. Without it, the webhook answers 404.
    - GitHub issues the private key in PKCS#1 PEM. WebCrypto needs PKCS#8. Convert it once: `openssl pkcs8 -topk8 -nocrypt -in relay-seo.private-key.pem -out relay-seo.pkcs8.pem`.
    - Add `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` and `GITHUB_APP_PRIVATE_KEY` (the PKCS#8 PEM) to `ENV_PLAYBOOK`. `deploy/alchemy/relay-env.ts` passes them to the worker. Without them, only personal tokens are offered.
 
@@ -210,6 +211,20 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
    - Add `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` (the production secret key) to `ENV_PLAYBOOK`. `GROWTH_JOBS_MODE` defaults to `trigger` when both are set.
    - Deploy the tasks with `TRIGGER_PROJECT_REF=<ref> pnpm dlx trigger.dev@4.6.4 deploy`. Configure an alert for failed runs to the team's email, and a monthly spend alert.
    - To rotate the secret, move the old value to `GROWTH_JOBS_SECRET_PREVIOUS` for one deploy, then remove it.
+
+9. **Repository token key (RFC-0009 5.7):** repository tokens use `BETTER_AUTH_SECRET` until `PUBLISHING_TOKEN_KEY` is set. To start or rotate the key:
+   1. Generate a key with `openssl rand -base64 48`.
+   2. In `ENV_PLAYBOOK`, move the current `PUBLISHING_TOKEN_KEY` to `PUBLISHING_TOKEN_KEY_PREVIOUS` (leave it empty the first time).
+   3. Set the new key as `PUBLISHING_TOKEN_KEY` and raise `PUBLISHING_TOKEN_KEY_VERSION` by 1 (start at 1).
+   4. Deploy. Each connection re-encrypts its token with the new key the next time Relay uses it.
+   5. After every active connection shows the new version, remove `PUBLISHING_TOKEN_KEY_PREVIOUS` and deploy again:
+
+      ```sql
+      SELECT token_key_version, count(*) FROM publishing_connections
+      WHERE revoked_at IS NULL AND transport = 'pat' GROUP BY token_key_version;
+      ```
+
+   A token whose key is gone asks the member to reconnect the repository.
 
 Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the stored GitHub publishing tokens, which must then be reconnected.
 

@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** In progress. Part A (limits, ledger, admission for DataForSEO), part B (limit settings, spend views, 80% warnings) part C (AI paths, scheduled skips, debts 1 to 3) and part D (audit log, Activity page, every listed event) built
+- **Status:** Done on 2026-10-18. Built in PRs #91 to #97: limits, ledger and admission (A), limit settings and warnings (B), AI paths, scheduled skips and the three billing debts (C), the audit log and Activity page (D), the token key, rate limit and docs (E). The live check passed in production. The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -169,6 +169,8 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 3. The 80% notification uses the RFC-0008 bell. An organization limit notifies once a month, on the project whose spend crossed 80%.
 4. A refused action shows a generic message with a link to Billing, because the client receives only the error code.
 
+5. Survey of 5.5 item 5 (2026-10-17): every paid action with a confirm step shows its estimate (rank checks, AI visibility, site audit rendering, saved keyword refresh, website research). Keyword research, domain overview and backlinks run on a click without a confirm step. No action is missing an estimate.
+
 ### 5.6 Audit log
 
 `audit_events`:
@@ -233,6 +235,8 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 5. Fail closed when the needed key is missing. Show "Reconnect the repository."
 6. Document the rotation steps in `docs/maintainers/playbook-deployment.md`.
 
+**As built (part E).** The key module keeps version 0 on `BETTER_AUTH_SECRET`, so nothing changes until an owner sets `PUBLISHING_TOKEN_KEY`. A missing secret stays a configuration error; a missing key for a stored version, or a token the key cannot open, asks for a reconnect. The re-encryption writes only when the row still holds the ciphertext that was opened.
+
 ### 5.8 Rate limits on paid actions
 
 1. Use the Cloudflare Workers rate limiting binding. Declare `PAID_ACTION_RATE_LIMIT` in `deploy/alchemy/alchemy.run.ts`, next to the existing `MCP_RATE_LIMIT`, with its own namespace id and a 60-second period. The `wrangler.jsonc` surfaces skip the check when the binding is absent, as `MCP_RATE_LIMIT` does.
@@ -267,7 +271,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 - [x] `settleUsageCredits` accepts a provider argument.
 - [x] Billing page and project settings show limits and month-to-date spend.
 - [x] 80% banner and one notification per period.
-- [ ] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
+- [x] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
 
 ### Billing debts
 
@@ -286,12 +290,12 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ### Credentials and rate limits
 
-- [ ] `PUBLISHING_TOKEN_KEY` and versioned decryption with lazy re-encryption.
-- [ ] Test: a version 0 row decrypts with the old secret and is re-encrypted.
-- [ ] Test: a missing key fails closed with the reconnect message.
-- [ ] Rotation steps documented.
-- [ ] `PAID_ACTION_RATE_LIMIT` binding added in the Alchemy stack, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
-- [ ] Docs explain limits, the Activity page and what counts as a paid action.
+- [x] `PUBLISHING_TOKEN_KEY` and versioned decryption with lazy re-encryption.
+- [x] Test: a version 0 row decrypts with the old secret and is re-encrypted.
+- [x] Test: a missing key fails closed with the reconnect message.
+- [x] Rotation steps documented.
+- [x] `PAID_ACTION_RATE_LIMIT` binding added in the Alchemy stack, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
+- [x] Docs explain limits, the Activity page and what counts as a paid action.
 
 ## 9. Open questions
 
@@ -356,3 +360,23 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 **Usability**
 
 - An owner finds this month's spend for a project in 2 clicks or fewer.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Review guidelines carry the spend and audit invariants. Trigger: the maintainer reviews and merges PR #98.
+- [ ] Failed settlements are reconciled every 15 minutes. Trigger: the RFC-0008 Trigger.dev account exists and `spend-reconcile` runs.
+- [ ] Staging steps of section 10 (a broken Autumn key, a token key rotation, 31 requests in one minute) and the staging items of section 11. Trigger: a staging deployment exists.
+- [ ] Repository tokens use the dedicated key. Trigger: the owner sets `PUBLISHING_TOKEN_KEY` and `PUBLISHING_TOKEN_KEY_VERSION=1` in `ENV_PLAYBOOK`, following `playbook-deployment.md`.
+- [ ] An exact, per-event comparison of the ledger with Autumn usage. Trigger: a check that reads Autumn events with the secret key. The live check compared the balance and the 30-day usage, which the Billing page rounds to cents.
+- [ ] The assistant's turn reservation follows the 95th percentile turn cost. Trigger: one month of `agent` ledger rows.
+- [ ] Admission latency (under 50 ms at the 95th percentile) is measured. Trigger: Workers Observability shows enough paid calls.
+
+**Live check, production, 2026-10-17 (Playbook Media project):**
+
+1. An owner set a 200-credit project limit in **Project settings → Spending**. The Activity page listed "Set the monthly credit limit to 200 credits".
+2. Three keyword lookups made 9 settled ledger rows (147 credits), each linked to its Autumn hold.
+3. The fourth lookup admitted one more call (163 credits in all) and refused the next one before the provider call, with "This project or organization reached its monthly credit limit. An owner can change it in Billing." The ledger has one `refused` row. Past 80%, the bell got one notification ("This project used 87% of its monthly credit limit") and the project showed the amber banner "This project is close to its monthly credit limit (163 of 200 credits)".
+4. Autumn: the balance fell from $0.36 to $0.19 and the 30-day usage rose from $0.64 to $0.81, both about $0.17. The ledger holds $0.163 (163 credits). They match within the cents rounding of the Billing page.
+5. The owner removed the limit. The Activity page listed "Removed the monthly credit limit".

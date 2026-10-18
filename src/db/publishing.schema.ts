@@ -37,6 +37,8 @@ export const publishingConnections = sqliteTable(
       { onDelete: "set null" },
     ),
     encryptedToken: text("encrypted_token"),
+    // RFC-0009 5.7: 0 is BETTER_AUTH_SECRET; 1 and up is PUBLISHING_TOKEN_KEY.
+    tokenKeyVersion: integer("token_key_version").notNull().default(0),
     createdBy: text("created_by").notNull(),
     createdAt: text("created_at").notNull(),
     revokedAt: text("revoked_at"),

@@ -102,6 +102,7 @@ export async function fixture(database: TestDatabase) {
     transport: "pat",
     installationRef: null,
     encryptedToken: "encrypted-secret",
+    tokenKeyVersion: 0,
     createdBy: "reviewer",
     createdAt: now,
     revokedAt: null,

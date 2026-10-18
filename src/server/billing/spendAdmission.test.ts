@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
 import { growthNotifications, spendLedger, spendLimits } from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
@@ -13,15 +13,21 @@ const database = await vi.hoisted(async () => {
     await import("@/server/features/experiments/repositories/experimentTestDb");
   return createExperimentTestDatabase();
 });
-const mocks = vi.hoisted(() => ({ reserve: vi.fn() }));
+const mocks = vi.hoisted(() => ({ reserve: vi.fn(), limit: vi.fn() }));
 vi.mock("cloudflare:workers", () => ({
-  env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
+  env: {
+    DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1",
+    PAID_ACTION_RATE_LIMIT: { limit: mocks.limit },
+  },
 }));
 vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("./subscription", () => ({ reserveUsageCredits: mocks.reserve }));
 beforeAll(() => database.prepare());
+beforeEach(() => {
+  mocks.limit.mockResolvedValue({ success: true });
+});
 afterAll(() => database.close());
 
 async function customer(limits: { organization?: number; project?: number }) {
@@ -193,4 +199,21 @@ it("notifies once when a project passes 80% of its limit", async () => {
       linkPath: `/p/${buyer.projectId}/settings/spending`,
     },
   ]);
+});
+
+it("refuses the 31st paid action in a minute before the ledger", async () => {
+  const buyer = await customer({});
+  mocks.limit.mockResolvedValueOnce({ success: false });
+  await expect(
+    admitSpend({
+      customer: buyer,
+      feature: "keyword_research",
+      provider: "dataforseo",
+      estimatedCredits: 5,
+    }),
+  ).rejects.toMatchObject({ code: "RATE_LIMITED" });
+  expect(mocks.limit).toHaveBeenCalledWith({
+    key: "member:keyword_research",
+  });
+  expect(await ledger(buyer.organizationId)).toEqual([]);
 });

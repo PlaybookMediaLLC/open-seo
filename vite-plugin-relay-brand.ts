@@ -57,8 +57,9 @@ import type { Plugin } from "vite";
  * - src/server/features/gsc/services/GscService.ts: connecting Search Console
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
- *   (src/client/features/automation/AutomationSettings.tsx) and the Spending
- *   tab (src/client/features/spend/ProjectSpending.tsx).
+ *   (src/client/features/automation/AutomationSettings.tsx), the Spending
+ *   tab (src/client/features/spend/ProjectSpending.tsx) and the SEO checks
+ *   tab (src/client/features/seo-checks/SeoChecksSettings.tsx).
  * - src/routes/_app/billing.tsx: mounts the spending limit card
  *   (src/client/features/spend/SpendLimitsCard.tsx).
  * - src/routes/_app/route.tsx: shows the spending limit banner above the
@@ -89,6 +90,10 @@ import type { Plugin } from "vite";
  *   audit events after the change (src/server/features/activity/auditLog.ts).
  * - src/lib/auth.ts: a hooks.after middleware records member removal and
  *   API key changes (src/server/features/activity/authAudit.ts).
+ * - deploy/alchemy/alchemy.run.ts: spreads the fork bindings, the paid
+ *   action and CI check rate limits (deploy/alchemy/relay-env.ts).
+ * - wrangler.jsonc and src/server.ts: declare and export the SEO check
+ *   Workflow (src/server/features/seo-checks/SeoCheckWorkflow.ts).
  * - src/server/lib/dataforseo/client.ts: DataForSEO calls reserve inside the
  *   monthly spend limits (src/server/billing/spendAdmission.ts). The import of
  *   upstream's reserveUsageCredits is removed there.
