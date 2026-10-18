@@ -95,6 +95,7 @@ import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app
 import { Route as ApiCiV1ChecksIdRouteImport } from './routes/api/ci/v1/checks/$id'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
 import { Route as AppPProjectIdAuditIssuesResultIdRouteImport } from './routes/_app/p/$projectId/audit/issues/$resultId'
+import { Route as AppPProjectIdExperimentsSplitTestsTestIdRouteImport } from './routes/_app/p/$projectId/experiments/split-tests/$testId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -552,6 +553,12 @@ const AppPProjectIdAuditIssuesResultIdRoute =
     path: '/audit/issues/$resultId',
     getParentRoute: () => AppPProjectIdRouteRoute,
   } as any)
+const AppPProjectIdExperimentsSplitTestsTestIdRoute =
+  AppPProjectIdExperimentsSplitTestsTestIdRouteImport.update({
+    id: '/experiments/split-tests/$testId',
+    path: '/experiments/split-tests/$testId',
+    getParentRoute: () => AppPProjectIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -637,6 +644,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/': typeof AppPProjectIdSettingsIndexRoute
   '/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -717,6 +725,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings': typeof AppPProjectIdSettingsIndexRoute
   '/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -806,6 +815,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/': typeof AppPProjectIdSettingsIndexRoute
   '/_app/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/_app/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/_app/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -893,6 +903,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/'
     | '/p/$projectId/ai-visibility/prompts/$promptId'
     | '/p/$projectId/audit/issues/$resultId'
+    | '/p/$projectId/experiments/split-tests/$testId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -973,6 +984,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings'
     | '/p/$projectId/ai-visibility/prompts/$promptId'
     | '/p/$projectId/audit/issues/$resultId'
+    | '/p/$projectId/experiments/split-tests/$testId'
   id:
     | '__root__'
     | '/'
@@ -1061,6 +1073,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/'
     | '/_app/p/$projectId/ai-visibility/prompts/$promptId'
     | '/_app/p/$projectId/audit/issues/$resultId'
+    | '/_app/p/$projectId/experiments/split-tests/$testId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1703,6 +1716,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdAuditIssuesResultIdRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/_app/p/$projectId/experiments/split-tests/$testId': {
+      id: '/_app/p/$projectId/experiments/split-tests/$testId'
+      path: '/experiments/split-tests/$testId'
+      fullPath: '/p/$projectId/experiments/split-tests/$testId'
+      preLoaderRoute: typeof AppPProjectIdExperimentsSplitTestsTestIdRouteImport
+      parentRoute: typeof AppPProjectIdRouteRoute
+    }
   }
 }
 
@@ -1806,6 +1826,7 @@ interface AppPProjectIdRouteRouteChildren {
   AppPProjectIdOpportunitiesIndexRoute: typeof AppPProjectIdOpportunitiesIndexRoute
   AppPProjectIdReportsIndexRoute: typeof AppPProjectIdReportsIndexRoute
   AppPProjectIdAuditIssuesResultIdRoute: typeof AppPProjectIdAuditIssuesResultIdRoute
+  AppPProjectIdExperimentsSplitTestsTestIdRoute: typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 
 const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
@@ -1833,6 +1854,8 @@ const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
   AppPProjectIdOpportunitiesIndexRoute: AppPProjectIdOpportunitiesIndexRoute,
   AppPProjectIdReportsIndexRoute: AppPProjectIdReportsIndexRoute,
   AppPProjectIdAuditIssuesResultIdRoute: AppPProjectIdAuditIssuesResultIdRoute,
+  AppPProjectIdExperimentsSplitTestsTestIdRoute:
+    AppPProjectIdExperimentsSplitTestsTestIdRoute,
 }
 
 const AppPProjectIdRouteRouteWithChildren =

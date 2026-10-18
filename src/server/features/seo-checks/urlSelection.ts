@@ -18,7 +18,7 @@ const ROUTE_FILE =
  * parallel routes and private folders drop out; dynamic segments become
  * wildcards. Other frameworks' files map to nothing.
  */
-function routePatterns(changedFiles: string[]) {
+export function routePatterns(changedFiles: string[]) {
   const patterns = new Map<string, string>();
   for (const file of changedFiles) {
     const match = file.match(ROUTE_FILE);

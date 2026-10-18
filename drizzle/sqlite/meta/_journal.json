@@ -575,6 +575,13 @@
       "when": 1792289813016,
       "tag": "0081_wandering_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "6",
+      "when": 1792308187255,
+      "tag": "0082_handy_darkhawk",
+      "breakpoints": true
     }
   ]
 }
