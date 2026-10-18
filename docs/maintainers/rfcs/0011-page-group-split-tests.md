@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) and part B (eligibility, assignment, the Split tests section and the assignment view) built.
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) and part C (the pull request, its diff check and the deployment confirmation) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -106,6 +106,8 @@ title: inSplitVariant(`/integrations/${params.slug}`)
 
 The same exact-change approval and execution rules from RFC-0005 apply.
 
+**As built (part C).** "Review pull request" shows the exact files and the description; "Approve and open" sends their hash, and Relay refuses to write when the files changed since the review. Relay creates the branch `relay/split-test-{id}`, adds both files, opens the pull request and records `split_test.pr_opened` with the hash. The description names the template, the import path from its folder and the page path built from its dynamic segments. "Check pull request" reads the pull request's files and its head: only the two files and the template may change, the variant list must equal the stored assignment, and every use of `inSplitVariant` must sit inside the `metadata` export or `generateMetadata`. The check covers App Router templates. The result is kept with the head SHA. "Confirm deployment" needs a merged pull request whose merged head passed the last check, then takes GitHub's successful production deployment of the merge commit, or the owner's attestation when GitHub reports none. It records `split_test.deployment_confirmed` and sets the windows: the deployment day and the next 6 days are excluded, and the observation covers the next 28 days.
+
 ### 5.5 Analysis
 
 **Data.** One Search Console request per refresh: dimensions `date` and `page`, the page regex filter, final data, the Pacific calendar. Store daily clicks, impressions and position per page.
@@ -206,8 +208,8 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 - [x] Five tables with D1 and Postgres migrations and the parity test.
 - [x] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary). The shared-template check covers one route file; the metadata-helper case is open.
 - [x] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
-- [ ] Generated files and the pull request description with the template instruction.
-- [ ] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
+- [x] Generated files and the pull request description with the template instruction.
+- [x] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
 - [ ] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
 - [x] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results. The reference is `scripts/split-test-reference.py`; 5 fixed datasets match to 2 decimal places.
 - [x] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.

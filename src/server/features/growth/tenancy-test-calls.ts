@@ -7,6 +7,7 @@ import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "@/server/features/growth/AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
 import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestPullService as splitPulls } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
@@ -325,6 +326,18 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           hypothesis: "x",
           field: "title",
           pagePattern: "^/x$",
+        }),
+    },
+    SplitTestPullService: {
+      preview: () => splitPulls.preview(ctx, { projectId, testId: "x" }),
+      open: () =>
+        splitPulls.open(ctx, { projectId, testId: "x", hash: "0".repeat(64) }),
+      check: () => splitPulls.check(ctx, { projectId, testId: "x" }),
+      confirmDeployment: () =>
+        splitPulls.confirmDeployment(ctx, {
+          projectId,
+          testId: "x",
+          attest: true,
         }),
     },
   };

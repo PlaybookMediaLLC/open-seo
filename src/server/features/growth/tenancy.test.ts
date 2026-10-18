@@ -23,6 +23,7 @@ import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "./AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
 import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
@@ -138,6 +139,7 @@ const services: Record<string, Record<string, unknown>> = {
   SpendLimitService: { ...SpendLimitService, organization: undefined },
   SeoCheckSettingsService,
   SplitTestService,
+  SplitTestPullService,
 };
 
 async function growthRowCount() {

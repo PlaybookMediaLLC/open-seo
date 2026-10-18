@@ -5,6 +5,7 @@ import { PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";
 import { Badge } from "@/client/components/ui/badge";
 import { getSplitTest } from "@/serverFunctions/splitTests";
+import { SplitTestPullCard } from "./SplitTestPullCard";
 
 // RFC-0011 5.9 step 3: the test, then both groups with their baseline
 // totals and the balance result.
@@ -52,6 +53,7 @@ export function SplitTestPage(props: { projectId: string; testId: string }) {
             more. Smaller effects will show as inconclusive.
           </p>
         )}
+        <SplitTestPullCard test={test} />
         <CardShell title="Groups">
           <p className="mb-3 text-sm text-muted-foreground">
             Baseline {test.baselineStart} to {test.baselineEnd}: variant{" "}

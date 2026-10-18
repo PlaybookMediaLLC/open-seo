@@ -127,12 +127,13 @@ export function createGithubWriter(
       branch: string;
       path: string;
       source: string;
-      blobSha: string;
+      /** The current blob; omitted to create a new file. */
+      blobSha?: string;
       message: string;
     }) {
       validateGithubBranch(branch);
       const parts = validateGithubPath(path);
-      validateGithubSha(blobSha);
+      if (blobSha !== undefined) validateGithubSha(blobSha);
       const bytes = new TextEncoder().encode(source);
       if (bytes.length > 32 * 1024 || !message || message.length > 1000)
         throw new AppError(

@@ -44,6 +44,15 @@ export const splitTests = pgTable(
     deploymentBasis: text("deployment_basis"),
     observationStart: text("observation_start"),
     observationEnd: text("observation_end"),
+    // RFC-0011 5.4: the template the pages share, and the pull request
+    // that adds the split files. The last check of its head is kept.
+    templatePath: text("template_path"),
+    branch: text("branch"),
+    pullRequestNumber: integer("pull_request_number"),
+    pullRequestUrl: text("pull_request_url"),
+    checkedSha: text("checked_sha"),
+    checkPassed: boolean("check_passed"),
+    checkProblems: text("check_problems"),
     proposalId: text("proposal_id").references(() => opportunityProposals.id, {
       onDelete: "set null",
     }),
