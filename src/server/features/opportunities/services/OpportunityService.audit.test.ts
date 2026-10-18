@@ -104,6 +104,7 @@ beforeEach(() => {
     ],
     pages: [],
     inlinks: new Map(),
+    accessibility: [],
   });
   mocks.performance
     .mockResolvedValueOnce(response())

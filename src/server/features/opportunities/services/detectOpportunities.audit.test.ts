@@ -12,6 +12,7 @@ function audit(overrides: Partial<AuditSignals> = {}): AuditSignals {
     issues: [],
     pages: [],
     inlinks: new Map(),
+    accessibility: [],
     ...overrides,
   };
 }
@@ -285,4 +286,50 @@ it("applies a live results check from the last 24 hours to low click-through", (
   expect(lowCtr(new Map()).confidence).toBe(0.55);
   expect(checked.confidence).toBe(0.4);
   expect(checked.scoreExplanation).toContain("-0.15 because ads were above it");
+});
+
+// RFC-0013 5.3: one opportunity per cluster, with the priority inputs.
+describe("accessibility_issue", () => {
+  const cluster = (impact: "critical" | "minor", paths: string[]) => ({
+    clusterKey: `key-${impact}`,
+    ruleId: "image-alt",
+    impact,
+    wcagTags: "wcag2a wcag111",
+    pageUrls: paths.map(page),
+    example: { url: page(paths[0]), selector: "img", snippet: "<img>" },
+  });
+
+  it("weighs impact, the affected pages' clicks and their best role", () => {
+    const results = ofType(
+      detectOpportunities(
+        input({
+          audit: audit({
+            accessibility: [
+              cluster("critical", ["a", "b"]),
+              cluster("minor", ["c"]),
+            ],
+          }),
+          currentPages: [
+            row([page("a")], { clicks: 90, impressions: 900 }),
+            row([page("b")], { clicks: 9, impressions: 90 }),
+          ],
+          keyPages: [{ url: page("b"), role: "money" }],
+        }),
+      ),
+      "accessibility_issue",
+    );
+    expect(results).toMatchObject([
+      {
+        visibilityScore: 1,
+        demandScore: 0.4,
+        commercialScore: 1,
+        accessibility: { pagesAffected: 2, clusterKey: "key-critical" },
+      },
+      { visibilityScore: 0.15, demandScore: 0, commercialScore: 0.25 },
+    ]);
+    expect(results[0].explanation).toContain("(WCAG 1.1.1)");
+    expect(results[0].explanation).toContain(
+      "Automated checks find only some accessibility issues.",
+    );
+  });
 });

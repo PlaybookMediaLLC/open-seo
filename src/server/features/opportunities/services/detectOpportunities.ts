@@ -1,5 +1,6 @@
 import { sort } from "remeda";
 import type { OpportunityCandidate } from "@/types/schemas/opportunities";
+import { accessibilityIssues } from "./detectors/accessibilityIssue";
 import { cannibalization } from "./detectors/cannibalization";
 import { decliningPages } from "./detectors/decliningPages";
 import { internalLinks } from "./detectors/internalLink";
@@ -57,6 +58,9 @@ export function detectOpportunities(
     ...lowCtr(nonBranded, pageMetrics, context, input.serpChecks),
     ...cannibalization(nonBranded, pageMetrics, context),
     ...technicalBlockers(input, context),
+    ...(input.audit
+      ? accessibilityIssues(input.audit, input.currentPages, context)
+      : []),
     ...(input.audit?.inlinks.size
       ? internalLinks(
           nonBranded,

@@ -64,6 +64,18 @@ export type AuditSignals = {
   }>;
   /** Target join key to the join keys of the pages that link to it. */
   inlinks: Map<string, Set<string>>;
+  /** RFC-0013: axe-core violations grouped by cluster key. */
+  accessibility: AccessibilityCluster[];
+};
+
+export type AccessibilityCluster = {
+  clusterKey: string;
+  ruleId: string;
+  /** The most severe impact seen in the cluster. */
+  impact: "minor" | "moderate" | "serious" | "critical";
+  wcagTags: string;
+  pageUrls: string[];
+  example: { url: string; selector: string; snippet: string };
 };
 
 export function usableRow(

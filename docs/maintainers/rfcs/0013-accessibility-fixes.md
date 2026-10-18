@@ -1,6 +1,6 @@
 # RFC-0013: Accessibility fixes in code
 
-- **Status:** In progress. Part A built: axe-core in audits, the result tables and the cluster keys.
+- **Status:** In progress. Part A built: axe-core in audits, the result tables and the cluster keys. Part B built: `accessibility_issue` opportunities, the evidence table, the wording rule and the user guide.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Accessibility and legal risk.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules). Phase 3 joins RFC-0015.
@@ -73,6 +73,8 @@ The WebAIM Million report finds every year that six error types cause most detec
 3. Evidence table `opportunity_accessibility_evidence`: `id`, the three FKs, `audit_id`, `rule_id`, `impact`, `pages_affected`, `example_url`, `example_selector`, `example_snippet`.
 4. Explanation in plain words, with the WCAG criterion and why it matters to people who use assistive technology.
 
+**As built (part B).** Search Console detection reads the latest audit of the last 30 days, as for technical blockers, and turns each cluster into one item. A cluster takes the most severe impact of its violations and lists its pages. Demand uses the organic clicks of the affected pages that Search Console reports in the current period. Commercial uses the best key-page role among them. Confidence is 0.6, difficulty 0.3 and effort 1 hour. The identity is the cluster key, so a fixed cluster goes stale when a later run does not find it. The evidence table also stores the cluster key and the WCAG tags. The explanation names the WCAG criteria from axe-core's tags, says why the rule matters for the six common rules, and always ends with the limits text. The type filter gets an Accessibility group.
+
 ### 5.4 Fixes in code
 
 This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
@@ -137,14 +139,14 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 - [x] Accessibility step in the audit with the page selection and the 50-page cap.
 - [x] Pinned axe-core version and the WCAG tag set.
-- [ ] Two result tables and the evidence table, in D1 and Postgres, with the parity test.
+- [x] Two result tables and the evidence table, in D1 and Postgres, with the parity test.
 - [x] Cluster keys with tests: the same component on different pages gives one key, different components give different keys.
-- [ ] `accessibility_issue` opportunities with the priority inputs.
+- [x] `accessibility_issue` opportunities with the priority inputs.
 - [ ] `jsx_attribute` change kind with element matching tests (literal `src`, imported image, spread rejection, multiple matches).
 - [ ] Alt text and `lang` fixes, including the decorative choice.
 - [ ] Live verification after deploy.
-- [ ] Wording rules enforced (test that no UI string contains "compliant").
-- [ ] `content/docs/accessibility.mdx` with the limits stated first.
+- [x] Wording rules enforced (test that no UI string contains "compliant").
+- [x] `content/docs/accessibility.mdx` with the limits stated first.
 
 ### Phase 2
 

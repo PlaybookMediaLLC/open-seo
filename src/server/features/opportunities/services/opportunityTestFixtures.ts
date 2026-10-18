@@ -45,6 +45,7 @@ export function opportunityDetail(
     urls: [],
     ga4Evidence: [],
     auditEvidence: [],
+    accessibilityEvidence: [],
     inspectionEvidence: [],
     linkEvidence: [],
     rankEvidence: [],

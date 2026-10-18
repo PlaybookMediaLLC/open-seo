@@ -10,6 +10,8 @@ export const OPPORTUNITY_TYPES = [
   "internal_link",
   // Paid: runs only when a person confirms the estimate.
   "content_gap",
+  // RFC-0013: one axe-core cluster of the latest audit.
+  "accessibility_issue",
   // RFC-0012: conversion problems, from GA4 data only.
   "cro_low_conversion",
   "cro_form_drop_off",
@@ -200,6 +202,7 @@ export type OpportunityCandidate = {
   ga4: Ga4LandingPageMetrics[];
   // Phase 2 evidence. Only the types that read these sources set them.
   audit?: AuditIssueEvidence;
+  accessibility?: AccessibilityEvidence;
   inspection?: InspectionEvidence;
   link?: LinkEvidence;
   rank?: RankEvidence[];
@@ -242,6 +245,19 @@ export type SerpCheck = {
   confidenceDelta: number;
   estimatedCredits: number;
   checkedAt: string;
+};
+
+/** RFC-0013 5.3: one axe-core cluster, with one example of it. */
+export type AccessibilityEvidence = {
+  auditId: string;
+  clusterKey: string;
+  ruleId: string;
+  impact: "minor" | "moderate" | "serious" | "critical";
+  wcagTags: string;
+  pagesAffected: number;
+  exampleUrl: string;
+  exampleSelector: string;
+  exampleSnippet: string;
 };
 
 export type AuditIssueEvidence = {
@@ -290,6 +306,7 @@ export type Opportunity = Omit<
   | "urls"
   | "ga4"
   | "audit"
+  | "accessibility"
   | "inspection"
   | "link"
   | "rank"
@@ -382,6 +399,7 @@ export type OpportunityDetail = {
   urls: OpportunityUrl[];
   ga4Evidence: OpportunityGa4Evidence[];
   auditEvidence: Array<AuditIssueEvidence & RunScoped>;
+  accessibilityEvidence: Array<AccessibilityEvidence & RunScoped>;
   inspectionEvidence: Array<InspectionEvidence & RunScoped>;
   linkEvidence: Array<LinkEvidence & RunScoped>;
   rankEvidence: Array<RankEvidence & RunScoped>;

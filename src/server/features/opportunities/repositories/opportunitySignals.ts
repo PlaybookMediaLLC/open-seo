@@ -10,10 +10,13 @@ import {
 } from "drizzle-orm";
 import { db } from "@/db";
 import {
+  auditAccessibilityResults,
+  auditAccessibilityViolations,
   auditIssues,
   auditPageInlinks,
   auditPages,
   audits,
+  opportunityAccessibilityEvidence,
   opportunityAuditEvidence,
   opportunityInspectionEvidence,
   opportunityLinkEvidence,
@@ -23,7 +26,51 @@ import {
   rankSnapshots,
 } from "@/db/schema";
 import type { RankEvidence } from "@/types/schemas/opportunities";
-import { urlJoinKey, type AuditSignals } from "../services/detectors/shared";
+import {
+  urlJoinKey,
+  type AccessibilityCluster,
+  type AuditSignals,
+} from "../services/detectors/shared";
+
+const IMPACT_RANK = { minor: 0, moderate: 1, serious: 2, critical: 3 };
+
+/** RFC-0013 5.3: the audit's axe-core violations, one entry per cluster. */
+async function accessibilityClusters(auditId: string) {
+  const rows = await db
+    .select({
+      clusterKey: auditAccessibilityViolations.clusterKey,
+      ruleId: auditAccessibilityViolations.ruleId,
+      impact: auditAccessibilityViolations.impact,
+      wcagTags: auditAccessibilityViolations.wcagTags,
+      selector: auditAccessibilityViolations.targetSelector,
+      snippet: auditAccessibilityViolations.htmlSnippet,
+      url: auditPages.url,
+    })
+    .from(auditAccessibilityViolations)
+    .innerJoin(
+      auditAccessibilityResults,
+      eq(auditAccessibilityResults.id, auditAccessibilityViolations.resultId),
+    )
+    .innerJoin(auditPages, eq(auditPages.id, auditAccessibilityResults.pageId))
+    .where(eq(auditAccessibilityResults.auditId, auditId))
+    .orderBy(asc(auditPages.url), asc(auditAccessibilityViolations.clusterKey));
+  const clusters = new Map<string, AccessibilityCluster>();
+  for (const row of rows) {
+    const cluster = clusters.get(row.clusterKey) ?? {
+      clusterKey: row.clusterKey,
+      ruleId: row.ruleId,
+      impact: row.impact,
+      wcagTags: row.wcagTags,
+      pageUrls: [],
+      example: { url: row.url, selector: row.selector, snippet: row.snippet },
+    };
+    if (IMPACT_RANK[row.impact] > IMPACT_RANK[cluster.impact])
+      cluster.impact = row.impact;
+    if (!cluster.pageUrls.includes(row.url)) cluster.pageUrls.push(row.url);
+    clusters.set(row.clusterKey, cluster);
+  }
+  return [...clusters.values()];
+}
 
 /** RFC-0002 phase 2 reads. Each one filters by project first. */
 async function latestAudit(
@@ -44,7 +91,7 @@ async function latestAudit(
     .orderBy(desc(audits.completedAt))
     .limit(1);
   if (!audit?.completedAt) return null;
-  const [issues, pages, inlinkRows] = await Promise.all([
+  const [issues, pages, inlinkRows, accessibility] = await Promise.all([
     db
       .select({
         id: auditIssues.id,
@@ -81,6 +128,7 @@ async function latestAudit(
           eq(auditPageInlinks.auditId, audit.id),
         ),
       ),
+    accessibilityClusters(audit.id),
   ]);
   const keys = new Map(pages.map((page) => [page.id, urlJoinKey(page.url)]));
   const inlinks = new Map<string, Set<string>>();
@@ -96,6 +144,7 @@ async function latestAudit(
     issues,
     pages: pages.map(({ id: _id, ...page }) => page),
     inlinks,
+    accessibility,
   };
 }
 
@@ -178,52 +227,75 @@ const { projectId: _link, ...linkColumns } = getTableColumns(
 const { projectId: _rank, ...rankColumns } = getTableColumns(
   opportunityRankEvidence,
 );
+const { projectId: _accessibility, ...accessibilityColumns } = getTableColumns(
+  opportunityAccessibilityEvidence,
+);
 
 /** The phase 2 evidence of one opportunity, newest run first. */
 async function evidenceFor(projectId: string, opportunityId: string) {
-  const [auditEvidence, inspectionEvidence, linkEvidence, rankEvidence] =
-    await Promise.all([
-      db
-        .select(auditColumns)
-        .from(opportunityAuditEvidence)
-        .where(
-          and(
-            eq(opportunityAuditEvidence.projectId, projectId),
-            eq(opportunityAuditEvidence.opportunityId, opportunityId),
-          ),
-        )
-        .orderBy(desc(opportunityAuditEvidence.auditCompletedAt)),
-      db
-        .select(inspectionColumns)
-        .from(opportunityInspectionEvidence)
-        .where(
-          and(
-            eq(opportunityInspectionEvidence.projectId, projectId),
-            eq(opportunityInspectionEvidence.opportunityId, opportunityId),
-          ),
-        )
-        .orderBy(desc(opportunityInspectionEvidence.inspectedAt)),
-      db
-        .select(linkColumns)
-        .from(opportunityLinkEvidence)
-        .where(
-          and(
-            eq(opportunityLinkEvidence.projectId, projectId),
-            eq(opportunityLinkEvidence.opportunityId, opportunityId),
-          ),
+  const [
+    auditEvidence,
+    inspectionEvidence,
+    linkEvidence,
+    rankEvidence,
+    accessibilityEvidence,
+  ] = await Promise.all([
+    db
+      .select(auditColumns)
+      .from(opportunityAuditEvidence)
+      .where(
+        and(
+          eq(opportunityAuditEvidence.projectId, projectId),
+          eq(opportunityAuditEvidence.opportunityId, opportunityId),
         ),
-      db
-        .select(rankColumns)
-        .from(opportunityRankEvidence)
-        .where(
-          and(
-            eq(opportunityRankEvidence.projectId, projectId),
-            eq(opportunityRankEvidence.opportunityId, opportunityId),
-          ),
-        )
-        .orderBy(desc(opportunityRankEvidence.lastCheckedAt)),
-    ]);
-  return { auditEvidence, inspectionEvidence, linkEvidence, rankEvidence };
+      )
+      .orderBy(desc(opportunityAuditEvidence.auditCompletedAt)),
+    db
+      .select(inspectionColumns)
+      .from(opportunityInspectionEvidence)
+      .where(
+        and(
+          eq(opportunityInspectionEvidence.projectId, projectId),
+          eq(opportunityInspectionEvidence.opportunityId, opportunityId),
+        ),
+      )
+      .orderBy(desc(opportunityInspectionEvidence.inspectedAt)),
+    db
+      .select(linkColumns)
+      .from(opportunityLinkEvidence)
+      .where(
+        and(
+          eq(opportunityLinkEvidence.projectId, projectId),
+          eq(opportunityLinkEvidence.opportunityId, opportunityId),
+        ),
+      ),
+    db
+      .select(rankColumns)
+      .from(opportunityRankEvidence)
+      .where(
+        and(
+          eq(opportunityRankEvidence.projectId, projectId),
+          eq(opportunityRankEvidence.opportunityId, opportunityId),
+        ),
+      )
+      .orderBy(desc(opportunityRankEvidence.lastCheckedAt)),
+    db
+      .select(accessibilityColumns)
+      .from(opportunityAccessibilityEvidence)
+      .where(
+        and(
+          eq(opportunityAccessibilityEvidence.projectId, projectId),
+          eq(opportunityAccessibilityEvidence.opportunityId, opportunityId),
+        ),
+      ),
+  ]);
+  return {
+    auditEvidence,
+    inspectionEvidence,
+    linkEvidence,
+    rankEvidence,
+    accessibilityEvidence,
+  };
 }
 
 export const OpportunitySignalRepository = {

@@ -38,6 +38,8 @@ const VERIFY: Record<OpportunityType, string> = {
     "Run a new site audit. It must show a link from the source page to the target page.",
   content_gap:
     "After the page ships, track the topic's keywords for 28 days and compare their positions with the competitor positions above.",
+  accessibility_issue:
+    "Run a new site audit after the change deploys. The rule must no longer fail on the affected pages. Automated checks find only some accessibility issues; test with assistive technology too.",
   cro_low_conversion:
     "After the change ships, wait 28 days. Then compare the page's conversion rate with the GA4 evidence above.",
   cro_form_drop_off:
