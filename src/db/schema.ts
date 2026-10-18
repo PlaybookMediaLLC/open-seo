@@ -232,6 +232,7 @@ export const {
   growthJobLogs,
   growthNotifications,
   growthNotificationReads,
+  growthEmailPreferences,
   githubAppInstallations,
   proposalApprovals,
   proposalExecutions,

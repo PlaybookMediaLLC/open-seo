@@ -224,6 +224,8 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 2. Opt-in per user, per organization: `growth_email_preferences` (`user_id`, `organization_id`, `digest` `off`/`daily`/`weekly`).
 3. A scheduled task `growth-digest` sends one digest of unread notifications per opted-in user.
 
+**As built (owner decision, 2026-10-18).** Loops is not set up, so the digest sends through the Cloudflare Email binding that team invitations use (`notifications@mail.playbookmedia.io`); without the binding nothing is sent. The member chooses off, daily or weekly in the notification bell. The Worker cron sends at the 08:00 UTC tick (weekly on Mondays): each digest holds at most 20 of the member's unread notifications created since the last digest, and nothing goes out when there are none. A member who left the organization gets nothing, and a retried tick never sends twice in a day. "Email me a test digest" sends the latest unread notifications to the member who clicks it.
+
 ### 5.12 Self-hosted installs
 
 Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaults to `off` when `TRIGGER_SECRET_KEY` is missing. An operator can still call the signed endpoints from any scheduler. Document the signature format in `docs/maintainers/playbook-deployment.md`.
@@ -295,8 +297,8 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 ### Phase 2
 
-- [ ] Email preferences table and settings UI.
-- [ ] Digest sends only to opted-in users (test).
+- [x] Email preferences table and settings UI. `growth_email_preferences` and the bell control (2026-10-18).
+- [x] Digest sends only to opted-in users (test). `emailDigest.test.ts`.
 - [ ] Live check: a digest reaches a test inbox.
 
 ## 10. Real-site acceptance test

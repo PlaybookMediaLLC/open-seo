@@ -158,3 +158,25 @@ export const growthNotificationReads = sqliteTable(
     ),
   ],
 );
+
+// RFC-0008 5.11: each member's opt-in email digest of unread notifications,
+// per organization. Off unless the member turns it on.
+export const growthEmailPreferences = sqliteTable(
+  "growth_email_preferences",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    digest: text("digest", { enum: ["off", "daily", "weekly"] }).notNull(),
+    lastSentAt: text("last_sent_at"),
+    updatedAt: text("updated_at").notNull(),
+  },
+  (t) => [
+    uniqueIndex("growth_email_preferences_user_org_idx").on(
+      t.userId,
+      t.organizationId,
+    ),
+  ],
+);

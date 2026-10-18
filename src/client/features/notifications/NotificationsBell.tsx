@@ -15,8 +15,11 @@ import {
   SidebarMenuItem,
 } from "@/client/components/ui/sidebar";
 import {
+  getEmailDigest,
   listNotifications,
   markNotificationsRead,
+  sendTestDigest,
+  setEmailDigest,
 } from "@/serverFunctions/notifications";
 
 const queryKey = ["growth-notifications"];
@@ -59,6 +62,7 @@ export function NotificationsBell() {
             </SheetDescription>
           </SheetHeader>
           <div className="space-y-3 overflow-y-auto px-4 pb-4">
+            <EmailDigestControl />
             {unread > 0 && (
               <Button
                 type="button"
@@ -97,5 +101,60 @@ export function NotificationsBell() {
         </SheetContent>
       </Sheet>
     </SidebarMenuItem>
+  );
+}
+
+const DIGESTS = [
+  { value: "off", label: "No email digest" },
+  { value: "daily", label: "Email me a daily digest" },
+  { value: "weekly", label: "Email me a weekly digest (Mondays)" },
+] as const;
+
+/** RFC-0008 5.11: the member's opt-in digest of unread notifications. */
+function EmailDigestControl() {
+  const client = useQueryClient();
+  const digest = useQuery({
+    queryKey: ["growth-email-digest"],
+    queryFn: () => getEmailDigest(),
+  });
+  const save = useMutation({
+    mutationFn: (value: (typeof DIGESTS)[number]["value"]) =>
+      setEmailDigest({ data: { digest: value } }),
+    onSettled: () =>
+      client.invalidateQueries({ queryKey: ["growth-email-digest"] }),
+  });
+  const test = useMutation({ mutationFn: () => sendTestDigest() });
+  if (!digest.data?.available) return null;
+  return (
+    <div className="space-y-2 rounded-lg border p-3 text-sm">
+      <select
+        aria-label="Email digest"
+        className="h-9 w-full rounded-md border bg-background px-2"
+        value={digest.data.digest}
+        disabled={save.isPending}
+        onChange={(event) =>
+          save.mutate(
+            DIGESTS.find((option) => option.value === event.target.value)
+              ?.value ?? "off",
+          )
+        }
+      >
+        {DIGESTS.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        pending={test.isPending}
+        onClick={() => test.mutate()}
+      >
+        Email me a test digest
+      </Button>
+      {test.data && <p role="status">{test.data.message}</p>}
+    </div>
   );
 }

@@ -10,7 +10,9 @@ const mocks = vi.hoisted(() => ({
   retention: vi.fn(),
   reconcile: vi.fn(),
   attempts: vi.fn(),
+  digests: vi.fn(),
 }));
+vi.mock("./emailDigest", () => ({ sendDigests: mocks.digests }));
 vi.mock("./internalAuth", () => ({ growthJobsMode: mocks.mode }));
 vi.mock("./GrowthJobService", () => ({
   GrowthJobService: {
@@ -38,6 +40,7 @@ beforeEach(() => {
   mocks.due.mockResolvedValue({ items: [item("a"), item("b")] });
   mocks.run.mockResolvedValue({});
   mocks.retention.mockResolvedValue({});
+  mocks.digests.mockResolvedValue({ sent: 0 });
   mocks.reconcile.mockResolvedValue({});
   mocks.attempts.mockImplementation(
     async (_project: string, _kind: string, windowKey: string) =>
@@ -63,7 +66,10 @@ it("waits for quarter-hour ticks, and leaves the work to Trigger.dev when it is 
   expect(mocks.due).not.toHaveBeenCalled();
 });
 
-it("deletes old history on the 03:30 tick", async () => {
+it("deletes old history at 03:30 and sends email digests at 08:00", async () => {
   await runGrowthCron(at("03:30"));
   expect(mocks.retention).toHaveBeenCalledWith(new Date(at("03:30")));
+  expect(mocks.digests).not.toHaveBeenCalled();
+  await runGrowthCron(at("08:00"));
+  expect(mocks.digests).toHaveBeenCalledWith(new Date(at("08:00")));
 });
