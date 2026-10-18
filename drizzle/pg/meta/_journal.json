@@ -498,6 +498,13 @@
       "when": 1792329402472,
       "tag": "0070_condemned_triathlon",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1792333386569,
+      "tag": "0071_right_luminals",
+      "breakpoints": true
     }
   ]
 }

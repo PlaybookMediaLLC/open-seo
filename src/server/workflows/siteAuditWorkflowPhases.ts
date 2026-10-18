@@ -1,4 +1,4 @@
-// playbook-seam: two fork lines push this upstream file past 400 lines.
+// playbook-seam: four fork lines push this upstream file past 400 lines.
 /* oxlint-disable max-lines */
 import type { WorkflowStep } from "cloudflare:workers";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
@@ -31,6 +31,7 @@ import {
 import { pgStep } from "@/server/workflows/pgStep";
 import { saveKeyPageInlinksStep } from "@/server/features/opportunities/audit/saveKeyPageInlinks"; // playbook-seam
 import { queueAuditFollowup } from "@/server/features/growth/auditFollowup"; // playbook-seam
+import { runAccessibilityStep } from "@/server/features/accessibility/accessibilityStep"; // playbook-seam
 import {
   DB_STEP,
   DISCOVERY_STEP,
@@ -107,6 +108,7 @@ export async function runAuditPhases(
     startUrl,
     config,
   });
+  await runAccessibilityStep(step, { auditId, projectId, billingCustomer }); // playbook-seam: RFC-0013 axe-core
   await finalizeAudit({
     step,
     auditId,
