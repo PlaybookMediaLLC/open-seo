@@ -173,7 +173,7 @@ export function draftEvidence(
   sections: Array<[string, string]>,
   output: DraftOutput,
   verified: boolean,
-  kind: TextDraftKind,
+  currentLabel: string,
 ) {
   const source = (
     sourceKind: DraftSource["kind"],
@@ -193,7 +193,7 @@ export function draftEvidence(
     sources.push(
       source(
         "current_metadata",
-        `Current ${LENGTH_RULES[kind].label}`,
+        `Current ${currentLabel}`,
         inputs.currentValue,
       ),
     );

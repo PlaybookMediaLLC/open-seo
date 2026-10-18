@@ -27,6 +27,7 @@ import { SplitTestEndService } from "@/server/features/split-tests/SplitTestEndS
 import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { ConversionDetectionService } from "@/server/features/conversion/ConversionDetectionService";
+import { CopyDraftService } from "@/server/features/conversion/CopyDraftService";
 import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
 import { CopyProposalService } from "@/server/features/publishing/CopyProposalService";
 import { ConversionGateService } from "@/server/features/conversion/ConversionGateService";
@@ -152,6 +153,7 @@ const services: Record<string, Record<string, unknown>> = {
   ConversionDetectionService,
   CopyLocatorService,
   CopyProposalService,
+  CopyDraftService,
 };
 
 async function growthRowCount() {

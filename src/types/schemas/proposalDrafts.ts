@@ -5,6 +5,8 @@ export const DRAFT_KINDS = [
   "meta_description",
   "meta_title",
   "internal_link_anchor",
+  // RFC-0012 5.5: new text for one picked block on the page.
+  "page_copy",
 ] as const;
 export const DRAFT_STATUSES = [
   "generated",

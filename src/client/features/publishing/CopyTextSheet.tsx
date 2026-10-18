@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from "@/client/components/ui/sheet";
 import {
+  draftCopyText,
   listPageTexts,
   locateCopyText,
   prepareCopyProposal,
@@ -26,6 +27,16 @@ type Found = Extract<
   { status: "found" }
 >;
 type Located = Awaited<ReturnType<typeof locateCopyText>>;
+type Picked = Awaited<ReturnType<typeof listPageTexts>>["texts"][number];
+const BLOCK_KINDS = [
+  "heading",
+  "button",
+  "link",
+  "label",
+  "paragraph",
+] as const;
+const blockKindOf = (kind: string) =>
+  BLOCK_KINDS.find((item) => item === kind) ?? "paragraph";
 
 /** RFC-0012 5.4: pick a text on the live page and find it in the repository. */
 export function CopyTextSheet({
@@ -39,7 +50,7 @@ export function CopyTextSheet({
   };
   const expectedOpportunityVersion = opportunity.version;
   const [open, setOpen] = useState(false);
-  const [chosen, setChosen] = useState<string | null>(null);
+  const [chosen, setChosen] = useState<Picked | null>(null);
   const texts = useQuery({
     queryKey: ["copy-text", scope.projectId, scope.opportunityId],
     queryFn: () => listPageTexts({ data: scope }),
@@ -73,7 +84,7 @@ export function CopyTextSheet({
           )}
           {chosen ? (
             <div className="space-y-3">
-              <p className="rounded-md bg-muted p-3">{chosen}</p>
+              <p className="rounded-md bg-muted p-3">{chosen.text}</p>
               <Button
                 size="sm"
                 variant="ghost"
@@ -97,7 +108,7 @@ export function CopyTextSheet({
                 <PrepareCopy
                   scope={scope}
                   expectedOpportunityVersion={expectedOpportunityVersion}
-                  text={chosen}
+                  picked={chosen}
                   found={locate.data}
                   onDone={() => setOpen(false)}
                 />
@@ -111,7 +122,7 @@ export function CopyTextSheet({
                     type="button"
                     className="flex w-full items-start gap-2 rounded-md p-2 text-left hover:bg-muted"
                     onClick={() => {
-                      setChosen(item.text);
+                      setChosen(item);
                       locate.mutate(item.text);
                     }}
                   >
@@ -180,13 +191,33 @@ function LocateResult({ result }: { result: Located }) {
 function PrepareCopy(props: {
   scope: Scope;
   expectedOpportunityVersion: number;
-  text: string;
+  picked: Picked;
   found: Found;
   onDone: () => void;
 }) {
   const refresh = useRefreshPublishing(props.scope.projectId);
+  const text = props.picked.text;
   const [newText, setNewText] = useState("");
+  const [draftId, setDraftId] = useState<string | undefined>();
   const [confirmed, setConfirmed] = useState(false);
+  // RFC-0012 5.5: a checked AI draft fills the field; the person can edit it.
+  const draft = useMutation({
+    meta: { errorToast: false },
+    mutationFn: () =>
+      draftCopyText({
+        data: {
+          ...props.scope,
+          expectedOpportunityVersion: props.expectedOpportunityVersion,
+          text,
+          blockKind: blockKindOf(props.picked.kind),
+        },
+      }),
+    onSuccess: (result) => {
+      if (result.status !== "generated") return;
+      setNewText(result.valueAfter);
+      setDraftId(result.id);
+    },
+  });
   const shared = props.found.sharedPages.length > 0;
   const prepare = useMutation({
     meta: { errorToast: false },
@@ -195,8 +226,9 @@ function PrepareCopy(props: {
         data: {
           ...props.scope,
           expectedOpportunityVersion: props.expectedOpportunityVersion,
-          edits: [{ text: props.text, newText }],
+          edits: [{ text, newText }],
           confirmSharedPages: confirmed,
+          draftId,
         },
       }),
     onSuccess: (result) => {
@@ -215,6 +247,33 @@ function PrepareCopy(props: {
         maxLength={500}
         onChange={(event) => setNewText(event.target.value)}
       />
+      <Button
+        size="sm"
+        variant="outline"
+        pending={draft.isPending}
+        onClick={() => draft.mutate()}
+      >
+        Draft with AI
+      </Button>
+      {draft.isError && (
+        <p role="alert" className="text-destructive">
+          {draft.error.message}
+        </p>
+      )}
+      {draft.data && (
+        <div className="space-y-1 text-xs text-muted-foreground">
+          <p>
+            {draft.data.status === "generated"
+              ? draft.data.validationSummary
+              : draft.data.rationale}
+          </p>
+          {draft.data.claims.map((claim) => (
+            <p key={claim.id}>
+              {claim.verified ? "✓" : "✗"} {claim.claimText}
+            </p>
+          ))}
+        </div>
+      )}
       {shared && (
         <Label className="flex items-start gap-2 font-normal">
           <Checkbox
@@ -232,9 +291,7 @@ function PrepareCopy(props: {
       <Button
         pending={prepare.isPending}
         disabled={
-          !newText.trim() ||
-          newText.trim() === props.text ||
-          (shared && !confirmed)
+          !newText.trim() || newText.trim() === text || (shared && !confirmed)
         }
         onClick={() => prepare.mutate()}
       >

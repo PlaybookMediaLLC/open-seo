@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -119,6 +119,8 @@ Reuse the RFC-0004 drafting service with a conversion prompt.
 
 Each draft lists its claims with sources, as in RFC-0004.
 
+**As built (part D).** "Draft with AI" in the page text sheet drafts new text for the picked block. It shares RFC-0004's admission, daily limits, spend hold and storage, as the draft kind `page_copy`. The prompt holds the page's queries, the current text, the chosen conversion and the opportunity's GA4 evidence, the live page and the project context. A draft passes RFC-0004's number, quote, claim and query checks with a length per block kind, then the rules above. Reviews, ratings, logos, awards and customer names, and urgency or scarcity words, pass only when the page, the project context or the current text states the same phrase. A call to action must start with one of a fixed list of verbs. For a heading, the main query is the page's top Search Console query, and its terms that the current heading uses must stay. A passing draft fills the new text field, the person can edit it, and the proposal records the draft it came from.
+
 ### 5.6 Measurement
 
 **Phase 1, before and after.** Extend RFC-0006 with the conversion metric for the changed page: daily sessions and chosen key events. Directional label only when each period has ≥ 1,000 sessions and ≥ 50 conversions, and the conversion rate changes by ≥ 20% relative and ≥ 10 conversions absolute. Otherwise "inconclusive". Always show the caveats.
@@ -172,9 +174,9 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - [x] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`). The test copy is trimmed, because S1's repository is private and this one is public.
 - [x] `change_kind`, `proposal_text_edits` and fingerprint version 3. Built as version 6, because metadata changes already use versions 3 to 5.
 - [x] Execution writes the text edits in one commit (test against the GitHub mock).
-- [ ] Conversion drafting with one test per dark-pattern rule.
+- [x] Conversion drafting with one test per dark-pattern rule.
 - [ ] Conversion metric in experiments with the directional thresholds.
-- [ ] UI: filter group, settings section, text picker and copy diff.
+- [x] UI: filter group, settings section, text picker and copy diff.
 - [ ] `content/docs/conversion.mdx` explains the gate, the detectors, the rules and the limits.
 
 ### Phase 2
