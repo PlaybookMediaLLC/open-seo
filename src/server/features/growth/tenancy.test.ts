@@ -52,8 +52,12 @@ vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 
-// Organization-level by design: an App installation serves many projects.
-const ORGANIZATION_TABLES = new Set(["github_app_installations"]);
+// Not project-scoped by design: an App installation serves many projects,
+// and a webhook delivery id is claimed before its project is known.
+const UNSCOPED_TABLES = new Set([
+  "github_app_installations",
+  "ci_webhook_deliveries",
+]);
 const tablesOf = (...schemas: object[]) =>
   schemas.flatMap((schema) =>
     Object.values(schema).filter((value) => value instanceof SQLiteTable),
@@ -171,7 +175,7 @@ describe(`Growth tenancy real ${database.isPostgres ? "Postgres" : "SQLite"}`, (
       .map((table) => getTableConfig(table))
       .filter(
         (config) =>
-          !ORGANIZATION_TABLES.has(config.name) &&
+          !UNSCOPED_TABLES.has(config.name) &&
           !config.columns.some((column) => column.name === "project_id"),
       )
       .map((config) => config.name);

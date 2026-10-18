@@ -10,6 +10,7 @@ import {
   ciPreviewHosts,
   ciProjectSettings,
   ciTokens,
+  ciWebhookDeliveries,
 } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
@@ -268,8 +269,14 @@ async function saveSettings(
     .onConflictDoUpdate({ target: ciProjectSettings.projectId, set: values });
 }
 
-/** RFC-0010 5.9: the daily retention task deletes runs after 90 days. */
+/**
+ * RFC-0010 5.9: the daily retention task deletes runs after 90 days, and
+ * the App webhook delivery ids with them.
+ */
 export async function deleteCheckRunsBefore(cutoff: string) {
+  await db
+    .delete(ciWebhookDeliveries)
+    .where(lt(ciWebhookDeliveries.receivedAt, cutoff));
   const deleted = await db
     .delete(ciCheckRuns)
     .where(lt(ciCheckRuns.createdAt, cutoff))

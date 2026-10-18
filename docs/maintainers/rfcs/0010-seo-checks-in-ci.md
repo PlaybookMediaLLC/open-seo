@@ -192,6 +192,8 @@ Project settings → new **SEO checks** tab:
 3. On a successful `deployment_status` with an `environment_url` for a pull request's head SHA, start a run with no workflow step.
 4. Post a Check Run with the summary and one annotation per finding on the changed file that maps to the page.
 
+**As built (part E).** The webhook is `/api/github/app/webhook`, signed with `GITHUB_APP_WEBHOOK_SECRET`; without the secret it answers 404. A delivery id is claimed before the work and freed if the work fails, so a manual redelivery runs again. Only `deployment_status` is subscribed: the pull request, its labels and its changed files come from the commit through the REST API, so the `pull_request` event is not needed. A deployment counts when it succeeds with an HTTPS URL, is not the connection's production environment, and belongs to an open pull request of a repository connected through the same installation. App runs share the action's limits, host checks and override label. The workflow's last step posts the Check Run; a failed report leaves the stored run unchanged. URL selection records the changed file behind each page, and annotations point at line 1 of that file, because a finding belongs to a page, not a line. Delivery ids follow the 90-day run retention.
+
 ### 5.13 Phase 3: rendered mode
 
 For pages flagged `content-shrunk` or `javascript-rendering-suspected`, render both versions in a headless browser and compare the rendered HTML. Use it only for those pages, because rendering is slow and costs more.
@@ -236,17 +238,17 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 - [x] Traffic weighting and severity raise tests.
 - [x] Override label writes an audit event (test).
 - [x] `seo-check` Trigger.dev task with the idempotency key. Built as `SeoCheckWorkflow` (owner decision); the run id is the instance id.
-- [ ] Composite action repository with a tagged `v1` release and a README.
+- [x] Composite action repository with a tagged `v1` release and a README. `PlaybookMediaLLC/relay-seo-check`, release v1.0.0; a production smoke test passed through it.
 - [x] SEO checks tab with tokens, hosts, access, ignores and history.
 - [x] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
 - [ ] Installed on Relay's own previews and on the monorepo for S1.
 
 ### Phase 2
 
-- [ ] App permissions and webhook subscriptions added.
-- [ ] Signature check and delivery deduplication (tests).
-- [ ] Automatic run from a Vercel preview `deployment_status`.
-- [ ] Check Run with annotations on the mapped files.
+- [ ] App permissions and webhook subscriptions added. Owner step in the App settings, listed in `playbook-deployment.md`.
+- [x] Signature check and delivery deduplication (tests).
+- [x] Automatic run from a Vercel preview `deployment_status` (test; live check waits for the App settings).
+- [x] Check Run with annotations on the mapped files (test).
 
 ### Phase 3
 

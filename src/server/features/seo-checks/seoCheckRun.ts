@@ -131,6 +131,7 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
               projectId: plan.projectId,
               path: url.path,
               reason: url.reason,
+              sourceFile: url.file ?? null,
               baseStatus: url.baseStatus,
               previewStatus: url.previewStatus,
               clicks28d: url.clicks,

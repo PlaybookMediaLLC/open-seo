@@ -19,7 +19,7 @@ const ROUTE_FILE =
  * wildcards. Other frameworks' files map to nothing.
  */
 function routePatterns(changedFiles: string[]) {
-  const patterns = new Set<string>();
+  const patterns = new Map<string, string>();
   for (const file of changedFiles) {
     const match = file.match(ROUTE_FILE);
     if (!match) continue;
@@ -36,11 +36,10 @@ function routePatterns(changedFiles: string[]) {
       );
     if (router === "pages" && (segments[0] === "api" || rest.startsWith("_")))
       continue;
-    patterns.add(
-      `/${segments
-        .map((segment) => (/^\[.*\]$/.test(segment) ? "*" : segment))
-        .join("/")}`,
-    );
+    const pattern = `/${segments
+      .map((segment) => (/^\[.*\]$/.test(segment) ? "*" : segment))
+      .join("/")}`;
+    if (!patterns.has(pattern)) patterns.set(pattern, file);
   }
   return [...patterns];
 }
@@ -74,17 +73,14 @@ export async function selectUrls(input: {
   headSha: string;
 }) {
   const sitemapPaths = input.sitemapUrls.flatMap((url) => pathOf(url) ?? []);
-  const chosen = new Map<string, Reason>();
-  const add = (paths: string[], reason: Reason) => {
+  const chosen = new Map<string, { reason: Reason; file?: string }>();
+  const add = (paths: string[], reason: Reason, file?: string) => {
     for (const path of paths)
-      if (chosen.size < MAX_URLS && !chosen.has(path)) chosen.set(path, reason);
+      if (chosen.size < MAX_URLS && !chosen.has(path))
+        chosen.set(path, { reason, file });
   };
-  add(
-    routePatterns(input.changedFiles).flatMap((pattern) =>
-      expand(pattern, sitemapPaths),
-    ),
-    "changed_file",
-  );
+  for (const [pattern, file] of routePatterns(input.changedFiles))
+    add(expand(pattern, sitemapPaths), "changed_file", file);
   add(
     sortBy(input.keyPages, (page) => rank(page.role)).flatMap(
       (page) => pathOf(page.url) ?? [],
@@ -111,5 +107,5 @@ export async function selectUrls(input: {
       .map((entry) => entry.path),
     "sitemap_sample",
   );
-  return [...chosen].map(([path, reason]) => ({ path, reason }));
+  return [...chosen].map(([path, entry]) => ({ path, ...entry }));
 }

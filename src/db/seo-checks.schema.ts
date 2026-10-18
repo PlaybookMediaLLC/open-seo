@@ -55,6 +55,12 @@ export const ciCheckRuns = sqliteTable(
     blockingCount: integer("blocking_count").notNull().default(0),
     warningCount: integer("warning_count").notNull().default(0),
     urlCount: integer("url_count").notNull().default(0),
+    // RFC-0010 5.12: "action" runs come from the GitHub Action; "app" runs
+    // from a deployment event, and post a Check Run when they finish.
+    source: text("source", { enum: ["action", "app"] })
+      .notNull()
+      .default("action"),
+    installationId: integer("installation_id"),
     overrideUsed: integer("override_used", { mode: "boolean" })
       .notNull()
       .default(false),
@@ -83,6 +89,8 @@ export const ciCheckUrls = sqliteTable(
     projectId: text("project_id").notNull(),
     path: text("path").notNull(),
     reason: text("reason", { enum: CI_URL_REASONS }).notNull(),
+    // The changed file that maps to this page, for Check Run annotations.
+    sourceFile: text("source_file"),
     baseStatus: integer("base_status"),
     previewStatus: integer("preview_status"),
     clicks28d: integer("clicks_28d"),
@@ -168,5 +176,16 @@ export const ciProjectSettings = sqliteTable("ci_project_settings", {
   })
     .notNull()
     .default(false),
+  // RFC-0010 5.13: render client-side pages in a browser (uses credits).
+  renderedMode: integer("rendered_mode", { mode: "boolean" })
+    .notNull()
+    .default(false),
   updatedAt: text("updated_at").notNull(),
+});
+
+// RFC-0010 5.12: GitHub webhook deliveries, so a redelivery starts nothing.
+export const ciWebhookDeliveries = sqliteTable("ci_webhook_deliveries", {
+  id: text("id").primaryKey(),
+  event: text("event").notNull(),
+  receivedAt: text("received_at").notNull(),
 });

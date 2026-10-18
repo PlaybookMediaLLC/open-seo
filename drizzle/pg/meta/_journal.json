@@ -414,6 +414,13 @@
       "when": 1792286001443,
       "tag": "0058_chunky_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792289814174,
+      "tag": "0059_quiet_exiles",
+      "breakpoints": true
     }
   ]
 }

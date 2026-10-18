@@ -35,7 +35,10 @@ async function rateLimited(tokenId: string) {
   return !(await limiter.limit({ key: tokenId })).success;
 }
 
-async function overQuota(token: CiTokenContext, now: Date) {
+async function overQuota(
+  token: { projectId: string; organizationId: string },
+  now: Date,
+) {
   const monthStart = `${now.toISOString().slice(0, 7)}-01T00:00:00.000Z`;
   const [row] = await db
     .select({ total: count() })
@@ -54,7 +57,7 @@ async function overQuota(token: CiTokenContext, now: Date) {
   return Number(row?.total ?? 0) >= quota;
 }
 
-/** Validates and queues a run; the same commit and preview reuse one run. */
+/** The GitHub Action's request: rate limited per token, then queued. */
 export async function createCheck(
   token: CiTokenContext,
   input: CreateCheckInput,
@@ -65,6 +68,23 @@ export async function createCheck(
       ...fail(429, "rate_limited", "Too many checks. Try again in a minute."),
       body: { error: "rate_limited", retryAfterSeconds: 60 },
     };
+  return queueCheck(
+    token,
+    input,
+    { source: "action", installationId: null },
+    now,
+  );
+}
+
+type CheckScope = Omit<CiTokenContext, "tokenId"> & { tokenId: string | null };
+
+/** Validates and queues a run; the same commit and preview reuse one run. */
+export async function queueCheck(
+  token: CheckScope,
+  input: CreateCheckInput,
+  origin: { source: "action" | "app"; installationId: number | null },
+  now = new Date(),
+): Promise<ApiResult> {
   if (!token.domain)
     return fail(400, "no_domain", "Set the project's website in Relay first.");
   const preview = new URL(input.previewUrl);
@@ -124,6 +144,8 @@ export async function createCheck(
       baseOrigin: `https://${token.domain}`,
       changedFiles: input.changedFiles.join("\n"),
       status: "queued",
+      source: origin.source,
+      installationId: origin.installationId,
       overrideUsed: input.override,
       createdAt: now.toISOString(),
     })
@@ -138,7 +160,7 @@ export async function createCheck(
       await recordAudit({
         organizationId: token.organizationId,
         projectId: token.projectId,
-        actor: { userId: token.tokenId, scheduled: true },
+        actor: { userId: token.tokenId ?? "github-app", scheduled: true },
         action: "seo_check.overridden",
         targetType: "pull_request",
         targetId: `${input.repository}#${input.pullRequest ?? "?"}`,

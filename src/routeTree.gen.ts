@@ -68,6 +68,7 @@ import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$proj
 import { Route as ApiCiV1ChecksRouteImport } from './routes/api/ci/v1/checks'
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
+import { Route as ApiGithubAppWebhookRouteImport } from './routes/api/github/app/webhook'
 import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/callback'
 import { Route as ApiInternalBillingReconcileRouteImport } from './routes/api/internal/billing/reconcile'
 import { Route as ApiInternalGrowthDueRouteImport } from './routes/api/internal/growth/due'
@@ -395,6 +396,11 @@ const ApiGithubAppSetupRoute = ApiGithubAppSetupRouteImport.update({
   path: '/api/github/app/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGithubAppWebhookRoute = ApiGithubAppWebhookRouteImport.update({
+  id: '/api/github/app/webhook',
+  path: '/api/github/app/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGscOauthCallbackRoute = ApiGscOauthCallbackRouteImport.update({
   id: '/api/gsc/oauth/callback',
   path: '/api/gsc/oauth/callback',
@@ -603,6 +609,7 @@ export interface FileRoutesByFullPath {
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
@@ -682,6 +689,7 @@ export interface FileRoutesByTo {
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
@@ -770,6 +778,7 @@ export interface FileRoutesById {
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
   '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
@@ -856,6 +865,7 @@ export interface FileRouteTypes {
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
     | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
@@ -935,6 +945,7 @@ export interface FileRouteTypes {
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
     | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
@@ -1022,6 +1033,7 @@ export interface FileRouteTypes {
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
     | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
@@ -1079,6 +1091,7 @@ export interface RootRouteChildren {
   ApiCiV1ChecksRoute: typeof ApiCiV1ChecksRouteWithChildren
   ApiGa4OauthCallbackRoute: typeof ApiGa4OauthCallbackRoute
   ApiGithubAppSetupRoute: typeof ApiGithubAppSetupRoute
+  ApiGithubAppWebhookRoute: typeof ApiGithubAppWebhookRoute
   ApiGscOauthCallbackRoute: typeof ApiGscOauthCallbackRoute
   ApiInternalBillingReconcileRoute: typeof ApiInternalBillingReconcileRoute
   ApiInternalGrowthDueRoute: typeof ApiInternalGrowthDueRoute
@@ -1501,6 +1514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGithubAppSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/github/app/webhook': {
+      id: '/api/github/app/webhook'
+      path: '/api/github/app/webhook'
+      fullPath: '/api/github/app/webhook'
+      preLoaderRoute: typeof ApiGithubAppWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gsc/oauth/callback': {
       id: '/api/gsc/oauth/callback'
       path: '/api/gsc/oauth/callback'
@@ -1919,6 +1939,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCiV1ChecksRoute: ApiCiV1ChecksRouteWithChildren,
   ApiGa4OauthCallbackRoute: ApiGa4OauthCallbackRoute,
   ApiGithubAppSetupRoute: ApiGithubAppSetupRoute,
+  ApiGithubAppWebhookRoute: ApiGithubAppWebhookRoute,
   ApiGscOauthCallbackRoute: ApiGscOauthCallbackRoute,
   ApiInternalBillingReconcileRoute: ApiInternalBillingReconcileRoute,
   ApiInternalGrowthDueRoute: ApiInternalGrowthDueRoute,
