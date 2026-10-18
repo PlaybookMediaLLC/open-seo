@@ -119,16 +119,17 @@ const input = (projectId: string) => ({
 it("refuses a small group with the gap and creates nothing", async () => {
   const { projectId, context } = await project();
   mocks.performance.mockResolvedValue(rows(9));
-  expect(await SplitTestService.create(context, input(projectId))).toEqual({
+  const result = await SplitTestService.create(context, input(projectId));
+  expect(result).toMatchObject({
     created: false,
     failures: [
       "9 pages have a click in the 56-day baseline. A test needs at least 30, so 21 more.",
     ],
-    // The refusal names the MDE too (10, phase 1a).
-    summary: expect.stringMatching(
-      /^This group can detect a change of \d+% or more/,
-    ),
   });
+  // The refusal names the MDE too (10, phase 1a).
+  expect(result.summary).toMatch(
+    /^This group can detect a change of \d+% or more/,
+  );
   expect(
     await db
       .select()
