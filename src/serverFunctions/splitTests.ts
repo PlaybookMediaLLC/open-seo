@@ -9,6 +9,7 @@ import {
   endSplitTestSchema,
   splitTestEndSchema,
   openSplitTestPullSchema,
+  previewSplitTestPullSchema,
   splitTestProjectSchema,
   splitTestSchema,
 } from "@/types/schemas/splitTests";
@@ -43,7 +44,7 @@ export const refreshSplitTestFn = createServerFn({ method: "POST" })
 // RFC-0011 5.4: the pull request, its check and the deployment.
 export const previewSplitTestPull = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
-  .validator(splitTestSchema)
+  .validator(previewSplitTestPullSchema)
   .handler(({ context, data }) =>
     pulls.preview(context, { ...data, projectId: context.projectId }),
   );

@@ -151,6 +151,32 @@ it("opens the reviewed files as a pull request and records the approval", async 
   ).toEqual([{ action: "split_test.pr_opened" }]);
 });
 
+it("drafts the template edit when asked and writes it in the same pull request", async () => {
+  const { ids, context } = await seededTest("eligible");
+  github.readFile.mockResolvedValue({
+    source: `export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  return { title: "Slack integration for teams" };
+}
+`,
+    blobSha: "e".repeat(40),
+  });
+  const draft = { kind: "suffix" as const, text: " | Acme" };
+  const preview = await SplitTestPullService.preview(context, {
+    ...ids,
+    draft,
+  });
+  expect(preview.problems).toEqual([]);
+  expect(preview.body).toContain("Relay drafted the template edit");
+  await SplitTestPullService.open(context, {
+    ...ids,
+    draft,
+    hash: preview.hash,
+  });
+  const [template] = github.updateFile.mock.calls.at(-1) ?? [];
+  expect(template?.path).toBe(TEMPLATE);
+});
+
 it("refuses files that changed since the review", async () => {
   const { ids, context } = await seededTest("eligible");
   await expect(
