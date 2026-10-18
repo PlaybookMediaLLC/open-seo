@@ -109,6 +109,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 2. The fix passes when the cluster's rule no longer fails on those pages.
 3. Show a trend per project: serious and critical violations per audit, and clusters fixed.
 
+**As built (part D).** Merging a fix and confirming its deployment works as for any tracked change (RFC-0006). The experiment page of an accessibility fix has an **Accessibility fix check** section. After the deployment is confirmed, the person starts the check, so the browser time is never spent before the change is live. Relay takes at most 10 pages of the project's audit where the cluster was found, in URL order, and runs the pinned axe-core on each, five at a time. A page passes when the cluster's rule does not fail on it at all. This is stricter than the cluster key: CSS module class names change between builds, so a changed key does not prove a fix. A page the browser cannot check is "not checked", never passed. Each check and its pages are stored, and the newest check shows on the page. Browser time has its own hold and settlement, like the audit step, and a lease allows one check of a fix at a time. The RFC-0005 live signal now records a match only when the change has a title or description to compare: a page text, attribute or indexing change matched any readable page before. Those changes confirm their deployment by a person.
+
 ### 5.6 Wording rules
 
 1. Always show: "Automated checks find only some accessibility issues. Manual testing with assistive technology is still needed."
@@ -148,7 +150,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 - [x] `accessibility_issue` opportunities with the priority inputs.
 - [x] `jsx_attribute` change kind with element matching tests (literal `src`, imported image, spread rejection, multiple matches).
 - [x] Alt text and `lang` fixes, including the decorative choice.
-- [ ] Live verification after deploy.
+- [x] Live verification after deploy.
 - [x] Wording rules enforced (test that no UI string contains "compliant").
 - [x] `content/docs/accessibility.mdx` with the limits stated first.
 

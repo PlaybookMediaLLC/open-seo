@@ -666,6 +666,13 @@
       "when": 1792334122545,
       "tag": "0094_acoustic_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "6",
+      "when": 1792342528049,
+      "tag": "0095_right_captain_cross",
+      "breakpoints": true
     }
   ]
 }

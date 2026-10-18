@@ -24,6 +24,7 @@ import { ProposalDraftService } from "@/server/features/publishing/ProposalDraft
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
 
+import { accessibilityCalls } from "./tenancy-test-calls-accessibility";
 import { conversionCalls } from "./tenancy-test-calls-conversion";
 
 // RFC-0007: every growth service function, called by one organization with
@@ -321,6 +322,7 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
     },
     ...splitTestCalls(projectId, ctx),
     ...conversionCalls(projectId, ctx),
+    ...accessibilityCalls(projectId, experimentId, ctx),
   };
 }
 

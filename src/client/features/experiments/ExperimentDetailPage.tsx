@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { AccessibilityFixCheck } from "@/client/features/accessibility/AccessibilityFixCheck";
 import { safeHttpUrl } from "@/shared/safe-url";
 import { useQuery } from "@tanstack/react-query";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
@@ -126,6 +127,14 @@ export function ExperimentDetailPage({
           connected={detail.connected}
           githubConnected={detail.githubConnected}
         />
+        {publishing.proposal.changeKind === "jsx_attribute" && (
+          <AccessibilityFixCheck
+            projectId={projectId}
+            experimentId={experiment.id}
+            deployed={Boolean(experiment.deployedAt)}
+            canManage={detail.canManage}
+          />
+        )}
         {experiment.deployedAt && (
           <AutoRefreshToggle
             projectId={projectId}
