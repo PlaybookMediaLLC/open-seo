@@ -204,6 +204,7 @@ export const {
   opportunityUrls,
   opportunityGa4Evidence,
   projectBrandTerms,
+  projectConversionEvents,
   auditPageInlinks,
   opportunityAuditEvidence,
   opportunityInspectionEvidence,

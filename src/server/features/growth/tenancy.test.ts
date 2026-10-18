@@ -26,6 +26,7 @@ import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSe
 import { SplitTestEndService } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
+import { ConversionGateService } from "@/server/features/conversion/ConversionGateService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -144,6 +145,7 @@ const services: Record<string, Record<string, unknown>> = {
   SplitTestService,
   SplitTestPullService,
   SplitTestEndService,
+  ConversionGateService,
 };
 
 async function growthRowCount() {

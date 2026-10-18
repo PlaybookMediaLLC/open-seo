@@ -89,6 +89,7 @@ import { Route as AppPProjectIdReportsTemplatesRouteImport } from './routes/_app
 import { Route as AppPProjectIdSettingsIndexRouteImport } from './routes/_app/p/$projectId/settings/index'
 import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_app/p/$projectId/settings/automation'
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
+import { Route as AppPProjectIdSettingsConversionRouteImport } from './routes/_app/p/$projectId/settings/conversion'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
 import { Route as AppPProjectIdSettingsSeoChecksRouteImport } from './routes/_app/p/$projectId/settings/seo-checks'
 import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
@@ -518,6 +519,12 @@ const AppPProjectIdSettingsContextRoute =
     path: '/context',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsConversionRoute =
+  AppPProjectIdSettingsConversionRouteImport.update({
+    id: '/conversion',
+    path: '/conversion',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdSettingsIntegrationsRoute =
   AppPProjectIdSettingsIntegrationsRouteImport.update({
     id: '/integrations',
@@ -631,6 +638,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
+  '/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
@@ -712,6 +720,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
+  '/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
@@ -802,6 +811,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
   '/_app/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
+  '/_app/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/_app/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
@@ -890,6 +900,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/reports/templates'
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
+    | '/p/$projectId/settings/conversion'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
@@ -971,6 +982,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/reports/templates'
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
+    | '/p/$projectId/settings/conversion'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
@@ -1060,6 +1072,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/reports/templates'
     | '/_app/p/$projectId/settings/automation'
     | '/_app/p/$projectId/settings/context'
+    | '/_app/p/$projectId/settings/conversion'
     | '/_app/p/$projectId/settings/integrations'
     | '/_app/p/$projectId/settings/seo-checks'
     | '/_app/p/$projectId/settings/spending'
@@ -1674,6 +1687,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsContextRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/conversion': {
+      id: '/_app/p/$projectId/settings/conversion'
+      path: '/conversion'
+      fullPath: '/p/$projectId/settings/conversion'
+      preLoaderRoute: typeof AppPProjectIdSettingsConversionRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/settings/integrations': {
       id: '/_app/p/$projectId/settings/integrations'
       path: '/integrations'
@@ -1782,6 +1802,7 @@ const AppPProjectIdRankTrackingRouteWithChildren =
 interface AppPProjectIdSettingsRouteChildren {
   AppPProjectIdSettingsAutomationRoute: typeof AppPProjectIdSettingsAutomationRoute
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
+  AppPProjectIdSettingsConversionRoute: typeof AppPProjectIdSettingsConversionRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
   AppPProjectIdSettingsSeoChecksRoute: typeof AppPProjectIdSettingsSeoChecksRoute
   AppPProjectIdSettingsSpendingRoute: typeof AppPProjectIdSettingsSpendingRoute
@@ -1791,6 +1812,7 @@ interface AppPProjectIdSettingsRouteChildren {
 const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
   AppPProjectIdSettingsAutomationRoute: AppPProjectIdSettingsAutomationRoute,
   AppPProjectIdSettingsContextRoute: AppPProjectIdSettingsContextRoute,
+  AppPProjectIdSettingsConversionRoute: AppPProjectIdSettingsConversionRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,
   AppPProjectIdSettingsSeoChecksRoute: AppPProjectIdSettingsSeoChecksRoute,

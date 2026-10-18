@@ -58,8 +58,9 @@ import type { Plugin } from "vite";
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
  *   (src/client/features/automation/AutomationSettings.tsx), the Spending
- *   tab (src/client/features/spend/ProjectSpending.tsx) and the SEO checks
- *   tab (src/client/features/seo-checks/SeoChecksSettings.tsx).
+ *   tab (src/client/features/spend/ProjectSpending.tsx), the SEO checks
+ *   tab (src/client/features/seo-checks/SeoChecksSettings.tsx) and the
+ *   Conversion tab (src/client/features/conversion/ConversionSettings.tsx).
  * - src/routes/_app/billing.tsx: mounts the spending limit card
  *   (src/client/features/spend/SpendLimitsCard.tsx).
  * - src/routes/_app/route.tsx: shows the spending limit banner above the
