@@ -13,6 +13,7 @@ import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type { CreateCheckInput } from "@/types/schemas/seoChecks";
 import type { CiTokenContext } from "./ciTokens";
 import { isAllowedPreviewHost } from "./previewHosts";
+import { startCheckWorkflow } from "./seoCheckRun";
 
 // RFC-0010 5.10: the API that the GitHub Action calls with a CI token.
 const FREE_RUNS_PER_MONTH = 30;
@@ -130,6 +131,7 @@ export async function createCheck(
     .select({ id: ciCheckRuns.id, status: ciCheckRuns.status })
     .from(ciCheckRuns)
     .where(scope);
+  if (run?.id === id) await startCheckWorkflow(id);
   return { status: 202, body: run ?? { id, status: "queued" } };
 }
 

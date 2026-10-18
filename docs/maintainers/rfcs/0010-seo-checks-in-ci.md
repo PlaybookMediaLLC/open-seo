@@ -1,6 +1,6 @@
 # RFC-0010: SEO checks on pull requests
 
-- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) built
+- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) and part B (the runner and the rules) built
 - **Decision (owner, 2026-10-18):** run each check in a Cloudflare Workflow, the engine of site audits, instead of a Trigger.dev task, so checks work before the RFC-0008 Trigger.dev account exists. Create the public action repository `PlaybookMediaLLC/relay-seo-check`.
 - **Date:** 2026-10-15
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
@@ -134,6 +134,15 @@ Check at most 100 URLs per run. Record why each URL was chosen.
 3. Mark pages with 1,000 or more impressions, and `money` key pages, as "High-traffic page".
 4. Raise `internal-links-dropped` and `content-shrunk` to blocking on high-traffic pages. An owner can turn this off.
 
+**As built (part B).**
+
+1. `SeoCheckWorkflow` runs a plan step, one step per 10 URLs, and a finish step. The Workflow instance id is the run id, and the unique run per commit and preview is the idempotency key.
+2. The plan step keeps paths, traffic and robots booleans in durable state. Each batch step loads the protected-preview access itself, so secrets never enter Workflow state.
+3. A page fetch does not follow redirects: a redirect is itself a finding, and the rules need production's 200. Each URL costs at most two page requests. The fetcher reuses the site audit's URL policy, 2 MB reader and host-bound access headers.
+4. Traffic comes from one free Search Console request per run (28 days, by page). The stored-evidence shortcut of 5.3 was not needed.
+5. The sitemap sample skips pages that another reason already chose, so it always adds up to 10 new pages.
+6. Robots rules use `robots-parser` with the Googlebot user agent. Sitemaps reuse the site audit's discovery, capped at 1,000 URLs per host.
+
 ### 5.8 Overrides and ignore rules
 
 1. A pull request label `relay-seo-override` turns blocking findings into a passing run. The action reports the label, and Relay writes an RFC-0009 audit event with the actor and the pull request.
@@ -218,13 +227,13 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 - [x] Check API with token, host, quota and rate-limit checks (one test each).
 - [x] Test: a token from project A cannot read or create runs for project B.
 - [x] Test: a preview host outside the allowlist is refused before any fetch.
-- [ ] URL selection with tests for each reason, the dynamic-segment sitemap match and the 100-URL cap.
-- [ ] Fetcher with the URL policy, redirect limit, size limit, timeouts and protected-preview headers (tests).
-- [ ] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.
-- [ ] One test per rule, positive and negative.
-- [ ] Traffic weighting and severity raise tests.
+- [x] URL selection with tests for each reason, the dynamic-segment sitemap match and the 100-URL cap.
+- [x] Fetcher with the URL policy, redirect limit, size limit, timeouts and protected-preview headers (tests).
+- [x] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.
+- [x] One test per rule, positive and negative.
+- [x] Traffic weighting and severity raise tests.
 - [ ] Override label writes an audit event (test).
-- [ ] `seo-check` Trigger.dev task with the idempotency key.
+- [x] `seo-check` Trigger.dev task with the idempotency key. Built as `SeoCheckWorkflow` (owner decision); the run id is the instance id.
 - [ ] Composite action repository with a tagged `v1` release and a README.
 - [ ] SEO checks tab with tokens, hosts, access, ignores and history.
 - [ ] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
