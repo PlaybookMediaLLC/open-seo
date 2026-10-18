@@ -1,6 +1,11 @@
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { growthNotificationReads, growthNotifications } from "@/db/schema";
+import {
+  growthNotificationReads,
+  growthNotifications,
+  member,
+  user,
+} from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { EmailDigestService, sendDigests } from "./emailDigest";
 
@@ -32,8 +37,8 @@ beforeAll(async () => {
   await database.prepare();
   if (!database.isPostgres)
     await database.client.executeMultiple(`
-      CREATE TABLE user (id TEXT PRIMARY KEY, name TEXT, email TEXT NOT NULL);
-      CREATE TABLE member (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, role TEXT NOT NULL, created_at TEXT);
+      CREATE TABLE "user" (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, email_verified INTEGER NOT NULL, image TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, analytics_opted_out INTEGER, last_active_organization_id TEXT);
+      CREATE TABLE member (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, role TEXT NOT NULL, created_at INTEGER NOT NULL);
     `);
 });
 afterAll(() => database.close());
@@ -45,18 +50,20 @@ async function memberWithNotifications(digest: "daily" | "weekly") {
   const { run } = await setupRun(database.client, database.slugPrefix);
   const organizationId = run.projectId;
   const userId = crypto.randomUUID();
-  await database.client.execute({
-    sql: "INSERT INTO user (id, name, email) VALUES (?, 'Owner', ?)",
-    args: [userId, `${userId}@example.com`],
+  await db.insert(user).values({
+    id: userId,
+    name: "Owner",
+    email: `${userId}@example.com`,
+    emailVerified: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
-  await database.client.execute({
-    sql: "INSERT INTO member (id, organization_id, user_id, role, created_at) VALUES (?, ?, ?, 'owner', ?)",
-    args: [
-      crypto.randomUUID(),
-      organizationId,
-      userId,
-      new Date().toISOString(),
-    ],
+  await db.insert(member).values({
+    id: crypto.randomUUID(),
+    organizationId,
+    userId,
+    role: "owner",
+    createdAt: new Date(),
   });
   const viewer = { organizationId, userId };
   await EmailDigestService.setDigest(viewer, digest);
