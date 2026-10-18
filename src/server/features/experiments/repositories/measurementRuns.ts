@@ -24,11 +24,16 @@ import {
   lockProperty,
   type ExperimentScope,
 } from "./experimentSql";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 
 export async function startRun(input: {
   run: MeasurementRun;
   claimToken: string;
   organizationId: string;
+  audit?: AuditInput;
 }): Promise<boolean> {
   const { run } = input;
   if (run.status !== "running") return false;
@@ -140,6 +145,8 @@ export async function startRun(input: {
             accepted,
           ),
         ),
+      // RFC-0009: services pass the event; it lands only with the run.
+      ...(input.audit ? [auditInsert(tx, input.audit, accepted)] : []),
     ];
   });
   return runAccepted(run.projectId, run.experimentId, run.id, admissionId);

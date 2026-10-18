@@ -52,6 +52,10 @@ vi.mock("@/server/lib/posthog", () => ({
 vi.mock("@/server/billing/autumn", () => ({
   autumn: { check: mocks.autumnCheck },
 }));
+// playbook-seam: RFC-0009 spend limits have their own tests.
+vi.mock("@/server/billing/spendAdmission", () => ({
+  assertSpendRoom: async () => undefined,
+}));
 vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: mocks.isHostedServerAuthMode,
 }));

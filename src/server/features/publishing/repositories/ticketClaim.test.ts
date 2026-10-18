@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { db } from "@/db";
+import { auditEvents } from "@/db/schema";
 import type { OpportunityTicket } from "@/types/schemas/publishing";
 import { PublishingRepository as repo } from "./PublishingRepository";
 import { fixture } from "./publishingTestFixtures";
@@ -29,10 +32,26 @@ it("keeps one ticket per approved text, and records one issue for it", async () 
     createdBy: "reviewer",
     createdAt: new Date().toISOString(),
   });
-  const first = await repo.claimTicket({ ...input, ticket: ticket("t-1") });
-  const second = await repo.claimTicket({ ...input, ticket: ticket("t-2") });
-  expect(first?.id).toBe("t-1");
-  expect(second?.id).toBe("t-1");
+  const audit = {
+    organizationId: input.organizationId,
+    projectId: input.projectId,
+    actor: { userId: "reviewer" },
+    action: "ticket.created",
+    targetType: "opportunity",
+    targetId: input.proposal.opportunityId,
+    summary: "Created a GitHub issue",
+  } as const;
+  const claim = (id: string) =>
+    repo.claimTicket({ ...input, audit, ticket: ticket(id) });
+  expect((await claim("t-1"))?.id).toBe("t-1");
+  expect((await claim("t-2"))?.id).toBe("t-1");
+  // RFC-0009: the repeat returned the first ticket and wrote no event.
+  expect(
+    await db
+      .select({ action: auditEvents.action })
+      .from(auditEvents)
+      .where(eq(auditEvents.projectId, input.projectId)),
+  ).toEqual([{ action: "ticket.created" }]);
   const issue = (issueNumber: number) =>
     repo.completeTicket({
       ...input,

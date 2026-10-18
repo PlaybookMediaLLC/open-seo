@@ -17,6 +17,10 @@ vi.mock("@/server/features/experiments/MeasurementService", () => ({
 vi.mock("../repositories/GrowthJobRepository", () => ({
   GrowthJobRepository: { notify: mocks.notify },
 }));
+// Split tests have their own tests (splitTestRefresh.test.ts).
+vi.mock("@/server/features/split-tests/splitTestRefresh", () => ({
+  refreshProjectSplitTests: async () => "Refreshed 0 split tests.",
+}));
 
 const now = new Date("2026-10-17T12:00:00.000Z");
 const experiment = (id: string, overrides: object = {}) => ({
@@ -29,6 +33,7 @@ const experiment = (id: string, overrides: object = {}) => ({
 });
 const context = {
   projectId: "project",
+  windowKey: "2026-10-17",
   organizationId: "org",
   actor: { organizationId: "org", userId: "owner", role: "owner" },
   now,
@@ -58,7 +63,8 @@ it("refreshes only due experiments, and announces a final result once", async ()
     },
   });
   expect(await measurementRefreshJob(context)).toEqual({
-    summary: "Refreshed 1 of 3 experiments; 1 final results.",
+    summary:
+      "Refreshed 1 of 3 experiments; 1 final results. Refreshed 0 split tests.",
   });
   expect(mocks.refresh).toHaveBeenCalledTimes(1);
   expect(mocks.refresh).toHaveBeenCalledWith(context.actor, {

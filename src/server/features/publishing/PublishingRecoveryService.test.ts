@@ -286,7 +286,8 @@ describe("PublishingRecoveryService", () => {
     });
     const result = await recover();
     expect(result.ok).toBe(false);
-    expect(result.message).toContain("BETTER_AUTH_SECRET");
+    // RFC-0009 5.7: a token that the key cannot open needs a reconnect.
+    expect(result.message).toBe("Reconnect the repository.");
     expect(mocks.client).not.toHaveBeenCalled();
     expect(mocks.recover).not.toHaveBeenCalled();
   });

@@ -179,6 +179,15 @@ async function prepare(
             proposal,
             claimToken,
             organizationId: context.organizationId,
+            audit: {
+              organizationId: context.organizationId,
+              projectId: proposal.projectId,
+              actor: context,
+              action: "proposal.prepared",
+              targetType: "proposal",
+              targetId: proposal.id,
+              summary: `Prepared a change for ${proposal.targetUrl}`,
+            },
           }))
         )
           throw new AppError("CONFLICT");

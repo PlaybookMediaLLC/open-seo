@@ -386,6 +386,76 @@
       "when": 1792260919210,
       "tag": "0054_lyrical_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1792266011214,
+      "tag": "0055_first_vulcan",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1792269155231,
+      "tag": "0056_wide_quasar",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1792271423926,
+      "tag": "0057_curious_valkyrie",
+      "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1792286001443,
+      "tag": "0058_chunky_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1792289814174,
+      "tag": "0059_quiet_exiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1792308188859,
+      "tag": "0060_soft_piledriver",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1792309392339,
+      "tag": "0061_minor_ricochet",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1792310011846,
+      "tag": "0062_cool_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1792310804610,
+      "tag": "0063_young_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1792312212943,
+      "tag": "0064_icy_mother_askani",
+      "breakpoints": true
     }
   ]
 }

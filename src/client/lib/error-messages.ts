@@ -1,6 +1,7 @@
 import { FREE_MAX_AUDIT_PAGES } from "@/shared/audit-limits";
 import { isErrorCode, type ErrorCode } from "@/shared/error-codes";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { SPEND_LIMIT_MESSAGE } from "@/shared/spendLimits"; // playbook-seam
 
 /**
  * Copy for an error we did not expect. Hosted users cannot read our logs, so
@@ -18,6 +19,7 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
     "An active hosted subscription is required before you can use OpenSEO.",
   INSUFFICIENT_CREDITS:
     "You don't have enough credits for this. Upgrade your plan or buy more credits to keep going.",
+  SPEND_LIMIT_REACHED: SPEND_LIMIT_MESSAGE, // playbook-seam
   AUDIT_RENDERING_UNAVAILABLE:
     "JavaScript rendering is not configured on this deployment. Ask your administrator to enable a renderer.",
   FORBIDDEN: "You do not have access to this resource.",

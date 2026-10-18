@@ -5,17 +5,22 @@ import { ProjectRepository } from "@/server/features/projects/repositories/Proje
 import { AppError } from "@/server/lib/errors";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type { GrowthRunInput } from "@/types/schemas/growthJobs";
+import { auditStarter } from "./jobs/auditFollowup";
 import { GROWTH_JOBS } from "./growthJobs";
 import {
   GrowthJobRepository as repo,
   type LogLine,
 } from "./repositories/GrowthJobRepository";
+import { deleteAuditEventsBefore } from "@/server/features/activity/ActivityService";
+import { deleteCheckRunsBefore } from "@/server/features/seo-checks/SeoCheckSettingsService";
 
 // RFC-0008 5.1: the Worker side of scheduled growth jobs. Trigger.dev asks
 // what is due, then asks the Worker to run each item; the Worker does all
 // data work with its bindings and keeps the history.
 const DUE_LIMIT = 200;
 const RETENTION_DAYS = 180;
+const AUDIT_RETENTION_DAYS = 365;
+const SEO_CHECK_RETENTION_DAYS = 90;
 const DAY_MS = 86_400_000;
 type Schedule = NonNullable<Awaited<ReturnType<typeof repo.getSchedule>>>;
 type RunResult = {
@@ -148,15 +153,22 @@ async function run(
     return { status: 200, body: { status: "skipped", summary: reason } };
   };
 
-  // RFC-0008 5.7: the job uses a real member's current permissions.
-  const ownerId = schedule?.ownerUserId;
+  // RFC-0008 5.7: the job uses a real member's current permissions. An
+  // audit follow-up uses the member who started the audit.
+  const ownerId =
+    schedule?.ownerUserId ??
+    (kind === "audit_followup"
+      ? await auditStarter(projectId, windowKey)
+      : null);
   const membership = ownerId
     ? await AuthRepository.getMembership(ownerId, project.organizationId)
     : null;
+  // Any member can start an audit, so its follow-up needs membership only.
   if (
     !ownerId ||
     !membership ||
-    !hasOrgPermission(membership.role, { integration: ["manage"] })
+    (kind !== "audit_followup" &&
+      !hasOrgPermission(membership.role, { integration: ["manage"] }))
   ) {
     await notifyFailure(
       "A scheduled job was skipped",
@@ -180,11 +192,13 @@ async function run(
   try {
     const { summary } = await job({
       projectId,
+      windowKey,
       organizationId: project.organizationId,
       actor: {
         organizationId: project.organizationId,
         userId: ownerId,
         role: membership.role,
+        scheduled: true,
       },
       now,
       log: (level, message) =>
@@ -211,9 +225,18 @@ async function run(
 }
 
 async function retention(now = new Date()) {
-  return repo.deleteBefore(
+  const deleted = await repo.deleteBefore(
     new Date(now.getTime() - RETENTION_DAYS * DAY_MS).toISOString(),
   );
+  // RFC-0009 5.6: audit events stay for one year.
+  const auditEvents = await deleteAuditEventsBefore(
+    new Date(now.getTime() - AUDIT_RETENTION_DAYS * DAY_MS).toISOString(),
+  );
+  // RFC-0010 5.9: SEO check runs stay for 90 days.
+  const seoCheckRuns = await deleteCheckRunsBefore(
+    new Date(now.getTime() - SEO_CHECK_RETENTION_DAYS * DAY_MS).toISOString(),
+  );
+  return { ...deleted, auditEvents, seoCheckRuns };
 }
 
 export const GrowthJobService = { due, run, retention };

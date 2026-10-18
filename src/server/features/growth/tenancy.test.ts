@@ -12,11 +12,20 @@ import * as investigationsSchema from "@/db/opportunity-investigations.schema";
 import * as signalsSchema from "@/db/opportunity-signals.schema";
 import * as draftsSchema from "@/db/proposal-drafts.schema";
 import * as publishingSchema from "@/db/publishing.schema";
+import * as spendSchema from "@/db/spend.schema";
+import * as seoChecksSchema from "@/db/seo-checks.schema";
+import * as splitTestsSchema from "@/db/split-tests.schema";
 import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { MeasurementSettingsService } from "@/server/features/experiments/MeasurementSettingsService";
 import { RevertService } from "@/server/features/experiments/RevertService";
+import { AutomationService } from "./AutomationService";
+import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
+import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestEndService } from "@/server/features/split-tests/SplitTestEndService";
+import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
+import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -47,8 +56,12 @@ vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 
-// Organization-level by design: an App installation serves many projects.
-const ORGANIZATION_TABLES = new Set(["github_app_installations"]);
+// Not project-scoped by design: an App installation serves many projects,
+// and a webhook delivery id is claimed before its project is known.
+const UNSCOPED_TABLES = new Set([
+  "github_app_installations",
+  "ci_webhook_deliveries",
+]);
 const tablesOf = (...schemas: object[]) =>
   schemas.flatMap((schema) =>
     Object.values(schema).filter((value) => value instanceof SQLiteTable),
@@ -64,6 +77,9 @@ const growthTables = tablesOf(
   experimentsSchema,
   measurementGa4Schema,
   growthJobsSchema,
+  spendSchema,
+  seoChecksSchema,
+  splitTestsSchema,
 );
 
 let seed: Awaited<ReturnType<typeof deployed>>;
@@ -119,6 +135,13 @@ const services: Record<string, Record<string, unknown>> = {
   MeasurementSettingsService,
   DeploymentSignalService,
   RevertService,
+  AutomationService,
+  // The organization view has no project boundary; it reads only its own.
+  SpendLimitService: { ...SpendLimitService, organization: undefined },
+  SeoCheckSettingsService,
+  SplitTestService,
+  SplitTestPullService,
+  SplitTestEndService,
 };
 
 async function growthRowCount() {
@@ -160,7 +183,7 @@ describe(`Growth tenancy real ${database.isPostgres ? "Postgres" : "SQLite"}`, (
       .map((table) => getTableConfig(table))
       .filter(
         (config) =>
-          !ORGANIZATION_TABLES.has(config.name) &&
+          !UNSCOPED_TABLES.has(config.name) &&
           !config.columns.some((column) => column.name === "project_id"),
       )
       .map((config) => config.name);

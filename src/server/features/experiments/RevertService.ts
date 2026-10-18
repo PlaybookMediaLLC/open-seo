@@ -186,6 +186,15 @@ async function prepare(
             proposal,
             claimToken,
             organizationId: context.organizationId,
+            audit: {
+              organizationId: context.organizationId,
+              projectId: proposal.projectId,
+              actor: context,
+              action: "proposal.revert_prepared",
+              targetType: "proposal",
+              targetId: proposal.id,
+              summary: `Prepared a revert for ${proposal.targetUrl}`,
+            },
           }))
         )
           throw new AppError("CONFLICT");

@@ -32,6 +32,7 @@ const connection: PublishingConnectionRecord = {
   transport: "github_app",
   installationRef: "installation-1",
   encryptedToken: null,
+  tokenKeyVersion: 0,
   createdBy: "user-1",
   createdAt: new Date().toISOString(),
   revokedAt: null,
@@ -53,7 +54,10 @@ it("records a revoked installation and asks to reconnect", async () => {
     code: "CONFLICT",
     message: "Reconnect the GitHub App.",
   });
-  expect(mocks.revoke).toHaveBeenCalledWith("installation-1");
+  expect(mocks.revoke).toHaveBeenCalledWith(
+    "installation-1",
+    expect.objectContaining({ action: "github_app.revoked" }),
+  );
 });
 
 it("asks for a token for the connected repository only", async () => {

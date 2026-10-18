@@ -1,4 +1,4 @@
-import { symmetricEncrypt } from "better-auth/crypto";
+import { encryptToken } from "./tokenKeys";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { AppError } from "@/server/lib/errors";
 import {
@@ -58,10 +58,7 @@ async function connect(
           throw new AppError("FORBIDDEN");
         if (!(await client.getRef(input.baseBranch)))
           throw new AppError("NOT_FOUND");
-        const encryptedToken = await symmetricEncrypt({
-          key,
-          data: input.token,
-        });
+        const sealed = await encryptToken(input.token);
         signal.throwIfAborted();
         const saved = await PublishingRepository.replaceConnection({
           connection: {
@@ -75,13 +72,22 @@ async function connect(
             productionEnvironment: input.productionEnvironment,
             transport: "pat",
             installationRef: null,
-            encryptedToken,
+            ...sealed,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),
             revokedAt: null,
           },
           claimToken,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "publishing.connected",
+            targetType: "repository",
+            targetId: `${input.owner}/${input.repository}`,
+            summary: `Connected ${input.owner}/${input.repository} with a personal token`,
+          },
         });
         if (!saved) throw new AppError("CONFLICT");
         return {
@@ -107,6 +113,15 @@ async function disconnect(context: PublishingContext, projectId: string) {
           projectId,
           claimToken,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId,
+            actor: context,
+            action: "publishing.disconnected",
+            targetType: "project",
+            targetId: projectId,
+            summary: "Disconnected the GitHub repository",
+          },
         }))
       )
         throw new AppError("CONFLICT");

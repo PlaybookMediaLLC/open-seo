@@ -4,6 +4,12 @@ import { ExperimentService } from "@/server/features/experiments/ExperimentServi
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { MeasurementSettingsService } from "@/server/features/experiments/MeasurementSettingsService";
 import { RevertService } from "@/server/features/experiments/RevertService";
+import { AutomationService } from "@/server/features/growth/AutomationService";
+import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
+import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestEndService as splitEnds } from "@/server/features/split-tests/SplitTestEndService";
+import { SplitTestPullService as splitPulls } from "@/server/features/split-tests/SplitTestPullService";
+import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
@@ -269,6 +275,93 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           deployedAt: new Date().toISOString(),
           note: "Live.",
           confirmProductionDeployment: true,
+        }),
+    },
+    AutomationService: {
+      get: () => AutomationService.get(ctx, projectId),
+      save: () =>
+        AutomationService.save(ctx, {
+          projectId,
+          kind: "traffic_watch",
+          enabled: true,
+          interval: "daily",
+          hourUtc: 7,
+        }),
+      runLogs: () => AutomationService.runLogs(ctx, { projectId, runId: "x" }),
+    },
+    SpendLimitService: {
+      project: () => SpendLimitService.project(ctx, projectId),
+      save: () =>
+        SpendLimitService.save(ctx, { projectId, monthlyLimitCredits: 1 }),
+    },
+    SeoCheckSettingsService: {
+      get: () => seoChecks.get(ctx, projectId),
+      run: () => seoChecks.run(ctx, { projectId, runId: "x" }),
+      createToken: () => seoChecks.createToken(ctx, { projectId, name: "x" }),
+      revokeToken: () =>
+        seoChecks.revokeToken(ctx, { projectId, tokenId: "x" }),
+      addHost: () =>
+        seoChecks.addHost(ctx, { projectId, host: "a.example.com" }),
+      removeHost: () => seoChecks.removeHost(ctx, { projectId, hostId: "x" }),
+      setAccess: () => seoChecks.setAccess(ctx, { projectId, access: null }),
+      changeIgnore: () =>
+        seoChecks.changeIgnore(ctx, {
+          projectId,
+          add: { rule: "title-changed", pathPattern: "/*" },
+        }),
+      saveSettings: () =>
+        seoChecks.saveSettings(ctx, {
+          projectId,
+          raiseOnHighTraffic: false,
+          checkPreviewRobotsHeader: true,
+          renderedMode: false,
+        }),
+    },
+    ...splitTestCalls(projectId, ctx),
+  };
+}
+
+/** RFC-0011: the split test services. */
+function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
+  return {
+    SplitTestService: {
+      list: () => splitTests.list(ctx, projectId),
+      get: () => splitTests.get(ctx, { projectId, testId: "x" }),
+      refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),
+      csv: () => splitTests.csv(ctx, { projectId, testId: "x" }),
+      backtest: () => splitTests.backtest(ctx, { projectId, testId: "x" }),
+      backtestPattern: () =>
+        splitTests.backtestPattern(ctx, { projectId, pagePattern: "^/x$" }),
+      create: () =>
+        splitTests.create(ctx, {
+          projectId,
+          name: "x",
+          hypothesis: "x",
+          field: "title",
+          pagePattern: "^/x$",
+        }),
+    },
+    SplitTestPullService: {
+      preview: () => splitPulls.preview(ctx, { projectId, testId: "x" }),
+      open: () =>
+        splitPulls.open(ctx, { projectId, testId: "x", hash: "0".repeat(64) }),
+      check: () => splitPulls.check(ctx, { projectId, testId: "x" }),
+      confirmDeployment: () =>
+        splitPulls.confirmDeployment(ctx, {
+          projectId,
+          testId: "x",
+          attest: true,
+        }),
+    },
+    SplitTestEndService: {
+      preview: () =>
+        splitEnds.preview(ctx, { projectId, testId: "x", action: "remove" }),
+      end: () =>
+        splitEnds.end(ctx, {
+          projectId,
+          testId: "x",
+          action: "remove",
+          hash: "0".repeat(64),
         }),
     },
   };

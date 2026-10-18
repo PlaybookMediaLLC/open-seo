@@ -127,12 +127,13 @@ export function createGithubWriter(
       branch: string;
       path: string;
       source: string;
-      blobSha: string;
+      /** The current blob; omitted to create a new file. */
+      blobSha?: string;
       message: string;
     }) {
       validateGithubBranch(branch);
       const parts = validateGithubPath(path);
-      validateGithubSha(blobSha);
+      if (blobSha !== undefined) validateGithubSha(blobSha);
       const bytes = new TextEncoder().encode(source);
       if (bytes.length > 32 * 1024 || !message || message.length > 1000)
         throw new AppError(
@@ -160,6 +161,33 @@ export function createGithubWriter(
           "GitHub file identity did not match.",
         );
       return { commitSha: value.commit.sha, blobSha: value.content.sha };
+    },
+    /** RFC-0011 5.7: removes a file the branch no longer needs. */
+    async deleteFile({
+      branch,
+      path,
+      blobSha,
+      message,
+    }: {
+      branch: string;
+      path: string;
+      blobSha: string;
+      message: string;
+    }) {
+      validateGithubBranch(branch);
+      const parts = validateGithubPath(path);
+      validateGithubSha(blobSha);
+      if (!message || message.length > 1000)
+        throw new AppError(
+          "VALIDATION_ERROR",
+          "GitHub commit message is invalid.",
+        );
+      const value = await request(
+        `/contents/${parts.map(encodeURIComponent).join("/")}`,
+        z.object({ commit: z.object({ sha: githubShaSchema }) }),
+        { method: "DELETE", body: { branch, message, sha: blobSha } },
+      );
+      return { commitSha: value.commit.sha };
     },
     async findPullRequest({
       headBranch,

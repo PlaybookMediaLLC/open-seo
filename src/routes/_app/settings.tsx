@@ -17,6 +17,9 @@ function SettingsLayout() {
     ...(isHostedClientAuthMode()
       ? [{ to: "/settings/organization" as const, label: "Organization" }]
       : []),
+    ...(isHostedClientAuthMode()
+      ? [{ to: "/settings/activity" as const, label: "Activity" }] // playbook-seam
+      : []),
   ];
 
   return (

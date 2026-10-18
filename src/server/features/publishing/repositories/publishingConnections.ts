@@ -1,8 +1,12 @@
-import { and, eq, getTableColumns, isNull } from "drizzle-orm";
+import { and, eq, exists, getTableColumns, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { publishingConnections } from "@/db/schema";
 import type { PublishingConnectionRecord } from "@/types/schemas/publishing";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 import {
   claimExists,
   lockClaim,
@@ -13,6 +17,34 @@ import {
 const { lastEventId: _lastEventId, ...connectionColumns } = getTableColumns(
   publishingConnections,
 );
+
+// RFC-0009: services pass the audit event; it lands only with the change.
+// Repository tests may leave it out.
+function connectionAudit(
+  tx: Parameters<Parameters<typeof runBatch>[0]>[0],
+  audit: AuditInput | undefined,
+  projectId: string,
+  lastEventId: string,
+) {
+  if (!audit) return [];
+  return [
+    auditInsert(
+      tx,
+      audit,
+      exists(
+        tx
+          .select({ id: publishingConnections.id })
+          .from(publishingConnections)
+          .where(
+            and(
+              eq(publishingConnections.projectId, projectId),
+              eq(publishingConnections.lastEventId, lastEventId),
+            ),
+          ),
+      ),
+    ),
+  ];
+}
 
 export async function getConnection(
   projectId: string,
@@ -51,6 +83,7 @@ export async function replaceConnection(input: {
   connection: PublishingConnectionRecord;
   claimToken: string;
   organizationId: string;
+  audit?: AuditInput;
 }): Promise<boolean> {
   const { connection } = input;
   if (
@@ -87,6 +120,7 @@ export async function replaceConnection(input: {
           claimExists(tx, scope),
         ),
       ),
+    ...connectionAudit(tx, input.audit, connection.projectId, lastEventId),
   ]);
   const [accepted] = await db
     .select({ id: publishingConnections.id })
@@ -101,7 +135,9 @@ export async function replaceConnection(input: {
   return Boolean(accepted);
 }
 
-export async function disconnect(input: ClaimScope): Promise<boolean> {
+export async function disconnect(
+  input: ClaimScope & { audit?: AuditInput },
+): Promise<boolean> {
   const lastEventId = crypto.randomUUID();
   await runBatch((tx) => [
     lockClaim(tx, input),
@@ -119,6 +155,7 @@ export async function disconnect(input: ClaimScope): Promise<boolean> {
           claimExists(tx, input),
         ),
       ),
+    ...connectionAudit(tx, input.audit, input.projectId, lastEventId),
   ]);
   const [accepted] = await db
     .select({ id: publishingConnections.id })
@@ -161,4 +198,31 @@ export async function setProductionEnvironment(
       ),
     );
   return Boolean(accepted);
+}
+
+/**
+ * RFC-0009 5.7: stores a token re-encrypted under the current key, only
+ * when the row still holds the ciphertext that was opened.
+ */
+export async function rewrapToken(input: {
+  projectId: string;
+  connectionId: string;
+  from: string;
+  encryptedToken: string;
+  tokenKeyVersion: number;
+}) {
+  await db
+    .update(publishingConnections)
+    .set({
+      encryptedToken: input.encryptedToken,
+      tokenKeyVersion: input.tokenKeyVersion,
+    })
+    .where(
+      and(
+        eq(publishingConnections.projectId, input.projectId),
+        eq(publishingConnections.id, input.connectionId),
+        eq(publishingConnections.encryptedToken, input.from),
+        isNull(publishingConnections.revokedAt),
+      ),
+    );
 }

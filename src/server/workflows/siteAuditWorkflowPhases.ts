@@ -30,6 +30,7 @@ import {
 } from "@/server/workflows/siteAuditWorkflowCrawl";
 import { pgStep } from "@/server/workflows/pgStep";
 import { saveKeyPageInlinksStep } from "@/server/features/opportunities/audit/saveKeyPageInlinks"; // playbook-seam
+import { queueAuditFollowup } from "@/server/features/growth/auditFollowup"; // playbook-seam
 import {
   DB_STEP,
   DISCOVERY_STEP,
@@ -413,6 +414,7 @@ async function finalizeAudit(args: {
       pagesCrawled: crawl.pagesCrawled,
       pagesTotal: crawl.pagesCrawled,
     });
+    await queueAuditFollowup(projectId, auditId); // playbook-seam
     await captureServerEvent({
       distinctId: billingCustomer.userId,
       event: "site_audit:complete",

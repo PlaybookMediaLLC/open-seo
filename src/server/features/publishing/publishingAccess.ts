@@ -1,5 +1,5 @@
-import { symmetricDecrypt } from "better-auth/crypto";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
+import { openToken } from "./tokenKeys";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
@@ -44,7 +44,11 @@ export async function publishingEncryptionKey(): Promise<string | null> {
 export function connectionSummary(
   row: PublishingConnectionRecord,
 ): PublishingConnection {
-  const { encryptedToken: _encryptedToken, ...summary } = row;
+  const {
+    encryptedToken: _encryptedToken,
+    tokenKeyVersion: _tokenKeyVersion,
+    ...summary
+  } = row;
   return summary;
 }
 
@@ -78,7 +82,15 @@ export async function connectedGithub(
         error instanceof AppError &&
         (error.code === "NOT_FOUND" || error.code === "FORBIDDEN")
       ) {
-        await PublishingRepository.revokeInstallation(installation.id);
+        await PublishingRepository.revokeInstallation(installation.id, {
+          organizationId: installation.organizationId,
+          projectId: connection.projectId,
+          actor: { userId: "github", scheduled: true },
+          action: "github_app.revoked",
+          targetType: "github_installation",
+          targetId: String(installation.installationId),
+          summary: `GitHub no longer grants the App access to ${installation.accountLogin}`,
+        });
         throw new AppError("CONFLICT", "Reconnect the GitHub App.");
       }
       throw error;
@@ -86,15 +98,19 @@ export async function connectedGithub(
     // GitHub reports push: false for App tokens, so trust the installation.
     return createGithubClient({ ...target, token, assumePush: true });
   }
-  const key = await publishingEncryptionKey();
-  if (!key) throw new AppError("AUTH_CONFIG_MISSING");
   if (!connection.encryptedToken) throw new AppError("CONFLICT");
-  let token: string;
-  try {
-    token = await symmetricDecrypt({ key, data: connection.encryptedToken });
-  } catch {
-    throw new AppError("AUTH_CONFIG_MISSING");
-  }
+  // RFC-0009 5.7: the key of the row's version; an older key re-encrypts.
+  const { token, rewrapped } = await openToken({
+    encryptedToken: connection.encryptedToken,
+    tokenKeyVersion: connection.tokenKeyVersion,
+  });
+  if (rewrapped)
+    await PublishingRepository.rewrapToken({
+      projectId: connection.projectId,
+      connectionId: connection.id,
+      from: connection.encryptedToken,
+      ...rewrapped,
+    }).catch(() => undefined);
   return createGithubClient({ ...target, token });
 }
 

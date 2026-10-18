@@ -1,4 +1,5 @@
 import { AppError } from "@/server/lib/errors";
+import { assertSpendRoom } from "@/server/billing/spendAdmission"; // playbook-seam
 import { pruneAiVisibility } from "./aiVisibilityRetention";
 import { AiVisibilityRepository as repo } from "../repositories/AiVisibilityRepository";
 import { AiVisibilityError } from "./aiVisibilityErrors";
@@ -51,6 +52,7 @@ export async function runScheduledAiVisibility() {
         },
       });
       if (!claimed) continue;
+      await assertSpendRoom({ organizationId, projectId: tracker.projectId }); // playbook-seam
       // Always queued: a baseline collects live only when a user starts it
       // (onboarding or turning on the schedule) and waits for the answers.
       await startRun(config, "scheduled", {
@@ -75,7 +77,11 @@ export async function runScheduledAiVisibility() {
           lastSkipReason:
             error instanceof AiVisibilityError
               ? error.message
-              : "The scheduled check could not start.",
+              : // playbook-seam: RFC-0009 monthly spending limit
+                error instanceof AppError &&
+                  error.code === "SPEND_LIMIT_REACHED"
+                ? "Project monthly limit reached"
+                : "The scheduled check could not start.",
         })
         .catch(() => undefined);
     }

@@ -52,6 +52,7 @@ export async function makePublishingFixture() {
       key: publishingTestSecret,
       data: publishingTestToken,
     }),
+    tokenKeyVersion: 0,
     createdBy: context.userId,
     createdAt: new Date().toISOString(),
     revokedAt: null,

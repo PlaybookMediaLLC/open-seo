@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** In progress. Parts A (runner, endpoints, Trigger.dev tasks) and B (all jobs, notifications) built
+- **Status:** Done on 2026-10-17 for phase 1 code: part A (runner, endpoints, Trigger.dev tasks, PR #86), part B (all jobs, notifications, PR #87) and part C (audit hook, Automation tab, default schedules, PR #88). The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -198,6 +198,8 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 
 **Audit hook.** At the end of the site-audit workflow's successful finalize step, call a fork function that triggers `audit-followup` with the idempotency key `audit:{auditId}`. Add it with one `// playbook-seam` line in the upstream workflow file.
 
+**As built (part C).** The Worker triggers `audit-followup` through the Trigger.dev REST API, with the idempotency key `audit:{auditId}` and the concurrency key `projectId`. It needs no SDK. When the key is missing or the request fails, it writes a queued run that the next dispatch picks up. It does nothing when `GROWTH_JOBS_MODE` is `off`, and it never fails the audit. The follow-up runs as the member who started the audit. Membership is enough, because any member can start an audit; scheduled jobs still need a member who can manage integrations. Connecting Search Console turns on the opportunity refresh, the traffic watch and the recommendation re-check. Starting tracking turns on the measurement refresh and the deployment check, because tracking is where the experiment exists. Each default turns on once; a job that a member turned off stays off.
+
 ### 5.9 Plan rules
 
 1. Free plan: `opportunity_refresh` weekly, `measurement_refresh`, `deployment_check`, `recommendation_recheck`.
@@ -270,7 +272,7 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 ### Phase 1
 
-- [ ] RFC-0009 audit log and limits are live.
+- [x] RFC-0009 audit log and limits are live.
 - [x] Five tables with D1 and Postgres migrations and the parity test.
 - [x] Internal endpoints with signature, timestamp, size and mode checks (one test each).
 - [x] Due endpoint never changes data (test).
@@ -279,15 +281,15 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 - [x] Test: a free plan skips `traffic_watch`.
 - [x] Each job has a service test with mocked providers.
 - [x] Traffic drop rule tests at each threshold, and the incomplete-data skip.
-- [ ] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
+- [x] Audit hook triggers `audit-followup`, falls back to a queued row, and never fails the audit (tests).
 - [x] Task files with the retry, concurrency and duration settings from 5.3.
 - [ ] `trigger-deploy-playbook.yml` deploys the tasks after the Worker deploy.
-- [ ] Default schedules created on Search Console connect and on tracking start.
-- [ ] Automation tab with toggles, history and logs.
+- [x] Default schedules created on Search Console connect and on tracking start.
+- [x] Automation tab with toggles, history and logs.
 - [x] Notification bell, list and read state.
 - [ ] Trigger.dev alerts reach the team's email.
-- [ ] Privacy policy lists Trigger.dev.
-- [ ] `content/docs/automation.mdx` lists each job, its default, its cost and how to turn it off.
+- [x] Privacy policy lists Trigger.dev.
+- [x] `content/docs/automation.mdx` lists each job, its default, its cost and how to turn it off.
 
 ### Phase 2
 
@@ -357,3 +359,24 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 **Value**
 
 - During the week, the owner gets at least one notification on S1 to S3 that leads to an action (a review, a ticket or a proposal).
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 0 spike: idempotency, concurrency, the signed staging call, plan and cost. Trigger: the owner creates the Trigger.dev project with staging and production environments.
+- [ ] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists.
+- [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`.
+- [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production.
+- [x] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Done on 2026-10-18; scheduled jobs that spend now pass the limits, and their audit events show as Scheduled.
+- [ ] Phase 2 email digest (section 5.11). Trigger: Loops is configured.
+- [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab.
+
+Evidence for the phase 1 items that code can show:
+
+- **Endpoints:** a wrong signature, an old timestamp, a large body and the off mode each answer `404` (tests). The due endpoint changes no data.
+- **Runs:** a succeeded window answers "already done". The schedule advance is conditional. A retryable failure answers `503` and a final failure answers `422` (tests on SQLite and Postgres).
+- **Permissions and plans:** a removed owner causes a skip with the reason and a `job_failed` notification. A free plan skips the traffic watch. An audit follow-up runs as the member who started the audit (tests).
+- **Audit hook:** it triggers `audit-followup` once per audit, writes a queued row when Trigger.dev fails, does nothing when jobs are off, and never fails the audit (tests).
+- **Production, 2026-10-17:** the Automation tab shows the five jobs, their defaults and the "not available" notice, and the Edit sheet opens. The notification bell is in the sidebar.

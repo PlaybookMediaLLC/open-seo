@@ -43,6 +43,7 @@ import { Route as AppHelpDataforseoApiKeyRouteImport } from './routes/_app/help/
 import { Route as AppHelpOpenrouterApiKeyRouteImport } from './routes/_app/help/openrouter-api-key'
 import { Route as AppPProjectIdRouteRouteImport } from './routes/_app/p/$projectId/route'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppSettingsActivityRouteImport } from './routes/_app/settings/activity'
 import { Route as AppSettingsOrganizationRouteImport } from './routes/_app/settings/organization'
 import { Route as AuthenticatedOnboardingIndexRouteImport } from './routes/_authenticated.onboarding.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -64,9 +65,12 @@ import { Route as AppPProjectIdSamRouteImport } from './routes/_app/p/$projectId
 import { Route as AppPProjectIdSavedRouteImport } from './routes/_app/p/$projectId/saved'
 import { Route as AppPProjectIdSearchPerformanceRouteImport } from './routes/_app/p/$projectId/search-performance'
 import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$projectId/settings'
+import { Route as ApiCiV1ChecksRouteImport } from './routes/api/ci/v1/checks'
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
+import { Route as ApiGithubAppWebhookRouteImport } from './routes/api/github/app/webhook'
 import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/callback'
+import { Route as ApiInternalBillingReconcileRouteImport } from './routes/api/internal/billing/reconcile'
 import { Route as ApiInternalGrowthDueRouteImport } from './routes/api/internal/growth/due'
 import { Route as ApiInternalGrowthRetentionRouteImport } from './routes/api/internal/growth/retention'
 import { Route as ApiInternalGrowthRunRouteImport } from './routes/api/internal/growth/run'
@@ -83,10 +87,15 @@ import { Route as AppPProjectIdReportsIndexRouteImport } from './routes/_app/p/$
 import { Route as AppPProjectIdReportsReportIdRouteImport } from './routes/_app/p/$projectId/reports/$reportId'
 import { Route as AppPProjectIdReportsTemplatesRouteImport } from './routes/_app/p/$projectId/reports/templates'
 import { Route as AppPProjectIdSettingsIndexRouteImport } from './routes/_app/p/$projectId/settings/index'
+import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_app/p/$projectId/settings/automation'
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
+import { Route as AppPProjectIdSettingsSeoChecksRouteImport } from './routes/_app/p/$projectId/settings/seo-checks'
+import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
+import { Route as ApiCiV1ChecksIdRouteImport } from './routes/api/ci/v1/checks/$id'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
 import { Route as AppPProjectIdAuditIssuesResultIdRouteImport } from './routes/_app/p/$projectId/audit/issues/$resultId'
+import { Route as AppPProjectIdExperimentsSplitTestsTestIdRouteImport } from './routes/_app/p/$projectId/experiments/split-tests/$testId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -257,6 +266,11 @@ const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppSettingsRoute,
 } as any)
+const AppSettingsActivityRoute = AppSettingsActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
 const AppSettingsOrganizationRoute = AppSettingsOrganizationRouteImport.update({
   id: '/organization',
   path: '/organization',
@@ -368,6 +382,11 @@ const AppPProjectIdSettingsRoute = AppPProjectIdSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPProjectIdRouteRoute,
 } as any)
+const ApiCiV1ChecksRoute = ApiCiV1ChecksRouteImport.update({
+  id: '/api/ci/v1/checks',
+  path: '/api/ci/v1/checks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGa4OauthCallbackRoute = ApiGa4OauthCallbackRouteImport.update({
   id: '/api/ga4/oauth/callback',
   path: '/api/ga4/oauth/callback',
@@ -378,11 +397,22 @@ const ApiGithubAppSetupRoute = ApiGithubAppSetupRouteImport.update({
   path: '/api/github/app/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGithubAppWebhookRoute = ApiGithubAppWebhookRouteImport.update({
+  id: '/api/github/app/webhook',
+  path: '/api/github/app/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGscOauthCallbackRoute = ApiGscOauthCallbackRouteImport.update({
   id: '/api/gsc/oauth/callback',
   path: '/api/gsc/oauth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalBillingReconcileRoute =
+  ApiInternalBillingReconcileRouteImport.update({
+    id: '/api/internal/billing/reconcile',
+    path: '/api/internal/billing/reconcile',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiInternalGrowthDueRoute = ApiInternalGrowthDueRouteImport.update({
   id: '/api/internal/growth/due',
   path: '/api/internal/growth/due',
@@ -476,6 +506,12 @@ const AppPProjectIdSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsAutomationRoute =
+  AppPProjectIdSettingsAutomationRouteImport.update({
+    id: '/automation',
+    path: '/automation',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdSettingsContextRoute =
   AppPProjectIdSettingsContextRouteImport.update({
     id: '/context',
@@ -488,6 +524,23 @@ const AppPProjectIdSettingsIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsSeoChecksRoute =
+  AppPProjectIdSettingsSeoChecksRouteImport.update({
+    id: '/seo-checks',
+    path: '/seo-checks',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
+const AppPProjectIdSettingsSpendingRoute =
+  AppPProjectIdSettingsSpendingRouteImport.update({
+    id: '/spending',
+    path: '/spending',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
+const ApiCiV1ChecksIdRoute = ApiCiV1ChecksIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiCiV1ChecksRoute,
+} as any)
 const AppPProjectIdAiVisibilityPromptsPromptIdRoute =
   AppPProjectIdAiVisibilityPromptsPromptIdRouteImport.update({
     id: '/prompts/$promptId',
@@ -498,6 +551,12 @@ const AppPProjectIdAuditIssuesResultIdRoute =
   AppPProjectIdAuditIssuesResultIdRouteImport.update({
     id: '/audit/issues/$resultId',
     path: '/audit/issues/$resultId',
+    getParentRoute: () => AppPProjectIdRouteRoute,
+  } as any)
+const AppPProjectIdExperimentsSplitTestsTestIdRoute =
+  AppPProjectIdExperimentsSplitTestsTestIdRouteImport.update({
+    id: '/experiments/split-tests/$testId',
+    path: '/experiments/split-tests/$testId',
     getParentRoute: () => AppPProjectIdRouteRoute,
   } as any)
 
@@ -532,6 +591,7 @@ export interface FileRoutesByFullPath {
   '/billing/fix-payment': typeof AppBillingFixPaymentRoute
   '/help/dataforseo-api-key': typeof AppHelpDataforseoApiKeyRoute
   '/help/openrouter-api-key': typeof AppHelpOpenrouterApiKeyRoute
+  '/settings/activity': typeof AppSettingsActivityRoute
   '/settings/organization': typeof AppSettingsOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/autumn/$': typeof ApiAutumnSplatRoute
@@ -553,9 +613,12 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -566,8 +629,12 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
+  '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -577,6 +644,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/': typeof AppPProjectIdSettingsIndexRoute
   '/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -607,6 +675,7 @@ export interface FileRoutesByTo {
   '/billing/fix-payment': typeof AppBillingFixPaymentRoute
   '/help/dataforseo-api-key': typeof AppHelpDataforseoApiKeyRoute
   '/help/openrouter-api-key': typeof AppHelpOpenrouterApiKeyRoute
+  '/settings/activity': typeof AppSettingsActivityRoute
   '/settings/organization': typeof AppSettingsOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/autumn/$': typeof ApiAutumnSplatRoute
@@ -625,9 +694,12 @@ export interface FileRoutesByTo {
   '/p/$projectId/sam': typeof AppPProjectIdSamRoute
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -638,8 +710,12 @@ export interface FileRoutesByTo {
   '/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
+  '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments': typeof AppPProjectIdExperimentsIndexRoute
@@ -649,6 +725,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings': typeof AppPProjectIdSettingsIndexRoute
   '/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -685,6 +762,7 @@ export interface FileRoutesById {
   '/_app/billing_/fix-payment': typeof AppBillingFixPaymentRoute
   '/_app/help/dataforseo-api-key': typeof AppHelpDataforseoApiKeyRoute
   '/_app/help/openrouter-api-key': typeof AppHelpOpenrouterApiKeyRoute
+  '/_app/settings/activity': typeof AppSettingsActivityRoute
   '/_app/settings/organization': typeof AppSettingsOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/autumn/$': typeof ApiAutumnSplatRoute
@@ -706,9 +784,12 @@ export interface FileRoutesById {
   '/_app/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/_app/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/_app/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
+  '/api/github/app/webhook': typeof ApiGithubAppWebhookRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
+  '/api/internal/billing/reconcile': typeof ApiInternalBillingReconcileRoute
   '/api/internal/growth/due': typeof ApiInternalGrowthDueRoute
   '/api/internal/growth/retention': typeof ApiInternalGrowthRetentionRoute
   '/api/internal/growth/run': typeof ApiInternalGrowthRunRoute
@@ -719,8 +800,12 @@ export interface FileRoutesById {
   '/_app/p/$projectId/rank-tracking/$configId': typeof AppPProjectIdRankTrackingConfigIdRoute
   '/_app/p/$projectId/reports/$reportId': typeof AppPProjectIdReportsReportIdRoute
   '/_app/p/$projectId/reports/templates': typeof AppPProjectIdReportsTemplatesRoute
+  '/_app/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/_app/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
+  '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/_app/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/_app/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -730,6 +815,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/': typeof AppPProjectIdSettingsIndexRoute
   '/_app/p/$projectId/ai-visibility/prompts/$promptId': typeof AppPProjectIdAiVisibilityPromptsPromptIdRoute
   '/_app/p/$projectId/audit/issues/$resultId': typeof AppPProjectIdAuditIssuesResultIdRoute
+  '/_app/p/$projectId/experiments/split-tests/$testId': typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -764,6 +850,7 @@ export interface FileRouteTypes {
     | '/billing/fix-payment'
     | '/help/dataforseo-api-key'
     | '/help/openrouter-api-key'
+    | '/settings/activity'
     | '/settings/organization'
     | '/api/auth/$'
     | '/api/autumn/$'
@@ -785,9 +872,12 @@ export interface FileRouteTypes {
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
     | '/p/$projectId/settings'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -798,8 +888,12 @@ export interface FileRouteTypes {
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
     | '/p/$projectId/reports/templates'
+    | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/seo-checks'
+    | '/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility/'
     | '/p/$projectId/audit/'
     | '/p/$projectId/experiments/'
@@ -809,6 +903,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/'
     | '/p/$projectId/ai-visibility/prompts/$promptId'
     | '/p/$projectId/audit/issues/$resultId'
+    | '/p/$projectId/experiments/split-tests/$testId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -839,6 +934,7 @@ export interface FileRouteTypes {
     | '/billing/fix-payment'
     | '/help/dataforseo-api-key'
     | '/help/openrouter-api-key'
+    | '/settings/activity'
     | '/settings/organization'
     | '/api/auth/$'
     | '/api/autumn/$'
@@ -857,9 +953,12 @@ export interface FileRouteTypes {
     | '/p/$projectId/sam'
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -870,8 +969,12 @@ export interface FileRouteTypes {
     | '/p/$projectId/rank-tracking/$configId'
     | '/p/$projectId/reports/$reportId'
     | '/p/$projectId/reports/templates'
+    | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/seo-checks'
+    | '/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility'
     | '/p/$projectId/audit'
     | '/p/$projectId/experiments'
@@ -881,6 +984,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings'
     | '/p/$projectId/ai-visibility/prompts/$promptId'
     | '/p/$projectId/audit/issues/$resultId'
+    | '/p/$projectId/experiments/split-tests/$testId'
   id:
     | '__root__'
     | '/'
@@ -916,6 +1020,7 @@ export interface FileRouteTypes {
     | '/_app/billing_/fix-payment'
     | '/_app/help/dataforseo-api-key'
     | '/_app/help/openrouter-api-key'
+    | '/_app/settings/activity'
     | '/_app/settings/organization'
     | '/api/auth/$'
     | '/api/autumn/$'
@@ -937,9 +1042,12 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/saved'
     | '/_app/p/$projectId/search-performance'
     | '/_app/p/$projectId/settings'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
+    | '/api/github/app/webhook'
     | '/api/gsc/oauth/callback'
+    | '/api/internal/billing/reconcile'
     | '/api/internal/growth/due'
     | '/api/internal/growth/retention'
     | '/api/internal/growth/run'
@@ -950,8 +1058,12 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/rank-tracking/$configId'
     | '/_app/p/$projectId/reports/$reportId'
     | '/_app/p/$projectId/reports/templates'
+    | '/_app/p/$projectId/settings/automation'
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/integrations'
+    | '/_app/p/$projectId/settings/seo-checks'
+    | '/_app/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/_app/p/$projectId/ai-visibility/'
     | '/_app/p/$projectId/audit/'
     | '/_app/p/$projectId/experiments/'
@@ -961,6 +1073,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/'
     | '/_app/p/$projectId/ai-visibility/prompts/$promptId'
     | '/_app/p/$projectId/audit/issues/$resultId'
+    | '/_app/p/$projectId/experiments/split-tests/$testId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -988,9 +1101,12 @@ export interface RootRouteChildren {
   STokenOgDotpngRoute: typeof STokenOgDotpngRoute
   STokenRawRoute: typeof STokenRawRoute
   STokenIndexRoute: typeof STokenIndexRoute
+  ApiCiV1ChecksRoute: typeof ApiCiV1ChecksRouteWithChildren
   ApiGa4OauthCallbackRoute: typeof ApiGa4OauthCallbackRoute
   ApiGithubAppSetupRoute: typeof ApiGithubAppSetupRoute
+  ApiGithubAppWebhookRoute: typeof ApiGithubAppWebhookRoute
   ApiGscOauthCallbackRoute: typeof ApiGscOauthCallbackRoute
+  ApiInternalBillingReconcileRoute: typeof ApiInternalBillingReconcileRoute
   ApiInternalGrowthDueRoute: typeof ApiInternalGrowthDueRoute
   ApiInternalGrowthRetentionRoute: typeof ApiInternalGrowthRetentionRoute
   ApiInternalGrowthRunRoute: typeof ApiInternalGrowthRunRoute
@@ -1236,6 +1352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsIndexRouteImport
       parentRoute: typeof AppSettingsRoute
     }
+    '/_app/settings/activity': {
+      id: '/_app/settings/activity'
+      path: '/activity'
+      fullPath: '/settings/activity'
+      preLoaderRoute: typeof AppSettingsActivityRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
     '/_app/settings/organization': {
       id: '/_app/settings/organization'
       path: '/organization'
@@ -1383,6 +1506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/api/ci/v1/checks': {
+      id: '/api/ci/v1/checks'
+      path: '/api/ci/v1/checks'
+      fullPath: '/api/ci/v1/checks'
+      preLoaderRoute: typeof ApiCiV1ChecksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ga4/oauth/callback': {
       id: '/api/ga4/oauth/callback'
       path: '/api/ga4/oauth/callback'
@@ -1397,11 +1527,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGithubAppSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/github/app/webhook': {
+      id: '/api/github/app/webhook'
+      path: '/api/github/app/webhook'
+      fullPath: '/api/github/app/webhook'
+      preLoaderRoute: typeof ApiGithubAppWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/gsc/oauth/callback': {
       id: '/api/gsc/oauth/callback'
       path: '/api/gsc/oauth/callback'
       fullPath: '/api/gsc/oauth/callback'
       preLoaderRoute: typeof ApiGscOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/billing/reconcile': {
+      id: '/api/internal/billing/reconcile'
+      path: '/api/internal/billing/reconcile'
+      fullPath: '/api/internal/billing/reconcile'
+      preLoaderRoute: typeof ApiInternalBillingReconcileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/internal/growth/due': {
@@ -1516,6 +1660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsIndexRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/automation': {
+      id: '/_app/p/$projectId/settings/automation'
+      path: '/automation'
+      fullPath: '/p/$projectId/settings/automation'
+      preLoaderRoute: typeof AppPProjectIdSettingsAutomationRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/settings/context': {
       id: '/_app/p/$projectId/settings/context'
       path: '/context'
@@ -1529,6 +1680,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/p/$projectId/settings/integrations'
       preLoaderRoute: typeof AppPProjectIdSettingsIntegrationsRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
+    }
+    '/_app/p/$projectId/settings/seo-checks': {
+      id: '/_app/p/$projectId/settings/seo-checks'
+      path: '/seo-checks'
+      fullPath: '/p/$projectId/settings/seo-checks'
+      preLoaderRoute: typeof AppPProjectIdSettingsSeoChecksRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
+    '/_app/p/$projectId/settings/spending': {
+      id: '/_app/p/$projectId/settings/spending'
+      path: '/spending'
+      fullPath: '/p/$projectId/settings/spending'
+      preLoaderRoute: typeof AppPProjectIdSettingsSpendingRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
+    '/api/ci/v1/checks/$id': {
+      id: '/api/ci/v1/checks/$id'
+      path: '/$id'
+      fullPath: '/api/ci/v1/checks/$id'
+      preLoaderRoute: typeof ApiCiV1ChecksIdRouteImport
+      parentRoute: typeof ApiCiV1ChecksRoute
     }
     '/_app/p/$projectId/ai-visibility/prompts/$promptId': {
       id: '/_app/p/$projectId/ai-visibility/prompts/$promptId'
@@ -1544,15 +1716,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdAuditIssuesResultIdRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/_app/p/$projectId/experiments/split-tests/$testId': {
+      id: '/_app/p/$projectId/experiments/split-tests/$testId'
+      path: '/experiments/split-tests/$testId'
+      fullPath: '/p/$projectId/experiments/split-tests/$testId'
+      preLoaderRoute: typeof AppPProjectIdExperimentsSplitTestsTestIdRouteImport
+      parentRoute: typeof AppPProjectIdRouteRoute
+    }
   }
 }
 
 interface AppSettingsRouteChildren {
+  AppSettingsActivityRoute: typeof AppSettingsActivityRoute
   AppSettingsOrganizationRoute: typeof AppSettingsOrganizationRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
 }
 
 const AppSettingsRouteChildren: AppSettingsRouteChildren = {
+  AppSettingsActivityRoute: AppSettingsActivityRoute,
   AppSettingsOrganizationRoute: AppSettingsOrganizationRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
 }
@@ -1599,15 +1780,21 @@ const AppPProjectIdRankTrackingRouteWithChildren =
   )
 
 interface AppPProjectIdSettingsRouteChildren {
+  AppPProjectIdSettingsAutomationRoute: typeof AppPProjectIdSettingsAutomationRoute
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
+  AppPProjectIdSettingsSeoChecksRoute: typeof AppPProjectIdSettingsSeoChecksRoute
+  AppPProjectIdSettingsSpendingRoute: typeof AppPProjectIdSettingsSpendingRoute
   AppPProjectIdSettingsIndexRoute: typeof AppPProjectIdSettingsIndexRoute
 }
 
 const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
+  AppPProjectIdSettingsAutomationRoute: AppPProjectIdSettingsAutomationRoute,
   AppPProjectIdSettingsContextRoute: AppPProjectIdSettingsContextRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,
+  AppPProjectIdSettingsSeoChecksRoute: AppPProjectIdSettingsSeoChecksRoute,
+  AppPProjectIdSettingsSpendingRoute: AppPProjectIdSettingsSpendingRoute,
   AppPProjectIdSettingsIndexRoute: AppPProjectIdSettingsIndexRoute,
 }
 
@@ -1639,6 +1826,7 @@ interface AppPProjectIdRouteRouteChildren {
   AppPProjectIdOpportunitiesIndexRoute: typeof AppPProjectIdOpportunitiesIndexRoute
   AppPProjectIdReportsIndexRoute: typeof AppPProjectIdReportsIndexRoute
   AppPProjectIdAuditIssuesResultIdRoute: typeof AppPProjectIdAuditIssuesResultIdRoute
+  AppPProjectIdExperimentsSplitTestsTestIdRoute: typeof AppPProjectIdExperimentsSplitTestsTestIdRoute
 }
 
 const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
@@ -1666,6 +1854,8 @@ const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
   AppPProjectIdOpportunitiesIndexRoute: AppPProjectIdOpportunitiesIndexRoute,
   AppPProjectIdReportsIndexRoute: AppPProjectIdReportsIndexRoute,
   AppPProjectIdAuditIssuesResultIdRoute: AppPProjectIdAuditIssuesResultIdRoute,
+  AppPProjectIdExperimentsSplitTestsTestIdRoute:
+    AppPProjectIdExperimentsSplitTestsTestIdRoute,
 }
 
 const AppPProjectIdRouteRouteWithChildren =
@@ -1731,6 +1921,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ApiCiV1ChecksRouteChildren {
+  ApiCiV1ChecksIdRoute: typeof ApiCiV1ChecksIdRoute
+}
+
+const ApiCiV1ChecksRouteChildren: ApiCiV1ChecksRouteChildren = {
+  ApiCiV1ChecksIdRoute: ApiCiV1ChecksIdRoute,
+}
+
+const ApiCiV1ChecksRouteWithChildren = ApiCiV1ChecksRoute._addFileChildren(
+  ApiCiV1ChecksRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
@@ -1757,9 +1959,12 @@ const rootRouteChildren: RootRouteChildren = {
   STokenOgDotpngRoute: STokenOgDotpngRoute,
   STokenRawRoute: STokenRawRoute,
   STokenIndexRoute: STokenIndexRoute,
+  ApiCiV1ChecksRoute: ApiCiV1ChecksRouteWithChildren,
   ApiGa4OauthCallbackRoute: ApiGa4OauthCallbackRoute,
   ApiGithubAppSetupRoute: ApiGithubAppSetupRoute,
+  ApiGithubAppWebhookRoute: ApiGithubAppWebhookRoute,
   ApiGscOauthCallbackRoute: ApiGscOauthCallbackRoute,
+  ApiInternalBillingReconcileRoute: ApiInternalBillingReconcileRoute,
   ApiInternalGrowthDueRoute: ApiInternalGrowthDueRoute,
   ApiInternalGrowthRetentionRoute: ApiInternalGrowthRetentionRoute,
   ApiInternalGrowthRunRoute: ApiInternalGrowthRunRoute,

@@ -1,6 +1,6 @@
 # RFC-0009: Spending limits, billing fixes, audit log and credential keys
 
-- **Status:** Draft
+- **Status:** Done on 2026-10-18. Built in PRs #91 to #97: limits, ledger and admission (A), limit settings and warnings (B), AI paths, scheduled skips and the three billing debts (C), the audit log and Activity page (D), the token key, rate limit and docs (E). The live check passed in production. The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
@@ -118,6 +118,24 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 
 `settleUsageCredits` hard-codes `provider: "dataforseo"`. Add a `provider` argument with that default, so the AI paths can use holds.
 
+**As built (part A).**
+
+1. One ledger row follows one Autumn hold. A DataForSEO batch that draws on monthly and top-up credits gets a second row when the holds are known; refused calls drop out of the estimate.
+2. DataForSEO admission wraps the reservation in `meterDataforseoCalls` (`reserveWithinLimits`). Upstream's `settleUsageCredits` records each settlement on the ledger through one seam line. Ledger writes after admission never throw.
+3. `cost_usd` is the raw provider cost, because reconciliation charges it through `trackUsageCreditSpend`, which applies the markup.
+4. Both dialects run the same two statements in `runBatch`: an update that changes nothing but locks the organization's limit rows on Postgres, then the conditional insert. A test with 8 parallel admissions against a limit for 3 fails on Postgres without the lock.
+5. Limits apply in hosted mode, where Autumn holds credits. Self-hosted installs pay their providers directly.
+
+**As built (part C).**
+
+1. AI research holds its estimate through the same reservation as DataForSEO, with provider `openrouter`, then settles the summed step costs against the hold. This covers drafts, investigation summaries and content briefs (one helper, `generateChecked`, 50 credits), prompt suggestions (50 credits) and website research (200 credits). The ledger labels them `proposal_draft` or `ai_research`.
+2. The assistant keeps upstream's chunked metering. Each turn reserves 50 credits as an `admitted` row; each metered chunk adds a `settled` row; the reservation is released when the turn's metering ends. A refused turn answers with the limit message. A ledger outage does not lock members out of chat, because the Autumn balance check already passed.
+3. Content gaps make DataForSEO calls, so each call already passes admission. No separate job-level admission was added.
+4. Scheduled work checks for room before it starts (`assertSpendRoom`): rank checks with their credit estimate, AI visibility checks with 1 credit. A refusal stores the reason `spend_limit` (rank) or "Project monthly limit reached" (AI visibility). Each provider call during the run still admits.
+5. Debt 1 is fixed once, in `parseTaskItems`: a billed task with an invalid payload throws `DataforseoChargedTaskError` with its cost, which the metering wrapper already settles. One test at that function replaces the per-caller tests.
+6. Debt 2: `reconcileSpend` claims each attempt with a conditional update, so two runs never charge one row. It also releases `admitted` rows whose hold expired without a settlement, such as an assistant turn that never ended. Until the Trigger.dev account exists (RFC-0008 follow-up), the task does not run.
+7. Debt 3: the hold is atomic in Autumn, so parallel requests cannot all pass one balance reading. The limit side is covered by the part A race test; the balance side is checked live (section 11).
+
 ### 5.4 Billing debt fixes
 
 **Debt 1: charged tasks that fail validation.**
@@ -143,6 +161,15 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 3. At 80% of a limit, show a banner on the project, and create an RFC-0008 notification once per period.
 4. At 100%, paid actions show the `SPEND_LIMIT_REACHED` message with a link to the setting.
 5. Every paid action that has a confirm step shows the estimate before the user confirms. Check each existing paid action, and list any without an estimate in this RFC's follow-up.
+
+**As built (part B).**
+
+1. Every member sees the limits and this month's committed spend, as they already see usage on the Billing page. Only owners change a limit.
+2. The project limit lives in a new **Project settings → Spending** tab. The Billing page shows the organization limit, spend by project and spend by feature.
+3. The 80% notification uses the RFC-0008 bell. An organization limit notifies once a month, on the project whose spend crossed 80%.
+4. A refused action shows a generic message with a link to Billing, because the client receives only the error code.
+
+5. Survey of 5.5 item 5 (2026-10-17): every paid action with a confirm step shows its estimate (rank checks, AI visibility, site audit rendering, saved keyword refresh, website research). Keyword research, domain overview and backlinks run on a click without a confirm step. No action is missing an estimate.
 
 ### 5.6 Audit log
 
@@ -184,6 +211,21 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 4. Keep events for 1 year. Delete older rows in the RFC-0008 daily `growth-retention` task.
 5. **UI:** Organization settings → **Activity** for owners and admins. Filters for project, action and actor. CSV export with formula escaping.
 
+**As built (part D1).**
+
+1. Fork paths add the event as one more statement of the change's batch. The event is an insert that selects from the same fence the change set (for example `last_decision_id` or `last_event_id`), so a refused change writes no event.
+2. The actor type comes from the caller: MCP contexts carry a client id (`mcp`), scheduled jobs mark themselves (`system`), everything else is `user`.
+3. Part D1 writes the opportunity decisions, `ticket.created` (only a new ticket, not a repeat), `experiment.registered`, `schedule.changed` and `spend_limit.changed`. Part D2 adds the other actions.
+4. The Activity tab lists the newest 200 events. The filters are project, action and person. The CSV export holds up to 5,000 rows and reuses the RFC-0006 formula escaping.
+5. The daily `growth-retention` task deletes events older than 365 days.
+
+**As built (part D2).**
+
+1. Proposals, executions, drafts, publishing connections, deployment confirmations and measurement runs add the event to their batch on the same fence. The repository argument is optional, so repository tests can leave it out; the services always pass it.
+2. A GitHub App revocation writes its event before the update, while the row is still unrevoked, because the installation table has no event fence. Its actor is the system: GitHub refused the token.
+3. Upstream paths record the event after the change with one seam line each: Search Console and GA4 connect and disconnect, and team invitations.
+4. Member removal and API key changes run in better-auth's own endpoints. A global `hooks.after` middleware records them when they succeed. A member is recorded by id, never by the email that a removal may name.
+
 ### 5.7 Repository token key
 
 1. Add `PUBLISHING_TOKEN_KEY` (at least 32 random bytes) and `PUBLISHING_TOKEN_KEY_VERSION` (integer, starting at 1).
@@ -192,6 +234,8 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 4. After a successful decrypt with an older version, re-encrypt with the current key and update the row.
 5. Fail closed when the needed key is missing. Show "Reconnect the repository."
 6. Document the rotation steps in `docs/maintainers/playbook-deployment.md`.
+
+**As built (part E).** The key module keeps version 0 on `BETTER_AUTH_SECRET`, so nothing changes until an owner sets `PUBLISHING_TOKEN_KEY`. A missing secret stays a configuration error; a missing key for a stored version, or a token the key cannot open, asks for a reconnect. The re-encryption writes only when the row still holds the ciphertext that was opened.
 
 ### 5.8 Rate limits on paid actions
 
@@ -217,46 +261,46 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 
 ### Limits and ledger
 
-- [ ] `spend_limits` and `spend_ledger` with D1 and Postgres migrations, partial unique indexes and the parity test.
-- [ ] `admitSpend` with the D1 single-statement path and the Postgres lock path.
-- [ ] Test: two parallel admissions near the limit admit only one (both dialects).
-- [ ] Test: no limit rows means only the Autumn balance applies.
-- [ ] Test: a refused admission makes no provider call.
-- [ ] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
-- [ ] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
-- [ ] `settleUsageCredits` accepts a provider argument.
-- [ ] Billing page and project settings show limits and month-to-date spend.
-- [ ] 80% banner and one notification per period.
-- [ ] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
+- [x] `spend_limits` and `spend_ledger` with D1 and Postgres migrations, partial unique indexes and the parity test.
+- [x] `admitSpend` with the D1 single-statement path and the Postgres lock path.
+- [x] Test: two parallel admissions near the limit admit only one (both dialects).
+- [x] Test: no limit rows means only the Autumn balance applies.
+- [x] Test: a refused admission makes no provider call.
+- [x] DataForSEO, assistant, prompt suggestions, website research, drafts and content gaps call `admitSpend`.
+- [x] Scheduled rank and AI visibility runs skip with a reason on refusal (test).
+- [x] `settleUsageCredits` accepts a provider argument.
+- [x] Billing page and project settings show limits and month-to-date spend.
+- [x] 80% banner and one notification per period.
+- [x] Live check: set a small project limit, run paid lookups until refusal, and confirm the ledger matches Autumn.
 
 ### Billing debts
 
-- [ ] Debt 1 fixed, with one test per DataForSEO caller.
-- [ ] Debt 2: `reconcileSpend` with tests for valid hold, expired hold and the 10-attempt stop.
-- [ ] Debt 3 fixed by admission, with a parallel-request test.
+- [x] Debt 1 fixed, with one test per DataForSEO caller.
+- [x] Debt 2: `reconcileSpend` with tests for valid hold, expired hold and the 10-attempt stop.
+- [x] Debt 3 fixed by admission, with a parallel-request test.
 - [ ] Review guidelines updated if the fixes add a new invariant.
 
 ### Audit log
 
-- [ ] `audit_events` table and migrations.
-- [ ] Every listed action writes an event (one test per action group).
-- [ ] Fork paths write in the same operation as the change (test that a failed change writes no event).
-- [ ] Activity page with filters and CSV export.
-- [ ] Retention deletes events older than 1 year.
+- [x] `audit_events` table and migrations.
+- [x] Every listed action writes an event (one test per action group).
+- [x] Fork paths write in the same operation as the change (test that a failed change writes no event).
+- [x] Activity page with filters and CSV export.
+- [x] Retention deletes events older than 1 year.
 
 ### Credentials and rate limits
 
-- [ ] `PUBLISHING_TOKEN_KEY` and versioned decryption with lazy re-encryption.
-- [ ] Test: a version 0 row decrypts with the old secret and is re-encrypted.
-- [ ] Test: a missing key fails closed with the reconnect message.
-- [ ] Rotation steps documented.
-- [ ] `PAID_ACTION_RATE_LIMIT` binding added in the Alchemy stack, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
-- [ ] Docs explain limits, the Activity page and what counts as a paid action.
+- [x] `PUBLISHING_TOKEN_KEY` and versioned decryption with lazy re-encryption.
+- [x] Test: a version 0 row decrypts with the old secret and is re-encrypted.
+- [x] Test: a missing key fails closed with the reconnect message.
+- [x] Rotation steps documented.
+- [x] `PAID_ACTION_RATE_LIMIT` binding added in the Alchemy stack, and `RATE_LIMITED` returned with the retry time (test with a fake binding).
+- [x] Docs explain limits, the Activity page and what counts as a paid action.
 
 ## 9. Open questions
 
-1. Should admins also set project limits, below the organization limit?
-2. Is 50 credits the right per-turn admission cap for the assistant? Measure the 95th percentile turn cost first.
+1. Should admins also set project limits, below the organization limit? **Answer (owner, 2026-10-17):** no. Only owners set limits.
+2. Is 50 credits the right per-turn admission cap for the assistant? Measure the 95th percentile turn cost first. **Answer (owner, 2026-10-17):** start at 50 credits. The ledger records real turn totals, so the cap can follow the 95th percentile later.
 
 ## 10. Real-site acceptance test
 
@@ -316,3 +360,23 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 **Usability**
 
 - An owner finds this month's spend for a project in 2 clicks or fewer.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Review guidelines carry the spend and audit invariants. Trigger: the maintainer reviews and merges PR #98.
+- [ ] Failed settlements are reconciled every 15 minutes. Trigger: the RFC-0008 Trigger.dev account exists and `spend-reconcile` runs.
+- [ ] Staging steps of section 10 (a broken Autumn key, a token key rotation, 31 requests in one minute) and the staging items of section 11. Trigger: a staging deployment exists.
+- [ ] Repository tokens use the dedicated key. Trigger: the owner sets `PUBLISHING_TOKEN_KEY` and `PUBLISHING_TOKEN_KEY_VERSION=1` in `ENV_PLAYBOOK`, following `playbook-deployment.md`.
+- [ ] An exact, per-event comparison of the ledger with Autumn usage. Trigger: a check that reads Autumn events with the secret key. The live check compared the balance and the 30-day usage, which the Billing page rounds to cents.
+- [ ] The assistant's turn reservation follows the 95th percentile turn cost. Trigger: one month of `agent` ledger rows.
+- [ ] Admission latency (under 50 ms at the 95th percentile) is measured. Trigger: Workers Observability shows enough paid calls.
+
+**Live check, production, 2026-10-17 (Playbook Media project):**
+
+1. An owner set a 200-credit project limit in **Project settings → Spending**. The Activity page listed "Set the monthly credit limit to 200 credits".
+2. Three keyword lookups made 9 settled ledger rows (147 credits), each linked to its Autumn hold.
+3. The fourth lookup admitted one more call (163 credits in all) and refused the next one before the provider call, with "This project or organization reached its monthly credit limit. An owner can change it in Billing." The ledger has one `refused` row. Past 80%, the bell got one notification ("This project used 87% of its monthly credit limit") and the project showed the amber banner "This project is close to its monthly credit limit (163 of 200 credits)".
+4. Autumn: the balance fell from $0.36 to $0.19 and the 30-day usage rose from $0.64 to $0.81, both about $0.17. The ledger holds $0.163 (163 credits). They match within the cents rounding of the Billing page.
+5. The owner removed the limit. The Activity page listed "Removed the monthly credit limit".

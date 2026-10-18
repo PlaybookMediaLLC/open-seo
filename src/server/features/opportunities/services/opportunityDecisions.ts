@@ -74,6 +74,15 @@ export async function review(
   const { deferDays = 7, ...decision } = input;
   const changed = await OpportunityRepository.review({
     ...decision,
+    audit: {
+      organizationId: context.organizationId,
+      projectId: input.projectId,
+      actor: context,
+      action: `opportunity.${input.decision}`,
+      targetType: "opportunity",
+      targetId: input.opportunityId,
+      summary: `${input.decision[0]?.toUpperCase()}${input.decision.slice(1)}: ${opportunity.title}`,
+    },
     actorUserId: context.userId,
     fromStatus: opportunity.status,
     toStatus:
@@ -136,6 +145,15 @@ export async function assign(
     fromStatus: opportunity.status,
     toStatus: opportunity.status,
     deferredUntil: null,
+    audit: {
+      organizationId: context.organizationId,
+      projectId: input.projectId,
+      actor: context,
+      action: "opportunity.assigned",
+      targetType: "opportunity",
+      targetId: input.opportunityId,
+      summary: `${note}: ${opportunity.title}`,
+    },
   });
   if (!changed)
     throw new AppError(

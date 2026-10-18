@@ -7,7 +7,7 @@ const MAX_SKEW_SECONDS = 300;
 const encoder = new TextEncoder();
 
 /** "off" unless a signing secret exists; without Trigger.dev it defaults off. */
-async function growthJobsMode(): Promise<"trigger" | "off"> {
+export async function growthJobsMode(): Promise<"trigger" | "off"> {
   if (!(await getOptionalEnvValue("GROWTH_JOBS_SECRET"))) return "off";
   const mode = await getOptionalEnvValue("GROWTH_JOBS_MODE");
   if (mode) return mode === "trigger" ? "trigger" : "off";

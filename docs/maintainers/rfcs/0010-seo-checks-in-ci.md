@@ -1,6 +1,7 @@
 # RFC-0010: SEO checks on pull requests
 
-- **Status:** Draft
+- **Status:** Done on 2026-10-18. Built in PRs #100 to #104: tables, CI tokens and the check API (A), the runner and rules (B), the settings tab, history and docs (C), the public action `PlaybookMediaLLC/relay-seo-check` v1 (D), GitHub App mode (E) and rendered mode (F). Two production smoke tests passed. The owner decided on 2026-10-18 that the follow-ups in section 12 do not block closing this RFC.
+- **Decision (owner, 2026-10-18):** run each check in a Cloudflare Workflow, the engine of site audits, instead of a Trigger.dev task, so checks work before the RFC-0008 Trigger.dev account exists. Create the public action repository `PlaybookMediaLLC/relay-seo-check`.
 - **Date:** 2026-10-15
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
 - **Depends on:** RFC-0008 (Trigger.dev tasks and signed internal endpoints) and RFC-0009 (audit log, rate limits). Phase 2 depends on the RFC-0005 GitHub App.
@@ -133,6 +134,15 @@ Check at most 100 URLs per run. Record why each URL was chosen.
 3. Mark pages with 1,000 or more impressions, and `money` key pages, as "High-traffic page".
 4. Raise `internal-links-dropped` and `content-shrunk` to blocking on high-traffic pages. An owner can turn this off.
 
+**As built (part B).**
+
+1. `SeoCheckWorkflow` runs a plan step, one step per 10 URLs, and a finish step. The Workflow instance id is the run id, and the unique run per commit and preview is the idempotency key.
+2. The plan step keeps paths, traffic and robots booleans in durable state. Each batch step loads the protected-preview access itself, so secrets never enter Workflow state.
+3. A page fetch does not follow redirects: a redirect is itself a finding, and the rules need production's 200. Each URL costs at most two page requests. The fetcher reuses the site audit's URL policy, 2 MB reader and host-bound access headers.
+4. Traffic comes from one free Search Console request per run (28 days, by page). The stored-evidence shortcut of 5.3 was not needed.
+5. The sitemap sample skips pages that another reason already chose, so it always adds up to 10 new pages.
+6. Robots rules use `robots-parser` with the Googlebot user agent. Sitemaps reuse the site audit's discovery, capped at 1,000 URLs per host.
+
 ### 5.8 Overrides and ignore rules
 
 1. A pull request label `relay-seo-override` turns blocking findings into a passing run. The action reports the label, and Relay writes an RFC-0009 audit event with the actor and the pull request.
@@ -151,6 +161,8 @@ Check at most 100 URLs per run. Record why each URL was chosen.
 | `ci_preview_hosts`  | `id`, `project_id`, `host`, `created_by`, `created_at`                                                                                                                                                                                                                  |
 
 Unique on `ci_check_runs` (`project_id`, `head_sha`, `preview_origin`). Delete runs older than 90 days in the RFC-0008 retention task.
+
+**As built (part A).** An eighth table, `ci_project_settings`, holds the two per-project switches of 5.5 and 5.7. `ci_check_runs` also stores `created_at` (for the monthly quota) and the changed files the action sent. `ci_check_urls` and `ci_check_findings` carry `project_id`, so every read is scoped by project. A repeated request for the same commit and preview answers with the existing run. A refused preview host is decided from the allowlist before any network request.
 
 ### 5.10 API and limits
 
@@ -171,6 +183,8 @@ Project settings → new **SEO checks** tab:
 5. Run history: pull request, status, counts, duration. A run opens a sheet with each finding, its values and its traffic.
 6. From a finding, "Create ticket" uses the RFC-0003 ticket text.
 
+**As built (part C).** The tab opens on recent checks; a check opens a sheet with each finding, its values and its traffic. The token, preview access and ignore rule forms are sheets. "Create ticket" copies a ticket text with the rule, page, values, traffic and pull request, because a finding is not an RFC-0003 opportunity. The override writes the audit action `seo_check.overridden` with the CI token as a system actor; ignore rule changes write `seo_check.ignore_changed`. Runs are deleted after 90 days by the daily retention task.
+
 ### 5.12 Phase 2: GitHub App mode
 
 1. Add App permissions Checks (write) and Pull requests (read), and subscribe to the `deployment_status` and `pull_request` events.
@@ -178,9 +192,13 @@ Project settings → new **SEO checks** tab:
 3. On a successful `deployment_status` with an `environment_url` for a pull request's head SHA, start a run with no workflow step.
 4. Post a Check Run with the summary and one annotation per finding on the changed file that maps to the page.
 
+**As built (part E).** The webhook is `/api/github/app/webhook`, signed with `GITHUB_APP_WEBHOOK_SECRET`; without the secret it answers 404. A delivery id is claimed before the work and freed if the work fails, so a manual redelivery runs again. Only `deployment_status` is subscribed: the pull request, its labels and its changed files come from the commit through the REST API, so the `pull_request` event is not needed. A deployment counts when it succeeds with an HTTPS URL, is not the connection's production environment, and belongs to an open pull request of a repository connected through the same installation. App runs share the action's limits, host checks and override label. The workflow's last step posts the Check Run; a failed report leaves the stored run unchanged. URL selection records the changed file behind each page, and annotations point at line 1 of that file, because a finding belongs to a page, not a line. Delivery ids follow the 90-day run retention.
+
 ### 5.13 Phase 3: rendered mode
 
 For pages flagged `content-shrunk` or `javascript-rendering-suspected`, render both versions in a headless browser and compare the rendered HTML. Use it only for those pages, because rendering is slow and costs more.
+
+**As built (part F).** A project switch turns rendered mode on. Inside each check batch, a page is flagged when the preview's raw HTML is an app shell (the audit analyzer's `javascriptShell`) or fails the `content-shrunk` test. Flagged pages render on both hosts with Cloudflare Browser Run through the audit's `RenderedPageService`, and the rules compare the rendered facts; status, redirect and header findings still come from the raw responses. The cap is 5 pages a run (10 renders, each with a 20-second timeout). Context is not used: it costs more and would receive the preview. Protected previews are not rendered, because the renderer cannot carry the access secret. Billing reuses the audit's rendering holds after a spend-limit room check; no room or no credits keeps the raw comparison. The app worker gains a `BROWSER` binding.
 
 ### 5.14 Use it ourselves
 
@@ -210,33 +228,33 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 
 ### Phase 1
 
-- [ ] Seven tables with D1 and Postgres migrations and the parity test.
-- [ ] CI token create, hash, verify and revoke, with tests.
-- [ ] Check API with token, host, quota and rate-limit checks (one test each).
-- [ ] Test: a token from project A cannot read or create runs for project B.
-- [ ] Test: a preview host outside the allowlist is refused before any fetch.
-- [ ] URL selection with tests for each reason, the dynamic-segment sitemap match and the 100-URL cap.
-- [ ] Fetcher with the URL policy, redirect limit, size limit, timeouts and protected-preview headers (tests).
-- [ ] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.
-- [ ] One test per rule, positive and negative.
-- [ ] Traffic weighting and severity raise tests.
-- [ ] Override label writes an audit event (test).
-- [ ] `seo-check` Trigger.dev task with the idempotency key.
-- [ ] Composite action repository with a tagged `v1` release and a README.
-- [ ] SEO checks tab with tokens, hosts, access, ignores and history.
-- [ ] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
-- [ ] Installed on Relay's own previews and on the monorepo for S1.
+- [x] Seven tables with D1 and Postgres migrations and the parity test.
+- [x] CI token create, hash, verify and revoke, with tests.
+- [x] Check API with token, host, quota and rate-limit checks (one test each).
+- [x] Test: a token from project A cannot read or create runs for project B.
+- [x] Test: a preview host outside the allowlist is refused before any fetch.
+- [x] URL selection with tests for each reason, the dynamic-segment sitemap match and the 100-URL cap.
+- [x] Fetcher with the URL policy, redirect limit, size limit, timeouts and protected-preview headers (tests).
+- [x] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.
+- [x] One test per rule, positive and negative.
+- [x] Traffic weighting and severity raise tests.
+- [x] Override label writes an audit event (test).
+- [x] `seo-check` Trigger.dev task with the idempotency key. Built as `SeoCheckWorkflow` (owner decision); the run id is the instance id.
+- [x] Composite action repository with a tagged `v1` release and a README. `PlaybookMediaLLC/relay-seo-check`, release v1.0.0; a production smoke test passed through it.
+- [x] SEO checks tab with tokens, hosts, access, ignores and history.
+- [x] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
+- [ ] Installed on Relay's own previews and on the monorepo for S1. Follow-up in section 12.
 
 ### Phase 2
 
-- [ ] App permissions and webhook subscriptions added.
-- [ ] Signature check and delivery deduplication (tests).
-- [ ] Automatic run from a Vercel preview `deployment_status`.
-- [ ] Check Run with annotations on the mapped files.
+- [ ] App permissions and webhook subscriptions added. Follow-up in section 12.
+- [x] Signature check and delivery deduplication (tests).
+- [x] Automatic run from a Vercel preview `deployment_status` (test; live check waits for the App settings).
+- [x] Check Run with annotations on the mapped files (test).
 
 ### Phase 3
 
-- [ ] Rendered mode for flagged pages, with a time and cost cap.
+- [x] Rendered mode for flagged pages, with a time and cost cap (test; live check after deploy).
 
 ## 10. Real-site acceptance test
 
@@ -306,3 +324,25 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 **Adoption**
 
 - The check runs on every pull request of Relay and the monorepo for 2 weeks, with no manual retry.
+
+**Met now (2026-10-18):**
+
+- 0 fetches in a test of 20 disallowed hosts, including owner-added private addresses that the URL policy stops.
+- A run makes 2 page requests per URL in the end-to-end test; redirects are not followed.
+- No code in the check runner logs, and findings and summaries hold page values only, so preview access secrets cannot appear there (search check).
+- The action script exits 0 on a Relay or quota failure unless `fail-on` is `warning`.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 2 live check (section 10). Trigger: the owner adds the webhook URL, the `GITHUB_APP_WEBHOOK_SECRET`, the "Deployment status" event and Checks write to the App, following `playbook-deployment.md`, and a Vercel test repository has the App installed.
+- [ ] Phase 3 live check: a flagged page renders on both hosts and the run settles its rendering hold. Trigger: a client-rendered site with previews is connected to a project.
+- [ ] Phase 1 acceptance on S1 and S3 (section 10) and the detection and speed criteria of section 11. Trigger: the monorepo's GitHub billing is fixed (S1), and Relay has previews (S3, RFC-0025).
+- [ ] Usability: a developer new to Relay installs the action from the docs in under 10 minutes. Trigger: the first outside install.
+- [ ] Adoption: the check runs on every pull request of Relay and the monorepo for 2 weeks with no manual retry. Trigger: the S1 and S3 installs.
+
+**Smoke tests, production (Playbook Media project, preview `https://playbookmedia.io`):**
+
+1. 2026-10-17, after part C: a token created in the tab started a check through the API (202). The Workflow finished in about 9 seconds: 10 pages, 0 findings. A bad token got 401 and a disallowed host got 400. The revoked token got 401.
+2. 2026-10-18, after parts E and F: a new token started a check (202). It succeeded on 10 pages with 0 findings and appeared in Recent checks. After the revoke, the token got 401. The rendered mode switch shows in the tab, off by default.

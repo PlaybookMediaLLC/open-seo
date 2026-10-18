@@ -6,9 +6,9 @@ import {
 import { creditsForProviderUsd } from "@/shared/billing";
 import {
   getOrCreateOrganizationCustomer,
-  reserveUsageCredits,
   settleUsageCredits,
 } from "@/server/billing/subscription";
+import { reserveWithinLimits } from "@/server/billing/spendAdmission"; // playbook-seam
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import {
   DataforseoChargedTaskError,
@@ -346,7 +346,8 @@ async function meterDataforseoCalls<T>(
   }
 
   const billingCustomer = await getOrCreateOrganizationCustomer(customer);
-  const { holds, refusedCalls } = await reserveUsageCredits({
+  // playbook-seam: RFC-0009 monthly limits before the Autumn hold.
+  const { holds, refusedCalls } = await reserveWithinLimits({
     customer,
     customerId: billingCustomer.id,
     callCredits,

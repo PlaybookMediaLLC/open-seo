@@ -91,14 +91,25 @@ async function handleSetup(request: Request) {
       });
       return back(payload.projectId, "refused");
     }
-    await PublishingRepository.saveInstallation({
-      organizationId: payload.organizationId,
-      installationId,
-      accountLogin: installation.account.login,
-      accountType: installation.account.type,
-      createdBy: payload.userId,
-      createdAt: new Date().toISOString(),
-    });
+    await PublishingRepository.saveInstallation(
+      {
+        organizationId: payload.organizationId,
+        installationId,
+        accountLogin: installation.account.login,
+        accountType: installation.account.type,
+        createdBy: payload.userId,
+        createdAt: new Date().toISOString(),
+      },
+      {
+        organizationId: payload.organizationId,
+        projectId: payload.projectId,
+        actor: { userId: payload.userId },
+        action: "github_app.installed",
+        targetType: "github_installation",
+        targetId: String(installationId),
+        summary: `Installed the GitHub App on ${installation.account.login}`,
+      },
+    );
     return back(payload.projectId, "installed");
   } catch (error) {
     // The redirect hides the reason. Error messages here hold no token.
@@ -179,9 +190,19 @@ async function connect(context: PublishingContext, raw: ConnectGithubAppInput) {
             transport: "github_app",
             installationRef: installation.id,
             encryptedToken: null,
+            tokenKeyVersion: 0,
             createdBy: context.userId,
             createdAt: new Date().toISOString(),
             revokedAt: null,
+          },
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "publishing.connected",
+            targetType: "repository",
+            targetId: `${repository.owner}/${repository.name}`,
+            summary: `Connected ${repository.owner}/${repository.name} with the GitHub App`,
           },
           claimToken,
           organizationId: context.organizationId,

@@ -1,3 +1,4 @@
+import { reviewAudit } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { expect } from "vitest";
 import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
 import { ExperimentRepository } from "./ExperimentRepository";
@@ -44,7 +45,9 @@ export async function succeededExecution(database: TestDatabase) {
     }))
   )
     throw new Error("Fixture pull request rejected");
-  return { ...input, executionId: begin.execution.id };
+  // RFC-0009: register() writes this audit event with the experiment.
+  const audit = { ...reviewAudit, action: "experiment.registered" } as const;
+  return { ...input, executionId: begin.execution.id, audit };
 }
 
 export function newExperiment(
