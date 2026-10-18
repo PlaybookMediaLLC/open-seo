@@ -333,7 +333,7 @@ Justification for `analytics.readonly` (821 of 1,000 characters):
 
 **Monitoring**
 
-- [ ] The alert email arrives. The PostHog insight "Exception count" has the hourly alert "Relay production errors" (more than 0 exceptions), which emails the owner. A test error was thrown at 16:12 UTC on 2026-10-16.
+- [ ] The alert email arrives. The PostHog insight "Exception count" has the hourly alert "Relay production errors" (more than 0 exceptions), which emails the owner. A test error was thrown at 16:12 UTC on 2026-10-16. On 2026-10-18 PostHog showed the alert as last sent at about 01:50 UTC. It goes to the PostHog account address (`yoanyomba@solomon-ai.co`), not to `yoanyombapro@gmail.com`. Trigger: the owner confirms the email in that inbox, or changes the alert recipient.
 - [ ] The uptime check stays green for 7 days in a row: 2026-10-22 at the earliest. GitHub runs the 15-minute schedule every 3 to 5 hours, so the check proves availability at that cadence only.
 
 **People**

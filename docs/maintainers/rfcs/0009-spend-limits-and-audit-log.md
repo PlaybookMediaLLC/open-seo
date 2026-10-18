@@ -366,7 +366,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 Each follow-up names its trigger. Check it here when it passes.
 
 - [x] Review guidelines carry the spend and audit invariants. Trigger: the maintainer reviews and merges PR #98. Done 2026-10-18 (PR #98).
-- [ ] Failed settlements are reconciled every 15 minutes. Trigger: the RFC-0008 Trigger.dev account exists and `spend-reconcile` runs.
+- [x] Failed settlements are reconciled every 15 minutes. Trigger: the RFC-0008 Trigger.dev account exists and `spend-reconcile` runs. Done on 2026-10-18: the Worker cron reconciles at the start of each quarter-hour tick (RFC-0008, owner decision). The scheduled jobs ran at the 11:00 UTC tick. No failed settlement was waiting, so the reconcile changed no rows.
 - [ ] Staging steps of section 10 (a broken Autumn key, a token key rotation, 31 requests in one minute) and the staging items of section 11. Trigger: a staging deployment exists.
 - [ ] Repository tokens use the dedicated key. Trigger: the owner sets `PUBLISHING_TOKEN_KEY` and `PUBLISHING_TOKEN_KEY_VERSION=1` in `ENV_PLAYBOOK`, following `playbook-deployment.md`.
 - [ ] An exact, per-event comparison of the ledger with Autumn usage. Trigger: a check that reads Autumn events with the secret key. The live check compared the balance and the 30-day usage, which the Billing page rounds to cents.

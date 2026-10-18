@@ -325,5 +325,5 @@ Each follow-up names its trigger. Check it here when it passes.
 
 - [ ] Phase 1b live test (section 10), the usability criteria and the value criterion. Trigger: an own or partner site with an eligible template group (30 or more pages with clicks, 1,000 clicks, MDE of 15% or less), the site owner's written approval, and 28 days of observation.
 - [ ] 200 backtests on a real eligible group, with at most 12% false results. Trigger: the same eligible group; "Run backtest" on its test.
-- [ ] The daily refresh runs on its own. Trigger: the RFC-0008 Trigger.dev account exists and `measurement_refresh` runs. Until then, "Refresh now" advances a test.
+- [x] The daily refresh runs on its own. Trigger: the RFC-0008 Trigger.dev account exists and `measurement_refresh` runs. Until then, "Refresh now" advances a test. Done on 2026-10-18: the Worker cron ran `measurement_refresh` at 11:00 UTC. It refreshed 0 split tests, because no test is running yet.
 - [x] Templates where separate static files share one metadata helper (RFC-0005 phase 1a) pass the template check. Done 2026-10-18 (tests with 40 static pages and one helper).

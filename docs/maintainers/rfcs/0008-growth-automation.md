@@ -267,6 +267,8 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 ### Phase 0: spike (half a day)
 
+The Worker cron runs the jobs now (section 5, as built), so these items apply only if the jobs move to Trigger.dev.
+
 - [ ] Trigger.dev project for Playbook Media, with staging and production environments.
 - [ ] A scheduled task calls a signed staging endpoint. The endpoint rejects a wrong signature and a 10-minute-old timestamp.
 - [ ] The Worker triggers a task with the SDK or the REST API. Record which one works on Workers.
@@ -299,7 +301,7 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 - [x] Email preferences table and settings UI. `growth_email_preferences` and the bell control (2026-10-18).
 - [x] Digest sends only to opted-in users (test). `emailDigest.test.ts`.
-- [ ] Live check: a digest reaches a test inbox.
+- [ ] Live check: a digest reaches a test inbox. Trigger: `yoanyombapro@gmail.com` accepts its invitation and sends itself a test digest, or the owner names another test inbox.
 
 ## 10. Real-site acceptance test
 
@@ -368,14 +370,14 @@ Upstream self-hosted installs do not need Trigger.dev. `GROWTH_JOBS_MODE` defaul
 
 Each follow-up names its trigger. Check it here when it passes.
 
-- [ ] Phase 0 spike: idempotency, concurrency, the signed staging call, plan and cost. Trigger: the owner creates the Trigger.dev project with staging and production environments.
-- [ ] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists.
-- [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`.
-- [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists.
-- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production.
+- [ ] Phase 0 spike: idempotency, concurrency, the signed staging call, plan and cost. Trigger: the owner creates the Trigger.dev project with staging and production environments. Not needed while the Worker cron runs the jobs.
+- [x] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists. Done on 2026-10-18 with the Worker cron instead, which needs no secrets. At the 11:00 UTC tick, the 4 Playbook Media jobs (opportunity refresh, measurement refresh, deployment check and recommendation re-check) succeeded on their first attempt.
+- [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`. PR #89 is merged. The secrets are not needed while the Worker cron runs the jobs.
+- [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists. Not needed while the Worker cron runs the jobs: a job that fails 3 times notifies the project.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production. They run since 11:00 UTC on 2026-10-18, so the 7 days end on 2026-10-25 at the earliest.
 - [x] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Done on 2026-10-18; scheduled jobs that spend now pass the limits, and their audit events show as Scheduled.
-- [ ] Phase 2 email digest (section 5.11). Trigger: Loops is configured.
-- [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab.
+- [x] Phase 2 email digest (section 5.11). Trigger: Loops is configured. Done on 2026-10-18 on the Cloudflare Email binding instead (PR #116). Its live check in section 9 stays open.
+- [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab. Done for Playbook Media on 2026-10-18 (4 jobs). The other projects wait for a manager.
 
 Evidence for the phase 1 items that code can show:
 
