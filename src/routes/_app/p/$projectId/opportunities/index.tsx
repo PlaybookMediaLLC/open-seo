@@ -14,6 +14,7 @@ import { OpportunityRunLog } from "@/client/features/opportunities/OpportunityRu
 import { OpportunitiesList } from "@/client/features/opportunities/OpportunitiesList";
 import { ContentGapSheet } from "@/client/features/opportunities/PaidChecks";
 import { ConversionRunButton } from "@/client/features/conversion/ConversionRunButton";
+import { AccessibilityTrend } from "@/client/features/accessibility/AccessibilityTrend";
 import {
   ConnectSearchConsole,
   dateLabel,
@@ -190,6 +191,9 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
                     statusCounts={data.statusCounts}
                     owners={owners.data ?? []}
                   />
+                  {filters.type === "accessibility_issue" ? (
+                    <AccessibilityTrend projectId={projectId} />
+                  ) : null}
                   <OpportunitiesList
                     rows={data.rows}
                     projectId={projectId}

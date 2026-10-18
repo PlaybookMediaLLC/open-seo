@@ -40,6 +40,11 @@ vi.mock("@/server/lib/audit/rendering-billing", () => ({
 
 beforeAll(async () => {
   await database.prepare();
+  if (!database.isPostgres)
+    // The real audits table has the start time that the trend orders by.
+    await database.client.execute(
+      "ALTER TABLE audits ADD COLUMN started_at TEXT NOT NULL DEFAULT '2026-10-01T00:00:00.000Z'",
+    );
   // The pinned axe-core file, as the CDN serves it.
   const axe = readFileSync("node_modules/axe-core/axe.min.js", "utf8");
   vi.stubGlobal("fetch", async () => new Response(axe));
@@ -139,4 +144,16 @@ it("checks the cluster's pages again and stores the pages that still fail", asyn
       usage: { cloudflareAttempts: 2, contextCredits: 0 },
     }),
   );
+});
+
+it("counts a fix whose check passed, and each audit's serious violations", async () => {
+  const { context, scope } = await deployedFix();
+  mocks.quickAction.mockImplementation(async () => page("color-contrast"));
+  await AccessibilityCheckService.check(context, scope);
+  expect(
+    await AccessibilityCheckService.trend(context, scope.projectId),
+  ).toMatchObject({
+    audits: [{ pagesChecked: 2, seriousViolations: 2 }],
+    fixesPassed: 1,
+  });
 });

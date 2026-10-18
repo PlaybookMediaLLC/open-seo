@@ -38,3 +38,18 @@ export type AccessibilityFixCheck = {
     detail: string | null;
   }>;
 };
+
+export const accessibilityTrendInputSchema = z.object({
+  projectId: z.string().min(1),
+});
+
+/** RFC-0013 5.5: violations per audit, and fixes that passed their check. */
+export type AccessibilityTrend = {
+  audits: Array<{
+    auditId: string;
+    startedAt: string;
+    pagesChecked: number;
+    seriousViolations: number;
+  }>;
+  fixesPassed: number;
+};
