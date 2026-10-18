@@ -50,6 +50,10 @@ export const typeLabels: Record<OpportunityType, string> = {
   technical_blocker: "Technical blocker",
   internal_link: "Internal link",
   content_gap: "Content gap",
+  cro_low_conversion: "Low conversion",
+  cro_form_drop_off: "Form drop-off",
+  cro_device_gap: "Mobile conversion gap",
+  cro_low_engagement: "Low engagement",
 };
 export const typeHelp: Record<OpportunityType, string> = {
   striking_distance:
@@ -66,6 +70,14 @@ export const typeHelp: Record<OpportunityType, string> = {
     "A page that ranks for a key page's searches does not link to it yet.",
   content_gap:
     "Competitors rank in the top 10 for these commercial searches, and this site barely appears. Found with paid competitor data.",
+  cro_low_conversion:
+    "A landing page with 300 or more sessions converts at half or less of the median for pages with the same role, and the gap is 5 or more conversions.",
+  cro_form_drop_off:
+    "A page with 50 or more form starts gets 30% or fewer form submits.",
+  cro_device_gap:
+    "A page with 200 or more mobile sessions converts on mobile at half or less of its desktop rate.",
+  cro_low_engagement:
+    "A page with 300 or more sessions has an engagement rate of 40% or less, while the site median is 55% or more.",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",

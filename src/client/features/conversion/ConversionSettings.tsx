@@ -80,6 +80,13 @@ export function ConversionSettings({ projectId }: { projectId: string }) {
                 )}
               </li>
             ))}
+            {!gate.formsMeasured && (
+              <li className="text-muted-foreground">
+                GA4 enhanced measurement does not record form interactions, so
+                Relay skips the form drop-off check. Turn on &quot;Form
+                interactions&quot; in GA4: Admin &gt; Data streams.
+              </li>
+            )}
             {gate.status === "failed" && (
               <li className="text-muted-foreground">
                 Relay creates no conversion opportunity until every check
@@ -111,6 +118,9 @@ export function ConversionSettings({ projectId }: { projectId: string }) {
             {conversion.valueMinor !== null && conversion.currency
               ? `, worth ${money(conversion.valueMinor, conversion.currency)} each`
               : ", with no value set"}
+            {conversion.channel === "all"
+              ? ". Checks use all traffic."
+              : ". Checks use organic search traffic."}
           </p>
         ) : (
           <p className="text-sm text-muted-foreground">
@@ -142,6 +152,9 @@ function ConversionSheet(props: {
   const [eventName, setEventName] = useState(
     conversion?.eventName ?? gate.keyEvents[0]?.eventName ?? "",
   );
+  const [channel, setChannel] = useState(
+    conversion?.channel ?? "organic_search",
+  );
   const [value, setValue] = useState(
     conversion?.valueMinor != null ? String(conversion.valueMinor / 100) : "",
   );
@@ -154,6 +167,7 @@ function ConversionSheet(props: {
           eventName,
           valueMinor: amount,
           currency: amount === null ? null : gate.currency,
+          channel,
         },
       });
     },
@@ -192,6 +206,19 @@ function ConversionSheet(props: {
               ))}
             </select>
           )}
+          <select
+            aria-label="Traffic"
+            className="h-9 w-full rounded-md border bg-background px-2"
+            value={channel}
+            onChange={(event) =>
+              setChannel(
+                event.target.value === "all" ? "all" : "organic_search",
+              )
+            }
+          >
+            <option value="organic_search">Organic search traffic only</option>
+            <option value="all">All traffic</option>
+          </select>
           <label className="block space-y-1">
             <span>Value of one conversion in {gate.currency} (optional)</span>
             <Input

@@ -373,6 +373,7 @@ function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
           eventName: "sign_up",
           valueMinor: null,
           currency: null,
+          channel: "organic_search",
         }),
     },
   };

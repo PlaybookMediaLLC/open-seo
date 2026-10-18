@@ -13,6 +13,7 @@ import { OpportunityFilterBar } from "@/client/features/opportunities/Opportunit
 import { OpportunityRunLog } from "@/client/features/opportunities/OpportunityRunLog";
 import { OpportunitiesList } from "@/client/features/opportunities/OpportunitiesList";
 import { ContentGapSheet } from "@/client/features/opportunities/PaidChecks";
+import { ConversionRunButton } from "@/client/features/conversion/ConversionRunButton";
 import {
   ConnectSearchConsole,
   dateLabel,
@@ -92,7 +93,10 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
           actions={
             <div className="flex flex-wrap gap-2">
               {query.data?.connected ? (
-                <ContentGapSheet projectId={projectId} />
+                <>
+                  <ConversionRunButton projectId={projectId} />
+                  <ContentGapSheet projectId={projectId} />
+                </>
               ) : null}
               <Button
                 onClick={() => detection.mutate()}

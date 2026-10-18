@@ -6,7 +6,10 @@ import type {
   RankEvidence,
 } from "@/types/schemas/opportunities";
 
-export type Ga4LandingPageRow = Omit<Ga4LandingPageMetrics, "currency"> & {
+export type Ga4LandingPageRow = Pick<
+  Ga4LandingPageMetrics,
+  "period" | "landingPage" | "sessions" | "keyEvents" | "revenue"
+> & {
   hostName: string;
 };
 

@@ -230,12 +230,21 @@ export const opportunityGa4Evidence = sqliteTable(
     keyEvents: real("key_events").notNull(),
     revenue: real("revenue"),
     currency: text("currency"),
+    // RFC-0012: device rows for the device gap, engagement and form counts.
+    device: text("device", { enum: ["all", "mobile", "desktop"] })
+      .notNull()
+      .default("all"),
+    engagedSessions: real("engaged_sessions"),
+    keyEventName: text("key_event_name"),
+    formStarts: real("form_starts"),
+    formSubmits: real("form_submits"),
   },
   (t) => [
     uniqueIndex("opportunity_ga4_evidence_opportunity_run_period_idx").on(
       t.opportunityId,
       t.runId,
       t.period,
+      t.device,
     ),
     index("opportunity_ga4_evidence_project_opportunity_idx").on(
       t.projectId,
@@ -271,6 +280,10 @@ export const projectConversionEvents = sqliteTable(
     eventName: text("event_name").notNull(),
     valueMinor: integer("value_minor"),
     currency: text("currency"),
+    // RFC-0012 5.3: the organic search channel by default, or all channels.
+    channel: text("channel", { enum: ["organic_search", "all"] })
+      .notNull()
+      .default("organic_search"),
     createdBy: text("created_by").notNull(),
     updatedAt: text("updated_at").notNull(),
   },

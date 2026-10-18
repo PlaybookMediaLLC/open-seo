@@ -38,6 +38,14 @@ const VERIFY: Record<OpportunityType, string> = {
     "Run a new site audit. It must show a link from the source page to the target page.",
   content_gap:
     "After the page ships, track the topic's keywords for 28 days and compare their positions with the competitor positions above.",
+  cro_low_conversion:
+    "After the change ships, wait 28 days. Then compare the page's conversion rate with the GA4 evidence above.",
+  cro_form_drop_off:
+    "After the change ships, wait 28 days. Then compare the page's form submits per form start with the GA4 evidence above.",
+  cro_device_gap:
+    "After the change ships, wait 28 days. Then compare the page's mobile and desktop conversion rates with the GA4 evidence above.",
+  cro_low_engagement:
+    "After the change ships, wait 28 days. Then compare the page's engagement rate with the GA4 evidence above.",
 };
 
 /** RFC-0004 phase 3: a checked internal-link anchor draft. */

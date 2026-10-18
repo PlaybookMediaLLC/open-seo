@@ -10,6 +10,11 @@ export const OPPORTUNITY_TYPES = [
   "internal_link",
   // Paid: runs only when a person confirms the estimate.
   "content_gap",
+  // RFC-0012: conversion problems, from GA4 data only.
+  "cro_low_conversion",
+  "cro_form_drop_off",
+  "cro_device_gap",
+  "cro_low_engagement",
 ] as const;
 export const OPPORTUNITY_DIAGNOSES = [
   "ranking_drop",
@@ -19,7 +24,11 @@ export const OPPORTUNITY_DIAGNOSES = [
   "seasonal",
   "unknown",
 ] as const;
-export const OPPORTUNITY_RUN_KINDS = ["search_console", "content_gap"] as const;
+export const OPPORTUNITY_RUN_KINDS = [
+  "search_console",
+  "content_gap",
+  "conversion",
+] as const;
 // The year-ago periods are the current and previous windows moved back 364
 // days, so weekdays match.
 export const EVIDENCE_PERIODS = [
@@ -151,6 +160,13 @@ export type Ga4LandingPageMetrics = {
   keyEvents: number;
   revenue: number | null;
   currency: string | null;
+  // RFC-0012: conversion evidence. "all" sums every device.
+  device: "all" | "mobile" | "desktop";
+  engagedSessions: number | null;
+  /** The chosen conversion; keyEvents then counts only that event. */
+  keyEventName: string | null;
+  formStarts: number | null;
+  formSubmits: number | null;
 };
 
 export type OpportunityCandidate = {

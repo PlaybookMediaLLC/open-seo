@@ -63,6 +63,10 @@ export function Ga4Evidence({
   latestRunId: string;
 }) {
   const latest = rows.filter((row) => row.runId === latestRunId);
+  // RFC-0012: conversion items count only the chosen key event.
+  const conversion = latest.find((row) => row.keyEventName)?.keyEventName;
+  if (conversion)
+    return <ConversionEvidence rows={latest} eventName={conversion} />;
   return (
     <section className="space-y-3" aria-labelledby="ga4-heading">
       <div>
@@ -309,5 +313,58 @@ export function PaidEvidence({
         </section>
       ) : null}
     </>
+  );
+}
+
+const count = (value: number | null) =>
+  value === null ? "—" : value.toLocaleString();
+
+function ConversionEvidence({
+  rows,
+  eventName,
+}: {
+  rows: OpportunityGa4Evidence[];
+  eventName: string;
+}) {
+  return (
+    <section className="space-y-3" aria-labelledby="ga4-heading">
+      <div>
+        <h2 id="ga4-heading" className="text-lg font-semibold">
+          GA4 evidence
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Sessions that started on this page in the run's 28 days, and its{" "}
+          <code>{eventName}</code> conversions.
+        </p>
+      </div>
+      <TableCard>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Device</TableHead>
+              <TableHead>Sessions</TableHead>
+              <TableHead>Engaged sessions</TableHead>
+              <TableHead>Conversions</TableHead>
+              <TableHead>Form starts</TableHead>
+              <TableHead>Form submits</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell>
+                  {row.device === "all" ? "All devices" : row.device}
+                </TableCell>
+                <TableCell>{count(row.sessions)}</TableCell>
+                <TableCell>{count(row.engagedSessions)}</TableCell>
+                <TableCell>{count(row.keyEvents)}</TableCell>
+                <TableCell>{count(row.formStarts)}</TableCell>
+                <TableCell>{count(row.formSubmits)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableCard>
+    </section>
   );
 }
