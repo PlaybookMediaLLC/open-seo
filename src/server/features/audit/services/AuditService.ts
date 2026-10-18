@@ -32,6 +32,7 @@ import {
 } from "@/server/lib/audit/url-policy";
 import { reconcileRunningAudit } from "@/server/features/audit/services/auditReconciler";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
+import { saveAccessibilityTargets } from "@/server/features/accessibility/accessibilityTargets"; // playbook-seam
 
 // Free accounts keep bounded audit capacity; rendering reserves usage credits.
 async function resolveAuditLimitTier(
@@ -125,6 +126,7 @@ async function startAudit(input: {
     pagesTotal: reservation.pagesTotal,
     lighthouseTotal: reservation.lighthouseTotal,
   });
+  await saveAccessibilityTargets(auditId, input.projectId); // playbook-seam: RFC-0013 top-clicked pages
 
   let renderLocks: RenderingLock[] = [];
   try {

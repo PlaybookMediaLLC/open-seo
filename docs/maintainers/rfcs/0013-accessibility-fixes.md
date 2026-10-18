@@ -1,6 +1,6 @@
 # RFC-0013: Accessibility fixes in code
 
-- **Status:** Draft
+- **Status:** In progress. Part A built: axe-core in audits, the result tables and the cluster keys.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Accessibility and legal risk.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules). Phase 3 joins RFC-0015.
@@ -60,6 +60,8 @@ The WebAIM Million report finds every year that six error types cause most detec
    | `audit_accessibility_violations` | `id`, `result_id` (FK cascade), `rule_id`, `impact` (`minor`, `moderate`, `serious`, `critical`), `wcag_tags`, `target_selector`, `html_snippet`, `failure_summary` (each text field at most 300 characters), `cluster_key` |
 
 6. `cluster_key` = SHA-256 of the rule id, the selector with indexes removed, and the snippet with attribute values for `src`, `href` and `id` removed. The same broken component on 40 pages gives one cluster.
+
+**As built (part A).** The step runs after Lighthouse in the audit workflow, on the audit worker's browser. The audit worker holds no Google credentials by design, so the app worker saves the 20 pages with the most organic clicks in `audit_accessibility_targets` when the audit starts. The step adds the project's key pages first, then those pages, then the shortest page of each route template, up to 50. It loads axe-core 4.13.0 from jsDelivr's copy of the npm file and checks its SHA-256 before use: bundling the 570 KB source as a string exhausted the build's memory. The browser's "content" action injects axe-core and a script that writes the compact result into a `<template>`, and Relay reads it back from the page's HTML. A rule keeps at most 20 nodes. The `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` and `wcag22aa` tags run, and `srcset` values are also removed from cluster keys. Browser time has its own hold and settlement, like the RFC-0010 rendered mode: without room in the spend limits or the credits, the step checks nothing. A page whose security policy blocks injected scripts stores the reason instead of violations. A failure never fails the audit.
 
 ### 5.3 Opportunities
 
@@ -133,10 +135,10 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 ### Phase 1
 
-- [ ] Accessibility step in the audit with the page selection and the 50-page cap.
-- [ ] Pinned axe-core version and the WCAG tag set.
+- [x] Accessibility step in the audit with the page selection and the 50-page cap.
+- [x] Pinned axe-core version and the WCAG tag set.
 - [ ] Two result tables and the evidence table, in D1 and Postgres, with the parity test.
-- [ ] Cluster keys with tests: the same component on different pages gives one key, different components give different keys.
+- [x] Cluster keys with tests: the same component on different pages gives one key, different components give different keys.
 - [ ] `accessibility_issue` opportunities with the priority inputs.
 - [ ] `jsx_attribute` change kind with element matching tests (literal `src`, imported image, spread rejection, multiple matches).
 - [ ] Alt text and `lang` fixes, including the decorative choice.

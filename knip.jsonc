@@ -48,6 +48,9 @@
   // Disable Drizzle plugin - it tries to load drizzle/sqlite.config.ts which imports cloudflare:workers
   "drizzle": false,
   "ignoreDependencies": [
+    // RFC-0013: tests read its axe.min.js to prove the pinned hash; the
+    // worker fetches the same file from jsDelivr.
+    "axe-core",
     // Tailwindcss used via @tailwindcss/vite plugin
     "tailwindcss",
     // Imported by app.css; shadcn is also the component CLI

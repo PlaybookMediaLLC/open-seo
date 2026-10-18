@@ -54,6 +54,12 @@ import type { Plugin } from "vite";
  *   (src/client/features/notifications/NotificationsBell.tsx).
  * - src/server/workflows/siteAuditWorkflowPhases.ts: a completed audit queues
  *   its follow-up job (src/server/features/growth/auditFollowup.ts).
+ * - src/server/workflows/siteAuditWorkflowPhases.ts: after Lighthouse, an
+ *   audit runs axe-core on up to 50 pages
+ *   (src/server/features/accessibility/accessibilityStep.ts).
+ * - src/server/features/audit/services/AuditService.ts: starting an audit
+ *   saves its top-clicked pages for that step
+ *   (src/server/features/accessibility/accessibilityTargets.ts).
  * - src/server/features/gsc/services/GscService.ts: connecting Search Console
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
