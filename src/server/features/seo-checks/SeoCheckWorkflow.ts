@@ -4,6 +4,7 @@ import {
   type WorkflowStep,
 } from "cloudflare:workers";
 import { pgStep } from "@/server/workflows/pgStep";
+import { reportCheckRun } from "./githubAppMode";
 import { planCheck } from "./seoCheckPlan";
 import {
   checkBatch,
@@ -43,5 +44,10 @@ export class SeoCheckWorkflow extends WorkflowEntrypoint<
     } catch (error) {
       await pgStep(step, "fail", STEP, () => failCheck(runId, error));
     }
+    // RFC-0010 5.12: an App run reports back as a Check Run. A failed report
+    // leaves the stored run as it is.
+    await pgStep(step, "report", STEP, () => reportCheckRun(runId)).catch(
+      () => undefined,
+    );
   }
 }

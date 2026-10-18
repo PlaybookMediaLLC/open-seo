@@ -51,6 +51,12 @@ export const ciCheckRuns = pgTable(
     blockingCount: integer("blocking_count").notNull().default(0),
     warningCount: integer("warning_count").notNull().default(0),
     urlCount: integer("url_count").notNull().default(0),
+    // RFC-0010 5.12: "action" runs come from the GitHub Action; "app" runs
+    // from a deployment event, and post a Check Run when they finish.
+    source: text("source", { enum: ["action", "app"] })
+      .notNull()
+      .default("action"),
+    installationId: integer("installation_id"),
     overrideUsed: boolean("override_used").notNull().default(false),
     createdAt: text("created_at").notNull(),
     startedAt: text("started_at"),
@@ -77,6 +83,8 @@ export const ciCheckUrls = pgTable(
     projectId: text("project_id").notNull(),
     path: text("path").notNull(),
     reason: text("reason", { enum: CI_URL_REASONS }).notNull(),
+    // The changed file that maps to this page, for Check Run annotations.
+    sourceFile: text("source_file"),
     baseStatus: integer("base_status"),
     previewStatus: integer("preview_status"),
     clicks28d: integer("clicks_28d"),
@@ -158,5 +166,14 @@ export const ciProjectSettings = pgTable("ci_project_settings", {
   checkPreviewRobotsHeader: boolean("check_preview_robots_header")
     .notNull()
     .default(false),
+  // RFC-0010 5.13: render client-side pages in a browser (uses credits).
+  renderedMode: boolean("rendered_mode").notNull().default(false),
   updatedAt: text("updated_at").notNull(),
+});
+
+// RFC-0010 5.12: GitHub webhook deliveries, so a redelivery starts nothing.
+export const ciWebhookDeliveries = pgTable("ci_webhook_deliveries", {
+  id: text("id").primaryKey(),
+  event: text("event").notNull(),
+  receivedAt: text("received_at").notNull(),
 });

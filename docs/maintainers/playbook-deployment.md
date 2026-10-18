@@ -200,8 +200,9 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
 5. **GitHub environment:** create an environment named `playbook` and optionally require reviewers to approve each production deploy.
 6. Run the workflow manually (Actions, "Deploy (Playbook Media)", Run workflow). The first run creates every resource, and the custom domain's certificate can take a few minutes to issue.
 7. **GitHub App (optional, RFC-0005 5.7):** create the "Relay SEO" app under the PlaybookMediaLLC organization.
-   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read, Commit statuses read, Issues read and write. Nothing else.
-   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation". No webhook.
+   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read and write, Commit statuses read, Issues read and write. Nothing else.
+   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation".
+   - Webhook (RFC-0010 SEO checks in App mode): URL `https://relay.playbookmedia.io/api/github/app/webhook`, a secret from `openssl rand -hex 32`, and the "Deployment status" event. Add the secret as `GITHUB_APP_WEBHOOK_SECRET` to `ENV_PLAYBOOK`. Without it, the webhook answers 404.
    - GitHub issues the private key in PKCS#1 PEM. WebCrypto needs PKCS#8. Convert it once: `openssl pkcs8 -topk8 -nocrypt -in relay-seo.private-key.pem -out relay-seo.pkcs8.pem`.
    - Add `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` and `GITHUB_APP_PRIVATE_KEY` (the PKCS#8 PEM) to `ENV_PLAYBOOK`. `deploy/alchemy/relay-env.ts` passes them to the worker. Without them, only personal tokens are offered.
 

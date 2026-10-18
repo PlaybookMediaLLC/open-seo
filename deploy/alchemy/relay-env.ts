@@ -19,6 +19,8 @@ export const relayDataEnv = {
   GITHUB_APP_CLIENT_ID: optionalVar("GITHUB_APP_CLIENT_ID"),
   GITHUB_APP_CLIENT_SECRET: optionalSecret("GITHUB_APP_CLIENT_SECRET"),
   GITHUB_APP_PRIVATE_KEY: optionalSecret("GITHUB_APP_PRIVATE_KEY"),
+  // SEO checks in App mode (RFC-0010 5.12). Empty turns the webhook off.
+  GITHUB_APP_WEBHOOK_SECRET: optionalSecret("GITHUB_APP_WEBHOOK_SECRET"),
   // Scheduled growth jobs on Trigger.dev (RFC-0008 5.2). Without a secret
   // the internal endpoints answer 404.
   GROWTH_JOBS_MODE: optionalVar("GROWTH_JOBS_MODE"),

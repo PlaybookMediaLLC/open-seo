@@ -36,9 +36,17 @@ it("maps changed route files to paths, with up to 5 sitemap matches per dynamic 
     ],
   });
   expect(selected).toEqual([
-    { path: "/pricing", reason: "changed_file" },
-    { path: "/about", reason: "changed_file" },
-    { path: "/", reason: "changed_file" },
+    {
+      path: "/pricing",
+      reason: "changed_file",
+      file: "app/(site)/pricing/page.tsx",
+    },
+    {
+      path: "/about",
+      reason: "changed_file",
+      file: "src/app/@modal/about/layout.tsx",
+    },
+    { path: "/", reason: "changed_file", file: "pages/index.tsx" },
   ]);
   const dynamic = await selectUrls({
     ...input,

@@ -246,4 +246,5 @@ export const {
   ciPreviewAccess,
   ciPreviewHosts,
   ciProjectSettings,
+  ciWebhookDeliveries,
 } = schema;

@@ -25,6 +25,16 @@ The check reads rendered HTML, so it works with any framework.
 
 4. Open a pull request. The job summary lists each finding with its page, rule, before and after values, and traffic.
 
+## Run it with no workflow step
+
+If the project publishes through the Relay GitHub App, Relay can start the check by itself:
+
+1. Connect the repository in **Project settings → Publishing** with the GitHub App.
+2. Let your platform report deployments to GitHub. The Vercel and Netlify GitHub integrations do this.
+3. Open a pull request. When its preview deployment succeeds, Relay checks it and adds a **Relay SEO check** to the pull request, with notes on the changed files.
+
+Relay skips deployments to the repository's production environment. The same limits, preview hosts and override label apply.
+
 ## Preview hosts
 
 Relay checks previews on your project's domain and its subdomains, and on `*.vercel.app`, `*.netlify.app`, `*.pages.dev` and `*.workers.dev`. To check another host, add it under **Preview hosts**. Relay refuses every other host.

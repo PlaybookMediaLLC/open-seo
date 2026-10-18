@@ -24,7 +24,7 @@ export const PUBLISH_PERMISSIONS: AppPermissions = {
   pull_requests: "write",
 };
 
-const API = "https://api.github.com";
+export const API = "https://api.github.com";
 
 export async function githubAppConfig() {
   const [appId, slug, clientId, clientSecret, privateKey] = await Promise.all(
@@ -85,7 +85,7 @@ async function appJwt(appId: string, pem: string) {
   return `${unsigned}.${base64Url(new Uint8Array(signature))}`;
 }
 
-async function githubJson<T>(
+export async function githubJson<T>(
   url: string,
   schema: z.ZodType<T>,
   init: { token: string; method?: "GET" | "POST"; body?: unknown },
