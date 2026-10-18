@@ -1,6 +1,6 @@
 # RFC-0010: SEO checks on pull requests
 
-- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) and part B (the runner and the rules) built
+- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) part B (the runner and the rules) and part C (the settings tab, history, override audit, docs) built
 - **Decision (owner, 2026-10-18):** run each check in a Cloudflare Workflow, the engine of site audits, instead of a Trigger.dev task, so checks work before the RFC-0008 Trigger.dev account exists. Create the public action repository `PlaybookMediaLLC/relay-seo-check`.
 - **Date:** 2026-10-15
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
@@ -183,6 +183,8 @@ Project settings → new **SEO checks** tab:
 5. Run history: pull request, status, counts, duration. A run opens a sheet with each finding, its values and its traffic.
 6. From a finding, "Create ticket" uses the RFC-0003 ticket text.
 
+**As built (part C).** The tab opens on recent checks; a check opens a sheet with each finding, its values and its traffic. The token, preview access and ignore rule forms are sheets. "Create ticket" copies a ticket text with the rule, page, values, traffic and pull request, because a finding is not an RFC-0003 opportunity. The override writes the audit action `seo_check.overridden` with the CI token as a system actor; ignore rule changes write `seo_check.ignore_changed`. Runs are deleted after 90 days by the daily retention task.
+
 ### 5.12 Phase 2: GitHub App mode
 
 1. Add App permissions Checks (write) and Pull requests (read), and subscribe to the `deployment_status` and `pull_request` events.
@@ -232,11 +234,11 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 - [x] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.
 - [x] One test per rule, positive and negative.
 - [x] Traffic weighting and severity raise tests.
-- [ ] Override label writes an audit event (test).
+- [x] Override label writes an audit event (test).
 - [x] `seo-check` Trigger.dev task with the idempotency key. Built as `SeoCheckWorkflow` (owner decision); the run id is the instance id.
 - [ ] Composite action repository with a tagged `v1` release and a README.
-- [ ] SEO checks tab with tokens, hosts, access, ignores and history.
-- [ ] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
+- [x] SEO checks tab with tokens, hosts, access, ignores and history.
+- [x] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
 - [ ] Installed on Relay's own previews and on the monorepo for S1.
 
 ### Phase 2

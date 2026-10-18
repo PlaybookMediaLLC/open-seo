@@ -13,6 +13,7 @@ import * as signalsSchema from "@/db/opportunity-signals.schema";
 import * as draftsSchema from "@/db/proposal-drafts.schema";
 import * as publishingSchema from "@/db/publishing.schema";
 import * as spendSchema from "@/db/spend.schema";
+import * as seoChecksSchema from "@/db/seo-checks.schema";
 import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
@@ -20,6 +21,7 @@ import { MeasurementSettingsService } from "@/server/features/experiments/Measur
 import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "./AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
+import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSettingsService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -68,6 +70,7 @@ const growthTables = tablesOf(
   measurementGa4Schema,
   growthJobsSchema,
   spendSchema,
+  seoChecksSchema,
 );
 
 let seed: Awaited<ReturnType<typeof deployed>>;
@@ -126,6 +129,7 @@ const services: Record<string, Record<string, unknown>> = {
   AutomationService,
   // The organization view has no project boundary; it reads only its own.
   SpendLimitService: { ...SpendLimitService, organization: undefined },
+  SeoCheckSettingsService,
 };
 
 async function growthRowCount() {

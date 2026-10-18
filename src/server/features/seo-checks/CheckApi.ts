@@ -12,6 +12,7 @@ import { normalizeAndValidateStartUrl } from "@/server/lib/audit/url-policy";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type { CreateCheckInput } from "@/types/schemas/seoChecks";
 import type { CiTokenContext } from "./ciTokens";
+import { recordAudit } from "@/server/features/activity/auditLog";
 import { isAllowedPreviewHost } from "./previewHosts";
 import { startCheckWorkflow } from "./seoCheckRun";
 
@@ -131,7 +132,20 @@ export async function createCheck(
     .select({ id: ciCheckRuns.id, status: ciCheckRuns.status })
     .from(ciCheckRuns)
     .where(scope);
-  if (run?.id === id) await startCheckWorkflow(id);
+  if (run?.id === id) {
+    // RFC-0010 5.8: the override label passes blocking findings; record who.
+    if (input.override)
+      await recordAudit({
+        organizationId: token.organizationId,
+        projectId: token.projectId,
+        actor: { userId: token.tokenId, scheduled: true },
+        action: "seo_check.overridden",
+        targetType: "pull_request",
+        targetId: `${input.repository}#${input.pullRequest ?? "?"}`,
+        summary: `The relay-seo-override label passed ${input.repository}#${input.pullRequest ?? "?"} at ${input.headSha.slice(0, 7)}`,
+      });
+    await startCheckWorkflow(id);
+  }
   return { status: 202, body: run ?? { id, status: "queued" } };
 }
 

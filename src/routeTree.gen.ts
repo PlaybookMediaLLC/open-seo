@@ -89,6 +89,7 @@ import { Route as AppPProjectIdSettingsIndexRouteImport } from './routes/_app/p/
 import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_app/p/$projectId/settings/automation'
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
+import { Route as AppPProjectIdSettingsSeoChecksRouteImport } from './routes/_app/p/$projectId/settings/seo-checks'
 import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
 import { Route as ApiCiV1ChecksIdRouteImport } from './routes/api/ci/v1/checks/$id'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
@@ -516,6 +517,12 @@ const AppPProjectIdSettingsIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsSeoChecksRoute =
+  AppPProjectIdSettingsSeoChecksRouteImport.update({
+    id: '/seo-checks',
+    path: '/seo-checks',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdSettingsSpendingRoute =
   AppPProjectIdSettingsSpendingRouteImport.update({
     id: '/spending',
@@ -611,6 +618,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -689,6 +697,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -776,6 +785,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/automation': typeof AppPProjectIdSettingsAutomationRoute
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/_app/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
@@ -861,6 +871,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility/'
@@ -939,6 +950,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/automation'
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility'
@@ -1025,6 +1037,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/automation'
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/integrations'
+    | '/_app/p/$projectId/settings/seo-checks'
     | '/_app/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
     | '/_app/p/$projectId/ai-visibility/'
@@ -1635,6 +1648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsIntegrationsRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/seo-checks': {
+      id: '/_app/p/$projectId/settings/seo-checks'
+      path: '/seo-checks'
+      fullPath: '/p/$projectId/settings/seo-checks'
+      preLoaderRoute: typeof AppPProjectIdSettingsSeoChecksRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/settings/spending': {
       id: '/_app/p/$projectId/settings/spending'
       path: '/spending'
@@ -1723,6 +1743,7 @@ interface AppPProjectIdSettingsRouteChildren {
   AppPProjectIdSettingsAutomationRoute: typeof AppPProjectIdSettingsAutomationRoute
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
+  AppPProjectIdSettingsSeoChecksRoute: typeof AppPProjectIdSettingsSeoChecksRoute
   AppPProjectIdSettingsSpendingRoute: typeof AppPProjectIdSettingsSpendingRoute
   AppPProjectIdSettingsIndexRoute: typeof AppPProjectIdSettingsIndexRoute
 }
@@ -1732,6 +1753,7 @@ const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
   AppPProjectIdSettingsContextRoute: AppPProjectIdSettingsContextRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,
+  AppPProjectIdSettingsSeoChecksRoute: AppPProjectIdSettingsSeoChecksRoute,
   AppPProjectIdSettingsSpendingRoute: AppPProjectIdSettingsSpendingRoute,
   AppPProjectIdSettingsIndexRoute: AppPProjectIdSettingsIndexRoute,
 }

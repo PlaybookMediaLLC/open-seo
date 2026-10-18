@@ -1,7 +1,11 @@
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { db } from "@/db";
+import { auditEvents, ciCheckRuns } from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { createCheck, getCheck } from "./CheckApi";
 import { createCiToken, revokeCiToken, verifyCiToken } from "./ciTokens";
+import { deleteCheckRunsBefore } from "./SeoCheckSettingsService";
 
 const database = await vi.hoisted(async () => {
   const { createExperimentTestDatabase } =
@@ -122,4 +126,27 @@ it("stops at the monthly quota and at the rate limit", async () => {
   expect((await createCheck(context, body(sha("c")))).body.error).toBe(
     "rate_limited",
   );
+});
+
+it("records the override label in the audit log", async () => {
+  const { projectId, context } = await project();
+  await createCheck(context, { ...body(sha("d")), override: true });
+  expect(
+    await db
+      .select({ action: auditEvents.action, targetId: auditEvents.targetId })
+      .from(auditEvents)
+      .where(eq(auditEvents.projectId, projectId)),
+  ).toEqual([{ action: "seo_check.overridden", targetId: "acme/site#7" }]);
+});
+
+it("deletes runs older than the retention cutoff", async () => {
+  const { projectId, context } = await project();
+  await createCheck(context, body(sha("e")), new Date("2026-01-01T00:00:00Z"));
+  await deleteCheckRunsBefore("2026-04-01T00:00:00.000Z");
+  expect(
+    await db
+      .select({ id: ciCheckRuns.id })
+      .from(ciCheckRuns)
+      .where(eq(ciCheckRuns.projectId, projectId)),
+  ).toEqual([]);
 });

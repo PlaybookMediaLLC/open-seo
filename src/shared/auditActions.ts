@@ -27,4 +27,6 @@ export const AUDIT_ACTIONS = [
   "member.removed",
   "api_key.created",
   "api_key.deleted",
+  "seo_check.overridden",
+  "seo_check.ignore_changed",
 ] as const;
