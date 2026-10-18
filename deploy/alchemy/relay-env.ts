@@ -41,4 +41,10 @@ export const relayBindings = () => ({
     namespaceId: 1002,
     simple: { limit: 30, period: 60 },
   }),
+  // RFC-0010 5.10: 10 check requests a minute per CI token
+  // (src/server/features/seo-checks/CheckApi.ts).
+  CI_CHECK_RATE_LIMIT: Cloudflare.RateLimit("CI_CHECK_RATE_LIMIT", {
+    namespaceId: 1003,
+    simple: { limit: 10, period: 60 },
+  }),
 });

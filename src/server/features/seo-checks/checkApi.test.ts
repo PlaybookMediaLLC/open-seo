@@ -1,0 +1,125 @@
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
+import { createCheck, getCheck } from "./CheckApi";
+import { createCiToken, revokeCiToken, verifyCiToken } from "./ciTokens";
+
+const database = await vi.hoisted(async () => {
+  const { createExperimentTestDatabase } =
+    await import("@/server/features/experiments/repositories/experimentTestDb");
+  return createExperimentTestDatabase();
+});
+const mocks = vi.hoisted(() => ({
+  limit: vi.fn(),
+  paid: vi.fn(),
+  validate: vi.fn(),
+}));
+vi.mock("cloudflare:workers", () => ({
+  env: {
+    DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1",
+    CI_CHECK_RATE_LIMIT: { limit: mocks.limit },
+  },
+}));
+vi.mock("@/db", () => ({ db: database.db }));
+vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
+vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
+vi.mock("@/server/lib/runtime-env", () => ({
+  isHostedServerAuthMode: async () => true,
+}));
+vi.mock("@/server/billing/subscription", () => ({
+  customerHasPaidPlan: mocks.paid,
+}));
+vi.mock("@/server/lib/audit/url-policy", () => ({
+  normalizeAndValidateStartUrl: mocks.validate,
+}));
+beforeAll(async () => {
+  await database.prepare();
+  if (!database.isPostgres)
+    await database.client.executeMultiple(`
+      ALTER TABLE projects ADD COLUMN domain TEXT;
+    `);
+});
+afterAll(() => database.close());
+beforeEach(() => {
+  mocks.limit.mockResolvedValue({ success: true });
+  mocks.paid.mockResolvedValue(false);
+  mocks.validate.mockImplementation(async (url: string) => url);
+});
+
+async function project() {
+  const { run } = await setupRun(database.client, database.slugPrefix);
+  await database.client.execute({
+    sql: "UPDATE projects SET domain = 'example.com' WHERE id = ?",
+    args: [run.projectId],
+  });
+  const { token } = await createCiToken({
+    projectId: run.projectId,
+    name: "GitHub",
+    createdBy: "owner",
+  });
+  const context = await verifyCiToken(`Bearer ${token}`);
+  if (!context) throw new Error("token did not verify");
+  return { projectId: run.projectId, token, context };
+}
+const body = (headSha: string, previewUrl = "https://pr-7.example.com") => ({
+  previewUrl,
+  repository: "acme/site",
+  pullRequest: 7,
+  headSha,
+  changedFiles: ["app/pricing/page.tsx"],
+  override: false,
+});
+const sha = (digit: string) => digit.repeat(40);
+
+it("verifies a token for its project until it is revoked", async () => {
+  const { projectId, token, context } = await project();
+  expect(context.projectId).toBe(projectId);
+  expect(await verifyCiToken(`Bearer ${token}x`)).toBeNull();
+  expect(await verifyCiToken(token)).toBeNull();
+  await revokeCiToken(projectId, context.tokenId);
+  expect(await verifyCiToken(`Bearer ${token}`)).toBeNull();
+});
+
+it("refuses a preview host outside the allowlist before any fetch", async () => {
+  const { context } = await project();
+  const fetchSpy = vi.spyOn(globalThis, "fetch");
+  const result = await createCheck(
+    context,
+    body(sha("1"), "https://attacker.example.net"),
+  );
+  expect(result.status).toBe(400);
+  expect(result.body.error).toBe("preview_host_not_allowed");
+  expect(mocks.validate).not.toHaveBeenCalled();
+  expect(fetchSpy).not.toHaveBeenCalled();
+  fetchSpy.mockRestore();
+});
+
+it("queues one run per commit and preview, inside the project", async () => {
+  const mine = await project();
+  const other = await project();
+  const first = await createCheck(mine.context, body(sha("2")));
+  const again = await createCheck(mine.context, body(sha("2")));
+  expect(first.status).toBe(202);
+  expect(again).toEqual({ status: 200, body: first.body });
+  const runId = String(first.body.id);
+  expect((await getCheck(mine.context, runId)).body.status).toBe("queued");
+  // Another project's token cannot read the run.
+  expect((await getCheck(other.context, runId)).status).toBe(404);
+});
+
+it("stops at the monthly quota and at the rate limit", async () => {
+  const { context } = await project();
+  for (let index = 0; index < 30; index++)
+    expect(
+      (await createCheck(context, body(index.toString(16).padStart(40, "a"))))
+        .status,
+    ).toBe(202);
+  const quota = await createCheck(context, body(sha("b")));
+  expect(quota).toMatchObject({
+    status: 429,
+    body: { error: "quota_reached" },
+  });
+  mocks.limit.mockResolvedValueOnce({ success: false });
+  expect((await createCheck(context, body(sha("c")))).body.error).toBe(
+    "rate_limited",
+  );
+});
