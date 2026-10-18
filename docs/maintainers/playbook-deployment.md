@@ -206,7 +206,7 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
    - GitHub issues the private key in PKCS#1 PEM. WebCrypto needs PKCS#8. Convert it once: `openssl pkcs8 -topk8 -nocrypt -in relay-seo.private-key.pem -out relay-seo.pkcs8.pem`.
    - Add `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` and `GITHUB_APP_PRIVATE_KEY` (the PKCS#8 PEM) to `ENV_PLAYBOOK`. `deploy/alchemy/relay-env.ts` passes them to the worker. Without them, only personal tokens are offered.
 
-8. **Scheduled jobs (optional, RFC-0008):** create a Trigger.dev project with staging and production environments.
+8. **Scheduled jobs (RFC-0008):** they run on the Worker's own five-minute cron by default, every 15 minutes, with no setup (`src/server/features/growth/cronScheduler.ts`). Set `GROWTH_JOBS_MODE=off` to stop them. To move them to Trigger.dev instead, create a Trigger.dev project with staging and production environments.
    - In Trigger.dev, set `RELAY_INTERNAL_URL` (`https://relay.playbookmedia.io`) and `GROWTH_JOBS_SECRET` (generate it with `openssl rand -hex 32`).
    - Add `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` (the production secret key) to `ENV_PLAYBOOK`. `GROWTH_JOBS_MODE` defaults to `trigger` when both are set.
    - Deploy the tasks with `TRIGGER_PROJECT_REF=<ref> pnpm dlx trigger.dev@4.6.4 deploy`. Configure an alert for failed runs to the team's email, and a monthly spend alert.
@@ -240,14 +240,14 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
   3. Compare `grep -rn playbook-seam` with the seam list in `vite-plugin-relay-brand.ts`. Conflicts are most likely in `Sidebar.tsx`, `AppShell.tsx`, `ProjectSwitcher.tsx` and `src/routes/__root.tsx`.
   4. Upstream's `pr-preview.yml` and `docker-image.yml` are gated to other repositories and stay inactive here.
 - **Smoke test and uptime:** each deploy ends with a smoke test of the public site (server-rendered pages, docs search, sitemap, `robots.txt`, favicon). `uptime-playbook.yml` checks `/api/health`, `/` and `/docs`. It is scheduled every 15 minutes, but GitHub runs it every 3 to 5 hours. A failed run emails the repository owner. PostHog also emails the owner hourly when production throws exceptions (insight "Exception count", alert "Relay production errors").
-- **Scheduled jobs without Trigger.dev:** any scheduler can call the internal endpoints. Set `GROWTH_JOBS_SECRET` and `GROWTH_JOBS_MODE=trigger`.
+- **Scheduled jobs without Trigger.dev:** the Worker cron runs them by default. Another scheduler can call the internal endpoints instead: set `GROWTH_JOBS_SECRET` and `GROWTH_JOBS_MODE=trigger`, which turns the Worker cron off.
   1. Send `POST` with a JSON body of at most 64 KB.
   2. Set `x-relay-timestamp` to the current Unix time in seconds. The Worker refuses a timestamp more than 300 seconds from its clock.
   3. Set `x-relay-signature` to the hex HMAC-SHA256 of `{timestamp}.{body}`, keyed with `GROWTH_JOBS_SECRET`. Sign the exact bytes that you send.
   4. Call `/api/internal/growth/due` with `{}` every 15 minutes. For each item, call `/api/internal/growth/run` with the item plus `attempt` and `maxAttempts`. Retry on `503`; stop on `422`.
   5. Call `/api/internal/growth/retention` with `{}` once a day.
      Every failure answers `404`, with no reason. Audit follow-ups wait as queued rows until the next `due` call.
-- **Failed credit settlements (RFC-0009):** the Trigger.dev task `spend-reconcile` retries failed Autumn settlements every 15 minutes, through `/api/internal/billing/reconcile`. A row stops after 10 attempts. List the stopped rows:
+- **Failed credit settlements (RFC-0009):** the Worker cron (or the Trigger.dev task `spend-reconcile`, through `/api/internal/billing/reconcile`) retries failed Autumn settlements every 15 minutes. A row stops after 10 attempts. List the stopped rows:
 
   ```sql
   SELECT id, organization_id, project_id, feature, actual_credits, cost_usd, attempts, last_error, created_at

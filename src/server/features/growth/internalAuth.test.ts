@@ -52,11 +52,11 @@ it("refuses a body over 64 KB", async () => {
   expect(await readSignedBody(request(`"${"x".repeat(70_000)}"`))).toBeNull();
 });
 
-it("refuses everything when the jobs mode is off", async () => {
+it("refuses everything unless Trigger.dev runs the jobs", async () => {
   env.values.GROWTH_JOBS_MODE = "off";
   expect(await readSignedBody(request("{}"))).toBeNull();
   env.values = { GROWTH_JOBS_SECRET: SECRET };
-  // Without Trigger.dev the mode defaults to off.
+  // Without Trigger.dev the Worker's cron runs the jobs, not these endpoints.
   expect(await readSignedBody(request("{}"))).toBeNull();
 });
 

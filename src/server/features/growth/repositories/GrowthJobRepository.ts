@@ -1,4 +1,4 @@
-import { and, asc, eq, lt, lte } from "drizzle-orm";
+import { and, asc, eq, lt, lte, max } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -72,6 +72,25 @@ async function succeededRun(
     )
     .limit(1);
   return Boolean(row);
+}
+
+/** The attempts already made for one window; queued rows do not count. */
+async function attempts(
+  projectId: string,
+  kind: RunRow["kind"],
+  windowKey: string,
+) {
+  const [row] = await db
+    .select({ attempt: max(growthJobRuns.attempt) })
+    .from(growthJobRuns)
+    .where(
+      and(
+        eq(growthJobRuns.projectId, projectId),
+        eq(growthJobRuns.kind, kind),
+        eq(growthJobRuns.windowKey, windowKey),
+      ),
+    );
+  return row?.attempt ?? 0;
 }
 
 /** False when this attempt of this window already has a row. */
@@ -182,6 +201,7 @@ export const GrowthJobRepository = {
   queuedRuns,
   getSchedule,
   succeededRun,
+  attempts,
   startRun,
   finishRun,
   advanceSchedule,

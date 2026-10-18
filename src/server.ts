@@ -7,6 +7,7 @@ import { resolveUserContextFromHeaders } from "@/middleware/ensure-user/resolve"
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { SamSessionRepository } from "@/server/features/sam/SamSessionRepository";
 import { runScheduledRankChecks } from "@/server/features/rank-tracking/services/scheduledRankChecks";
+import { runGrowthCron } from "@/server/features/growth/cronScheduler"; // playbook-seam
 import { SCHEDULED_RANK_CHECKS_PAUSED } from "@/shared/rank-tracking-pause";
 import { reconcileStaleAudits } from "@/server/features/audit/services/auditReconciler";
 import { getOrCreateOrganizationCustomer } from "@/server/billing/subscription";
@@ -252,6 +253,7 @@ export default {
           await import("@/server/features/ai-visibility/services/scheduledAiVisibility");
         await runScheduledAiVisibility();
       }),
+      withPgClient(() => runGrowthCron(controller.scheduledTime)), // playbook-seam: growth jobs on the Worker cron
     ]);
     for (const result of checks)
       if (result.status === "rejected") throw result.reason;
