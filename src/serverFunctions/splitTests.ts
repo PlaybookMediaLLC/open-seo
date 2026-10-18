@@ -1,10 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
+import { SplitTestEndService as ends } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService as pulls } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService as service } from "@/server/features/split-tests/SplitTestService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   confirmSplitTestDeploymentSchema,
   createSplitTestSchema,
+  endSplitTestSchema,
+  splitTestEndSchema,
   openSplitTestPullSchema,
   splitTestProjectSchema,
   splitTestSchema,
@@ -64,4 +67,26 @@ export const confirmSplitTestDeployment = createServerFn({ method: "POST" })
   .validator(confirmSplitTestDeploymentSchema)
   .handler(({ context, data }) =>
     pulls.confirmDeployment(context, { ...data, projectId: context.projectId }),
+  );
+
+export const exportSplitTestCsv = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(splitTestSchema)
+  .handler(({ context, data }) =>
+    service.csv(context, { ...data, projectId: context.projectId }),
+  );
+
+// RFC-0011 5.7: apply the change to all pages, or remove the test.
+export const previewSplitTestEnd = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(splitTestEndSchema)
+  .handler(({ context, data }) =>
+    ends.preview(context, { ...data, projectId: context.projectId }),
+  );
+
+export const endSplitTest = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(endSplitTestSchema)
+  .handler(({ context, data }) =>
+    ends.end(context, { ...data, projectId: context.projectId }),
   );

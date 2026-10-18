@@ -1,0 +1,65 @@
+---
+title: "Split tests"
+description: "Change a random half of one template's pages and estimate the effect on clicks against the other half."
+---
+
+A before-and-after comparison cannot separate your change from seasonality or a search update. A split test can. Relay changes a random half of similar pages, keeps the other half as they are, and compares the two groups in Search Console.
+
+You find split tests under **Experiments & Results**.
+
+## Which pages can run a test
+
+A test needs one group of pages that share a template, such as every page under `/integrations/`.
+
+1. Click **New split test**. Enter a name, your hypothesis, the field you change and a page pattern, such as `^/integrations/[^/]+$`.
+2. Relay lists the matching pages from the last 56 days of Search Console data and checks:
+   - at least 30 pages with a click, and at most 200;
+   - at least 1,000 clicks in total;
+   - that every page comes from the same route file in your repository;
+   - that the group can detect a change of 15% or less.
+3. If the group fails a requirement, Relay says which one and by how much, and creates nothing.
+
+**The minimum detectable effect (MDE)** is the smallest change the group can reliably show. "This group can detect a change of 11% or more" means that a smaller real effect will probably show as inconclusive.
+
+## How the groups are made
+
+Relay sorts the pages by clicks, pairs neighbours, and puts one page of each pair in the variant group at random. It draws again until the two groups have similar clicks and moved alike before the test. The seed is stored, so anyone can repeat the assignment. A page never changes group during a test.
+
+## The pull request
+
+1. Click **Review pull request**. Relay shows the exact files it adds: a list of the variant pages and a helper, `inSplitVariant`. The helper reads only that list, so search engines always see the same version of a page.
+2. Click **Approve and open**. A developer then makes one edit in the template, inside `generateMetadata` or the `metadata` export, as the pull request description shows.
+3. Click **Check pull request**. Relay checks that only the three files changed, that the list matches the test, and that the helper is used only inside the metadata.
+4. Merge the pull request and deploy it. Click **Confirm deployment**. Relay uses GitHub's production deployment of the merge commit, or your confirmation.
+
+The checker supports App Router templates.
+
+## While the test runs
+
+- Relay checks the live site after the deployment. The test starts when at least 95% of pages show the expected title or description. It checks again on days 7 and 21. If more than 5% of pages drift, the result is marked **contaminated**.
+- Relay excludes the deployment day and the next 6 days, then observes 28 days.
+- The daily job refreshes the data. You can also click **Refresh now**.
+- If the estimate is 10% or worse after 14 days, with strong evidence of harm, Relay tells you, and you can remove the test early.
+
+## Reading the result
+
+Relay reports an **estimated effect** on clicks, a 90% interval and a p-value, from an exact randomization test on the pairs.
+
+| Label        | Meaning                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------- |
+| Positive     | The window is complete, the groups were balanced before the test, and the whole interval is above 0. |
+| Negative     | The whole interval is below 0.                                                                       |
+| Inconclusive | Anything else. No effect larger than the MDE was found.                                              |
+
+Before the window ends, the result is marked **Interim**, and it is never labeled positive. If the groups moved differently before the test, the result is marked **imbalanced** and gets no positive or negative label.
+
+**Limits.** The data comes from Search Console only. Internal links and competition between pages of the two groups, and any change that reaches only one group, can bias the estimate.
+
+**Check it yourself.** Click **Download CSV**, download the [reference script](https://github.com/PlaybookMediaLLC/open-seo/blob/main/scripts/split-test-reference.py), and run `python3 split-test-reference.py export.csv`. It needs only Python 3, and it recomputes the estimate, the interval and the p-value with the same method and seed.
+
+## Ending the test
+
+- **Apply to all pages** opens a pull request that keeps the variant for every page and removes the split code. It is available when the window ends without a negative result.
+- **Remove test** opens a pull request that keeps the current values and removes the split code. It is available at any time.
+
+You review the exact change before Relay opens either pull request.

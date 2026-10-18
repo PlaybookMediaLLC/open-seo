@@ -23,6 +23,7 @@ import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "./AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
 import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestEndService } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
@@ -140,6 +141,7 @@ const services: Record<string, Record<string, unknown>> = {
   SeoCheckSettingsService,
   SplitTestService,
   SplitTestPullService,
+  SplitTestEndService,
 };
 
 async function growthRowCount() {

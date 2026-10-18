@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) and part D (live verification, the daily refresh, analysis runs and the harm notice) built.
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) and part E (the end actions, the chart, the CSV export and the docs) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -165,6 +165,8 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 3. **Inconclusive:** offer both, and say that no effect larger than the MDE was found.
 4. Every option uses the exact-change approval.
 
+**As built (part E).** Each end action reads the template at the head of the base branch and rewrites it from its syntax tree: every `inSplitVariant(...) ? variant : current` keeps the variant ("Apply to all pages") or the current value ("Remove test"), and the import goes. Any other use of the helper is refused with a request to finish the change by hand. The pull request also deletes both split files, so no split code is left after the merge. The owner approves the hash of the exact change; Relay records `split_test.ended`. "Apply to all pages" is offered only after the window ends without a negative label; "Remove test" at any time after the deployment, which also covers the early harm stop. Removing a running test sets it to `stopped`.
+
 ### 5.8 Data model
 
 | Table                      | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -184,6 +186,8 @@ Unique on `split_test_pages` (`test_id`, `path`) and `split_test_days` (`test_id
 3. Assignment view: both groups with their baseline totals and the balance result.
 4. Test page: status, verification results, a chart of the variant and control groups (indexed to 100 at the baseline), the current estimate with its interval (marked "interim" before the window ends), and the limits.
 5. End actions from 5.7.
+
+**As built (parts B to E).** The Split tests section sits at the top of Experiments & Results rather than in a separate tab. The test page shows the results first, then the end actions, the pull request and the groups. The chart shows each group's daily clicks as a 7-day average, indexed to the group's baseline mean. "Download CSV" gives one row per pair (`variant`, `control`, `d`, `pre_d`, `seed`), which `scripts/split-test-reference.py` reads.
 
 ## 6. Security and integrity
 
@@ -216,11 +220,11 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 - [x] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results. The reference is `scripts/split-test-reference.py`; 5 fixed datasets match to 2 decimal places.
 - [x] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
 - [x] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
-- [ ] Early harm stop with notification and the removal pull request.
-- [ ] End actions with exact-change approval.
+- [x] Early harm stop with notification and the removal pull request.
+- [x] End actions with exact-change approval.
 - [x] Daily refresh through an RFC-0008 task. It runs in `measurement_refresh`, which needs the RFC-0008 Trigger.dev account; "Refresh now" runs the same step by hand.
-- [ ] Split tests tab, chart and result wording with limits.
-- [ ] `content/docs/split-tests.mdx` explains eligibility, MDE, labels and limits in plain words.
+- [x] Split tests tab, chart and result wording with limits. Built as a section of Experiments & Results.
+- [x] `content/docs/split-tests.mdx` explains eligibility, MDE, labels and limits in plain words.
 
 ### Phase 2
 
