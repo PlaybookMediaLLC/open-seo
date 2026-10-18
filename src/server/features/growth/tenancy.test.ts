@@ -31,6 +31,9 @@ import { CopyDraftService } from "@/server/features/conversion/CopyDraftService"
 import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
 import { CopyProposalService } from "@/server/features/publishing/CopyProposalService";
 import { ConversionGateService } from "@/server/features/conversion/ConversionGateService";
+import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
+import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
+import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -154,6 +157,9 @@ const services: Record<string, Record<string, unknown>> = {
   CopyLocatorService,
   CopyProposalService,
   CopyDraftService,
+  AccessibilityFixService,
+  AltTextDraftService,
+  AccessibilityCheckService,
 };
 
 async function growthRowCount() {

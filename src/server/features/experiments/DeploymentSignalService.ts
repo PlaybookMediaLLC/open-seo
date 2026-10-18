@@ -112,14 +112,22 @@ async function refresh(
       }
 
       const { proposal } = publishing;
+      const descriptionChanged =
+        proposal.descriptionAfter !== proposal.descriptionBefore;
+      // Only a title or description shows here. Without one, such as a page
+      // text, attribute or indexing change, any readable page would "match".
+      if (!descriptionChanged && proposal.titleAfter === null) {
+        messages.push(
+          "The live check compares the title and description only. Confirm this deployment yourself.",
+        );
+        return { ok: true, message: messages.join(" ") };
+      }
       let live: Awaited<ReturnType<typeof fetchLiveMetadata>>;
       try {
         live = await fetchLiveMetadata(experiment.targetUrl);
       } catch {
         live = null;
       }
-      const descriptionChanged =
-        proposal.descriptionAfter !== proposal.descriptionBefore;
       // The rendered title includes the layout template, so it must contain
       // the approved title rather than equal it.
       const matches =

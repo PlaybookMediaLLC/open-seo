@@ -180,3 +180,48 @@ export const measurementDays = sqliteTable(
     ),
   ],
 );
+
+// RFC-0013 5.5: axe-core again on the affected pages of a fixed cluster,
+// after the deployment is confirmed. A page passes when the rule no longer
+// fails on it.
+export const accessibilityFixChecks = sqliteTable(
+  "accessibility_fix_checks",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    experimentId: text("experiment_id")
+      .notNull()
+      .references(() => growthExperiments.id, { onDelete: "cascade" }),
+    ruleId: text("rule_id").notNull(),
+    checkedAt: text("checked_at").notNull(),
+    checkedBy: text("checked_by").notNull(),
+  },
+  (t) => [
+    index("accessibility_fix_checks_experiment_idx").on(
+      t.projectId,
+      t.experimentId,
+    ),
+  ],
+);
+
+export const accessibilityFixCheckPages = sqliteTable(
+  "accessibility_fix_check_pages",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    checkId: text("check_id")
+      .notNull()
+      .references(() => accessibilityFixChecks.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    outcome: text("outcome", {
+      enum: ["passed", "failed", "unchecked"],
+    }).notNull(),
+    // The failing element, or why the page was not checked.
+    detail: text("detail"),
+  },
+  (t) => [index("accessibility_fix_check_pages_check_idx").on(t.checkId)],
+);

@@ -26,3 +26,15 @@ export const accessibilityFixInputSchema = z.object({
   draftId: z.string().min(1).optional(),
 });
 export type AccessibilityFixInput = z.infer<typeof accessibilityFixInputSchema>;
+
+/** RFC-0013 5.5: one check of a fixed cluster on the live pages. */
+export type AccessibilityFixCheck = {
+  id: string;
+  ruleId: string;
+  checkedAt: string;
+  pages: Array<{
+    url: string;
+    outcome: "passed" | "failed" | "unchecked";
+    detail: string | null;
+  }>;
+};

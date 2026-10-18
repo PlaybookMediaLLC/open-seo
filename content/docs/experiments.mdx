@@ -26,7 +26,7 @@ A merge is not proof of a deployment. Relay reuses the status for 5 minutes.
 After the merge, click **Check signals**. Relay looks for two signals:
 
 - **GitHub deployment:** a successful deployment of the merge commit to your production environment. Set the environment name in **Project settings → Integrations → GitHub publishing**.
-- **Live page:** your page shows the approved text.
+- **Live page:** your page shows the approved title or description. Relay compares only these two. For a page text, attribute or indexing change, confirm the deployment time yourself.
 
 When both signals agree, click **Start measurement on the verified basis**. Relay uses the deployment time that GitHub reports. One signal alone is not enough.
 

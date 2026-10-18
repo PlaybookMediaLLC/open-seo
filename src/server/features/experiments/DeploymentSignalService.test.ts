@@ -138,6 +138,23 @@ describe("DeploymentSignalService.refresh", () => {
     expect(recorded()).toEqual(["github_deployment"]);
     expect(result.message).toContain("does not show the approved text yet");
   });
+
+  it("records no live signal for a change without a title or description", async () => {
+    mocks.get.mockResolvedValue({
+      experiment,
+      publishing: {
+        connection: { repositoryId: "repo-1" },
+        proposal: {
+          descriptionBefore: "",
+          descriptionAfter: "",
+          titleAfter: null,
+        },
+      },
+    });
+    const result = await DeploymentSignalService.refresh(context, input);
+    expect(recorded()).toEqual(["github_deployment"]);
+    expect(result.message).toContain("Confirm this deployment yourself");
+  });
 });
 
 const signal = (kind: DeploymentSignal["kind"]) => ({

@@ -249,6 +249,8 @@ export const {
   experimentDeploymentSignals,
   measurementRuns,
   measurementDays,
+  accessibilityFixChecks,
+  accessibilityFixCheckPages,
   spendLimits,
   spendLedger,
   auditEvents,

@@ -512,6 +512,13 @@
       "when": 1792334129965,
       "tag": "0072_thankful_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1792342704254,
+      "tag": "0073_thin_star_brand",
+      "breakpoints": true
     }
   ]
 }
