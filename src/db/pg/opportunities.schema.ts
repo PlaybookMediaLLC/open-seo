@@ -258,3 +258,16 @@ export const projectBrandTerms = pgTable(
     uniqueIndex("project_brand_terms_project_term_idx").on(t.projectId, t.term),
   ],
 );
+
+// RFC-0012 5.2: the GA4 key event the owner chose as "the conversion", with
+// an optional value per conversion.
+export const projectConversionEvents = pgTable("project_conversion_events", {
+  projectId: text("project_id")
+    .primaryKey()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  eventName: text("event_name").notNull(),
+  valueMinor: integer("value_minor"),
+  currency: text("currency"),
+  createdBy: text("created_by").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});

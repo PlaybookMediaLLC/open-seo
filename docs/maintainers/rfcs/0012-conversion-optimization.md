@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** Draft
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -57,6 +57,8 @@ Before any conversion work, Relay checks GA4:
 3. The key event the owner chooses as "the conversion" (for example `sign_up` or `generate_lead`) is stored per project: `project_conversion_events` (`project_id`, `event_name`, `value_minor` nullable, `currency` nullable, `created_by`).
 
 When a check fails, show what to set up in GA4 and create no conversion opportunity.
+
+**As built (part A).** The gate reads the GA4 key-event list from the Admin API and the key-event counts of the last 28 complete days, for all channels. It has four checks: a web data stream, at least one key event, at least 30 events of the conversion (of any key event before a choice), and a chosen key event that GA4 still lists. Each failed check shows its fix. Owners and admins choose the key event and an optional value per conversion in the property's currency. The choice is stored per project and written to the audit log. A GA4 error shows its message instead of a result.
 
 ### 5.3 Detectors
 
@@ -157,7 +159,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 
 ### Phase 1
 
-- [ ] Tracking gate with `project_conversion_events`, and the setup guidance when it fails.
+- [x] Tracking gate with `project_conversion_events`, and the setup guidance when it fails.
 - [ ] Four detectors with boundary tests, and the skip reason when form events are missing.
 - [ ] Evidence columns added in D1 and Postgres, with the parity test.
 - [ ] Value text with the "not a forecast" label.
