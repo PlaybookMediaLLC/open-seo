@@ -6,6 +6,7 @@ import { MeasurementSettingsService } from "@/server/features/experiments/Measur
 import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "@/server/features/growth/AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
+import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-checks/SeoCheckSettingsService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
 import { OpportunityInvestigationService } from "@/server/features/opportunities/services/opportunityInvestigation";
@@ -289,6 +290,28 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
       project: () => SpendLimitService.project(ctx, projectId),
       save: () =>
         SpendLimitService.save(ctx, { projectId, monthlyLimitCredits: 1 }),
+    },
+    SeoCheckSettingsService: {
+      get: () => seoChecks.get(ctx, projectId),
+      run: () => seoChecks.run(ctx, { projectId, runId: "x" }),
+      createToken: () => seoChecks.createToken(ctx, { projectId, name: "x" }),
+      revokeToken: () =>
+        seoChecks.revokeToken(ctx, { projectId, tokenId: "x" }),
+      addHost: () =>
+        seoChecks.addHost(ctx, { projectId, host: "a.example.com" }),
+      removeHost: () => seoChecks.removeHost(ctx, { projectId, hostId: "x" }),
+      setAccess: () => seoChecks.setAccess(ctx, { projectId, access: null }),
+      changeIgnore: () =>
+        seoChecks.changeIgnore(ctx, {
+          projectId,
+          add: { rule: "title-changed", pathPattern: "/*" },
+        }),
+      saveSettings: () =>
+        seoChecks.saveSettings(ctx, {
+          projectId,
+          raiseOnHighTraffic: false,
+          checkPreviewRobotsHeader: true,
+        }),
     },
   };
 }

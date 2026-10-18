@@ -57,8 +57,9 @@ import type { Plugin } from "vite";
  * - src/server/features/gsc/services/GscService.ts: connecting Search Console
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
- *   (src/client/features/automation/AutomationSettings.tsx) and the Spending
- *   tab (src/client/features/spend/ProjectSpending.tsx).
+ *   (src/client/features/automation/AutomationSettings.tsx), the Spending
+ *   tab (src/client/features/spend/ProjectSpending.tsx) and the SEO checks
+ *   tab (src/client/features/seo-checks/SeoChecksSettings.tsx).
  * - src/routes/_app/billing.tsx: mounts the spending limit card
  *   (src/client/features/spend/SpendLimitsCard.tsx).
  * - src/routes/_app/route.tsx: shows the spending limit banner above the
