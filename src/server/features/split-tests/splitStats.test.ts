@@ -61,7 +61,7 @@ it("refuses each threshold with its gap and accepts the boundary", () => {
   const busy = (count: number) => pages(count, () => 50);
   expect(eligibility(busy(30), 15).eligible).toBe(true);
   expect(eligibility(busy(29), 15).failures).toEqual([
-    "29 pages have a click in the 56-day baseline. A test needs at least 30, so 1 more.",
+    "29 pages match the pattern, and 29 have a click in the 56-day baseline. A test needs at least 30 with a click, so 1 more.",
   ]);
   expect(eligibility(busy(201), 15).failures).toEqual([
     "201 pages match. A test takes at most 200. Narrow the pattern.",

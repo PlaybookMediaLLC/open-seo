@@ -29,7 +29,9 @@ export function SplitTestBacktestCard(props: {
       }
     >
       <div className="space-y-2 text-sm">
-        {run.data ? (
+        {run.data?.runs === 0 ? (
+          <p>Too few pages with clicks in this window to backtest.</p>
+        ) : run.data ? (
           <>
             <p>
               On your data from {run.data.start} to {run.data.end}, the 90%
