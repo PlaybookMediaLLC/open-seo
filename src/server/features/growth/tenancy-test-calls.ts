@@ -10,6 +10,7 @@ import { SeoCheckSettingsService as seoChecks } from "@/server/features/seo-chec
 import { SplitTestEndService as splitEnds } from "@/server/features/split-tests/SplitTestEndService";
 import { SplitTestPullService as splitPulls } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService as splitTests } from "@/server/features/split-tests/SplitTestService";
+import { ConversionDetectionService } from "@/server/features/conversion/ConversionDetectionService";
 import { ConversionGateService as conversion } from "@/server/features/conversion/ConversionGateService";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
 import { ContentGapService } from "@/server/features/opportunities/services/ContentGapService";
@@ -375,6 +376,9 @@ function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
           currency: null,
           channel: "organic_search",
         }),
+    },
+    ConversionDetectionService: {
+      detect: () => ConversionDetectionService.detect(ctx, projectId),
     },
   };
 }
