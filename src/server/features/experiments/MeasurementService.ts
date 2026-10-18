@@ -47,10 +47,18 @@ async function measureGa4(
       connection,
       targetUrl: experiment.targetUrl,
       windows,
-      keyEvents: await MeasurementGa4Repository.keyEvents(
-        run.projectId,
-        run.experimentId,
-      ),
+      // RFC-0012 5.6: the chosen conversion is always measured.
+      keyEvents: [
+        ...new Set([
+          ...(await MeasurementGa4Repository.keyEvents(
+            run.projectId,
+            run.experimentId,
+          )),
+          ...[
+            await MeasurementGa4Repository.conversionEvent(run.projectId),
+          ].filter((name) => name !== null),
+        ]),
+      ],
       ids: {
         projectId: run.projectId,
         experimentId: run.experimentId,

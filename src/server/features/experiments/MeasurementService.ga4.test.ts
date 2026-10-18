@@ -19,6 +19,7 @@ const mocks = vi.hoisted(() => ({
     >(),
   ga4Connection: vi.fn(),
   runReport: vi.fn(),
+  conversionEvent: vi.fn<() => Promise<string | null>>(),
 }));
 vi.mock("@/server/features/publishing/publishingAccess", () => ({
   authorizePublishing: async () => undefined,
@@ -38,7 +39,10 @@ vi.mock("./repositories/ExperimentRepository", () => ({
   },
 }));
 vi.mock("./repositories/measurementGa4Rows", () => ({
-  MeasurementGa4Repository: { keyEvents: async () => [] },
+  MeasurementGa4Repository: {
+    keyEvents: async () => [],
+    conversionEvent: mocks.conversionEvent,
+  },
 }));
 vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: {
@@ -105,6 +109,7 @@ async function measure(ga4PropertyId: string | null) {
 
 beforeEach(() => {
   mocks.complete.mockResolvedValue(true);
+  mocks.conversionEvent.mockResolvedValue(null);
   mocks.ga4Connection.mockResolvedValue({
     propertyId: "properties/1",
     propertyTimeZone: "UTC",
@@ -152,4 +157,10 @@ it("fails closed for GA4 only when the property changed since registration", asy
   expect(run?.status).toBe("completed");
   expect(run?.ga4Error).toMatch(/GA4 property changed/);
   expect(mocks.runReport).not.toHaveBeenCalled();
+});
+
+it("reads the project's chosen conversion on every run (RFC-0012)", async () => {
+  mocks.conversionEvent.mockResolvedValue("sign_up");
+  await measure("properties/1");
+  expect(JSON.stringify(mocks.runReport.mock.calls)).toContain("sign_up");
 });

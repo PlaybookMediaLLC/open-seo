@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group. Part E1 built: the conversion metric in experiments and `content/docs/conversion.mdx`.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -125,6 +125,8 @@ Each draft lists its claims with sources, as in RFC-0004.
 
 **Phase 1, before and after.** Extend RFC-0006 with the conversion metric for the changed page: daily sessions and chosen key events. Directional label only when each period has ≥ 1,000 sessions and ≥ 50 conversions, and the conversion rate changes by ≥ 20% relative and ≥ 10 conversions absolute. Otherwise "inconclusive". Always show the caveats.
 
+**As built (part E1).** Every measurement run adds the project's chosen conversion to the key events it reads, so experiments started before the choice also get it. The experiment's GA4 section shows the conversions and the conversion rate of the baseline and observation periods, the label, and the caveats. Experiments keep RFC-0006's organic search sessions that start on the changed page.
+
 **Phase 2, split tests.** For copy that lives in a template shared by 30 or more pages, run an RFC-0011 test with the metric `ln(1 + conversions per day)`. Eligibility uses the same MDE rule on conversions.
 
 ### 5.7 Phase 3: visitor-level tests
@@ -175,9 +177,9 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - [x] `change_kind`, `proposal_text_edits` and fingerprint version 3. Built as version 6, because metadata changes already use versions 3 to 5.
 - [x] Execution writes the text edits in one commit (test against the GitHub mock).
 - [x] Conversion drafting with one test per dark-pattern rule.
-- [ ] Conversion metric in experiments with the directional thresholds.
+- [x] Conversion metric in experiments with the directional thresholds.
 - [x] UI: filter group, settings section, text picker and copy diff.
-- [ ] `content/docs/conversion.mdx` explains the gate, the detectors, the rules and the limits.
+- [x] `content/docs/conversion.mdx` explains the gate, the detectors, the rules and the limits.
 
 ### Phase 2
 

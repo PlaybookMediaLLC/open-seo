@@ -6,6 +6,7 @@ import {
   growthExperiments,
   measurementGa4Days,
   measurementGa4EventTotals,
+  projectConversionEvents,
 } from "@/db/schema";
 import { experimentScope } from "./experimentSql";
 
@@ -23,6 +24,15 @@ async function keyEvents(projectId: string, experimentId: string) {
     )
     .orderBy(asc(experimentKeyEvents.eventName));
   return rows.map((row) => row.eventName);
+}
+
+/** RFC-0012 5.6: the project's chosen conversion, measured on every experiment. */
+async function conversionEvent(projectId: string) {
+  const [row] = await db
+    .select({ eventName: projectConversionEvents.eventName })
+    .from(projectConversionEvents)
+    .where(eq(projectConversionEvents.projectId, projectId));
+  return row?.eventName ?? null;
 }
 
 /** Replaces the chosen key events and the refresh setting together. */
@@ -79,4 +89,9 @@ async function forRun(projectId: string, runId: string) {
   return { days, eventTotals };
 }
 
-export const MeasurementGa4Repository = { keyEvents, saveSettings, forRun };
+export const MeasurementGa4Repository = {
+  keyEvents,
+  conversionEvent,
+  saveSettings,
+  forRun,
+};
