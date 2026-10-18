@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) part E (the end actions, the chart, the CSV export and the docs) phase 2 (drafted variant expressions) and phase 3 (GA4 secondary metrics and the backtest report) built.
+- **Status:** Done on 2026-10-18. Built in PRs #106 to #112: tables and statistics (A), eligibility and assignment (B), the pull request and its checks (C), verification, refresh and analysis (D), end actions, chart, CSV and docs (E), drafted variants (phase 2), GA4 metrics and backtests (phase 3), and the fixes from the phase 1a live check. The owner decided on 2026-10-18 that the follow-ups in section 12 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -260,6 +260,8 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 
 **Value check:** the owner can trust that a "positive" label is not noise, measured on their own data.
 
+**Result, production, 2026-10-18 (S1, `playbookmedia.io`).** The pattern `^/[a-z-]+$` was refused: "0 pages match the pattern, and 0 have a click in the 56-day baseline. A test needs at least 30 with a click, so 30 more." It also failed the 1,000-click requirement. No test was created. The property had 0 clicks and 1 impression in the last 28 days. "Run a backtest anyway" answered "Too few pages with clicks to backtest (0 pairs)." The first run found two bugs, both fixed in PR #112: the backtest reported "excluded 0 in 100% of runs" for 0 pairs, and the refusal did not name the matching pages. S4 has no Search Console connection in Relay and S2 has no project, so no own site has a group to backtest; that step is a follow-up in section 12.
+
 ### Phase 1b: a live test
 
 **Site:** an own or partner site with an eligible template group. Get the site owner's written approval.
@@ -310,3 +312,18 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 **Value**
 
 - At least one live test concludes on a real site, and the owner applies or removes the change based on the result.
+
+**Met now (2026-10-18):**
+
+- Statistics: 5 fixed datasets match `scripts/split-test-reference.py` to 2 decimal places; 1,000 simulated A/A runs give 8% to 12% false results; an effect equal to the reported MDE is labeled positive in more than 80% of simulated runs; a positive label never appears before the window ends (tests).
+- Integrity: the same seed gives the same assignment; the final diff check refuses a variant list that differs from the stored assignment; the helper reads only the path; live verification catches a control page changed outside its group (tests).
+- Honesty: every refusal names the failed requirement, the gap and the MDE; results show the interval, the MDE and the limits; a search of the split test UI finds no causal wording outside "estimated effect".
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 1b live test (section 10), the usability criteria and the value criterion. Trigger: an own or partner site with an eligible template group (30 or more pages with clicks, 1,000 clicks, MDE of 15% or less), the site owner's written approval, and 28 days of observation.
+- [ ] 200 backtests on a real eligible group, with at most 12% false results. Trigger: the same eligible group; "Run backtest" on its test.
+- [ ] The daily refresh runs on its own. Trigger: the RFC-0008 Trigger.dev account exists and `measurement_refresh` runs. Until then, "Refresh now" advances a test.
+- [ ] Templates where separate static files share one metadata helper (RFC-0005 phase 1a) pass the template check. Trigger: a site whose test group uses that pattern.

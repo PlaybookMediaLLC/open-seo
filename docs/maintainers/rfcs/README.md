@@ -61,7 +61,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
 | 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
 | Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
-| Controlled page-group split tests (beyond the brief)                 | Missing                                    | [RFC-0011](0011-page-group-split-tests.md)                   |
+| Controlled page-group split tests (beyond the brief)                 | Done: follow-ups in its section 12         | [RFC-0011](0011-page-group-split-tests.md)                   |
 | Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
 | Beyond SEO: accessibility fixes in code                              | Missing                                    | [RFC-0013](0013-accessibility-fixes.md)                      |
 | Beyond SEO: web performance                                          | Missing                                    | [RFC-0014](0014-web-performance.md)                          |
@@ -111,7 +111,7 @@ Each step depends on the steps before it.
 23. **RFC-0022, phase 1.** Competitor change response.
 24. **RFC-0024, phase 2.** Track records per change class.
 25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
-26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.**
+26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.** RFC-0011 is done through phase 3; its live test and backtests on a real group are follow-ups in its section 12.
 
 ### Release 3: beyond SEO
 
