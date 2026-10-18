@@ -3,7 +3,7 @@ import { readTextUpTo } from "@/server/lib/audit/html-response";
 import { analyzeHtml } from "@/server/lib/audit/page-analyzer";
 import { normalizeAndValidateStartUrl } from "@/server/lib/audit/url-policy";
 import { crawlerHeadersFor, type CrawlerAccess } from "@/shared/crawler-access";
-import type { Snapshot } from "./seoRules";
+import type { PageFacts, Snapshot } from "./seoRules";
 
 // RFC-0010 5.4: one request per page and host. A redirect is itself a
 // finding and the rules need production's 200, so hops are not followed;
@@ -78,6 +78,31 @@ const pathOf = (url: string) => {
   }
 };
 
+/** The facts the rules compare, from raw or rendered HTML. */
+export function pageFacts(
+  html: string,
+  url: string,
+  status: number,
+): PageFacts {
+  const analysis = analyzeHtml(html, url, status, 0);
+  return {
+    title: analysis.title,
+    description: analysis.metaDescription,
+    canonical: analysis.canonical,
+    robots: analysis.robotsMeta,
+    h1s: analysis.h1s,
+    internalLinks: analysis.links
+      .filter((link) => link.isInternal)
+      .flatMap((link) => pathOf(link.targetUrl) ?? []),
+    ogTitle: analysis.ogTitle,
+    ogImage: analysis.ogImage,
+    hreflang: analysis.hreflangTags,
+    words: analysis.wordCount,
+    jsonLd: jsonLdBlocks(html),
+    shell: analysis.javascriptShell === true,
+  };
+}
+
 export async function fetchSnapshot(
   url: string,
   access: CrawlerAccess | null,
@@ -101,25 +126,7 @@ export async function fetchSnapshot(
       return snapshot;
     }
     const text = await readTextUpTo(response, MAX_BYTES);
-    const analysis = analyzeHtml(text, url, response.status, 0);
-    return {
-      ...snapshot,
-      page: {
-        title: analysis.title,
-        description: analysis.metaDescription,
-        canonical: analysis.canonical,
-        robots: analysis.robotsMeta,
-        h1s: analysis.h1s,
-        internalLinks: analysis.links
-          .filter((link) => link.isInternal)
-          .flatMap((link) => pathOf(link.targetUrl) ?? []),
-        ogTitle: analysis.ogTitle,
-        ogImage: analysis.ogImage,
-        hreflang: analysis.hreflangTags,
-        words: analysis.wordCount,
-        jsonLd: jsonLdBlocks(text),
-      },
-    };
+    return { ...snapshot, page: pageFacts(text, url, response.status) };
   } catch {
     return failed;
   }

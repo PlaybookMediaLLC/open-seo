@@ -5,6 +5,7 @@ import {
 } from "cloudflare:workers";
 import { pgStep } from "@/server/workflows/pgStep";
 import { reportCheckRun } from "./githubAppMode";
+import { MAX_RENDERED_PAGES } from "./seoCheckRender";
 import { planCheck } from "./seoCheckPlan";
 import {
   checkBatch,
@@ -31,13 +32,15 @@ export class SeoCheckWorkflow extends WorkflowEntrypoint<
     try {
       const plan = await pgStep(step, "plan", STEP, () => planCheck(runId));
       const batches: BatchResult[] = [];
-      let linkBudget = LINK_BUDGET;
+      let links = LINK_BUDGET;
+      let renders = MAX_RENDERED_PAGES;
       for (let index = 0; index < plan.urls.length; index += BATCH_SIZE) {
-        const budget = linkBudget;
+        const budget = { links, renders };
         const result = await pgStep(step, `check-${index}`, STEP, () =>
           checkBatch(plan, plan.urls.slice(index, index + BATCH_SIZE), budget),
         );
-        linkBudget -= result.linksChecked;
+        links -= result.linksChecked;
+        renders -= result.pagesRendered;
         batches.push(result);
       }
       await pgStep(step, "finish", STEP, () => finishCheck(plan, batches));

@@ -49,4 +49,7 @@ export const relayBindings = () => ({
     namespaceId: 1003,
     simple: { limit: 10, period: 60 },
   }),
+  // RFC-0010 5.13: rendered mode renders flagged pages in the SEO check
+  // Workflow (src/server/features/seo-checks/seoCheckRender.ts).
+  BROWSER: Cloudflare.Browser(),
 });

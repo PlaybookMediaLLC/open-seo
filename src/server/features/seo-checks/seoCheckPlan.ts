@@ -7,6 +7,7 @@ import {
   ciPreviewAccess,
   ciProjectSettings,
   projectKeyPages,
+  projects,
 } from "@/db/schema";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { openToken } from "@/server/features/publishing/tokenKeys";
@@ -91,7 +92,7 @@ export async function planCheck(runId: string) {
     .set({ status: "running", startedAt: new Date().toISOString() })
     .where(eq(ciCheckRuns.id, runId));
   const access = await previewAccess(run.projectId, run.previewOrigin);
-  const [baseSite, previewSite, keyPages, traffic, [settings]] =
+  const [baseSite, previewSite, keyPages, traffic, [settings], [project]] =
     await Promise.all([
       discoverUrls(run.baseOrigin, MAX_SITEMAP_URLS),
       discoverUrls(run.previewOrigin, MAX_SITEMAP_URLS, access),
@@ -104,7 +105,12 @@ export async function planCheck(runId: string) {
         .select()
         .from(ciProjectSettings)
         .where(eq(ciProjectSettings.projectId, run.projectId)),
+      db
+        .select({ organizationId: projects.organizationId })
+        .from(projects)
+        .where(eq(projects.id, run.projectId)),
     ]);
+  if (!project) throw new Error("The project is missing.");
   const urls = await selectUrls({
     changedFiles: run.changedFiles.split("\n").filter(Boolean),
     keyPages,
@@ -130,10 +136,12 @@ export async function planCheck(runId: string) {
   return {
     runId,
     projectId: run.projectId,
+    organizationId: project.organizationId,
     baseOrigin: run.baseOrigin,
     previewOrigin: run.previewOrigin,
     raiseOnHighTraffic: settings?.raiseOnHighTraffic ?? true,
     checkRobotsHeader: settings?.checkPreviewRobotsHeader ?? false,
+    renderedMode: settings?.renderedMode ?? false,
     ignores,
     baseSitemapCount: baseSite.urls.length,
     previewSitemapCount: previewSite.urls.length,

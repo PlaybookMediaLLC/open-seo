@@ -214,6 +214,11 @@ export function SeoCheckSetup({
               key: "checkPreviewRobotsHeader" as const,
               label: "Check the preview's X-Robots-Tag header",
             },
+            {
+              key: "renderedMode" as const,
+              label:
+                "Render up to 5 client-rendered pages in a browser. Uses rendering credits.",
+            },
           ].map((option) => (
             <label key={option.key} className="flex items-center gap-3">
               <Switch
@@ -226,6 +231,7 @@ export function SeoCheckSetup({
                         ...data_,
                         raiseOnHighTraffic: data.raiseOnHighTraffic,
                         checkPreviewRobotsHeader: data.checkPreviewRobotsHeader,
+                        renderedMode: data.renderedMode,
                         [option.key]: checked,
                       },
                     }),

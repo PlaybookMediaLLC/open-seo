@@ -5,7 +5,15 @@ import { runBatch } from "@/db/runBatch";
 import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
 import { linkStatus, fetchSnapshot } from "./pageSnapshot";
 import { previewAccess, type CheckPlan } from "./seoCheckPlan";
-import { comparePage, compareSite, weigh, type Finding } from "./seoRules";
+import { renderPages } from "./seoCheckRender";
+import {
+  comparePage,
+  compareSite,
+  shrunk,
+  weigh,
+  type Finding,
+  type Snapshot,
+} from "./seoRules";
 
 // RFC-0010 5.2 to 5.8: the steps of one SeoCheckWorkflow run.
 const PARALLEL_PER_HOST = 4;
@@ -17,7 +25,15 @@ export type BatchResult = {
   >;
   findings: Finding[];
   linksChecked: number;
+  pagesRendered: number;
 };
+
+/** 5.13: the raw HTML looks client-rendered, or lost half its text. */
+const flagged = (base: Snapshot, preview: Snapshot) =>
+  Boolean(
+    preview.page &&
+    (preview.page.shell || (base.page && shrunk(base.page, preview.page))),
+  );
 
 async function inPool<T, R>(items: T[], work: (item: T) => Promise<R>) {
   const results: R[] = [];
@@ -34,14 +50,35 @@ async function inPool<T, R>(items: T[], work: (item: T) => Promise<R>) {
 export async function checkBatch(
   plan: CheckPlan,
   batch: PlannedUrl[],
-  linkBudget: number,
+  budget: { links: number; renders: number },
 ): Promise<BatchResult> {
+  const linkBudget = budget.links;
   const access = await previewAccess(plan.projectId, plan.previewOrigin);
-  const pages = await inPool(batch, async (url) => ({
+  const fetched = await inPool(batch, async (url) => ({
     url,
     base: await fetchSnapshot(`${plan.baseOrigin}${url.path}`, null),
     preview: await fetchSnapshot(`${plan.previewOrigin}${url.path}`, access),
   }));
+  // A renderer cannot carry the preview access secret, so protected
+  // previews keep the raw comparison.
+  const toRender =
+    plan.renderedMode && !access
+      ? fetched
+          .filter((page) => flagged(page.base, page.preview))
+          .slice(0, budget.renders)
+          .map((page) => page.url.path)
+      : [];
+  const rendered = await renderPages(plan, toRender);
+  const pages = fetched.map((page) => {
+    const facts = rendered.get(page.url.path);
+    return facts
+      ? {
+          url: page.url,
+          base: { ...page.base, page: facts.base },
+          preview: { ...page.preview, page: facts.preview },
+        }
+      : page;
+  });
   const findings: Finding[] = [];
   let linksChecked = 0;
   for (const { url, base, preview } of pages) {
@@ -83,6 +120,7 @@ export async function checkBatch(
     })),
     findings,
     linksChecked,
+    pagesRendered: toRender.length,
   };
 }
 
