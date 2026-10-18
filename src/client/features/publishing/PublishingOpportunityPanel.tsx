@@ -14,7 +14,7 @@ import { prepareProposalInputSchema } from "@/types/schemas/publishing";
 import { publishingOpportunityOptions, useRefreshPublishing } from "./queries";
 import { PublishingRecovery } from "./PublishingRecovery";
 import { GithubIssueCard } from "./GithubIssueCard";
-import { CopyTextSheet } from "./CopyTextSheet";
+import { CodeChangeSheets } from "./CopyTextSheet";
 import { IndexingFields, type IndexingValues } from "./IndexingFields";
 import { PublishingProposal } from "./PublishingProposal";
 import { ProposalDrafts, useProposalFilePath } from "./ProposalDrafts";
@@ -26,7 +26,7 @@ export function PublishingOpportunityPanel({
   opportunity: Pick<
     Opportunity,
     "id" | "projectId" | "url" | "status" | "version" | "type"
-  >;
+  > & { accessibilityRule?: string };
   readOnly?: boolean;
 }) {
   const { projectId, id } = opportunity;
@@ -117,7 +117,7 @@ export function PublishingOpportunityPanel({
                 opportunity={opportunity}
                 rootDirectory={connection.rootDirectory}
               />
-              <CopyTextSheet opportunity={opportunity} />
+              <CodeChangeSheets opportunity={opportunity} />
             </>
           ) : (
             opportunity.status !== "approved" && (

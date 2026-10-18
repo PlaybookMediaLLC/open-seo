@@ -19,6 +19,7 @@ import {
   locateCopyText,
   prepareCopyProposal,
 } from "@/serverFunctions/copyText";
+import { AccessibilityFixSheet } from "@/client/features/accessibility/AccessibilityFixSheet";
 import { useRefreshPublishing } from "./queries";
 
 type Scope = { projectId: string; opportunityId: string };
@@ -38,8 +39,34 @@ const BLOCK_KINDS = [
 const blockKindOf = (kind: string) =>
   BLOCK_KINDS.find((item) => item === kind) ?? "paragraph";
 
+type SheetOpportunity = {
+  id: string;
+  projectId: string;
+  version: number;
+  accessibilityRule?: string;
+};
+
+/** The code changes a person can prepare on an approved opportunity. */
+export function CodeChangeSheets({
+  opportunity,
+}: {
+  opportunity: SheetOpportunity;
+}) {
+  return (
+    <>
+      <CopyTextSheet opportunity={opportunity} />
+      {opportunity.accessibilityRule && (
+        <AccessibilityFixSheet
+          opportunity={opportunity}
+          ruleId={opportunity.accessibilityRule}
+        />
+      )}
+    </>
+  );
+}
+
 /** RFC-0012 5.4: pick a text on the live page and find it in the repository. */
-export function CopyTextSheet({
+function CopyTextSheet({
   opportunity,
 }: {
   opportunity: { id: string; projectId: string; version: number };

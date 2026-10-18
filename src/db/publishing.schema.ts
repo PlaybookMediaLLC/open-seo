@@ -149,7 +149,13 @@ export const proposalTextEdits = sqliteTable(
     ordinal: integer("ordinal").notNull(),
     filePath: text("file_path").notNull(),
     nodeKind: text("node_kind", {
-      enum: ["string_literal", "template_literal", "jsx_text", "markdown_text"],
+      enum: [
+        "string_literal",
+        "template_literal",
+        "jsx_text",
+        "markdown_text",
+        "jsx_attribute",
+      ],
     }).notNull(),
     beforeBlobSha: text("before_blob_sha").notNull(),
     afterBlobSha: text("after_blob_sha").notNull(),

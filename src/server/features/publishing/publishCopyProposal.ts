@@ -41,10 +41,11 @@ async function rebuild(
     (await client.readFile(proposal.filePath, proposal.baseSha));
   const rebuilt = await applyCopyEdits(
     sources,
-    textEdits.map(({ filePath, beforeText, afterText }) => ({
+    textEdits.map(({ filePath, beforeText, afterText, nodeKind }) => ({
       filePath,
       beforeText,
       afterText,
+      nodeKind,
     })),
   );
   if (

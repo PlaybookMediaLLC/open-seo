@@ -175,7 +175,10 @@ async function execute(
           )
             throw new AppError("CONFLICT");
           // RFC-0012 5.4: a page text change commits every edit at once.
-          if (proposal.changeKind === "copy_text") {
+          if (
+            proposal.changeKind === "copy_text" ||
+            proposal.changeKind === "jsx_attribute"
+          ) {
             await publishCopyProposal(
               client,
               proposal,

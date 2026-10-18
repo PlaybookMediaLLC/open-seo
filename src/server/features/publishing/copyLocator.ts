@@ -39,7 +39,7 @@ type Reader = {
     sha: string,
   ): Promise<{ source: string; blobSha: string }>;
 };
-type SourceFile = { path: string; source: string; blobSha: string };
+export type SourceFile = { path: string; source: string; blobSha: string };
 
 const lineOf = (source: string, offset: number) =>
   source.slice(0, offset).split("\n").length;
@@ -258,35 +258,29 @@ type LocateCopyResult =
       message: string;
     };
 
-export async function locateCopy(input: {
+/**
+ * The page file and the files it imports inside the repository, to depth 2,
+ * at most 20 files and 1 MB. Null when the page file cannot be read.
+ */
+export async function reachableFiles(input: {
   reader: Reader;
   rootDirectory: string;
   pageFile: string;
   sha: string;
-  text: string;
-}): Promise<LocateCopyResult> {
+}): Promise<SourceFile[] | null> {
   const { reader, sha } = input;
   const page = await readFirst(reader, [input.pageFile], sha);
-  if (!page)
-    return {
-      status: "not_found",
-      matches: [],
-      filesRead: [],
-      message: `${input.pageFile} could not be read.`,
-    };
+  if (!page) return null;
   const queue: Array<SourceFile & { depth: number }> = [{ ...page, depth: 0 }];
   const seen = new Set([page.path]);
   const files: SourceFile[] = [];
-  const found: Array<{ file: SourceFile; node: TextNode }> = [];
   let bytes = 0;
   while (queue.length && files.length < MAX_FILES) {
-    const file = queue.shift()!;
+    const { depth, ...file } = queue.shift()!;
     bytes += new TextEncoder().encode(file.source).byteLength;
     if (bytes > MAX_BYTES) break;
     files.push(file);
-    for (const node of findTextNodes(file.source, file.path, input.text))
-      found.push({ file, node });
-    if (file.depth >= MAX_DEPTH || !CODE.test(file.path)) continue;
+    if (depth >= MAX_DEPTH || !CODE.test(file.path)) continue;
     for (const { specifier } of localImports(file.source, file.path)) {
       if (files.length + queue.length >= MAX_FILES) break;
       const candidates = importCandidates(
@@ -297,9 +291,33 @@ export async function locateCopy(input: {
       const next = await readFirst(reader, candidates, sha);
       if (!next) continue;
       seen.add(next.path);
-      queue.push({ ...next, depth: file.depth + 1 });
+      queue.push({ ...next, depth: depth + 1 });
     }
   }
+  return files;
+}
+
+export async function locateCopy(input: {
+  reader: Reader;
+  rootDirectory: string;
+  pageFile: string;
+  sha: string;
+  text: string;
+}): Promise<LocateCopyResult> {
+  const files = await reachableFiles(input);
+  if (!files)
+    return {
+      status: "not_found",
+      matches: [],
+      filesRead: [],
+      message: `${input.pageFile} could not be read.`,
+    };
+  const found = files.flatMap((file) =>
+    findTextNodes(file.source, file.path, input.text).map((node) => ({
+      file,
+      node,
+    })),
+  );
   const filesRead = files.map((file) => file.path);
   const matches = found.map(({ file, node }) => ({
     path: file.path,

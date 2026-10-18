@@ -5,6 +5,7 @@ import {
   MARKDOWN_MARKUP,
   type TextNodeKind,
 } from "./copyLocator";
+import { parseSource } from "./metadataSyntax";
 import { normalizeText } from "./pageTexts";
 import { gitBlobHash } from "./proposalFingerprint";
 
@@ -88,7 +89,46 @@ function applyTextEdit(
 // it writes exactly what the person approved.
 const MAX_EDITS = 5;
 const MAX_FILES = 3;
-type Wanted = { filePath: string; beforeText: string; afterText: string };
+type Wanted = {
+  filePath: string;
+  beforeText: string;
+  afterText: string;
+  /** RFC-0013: an opening tag replaced whole, for an attribute fix. */
+  nodeKind?: ProposalTextEdit["nodeKind"];
+};
+
+/** Replaces one exact opening tag, and checks that the file still parses. */
+function applyTagEdit(
+  source: string,
+  path: string,
+  before: string,
+  after: string,
+) {
+  const start = source.indexOf(before);
+  if (start < 0 || source.indexOf(before, start + 1) >= 0)
+    throw new AppError(
+      "VALIDATION_ERROR",
+      `The element must appear exactly once in ${path}.`,
+    );
+  const edited =
+    source.slice(0, start) + after + source.slice(start + before.length);
+  try {
+    parseSource(edited, path);
+  } catch {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      `${path} did not parse after the edit. Change the element by hand.`,
+    );
+  }
+  return {
+    source: edited,
+    nodeKind: "jsx_attribute" as const,
+    beforeText: before,
+    afterText: after,
+    beforeSnippet: lineAt(source, start),
+    afterSnippet: lineAt(edited, start),
+  };
+}
 
 export async function applyCopyEdits(
   sources: Map<string, { source: string; blobSha: string }>,
@@ -107,12 +147,15 @@ export async function applyCopyEdits(
     const current =
       after.get(edit.filePath) ?? sources.get(edit.filePath)?.source;
     if (current === undefined) throw new AppError("CONFLICT");
-    const result = applyTextEdit(
-      current,
-      edit.filePath,
-      edit.beforeText,
-      edit.afterText,
-    );
+    const result =
+      edit.nodeKind === "jsx_attribute"
+        ? applyTagEdit(current, edit.filePath, edit.beforeText, edit.afterText)
+        : applyTextEdit(
+            current,
+            edit.filePath,
+            edit.beforeText,
+            edit.afterText,
+          );
     after.set(edit.filePath, result.source);
     return { filePath: edit.filePath, result };
   });

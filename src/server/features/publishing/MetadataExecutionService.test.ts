@@ -576,6 +576,58 @@ describe("MetadataExecutionService page text changes", () => {
     expect(github.createPullRequest).toHaveBeenCalledOnce();
   });
 
+  it("rebuilds an accessibility attribute edit and commits it", async () => {
+    const tag = '<img src="/team.png" />';
+    const source = `export default () => ${tag};\n`;
+    const sources = new Map([
+      ["app/page.tsx", { source, blobSha: await gitBlobHash(source) }],
+    ]);
+    const { textEdits, files } = await applyCopyEdits(sources, [
+      {
+        filePath: "app/page.tsx",
+        beforeText: tag,
+        afterText: '<img src="/team.png" alt="" />',
+        nodeKind: "jsx_attribute",
+      },
+    ]);
+    const proposal = {
+      ...fixture.proposal,
+      changeKind: "jsx_attribute" as const,
+      fingerprintVersion: 6,
+      filePath: "app/page.tsx",
+      beforeBlobSha: await gitBlobHash(source),
+      afterBlobSha: files[0].blobSha,
+    };
+    proposal.changeHash = await proposalFingerprint(proposal, textEdits);
+    fixture.executeInput.changeHash = proposal.changeHash;
+    mocks.history.mockResolvedValue({
+      proposal,
+      connection: fixture.connection,
+      executions: [],
+      approvals: [],
+      events: [],
+      textEdits,
+    });
+    github.readFile.mockImplementation(
+      async (path) =>
+        sources.get(path) ?? Promise.reject(new AppError("NOT_FOUND")),
+    );
+    github.commitFiles.mockResolvedValue({ commitSha: headSha });
+    github.verifyCommitFiles.mockResolvedValue(true);
+    github.createRef.mockImplementation(async (_branch, sha) => {
+      branchSha = sha;
+      return { sha };
+    });
+    github.createPullRequest.mockResolvedValue({
+      ...fixture.pullRequest,
+      body: `<!-- OpenSEO proposal:${proposal.id} change:${proposal.changeHash} -->`,
+    });
+    expect((await execute()).ok).toBe(true);
+    expect(github.commitFiles.mock.calls[0][0].files[0].source).toBe(
+      'export default () => <img src="/team.png" alt="" />;\n',
+    );
+  });
+
   it("writes nothing when a file changed after the person approved", async () => {
     const { sources } = await copyProposal();
     const changed = content.replace("Start free", "Start now");
