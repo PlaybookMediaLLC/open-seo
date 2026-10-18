@@ -17,6 +17,10 @@ import {
   listExperimentKeyEvents,
   saveMeasurementSettings,
 } from "@/serverFunctions/experiments";
+import {
+  CONVERSION_CAVEATS,
+  conversionResult,
+} from "@/shared/conversionResult";
 import { GA4_CAVEAT, ga4Statements } from "@/shared/ga4Statements";
 import type { ExperimentDetail } from "@/types/schemas/experiments";
 
@@ -126,6 +130,13 @@ export function Ga4Results({ detail }: { detail: ExperimentDetail }) {
               <li key={statement}>{statement}</li>
             ))}
           </ul>
+          {detail.conversionEvent && (
+            <ConversionCard
+              eventName={detail.conversionEvent}
+              sessions={sessions}
+              totals={ga4EventTotals}
+            />
+          )}
           {ga4EventTotals.length > 0 && (
             <ul className="space-y-1 text-sm">
               {[...new Set(ga4EventTotals.map((row) => row.eventName))].map(
@@ -152,6 +163,39 @@ export function Ga4Results({ detail }: { detail: ExperimentDetail }) {
         empty, never zero. {GA4_CAVEAT}
       </p>
     </section>
+  );
+}
+
+const percent = (value: number) => `${(value * 100).toFixed(2)}%`;
+
+/** RFC-0012 5.6: the chosen conversion, before and after, with its caveats. */
+function ConversionCard(props: {
+  eventName: string;
+  sessions: number[];
+  totals: ExperimentDetail["ga4EventTotals"];
+}) {
+  const total = (period: "baseline" | "observation") =>
+    props.totals.find(
+      (row) => row.eventName === props.eventName && row.period === period,
+    )?.keyEvents ?? 0;
+  const result = conversionResult(
+    { sessions: props.sessions[0] ?? 0, conversions: total("baseline") },
+    { sessions: props.sessions[1] ?? 0, conversions: total("observation") },
+  );
+  return (
+    <div className="space-y-1 rounded-lg border p-3 text-sm">
+      <p className="font-medium">
+        Conversions (<code>{props.eventName}</code>): {count(total("baseline"))}{" "}
+        → {count(total("observation"))}, rate {percent(result.before)} →{" "}
+        {percent(result.after)}
+      </p>
+      <p>
+        {result.label === "inconclusive"
+          ? `Inconclusive. ${result.reasons.join(" ")}`
+          : `Directional: the conversion rate went ${result.label === "rate_up" ? "up" : "down"}.`}
+      </p>
+      <p className="text-xs text-muted-foreground">{CONVERSION_CAVEATS}</p>
+    </div>
   );
 }
 

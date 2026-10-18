@@ -170,6 +170,8 @@ export type ExperimentDetail = {
   longTermRun: MeasurementRun | null;
   longTermDays: MeasurementDay[];
   keyEvents: string[];
+  /** RFC-0012 5.6: the project's chosen conversion, if any. */
+  conversionEvent: string | null;
   ga4Days: MeasurementGa4Day[];
   ga4EventTotals: MeasurementGa4EventTotal[];
 };

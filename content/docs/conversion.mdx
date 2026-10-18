@@ -1,0 +1,80 @@
+---
+title: "Conversion optimization"
+description: "How Relay finds landing pages that lose conversions in GA4, changes their text by reviewed pull request, and measures the result."
+---
+
+Search brings visitors, but they must also become customers. Relay reads Google Analytics 4 (GA4) to find landing pages that lose conversions. It changes their text only through a pull request that you review, and it measures the result with GA4 key events.
+
+## The tracking gate
+
+Open **Project settings → Conversion**. Relay checks GA4 before any conversion work:
+
+1. GA4 has a web data stream.
+2. GA4 has at least one key event.
+3. The conversion has at least 30 events in the last 28 days.
+4. You chose the key event that counts as a conversion, for example `sign_up` or `generate_lead`.
+
+Each failed check shows what to set up in GA4. Relay creates no conversion opportunity until every check passes.
+
+In the same tab, owners and admins choose:
+
+- The key event that counts as a conversion.
+- An optional value of one conversion, in the GA4 property's currency.
+- Whether the checks use organic search traffic only (the default) or all traffic.
+
+## Find conversion problems
+
+On the **Opportunities** page, select **Find conversion problems**. The run reads the last 28 complete days of GA4 data, at most once in 24 hours. The run also needs the Search Console connection, because opportunities belong to a Search Console property.
+
+| Type                  | Rule                                                                                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Low conversion        | A landing page with 300 or more sessions converts at half or less of the median for pages with the same role, and the gap is 5 or more conversions. |
+| Form drop-off         | A page with 50 or more form starts gets 30% or fewer form submits.                                                                                  |
+| Mobile conversion gap | A page with 200 or more mobile sessions converts on mobile at half or less of its desktop rate.                                                     |
+| Low engagement        | A page with 300 or more sessions has an engagement rate of 40% or less, while the site median is 55% or more.                                       |
+
+Medians use only the pages with 300 or more sessions. Page roles come from the key pages in the project context.
+
+The form check needs GA4 enhanced measurement to record form interactions. Without it, Relay skips the form check and says so.
+
+Each item states how many more conversions the page would get at the median for its role, with the value when you set one. This is not a forecast.
+
+Use the **Conversion** group of the type filter to see only these items.
+
+## Change page text
+
+On an approved opportunity, open **Change page text** in the publishing panel:
+
+1. Pick a heading, button, link, form label or short paragraph from the live page.
+2. Relay finds the one place in the repository that holds it. It starts at the page file and follows static imports inside the repository two levels deep. It reads at most 20 files and 1 MB.
+3. If other pages import the same text, Relay lists them. You must confirm that they change too.
+4. Enter the new text, or select **Draft with AI**.
+5. Select **Prepare change** and review the exact edit. Nothing is written to GitHub until you approve it.
+
+When you approve, Relay opens one pull request with one commit that changes only the approved text.
+
+Relay changes plain text only: string literals, template literals without expressions, JSX text and Markdown lines. It stops when the text is split across nodes, contains markup, is computed, or appears more than once. Then change the text by hand.
+
+## AI drafts
+
+A draft uses only the facts in the page, your project context and the search queries. Before you see a draft, Relay checks it:
+
+- No new numbers, prices, customer names, logos, reviews, ratings or awards.
+- No urgency or scarcity, such as "only", "last chance", "ends today" or "spots left", unless the page states the same claim.
+- No opt-out that shames the visitor.
+- A call to action has 2 to 5 words and starts with a verb.
+- A heading keeps the words of the main search query that it already uses.
+
+A draft that fails the checks is never shown. Each draft lists its claims with their sources. Drafts use credits, like other AI drafts.
+
+## Measure the result
+
+After the pull request merges and deploys, start tracking it in **Experiments**. Relay adds the chosen conversion to the GA4 numbers and compares the conversion rate of the 28 days before and after the change. Experiments count organic search sessions that start on the changed page.
+
+Relay shows a direction only when each period has 1,000 or more sessions and 50 or more conversions, and the conversion rate changes by 20% or more and by 10 or more conversions. Otherwise the result is inconclusive, with the reason. A before-and-after comparison is not a controlled test: seasonality, other changes and tracking changes also move conversions.
+
+## Limits
+
+- Relay changes text, not layout or design.
+- Relay stores only aggregated GA4 numbers. It records no visitor-level data.
+- Relay does not revert a page text change. Use the **Revert** button on its pull request in GitHub.

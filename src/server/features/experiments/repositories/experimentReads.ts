@@ -201,8 +201,9 @@ export async function get(
         .orderBy(asc(measurementDays.date))
         .limit(28)
     : [];
-  const [keyEvents, ga4] = await Promise.all([
+  const [keyEvents, conversionEvent, ga4] = await Promise.all([
     MeasurementGa4Repository.keyEvents(projectId, experimentId),
+    MeasurementGa4Repository.conversionEvent(projectId),
     completed[0]
       ? MeasurementGa4Repository.forRun(projectId, completed[0].id)
       : { days: [], eventTotals: [] },
@@ -212,6 +213,7 @@ export async function get(
     longTermRun: longTermRun ?? null,
     longTermDays,
     keyEvents,
+    conversionEvent,
     ga4Days: ga4.days,
     ga4EventTotals: ga4.eventTotals,
     experiment,
