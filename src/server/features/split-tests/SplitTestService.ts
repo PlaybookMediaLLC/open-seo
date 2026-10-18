@@ -16,7 +16,6 @@ import { AppError } from "@/server/lib/errors";
 import type { CreateSplitTestInput } from "@/types/schemas/splitTests";
 import {
   baselineWindow,
-  literalPrefix,
   loadBaseline,
   prePeriodDifferences,
 } from "./splitTestBaseline";
@@ -24,9 +23,9 @@ import {
   ga4DateInTimeZone,
   shiftGa4Date,
 } from "@/server/features/ga4/services/Ga4Dates";
-import { GscService } from "@/server/features/gsc/services/GscService";
 import { groupSeries, pairCsv } from "./splitTestAnalysis";
 import { backtest, type PastPage } from "./splitTestBacktest";
+import { neighbourPairs, pastClicks } from "./splitTestHistory";
 import { latestResults, refreshSplitTest } from "./splitTestRefresh";
 import { routeFiles } from "./splitTestTemplate";
 import {
@@ -291,7 +290,7 @@ async function create(
 }
 
 /**
- * Phase 3: the backtest report, on the 91 days that end with the test's
+ * Phase 3: the backtest report of a test, on the 91 days that end with its
  * baseline. One Search Console request; no page changes.
  */
 async function backtestReport(
@@ -301,59 +300,51 @@ async function backtestReport(
   const { test, pages } = await get(context, input);
   requireOrgPermission(context, { integration: ["manage"] });
   if (!test.baselineEnd) throw new AppError("CONFLICT");
-  const end = test.baselineEnd;
-  const start = shiftGa4Date(end, -90);
-  const half = shiftGa4Date(start, 28);
-  const observation = shiftGa4Date(start, 63);
-  const baselineEnd = shiftGa4Date(start, 55);
-  const result = await GscService.getPerformance({
-    projectId: input.projectId,
-    dimensions: ["page", "date"],
-    startDate: start,
-    endDate: end,
-    filters: [
-      {
-        dimension: "page",
-        operator: "contains",
-        expression: literalPrefix(test.pagePattern),
-      },
-    ],
-    rowLimit: 25_000,
-    dataState: "final",
-  });
-  const past = new Map<string, PastPage>(
-    pages.map((page) => [
-      page.path,
-      { baseline: 0, observation: 0, firstHalf: 0, secondHalf: 0 },
-    ]),
+  const { start, end, past } = await pastClicks(
+    input.projectId,
+    test.pagePattern,
+    test.baselineEnd,
   );
-  for (const row of result.rows) {
-    const [url = "", date = ""] = row.keys ?? [];
-    let path: string;
-    try {
-      path = new URL(url).pathname.replace(/\/+$/, "") || "/";
-    } catch {
-      continue;
-    }
-    const entry = past.get(path);
-    const clicks = row.clicks ?? 0;
-    if (!entry) continue;
-    if (date <= baselineEnd) {
-      entry.baseline += clicks / 56;
-      if (date < half) entry.firstHalf += clicks / 28;
-      else entry.secondHalf += clicks / 28;
-    } else if (date >= observation) entry.observation += clicks / 28;
-  }
   const pairs = new Map<number, PastPage[]>();
-  for (const page of pages) {
-    const entry = past.get(page.path);
-    if (entry)
-      pairs.set(page.pairIndex, [...(pairs.get(page.pairIndex) ?? []), entry]);
-  }
+  for (const page of pages)
+    pairs.set(page.pairIndex, [
+      ...(pairs.get(page.pairIndex) ?? []),
+      past.get(page.path) ?? {
+        baseline: 0,
+        observation: 0,
+        firstHalf: 0,
+        secondHalf: 0,
+      },
+    ]);
   const complete: Array<[PastPage, PastPage]> = [];
   for (const [first, second] of pairs.values())
     if (first && second) complete.push([first, second]);
   return { start, end, ...backtest(complete, test.seed ?? 0) };
+}
+
+/**
+ * Phase 1a acceptance: a backtest of a pattern that cannot run a test yet,
+ * so an owner sees how a too-small group behaves. Nothing is stored.
+ */
+async function backtestPattern(
+  context: OpportunityContext,
+  input: { projectId: string; pagePattern: string },
+) {
+  await authorize(context, input.projectId);
+  requireOrgPermission(context, { integration: ["manage"] });
+  const { start, end, past } = await pastClicks(
+    input.projectId,
+    input.pagePattern,
+    baselineWindow().end,
+  );
+  const pairs = neighbourPairs(past);
+  const [seed = 0] = crypto.getRandomValues(new Uint32Array(1));
+  return {
+    start,
+    end,
+    pairs: pairs.length,
+    ...backtest(pairs, seed & 0x7f_ff_ff_ff),
+  };
 }
 
 export const SplitTestService = {
@@ -363,4 +354,5 @@ export const SplitTestService = {
   refresh,
   csv,
   backtest: backtestReport,
+  backtestPattern,
 };

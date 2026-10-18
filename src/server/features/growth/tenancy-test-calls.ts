@@ -330,6 +330,8 @@ function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
       refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),
       csv: () => splitTests.csv(ctx, { projectId, testId: "x" }),
       backtest: () => splitTests.backtest(ctx, { projectId, testId: "x" }),
+      backtestPattern: () =>
+        splitTests.backtestPattern(ctx, { projectId, pagePattern: "^/x$" }),
       create: () =>
         splitTests.create(ctx, {
           projectId,

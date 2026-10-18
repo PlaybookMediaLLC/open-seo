@@ -4,6 +4,7 @@ import { SplitTestPullService as pulls } from "@/server/features/split-tests/Spl
 import { SplitTestService as service } from "@/server/features/split-tests/SplitTestService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  backtestPatternSchema,
   confirmSplitTestDeploymentSchema,
   createSplitTestSchema,
   endSplitTestSchema,
@@ -75,6 +76,13 @@ export const backtestSplitTest = createServerFn({ method: "POST" })
   .validator(splitTestSchema)
   .handler(({ context, data }) =>
     service.backtest(context, { ...data, projectId: context.projectId }),
+  );
+
+export const backtestSplitTestPattern = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(backtestPatternSchema)
+  .handler(({ context, data }) =>
+    service.backtestPattern(context, { ...data, projectId: context.projectId }),
   );
 
 export const exportSplitTestCsv = createServerFn({ method: "POST" })

@@ -134,6 +134,33 @@ it("refuses a small group with the gap and creates nothing", async () => {
   ).toEqual([]);
 });
 
+it("backtests a group that cannot run a test, and stores nothing", async () => {
+  const { projectId, context } = await project();
+  const { end } = baselineWindow();
+  mocks.performance.mockResolvedValue({
+    rows: Array.from({ length: 9 }, (_, index) => ({
+      keys: [
+        `https://example.com/integrations/p${index}`,
+        shiftGa4Date(end, -80),
+      ],
+      clicks: 10 + index,
+      impressions: 50,
+    })),
+  });
+  const report = await SplitTestService.backtestPattern(context, {
+    projectId,
+    pagePattern: "^/integrations/[^/]+$",
+  });
+  // 9 pages make 4 pairs, too few for the test to ever reject.
+  expect(report).toMatchObject({ pairs: 4, runs: 200, falsePositiveRate: 0 });
+  expect(
+    await db
+      .select()
+      .from(splitTests)
+      .where(eq(splitTests.projectId, projectId)),
+  ).toEqual([]);
+});
+
 it("refuses pages that do not share one template", async () => {
   const { projectId, context } = await project();
   mocks.performance.mockResolvedValue(rows(40, ["/integrations/special"]));
