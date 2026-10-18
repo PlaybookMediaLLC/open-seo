@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) and part C (the pull request, its diff check and the deployment confirmation) built.
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) and part D (live verification, the daily refresh, analysis runs and the harm notice) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -156,6 +156,8 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 3. Store each check. The test starts only when at least 95% of pages pass. Otherwise show the failing pages and stop.
 4. Check again on days 7 and 21 of the observation window. A drift above 5% marks the result "contaminated".
 
+**As built (part D).** Split tests refresh in the daily RFC-0008 `measurement_refresh` job, and an owner can run the same step with "Verify now" or "Refresh now". A test in `verifying` fetches every page 8 at a time and starts when at least 95% pass; otherwise it lists the failing pages and stays in `verifying`. A running test checks again on observation days 7 and 21, once each, and a failure rate above 5% sets `contaminated`. A field of type `other` cannot be read, so its verification is skipped and the results page says so. Each refresh stores the final days after the last stored one (one Search Console request), then stores an analysis row with its label and notes (`interim`, `imbalanced`, `contaminated`). Days without a row count as zero clicks. An interval end that the pairs cannot bound is stored empty. A harmful interim estimate notifies the project once; a finished window concludes the test and notifies its label.
+
 ### 5.7 Ending a test
 
 1. **Positive:** "Apply to all pages" opens a pull request that removes `inSplitVariant` and keeps the variant expression.
@@ -210,13 +212,13 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 - [x] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
 - [x] Generated files and the pull request description with the template instruction.
 - [x] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
-- [ ] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
+- [x] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
 - [x] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results. The reference is `scripts/split-test-reference.py`; 5 fixed datasets match to 2 decimal places.
 - [x] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
 - [x] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
 - [ ] Early harm stop with notification and the removal pull request.
 - [ ] End actions with exact-change approval.
-- [ ] Daily refresh through an RFC-0008 task.
+- [x] Daily refresh through an RFC-0008 task. It runs in `measurement_refresh`, which needs the RFC-0008 Trigger.dev account; "Refresh now" runs the same step by hand.
 - [ ] Split tests tab, chart and result wording with limits.
 - [ ] `content/docs/split-tests.mdx` explains eligibility, MDE, labels and limits in plain words.
 

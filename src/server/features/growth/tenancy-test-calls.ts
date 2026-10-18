@@ -319,6 +319,7 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
     SplitTestService: {
       list: () => splitTests.list(ctx, projectId),
       get: () => splitTests.get(ctx, { projectId, testId: "x" }),
+      refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),
       create: () =>
         splitTests.create(ctx, {
           projectId,

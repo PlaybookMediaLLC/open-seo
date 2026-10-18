@@ -1,6 +1,7 @@
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
 import { measurementRefreshDue } from "@/server/features/experiments/measurementSchedule";
 import { ExperimentRepository } from "@/server/features/experiments/repositories/ExperimentRepository";
+import { refreshProjectSplitTests } from "@/server/features/split-tests/splitTestRefresh";
 import type { JobContext } from "../growthJobs";
 import { GrowthJobRepository } from "../repositories/GrowthJobRepository";
 
@@ -45,7 +46,9 @@ export async function measurementRefreshJob(context: JobContext) {
       dedupeKey: item.id,
     });
   }
+  // RFC-0011 5.5: split tests refresh in the same daily job.
+  const splitTests = await refreshProjectSplitTests(context);
   return {
-    summary: `Refreshed ${due.length} of ${items.length} experiments; ${finals} final results.`,
+    summary: `Refreshed ${due.length} of ${items.length} experiments; ${finals} final results. ${splitTests}`,
   };
 }

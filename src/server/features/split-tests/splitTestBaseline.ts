@@ -23,7 +23,7 @@ type BaselineStats = {
 };
 
 /** The literal start of a path pattern, for the request's contains filter. */
-const literalPrefix = (pattern: string) =>
+export const literalPrefix = (pattern: string) =>
   pattern.slice(1).match(/^[^\\^$.|?*+()[\]{}]*/)?.[0] || "/";
 
 const pathOf = (url: string) => {

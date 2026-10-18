@@ -19,6 +19,7 @@ import {
   loadBaseline,
   prePeriodDifferences,
 } from "./splitTestBaseline";
+import { latestResults, refreshSplitTest } from "./splitTestRefresh";
 import { routeFiles } from "./splitTestTemplate";
 import {
   assign,
@@ -80,7 +81,29 @@ async function get(
     pages: sortBy(pages, (page) => page.pairIndex),
     variantClicks: total("variant"),
     controlClicks: total("control"),
+    canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    ...(await latestResults(input.projectId, input.testId)),
   };
+}
+
+/** 5.5 and 5.6: verify or refresh one test now, as the daily job does. */
+async function refresh(
+  context: OpportunityContext,
+  input: { projectId: string; testId: string },
+) {
+  await authorize(context, input.projectId);
+  requireOrgPermission(context, { integration: ["manage"] });
+  const [test] = await db
+    .select()
+    .from(splitTests)
+    .where(
+      and(
+        eq(splitTests.projectId, input.projectId),
+        eq(splitTests.id, input.testId),
+      ),
+    );
+  if (!test) throw new AppError("NOT_FOUND");
+  return { message: await refreshSplitTest(test, context.organizationId) };
 }
 
 /** Each path's live title and description, a few at a time. */
@@ -221,4 +244,4 @@ async function create(
   return { created: true as const, testId, summary: result.summary };
 }
 
-export const SplitTestService = { list, get, create };
+export const SplitTestService = { list, get, create, refresh };
