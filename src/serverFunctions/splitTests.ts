@@ -30,6 +30,13 @@ export const createSplitTest = createServerFn({ method: "POST" })
     service.create(context, { ...data, projectId: context.projectId }),
   );
 
+export const refreshSplitTestFn = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(splitTestSchema)
+  .handler(({ context, data }) =>
+    service.refresh(context, { ...data, projectId: context.projectId }),
+  );
+
 // RFC-0011 5.4: the pull request, its check and the deployment.
 export const previewSplitTestPull = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)

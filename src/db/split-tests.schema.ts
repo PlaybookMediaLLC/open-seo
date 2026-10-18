@@ -64,6 +64,10 @@ export const splitTests = sqliteTable(
     checkedSha: text("checked_sha"),
     checkPassed: integer("check_passed", { mode: "boolean" }),
     checkProblems: text("check_problems"),
+    // RFC-0011 5.6: a drift above 5% on day 7 or day 21.
+    contaminated: integer("contaminated", { mode: "boolean" })
+      .notNull()
+      .default(false),
     proposalId: text("proposal_id").references(() => opportunityProposals.id, {
       onDelete: "set null",
     }),

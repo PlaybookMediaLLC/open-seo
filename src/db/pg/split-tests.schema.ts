@@ -53,6 +53,8 @@ export const splitTests = pgTable(
     checkedSha: text("checked_sha"),
     checkPassed: boolean("check_passed"),
     checkProblems: text("check_problems"),
+    // RFC-0011 5.6: a drift above 5% on day 7 or day 21.
+    contaminated: boolean("contaminated").notNull().default(false),
     proposalId: text("proposal_id").references(() => opportunityProposals.id, {
       onDelete: "set null",
     }),
