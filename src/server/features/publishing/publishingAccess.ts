@@ -57,12 +57,15 @@ export async function connectedGithub(
   signal: AbortSignal,
   // A GitHub App token gets only this operation's permissions.
   permissions: AppPermissions = PUBLISH_PERMISSIONS,
+  // RFC-0011: a bulk read of page files needs more than the default 32.
+  maxRequests?: number,
 ) {
   if (connection.revokedAt) throw new AppError("CONFLICT");
   const target = {
     owner: connection.owner,
     repository: connection.repository,
     signal,
+    maxRequests,
   };
   if (connection.transport === "github_app") {
     const installation = connection.installationRef

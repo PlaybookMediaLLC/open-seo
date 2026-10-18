@@ -610,6 +610,13 @@
       "when": 1792312211937,
       "tag": "0086_cool_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "6",
+      "when": 1792317087607,
+      "tag": "0087_legal_lethal_legion",
+      "breakpoints": true
     }
   ]
 }

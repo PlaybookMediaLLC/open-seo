@@ -1,7 +1,10 @@
+import type { splitTests } from "@/db/schema";
 import {
   checkDraft,
   LENGTH_RULES,
 } from "@/server/features/publishing/draftChecks";
+import type { GithubClient } from "@/server/features/publishing/githubClient";
+import { relativeImport } from "./splitTestFiles";
 import {
   fieldProperty,
   isNamed,
@@ -304,4 +307,64 @@ export function checkVariantText(
   return [...counts].map(
     ([failure, count]) => `${count} variant pages: ${failure}`,
   );
+}
+
+/**
+ * Phase 2: the drafted template edit, read from the base branch's head and
+ * checked with the RFC-0004 rules on each variant page's final value.
+ */
+export async function draftedTemplate(
+  loaded: {
+    test: Pick<typeof splitTests.$inferSelect, "field" | "templateHelper">;
+    templatePath: string;
+    files: Array<{ path: string }>;
+    variants: Array<{
+      originalTitle: string | null;
+      originalDescription: string | null;
+    }>;
+  },
+  draft: VariantDraft,
+  client: Pick<GithubClient, "readFile">,
+  baseSha: string,
+) {
+  const { test, templatePath, files, variants } = loaded;
+  if (test.templateHelper)
+    return {
+      template: null,
+      problems: [
+        "Relay drafts generateMetadata templates only. A developer writes the edit in the shared helper.",
+      ],
+    };
+  if (test.field === "other")
+    return {
+      template: null,
+      problems: ["Relay drafts titles and descriptions only."],
+    };
+  const current = await client.readFile(templatePath, baseSha);
+  const drafted = draftTemplate({
+    source: current.source,
+    templatePath,
+    field: test.field,
+    draft,
+    importPath: relativeImport(templatePath, files[1]?.path ?? ""),
+  });
+  return {
+    template: {
+      path: templatePath,
+      source: drafted.source,
+      blobSha: current.blobSha,
+    },
+    problems: [
+      ...drafted.problems,
+      ...checkVariantText(
+        test.field,
+        draft,
+        variants.map((page) =>
+          test.field === "title"
+            ? page.originalTitle
+            : page.originalDescription,
+        ),
+      ),
+    ],
+  };
 }

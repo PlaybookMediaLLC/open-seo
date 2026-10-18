@@ -78,6 +78,29 @@ function metadataRanges(program: ReturnType<typeof parseSource>) {
   return ranges;
 }
 
+/** The source range of the exported metadata helper function `name`. */
+function helperRanges(program: ReturnType<typeof parseSource>, name: string) {
+  const ranges: Range[] = [];
+  for (const statement of program.body) {
+    if (statement.type !== "ExportNamedDeclaration" || !statement.declaration)
+      continue;
+    const declaration = statement.declaration;
+    if (
+      declaration.type === "FunctionDeclaration" &&
+      isNamed(declaration.id, name)
+    )
+      ranges.push({ start: declaration.start ?? 0, end: declaration.end ?? 0 });
+    if (declaration.type === "VariableDeclaration")
+      for (const declarator of declaration.declarations)
+        if (isNamed(declarator.id, name) && declarator.init)
+          ranges.push({
+            start: declarator.init.start ?? 0,
+            end: declarator.init.end ?? 0,
+          });
+  }
+  return ranges;
+}
+
 /**
  * The problems with a final pull request; empty when it passes. Only the two
  * generated files and the template change, the variant list matches the
@@ -90,6 +113,8 @@ export function diffCheck(input: {
   headJson: string | null;
   template: SplitFile | null;
   templatePath: string;
+  /** A shared metadata helper is the template; the helper function's name. */
+  helper?: string | null;
 }) {
   const problems: string[] = [];
   const allowed = new Set([
@@ -113,7 +138,10 @@ export function diffCheck(input: {
     );
     return problems;
   }
-  if (!/(^|\/)app\/(.*\/)?page\.(tsx|ts|jsx|js)$/.test(input.templatePath)) {
+  if (
+    !input.helper &&
+    !/(^|\/)app\/(.*\/)?page\.(tsx|ts|jsx|js)$/.test(input.templatePath)
+  ) {
     problems.push("Relay checks App Router page templates only.");
     return problems;
   }
@@ -140,7 +168,9 @@ export function diffCheck(input: {
     problems.push(`${input.templatePath} does not import inSplitVariant.`);
     return problems;
   }
-  const ranges = metadataRanges(program);
+  const ranges = input.helper
+    ? helperRanges(program, input.helper)
+    : metadataRanges(program);
   const imports = program.body.flatMap((statement) =>
     statement.type === "ImportDeclaration"
       ? [{ start: statement.start ?? 0, end: statement.end ?? 0 }]
@@ -154,7 +184,9 @@ export function diffCheck(input: {
     if (at && inside(at, imports)) return;
     if (!at || !inside(at, ranges))
       problems.push(
-        `${input.templatePath} uses inSplitVariant outside its metadata.`,
+        input.helper
+          ? `${input.templatePath} uses inSplitVariant outside ${input.helper}.`
+          : `${input.templatePath} uses inSplitVariant outside its metadata.`,
       );
   });
   if (!calls)
@@ -196,16 +228,21 @@ export function pullBody(
   templatePath: string,
   files: SplitFile[],
   drafted = false,
+  helper: string | null = null,
 ) {
   const field = test.field === "other" ? "the field you test" : test.field;
+  const where = helper
+    ? `inside the metadata helper \`${helper}\`, with the page path that it receives`
+    : "inside `generateMetadata` or the `metadata` export";
+  const path = helper ? "path" : pathExpression(templatePath);
   const edit = drafted
     ? `**Relay drafted the template edit** in \`${templatePath}\`: it uses the helper to pick the variant value of ${field}. Review it like any other change.`
-    : `**One edit finishes it.** In \`${templatePath}\`, inside \`generateMetadata\` or the \`metadata\` export, use the helper to pick the variant value of ${field}:
+    : `**One edit finishes it.** In \`${templatePath}\`, ${where}, use the helper to pick the variant value of ${field}:
 
 \`\`\`ts
 import { inSplitVariant } from "${relativeImport(templatePath, files[1]?.path ?? "")}";
 
-${test.field === "description" ? "description" : "title"}: inSplitVariant(${pathExpression(templatePath)})
+${test.field === "description" ? "description" : "title"}: inSplitVariant(${path})
   ? /* the variant value */
   : /* the current value */,
 \`\`\``;
@@ -217,5 +254,5 @@ This pull request adds the list of the ${test.pairs ?? 0} variant pages (\`${fil
 
 ${edit}
 
-Change nothing else. Before you merge, Relay checks the final diff: only these three files change, the variant list matches the test, and \`inSplitVariant\` appears only inside the metadata. Variant pages keep their group until the test ends.`;
+Change nothing else. Before you merge, Relay checks the final diff: only these three files change, the variant list matches the test, and \`inSplitVariant\` appears only inside ${helper ? `\`${helper}\`` : "the metadata"}. Variant pages keep their group until the test ends.`;
 }
