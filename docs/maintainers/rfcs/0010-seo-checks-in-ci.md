@@ -1,6 +1,7 @@
 # RFC-0010: SEO checks on pull requests
 
-- **Status:** Draft
+- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) built
+- **Decision (owner, 2026-10-18):** run each check in a Cloudflare Workflow, the engine of site audits, instead of a Trigger.dev task, so checks work before the RFC-0008 Trigger.dev account exists. Create the public action repository `PlaybookMediaLLC/relay-seo-check`.
 - **Date:** 2026-10-15
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
 - **Depends on:** RFC-0008 (Trigger.dev tasks and signed internal endpoints) and RFC-0009 (audit log, rate limits). Phase 2 depends on the RFC-0005 GitHub App.
@@ -152,6 +153,8 @@ Check at most 100 URLs per run. Record why each URL was chosen.
 
 Unique on `ci_check_runs` (`project_id`, `head_sha`, `preview_origin`). Delete runs older than 90 days in the RFC-0008 retention task.
 
+**As built (part A).** An eighth table, `ci_project_settings`, holds the two per-project switches of 5.5 and 5.7. `ci_check_runs` also stores `created_at` (for the monthly quota) and the changed files the action sent. `ci_check_urls` and `ci_check_findings` carry `project_id`, so every read is scoped by project. A repeated request for the same commit and preview answers with the existing run. A refused preview host is decided from the allowlist before any network request.
+
 ### 5.10 API and limits
 
 1. `POST /api/ci/v1/checks` and `GET /api/ci/v1/checks/{id}`. Bearer CI token. Zod-validated bodies.
@@ -210,11 +213,11 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 
 ### Phase 1
 
-- [ ] Seven tables with D1 and Postgres migrations and the parity test.
-- [ ] CI token create, hash, verify and revoke, with tests.
-- [ ] Check API with token, host, quota and rate-limit checks (one test each).
-- [ ] Test: a token from project A cannot read or create runs for project B.
-- [ ] Test: a preview host outside the allowlist is refused before any fetch.
+- [x] Seven tables with D1 and Postgres migrations and the parity test.
+- [x] CI token create, hash, verify and revoke, with tests.
+- [x] Check API with token, host, quota and rate-limit checks (one test each).
+- [x] Test: a token from project A cannot read or create runs for project B.
+- [x] Test: a preview host outside the allowlist is refused before any fetch.
 - [ ] URL selection with tests for each reason, the dynamic-segment sitemap match and the 100-URL cap.
 - [ ] Fetcher with the URL policy, redirect limit, size limit, timeouts and protected-preview headers (tests).
 - [ ] Normalization tests, including the preview-origin canonical and the ignored preview `X-Robots-Tag`.

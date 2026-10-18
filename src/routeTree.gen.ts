@@ -65,6 +65,7 @@ import { Route as AppPProjectIdSamRouteImport } from './routes/_app/p/$projectId
 import { Route as AppPProjectIdSavedRouteImport } from './routes/_app/p/$projectId/saved'
 import { Route as AppPProjectIdSearchPerformanceRouteImport } from './routes/_app/p/$projectId/search-performance'
 import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$projectId/settings'
+import { Route as ApiCiV1ChecksRouteImport } from './routes/api/ci/v1/checks'
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
 import { Route as ApiGscOauthCallbackRouteImport } from './routes/api/gsc/oauth/callback'
@@ -89,6 +90,7 @@ import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_a
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
 import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
+import { Route as ApiCiV1ChecksIdRouteImport } from './routes/api/ci/v1/checks/$id'
 import { Route as AppPProjectIdAiVisibilityPromptsPromptIdRouteImport } from './routes/_app/p/$projectId/ai-visibility/prompts/$promptId'
 import { Route as AppPProjectIdAuditIssuesResultIdRouteImport } from './routes/_app/p/$projectId/audit/issues/$resultId'
 
@@ -377,6 +379,11 @@ const AppPProjectIdSettingsRoute = AppPProjectIdSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPProjectIdRouteRoute,
 } as any)
+const ApiCiV1ChecksRoute = ApiCiV1ChecksRouteImport.update({
+  id: '/api/ci/v1/checks',
+  path: '/api/ci/v1/checks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGa4OauthCallbackRoute = ApiGa4OauthCallbackRouteImport.update({
   id: '/api/ga4/oauth/callback',
   path: '/api/ga4/oauth/callback',
@@ -515,6 +522,11 @@ const AppPProjectIdSettingsSpendingRoute =
     path: '/spending',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const ApiCiV1ChecksIdRoute = ApiCiV1ChecksIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiCiV1ChecksRoute,
+} as any)
 const AppPProjectIdAiVisibilityPromptsPromptIdRoute =
   AppPProjectIdAiVisibilityPromptsPromptIdRouteImport.update({
     id: '/prompts/$promptId',
@@ -581,6 +593,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
@@ -599,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -657,6 +671,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/sam': typeof AppPProjectIdSamRoute
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
@@ -675,6 +690,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/p/$projectId/ai-visibility': typeof AppPProjectIdAiVisibilityIndexRoute
   '/p/$projectId/audit': typeof AppPProjectIdAuditIndexRoute
   '/p/$projectId/experiments': typeof AppPProjectIdExperimentsIndexRoute
@@ -742,6 +758,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/_app/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/_app/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
   '/api/gsc/oauth/callback': typeof ApiGscOauthCallbackRoute
@@ -760,6 +777,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
   '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
+  '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
   '/_app/p/$projectId/ai-visibility/': typeof AppPProjectIdAiVisibilityIndexRoute
   '/_app/p/$projectId/audit/': typeof AppPProjectIdAuditIndexRoute
   '/_app/p/$projectId/experiments/': typeof AppPProjectIdExperimentsIndexRoute
@@ -825,6 +843,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
     | '/p/$projectId/settings'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
@@ -843,6 +862,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility/'
     | '/p/$projectId/audit/'
     | '/p/$projectId/experiments/'
@@ -901,6 +921,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/sam'
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
@@ -919,6 +940,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/integrations'
     | '/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/p/$projectId/ai-visibility'
     | '/p/$projectId/audit'
     | '/p/$projectId/experiments'
@@ -985,6 +1007,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/saved'
     | '/_app/p/$projectId/search-performance'
     | '/_app/p/$projectId/settings'
+    | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
     | '/api/gsc/oauth/callback'
@@ -1003,6 +1026,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/integrations'
     | '/_app/p/$projectId/settings/spending'
+    | '/api/ci/v1/checks/$id'
     | '/_app/p/$projectId/ai-visibility/'
     | '/_app/p/$projectId/audit/'
     | '/_app/p/$projectId/experiments/'
@@ -1039,6 +1063,7 @@ export interface RootRouteChildren {
   STokenOgDotpngRoute: typeof STokenOgDotpngRoute
   STokenRawRoute: typeof STokenRawRoute
   STokenIndexRoute: typeof STokenIndexRoute
+  ApiCiV1ChecksRoute: typeof ApiCiV1ChecksRouteWithChildren
   ApiGa4OauthCallbackRoute: typeof ApiGa4OauthCallbackRoute
   ApiGithubAppSetupRoute: typeof ApiGithubAppSetupRoute
   ApiGscOauthCallbackRoute: typeof ApiGscOauthCallbackRoute
@@ -1442,6 +1467,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/api/ci/v1/checks': {
+      id: '/api/ci/v1/checks'
+      path: '/api/ci/v1/checks'
+      fullPath: '/api/ci/v1/checks'
+      preLoaderRoute: typeof ApiCiV1ChecksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ga4/oauth/callback': {
       id: '/api/ga4/oauth/callback'
       path: '/api/ga4/oauth/callback'
@@ -1609,6 +1641,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/p/$projectId/settings/spending'
       preLoaderRoute: typeof AppPProjectIdSettingsSpendingRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
+    }
+    '/api/ci/v1/checks/$id': {
+      id: '/api/ci/v1/checks/$id'
+      path: '/$id'
+      fullPath: '/api/ci/v1/checks/$id'
+      preLoaderRoute: typeof ApiCiV1ChecksIdRouteImport
+      parentRoute: typeof ApiCiV1ChecksRoute
     }
     '/_app/p/$projectId/ai-visibility/prompts/$promptId': {
       id: '/_app/p/$projectId/ai-visibility/prompts/$promptId'
@@ -1817,6 +1856,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface ApiCiV1ChecksRouteChildren {
+  ApiCiV1ChecksIdRoute: typeof ApiCiV1ChecksIdRoute
+}
+
+const ApiCiV1ChecksRouteChildren: ApiCiV1ChecksRouteChildren = {
+  ApiCiV1ChecksIdRoute: ApiCiV1ChecksIdRoute,
+}
+
+const ApiCiV1ChecksRouteWithChildren = ApiCiV1ChecksRoute._addFileChildren(
+  ApiCiV1ChecksRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRouteRoute: AppRouteRouteWithChildren,
@@ -1843,6 +1894,7 @@ const rootRouteChildren: RootRouteChildren = {
   STokenOgDotpngRoute: STokenOgDotpngRoute,
   STokenRawRoute: STokenRawRoute,
   STokenIndexRoute: STokenIndexRoute,
+  ApiCiV1ChecksRoute: ApiCiV1ChecksRouteWithChildren,
   ApiGa4OauthCallbackRoute: ApiGa4OauthCallbackRoute,
   ApiGithubAppSetupRoute: ApiGithubAppSetupRoute,
   ApiGscOauthCallbackRoute: ApiGscOauthCallbackRoute,
