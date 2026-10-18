@@ -30,6 +30,10 @@ import {
   selectedValues,
   type Executor,
 } from "./publishingSql";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 
 const {
   encryptedToken: _encryptedToken,
@@ -203,6 +207,7 @@ export async function saveProposal(input: {
   proposal: MetadataProposal;
   claimToken: string;
   organizationId: string;
+  audit?: AuditInput;
 }): Promise<boolean> {
   const { proposal } = input;
   const scope = { ...input, projectId: proposal.projectId };
@@ -251,6 +256,21 @@ export async function saveProposal(input: {
                   ),
                 ),
               ),
+          ]
+        : []),
+      // RFC-0009: services pass the event; it lands only with the proposal.
+      ...(input.audit
+        ? [
+            auditInsert(
+              tx,
+              input.audit,
+              exists(
+                tx
+                  .select({ id: opportunityProposals.id })
+                  .from(opportunityProposals)
+                  .where(eq(opportunityProposals.id, proposal.id)),
+              ),
+            ),
           ]
         : []),
     ];

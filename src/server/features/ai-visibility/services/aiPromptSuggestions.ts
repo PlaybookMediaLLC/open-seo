@@ -7,7 +7,8 @@ import {
   checkUsageCreditsDepleted,
   type BillingCustomerContext,
 } from "@/server/billing/subscription";
-import { billResearchSpend } from "@/server/billing/researchSpend";
+import type { ResearchSpend } from "@/server/billing/researchSpend"; // playbook-seam
+import { holdResearch, settleResearch } from "@/server/billing/researchHold"; // playbook-seam
 import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
 import { buildChatAgentModel } from "@/server/lib/openrouter";
 import {
@@ -72,6 +73,13 @@ export async function generateAiPrompts(
   const outputSchema = topicName
     ? suggestedAiTopicSchema.extend({ name: z.string().trim().min(1).max(120) })
     : suggestedAiTopicSchema;
+  // playbook-seam: RFC-0009 holds the estimate inside the limits (debt 3).
+  const billed = { ...customer, projectId: input.projectId };
+  const spend: ResearchSpend[] = [];
+  const hold = await holdResearch(billed, {
+    estimatedCredits: 50,
+    ledgerFeature: "ai_research",
+  });
   const result = await generateText({
     model: buildChatAgentModel(
       await getRequiredEnvValue("OPENROUTER_API_KEY"),
@@ -100,18 +108,17 @@ export async function generateAiPrompts(
       excludedPrompts: input.excludePrompts.filter(Boolean),
     }),
     // Admitted above, so settle the actual cost even if credits ran out since.
-    onStepFinish: async (step) => {
+    onStepFinish: (step) => {
       const costUsd = requireOpenRouterCostUsd(step.providerMetadata);
-      await billResearchSpend({ ...customer, projectId: input.projectId }, [
-        {
-          provider: "openrouter",
-          creditFeature: "agent",
-          operation: "ai_prompt_generation",
-          costUsd,
-        },
-      ]);
+      // playbook-seam: RFC-0009 settles the steps against the hold.
+      spend.push({
+        provider: "openrouter",
+        creditFeature: "agent",
+        operation: "ai_prompt_generation",
+        costUsd,
+      });
     },
-  });
+  }).finally(() => settleResearch(billed, hold, spend)); // playbook-seam
   const generated = outputSchema.parse(result.output);
   const name = topicName || (sameTopic(generated.name) ?? generated.name);
   // Read again after generation so suggestions also exclude concurrent saves.

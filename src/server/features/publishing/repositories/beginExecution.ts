@@ -32,10 +32,15 @@ import {
   selectedValues,
 } from "./publishingSql";
 import { retireExecutions } from "./retireExecutions";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 
 export async function beginExecution(input: {
   execution: ProposalExecution;
   approval: ProposalApproval;
+  audit?: AuditInput;
   organizationId: string;
   siteUrl: string;
   // A revert undoes a shipped change. It keeps the opportunity status, skips
@@ -215,6 +220,8 @@ export async function beginExecution(input: {
           accepted,
         ),
       ),
+      // RFC-0009: services pass the event; it lands only with the approval.
+      ...(input.audit ? [auditInsert(tx, input.audit, accepted)] : []),
     ];
   });
   const [accepted] = await db

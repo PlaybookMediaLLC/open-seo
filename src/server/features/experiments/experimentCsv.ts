@@ -23,7 +23,7 @@ const HEADER = [
 // A spreadsheet runs a cell that starts with one of these as a formula.
 const FORMULA_START = /^[=+\-@\t\r]/;
 
-function cell(value: string | number | null | undefined): string {
+export function csvCell(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "number")
     return Number.isFinite(value) ? String(value) : "";
@@ -58,7 +58,7 @@ export function experimentCsv(input: {
       ga4?.revenue,
       ga4?.currency,
     ]
-      .map(cell)
+      .map(csvCell)
       .join(",");
   });
   return [HEADER.join(","), ...lines].join("\r\n") + "\r\n";

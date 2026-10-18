@@ -1,0 +1,90 @@
+---
+title: "SEO checks on pull requests"
+description: "Compare each pull request's preview with production before merge, ranked by your real search traffic."
+---
+
+Relay compares a pull request's preview deployment with your live site and reports SEO regressions before you merge: a stray `noindex`, a changed canonical tag, a removed title, a broken link or invalid structured data. Each finding shows the page's clicks and impressions from Search Console, so you see first what would hurt real traffic.
+
+The check reads rendered HTML, so it works with any framework.
+
+## Set it up
+
+1. Open **Project settings → SEO checks** and click **Create token**. Copy the token. Relay shows it once.
+2. In your GitHub repository, add the token as the secret `RELAY_CI_TOKEN`.
+3. Add this step to the workflow that deploys your preview, after the deploy step:
+
+   ```yaml
+   - uses: PlaybookMediaLLC/relay-seo-check@v1
+     with:
+       token: ${{ secrets.RELAY_CI_TOKEN }}
+       preview-url: ${{ steps.deploy.outputs.url }}
+       fail-on: blocking # blocking | warning | never
+   ```
+
+   `preview-url` is the URL of the deployed preview. Use the output of your deploy step.
+
+4. Open a pull request. The job summary lists each finding with its page, rule, before and after values, and traffic.
+
+## Run it with no workflow step
+
+If the project publishes through the Relay GitHub App, Relay can start the check by itself:
+
+1. Connect the repository in **Project settings → Publishing** with the GitHub App.
+2. Let your platform report deployments to GitHub. The Vercel and Netlify GitHub integrations do this.
+3. Open a pull request. When its preview deployment succeeds, Relay checks it and adds a **Relay SEO check** to the pull request, with notes on the changed files.
+
+Relay skips deployments to the repository's production environment. The same limits, preview hosts and override label apply.
+
+## Preview hosts
+
+Relay checks previews on your project's domain and its subdomains, and on `*.vercel.app`, `*.netlify.app`, `*.pages.dev` and `*.workers.dev`. To check another host, add it under **Preview hosts**. Relay refuses every other host.
+
+| Platform           | How to get the preview URL                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| Vercel             | The URL output of your deploy step, or the deployment URL from the Vercel GitHub integration. |
+| Netlify            | The `deploy-url` output of the Netlify deploy action.                                         |
+| Cloudflare Pages   | The `deployment-url` output of the Cloudflare Pages action.                                   |
+| Cloudflare Workers | The preview URL that `wrangler versions upload` prints.                                       |
+
+## Protected previews
+
+If your previews need a secret, open **Preview access** and choose one method:
+
+- **A header**, such as Vercel's `x-vercel-protection-bypass` with its value.
+- **A Cloudflare Access service token**, with its client ID and secret.
+
+Relay encrypts the value and sends it only to the preview host.
+
+## What blocks a merge
+
+Blocking findings fail the job when `fail-on` is `blocking`:
+
+- The page became `noindex`, redirects, or answers an error.
+- The canonical URL changed or was removed.
+- The title or meta description was removed.
+- Structured data stopped parsing, or a top-level type disappeared.
+- The preview `robots.txt` blocks a page that production allows.
+- The preview sitemap is missing, or lists fewer than 90% of production's URLs.
+
+Warnings cover changed titles, descriptions and H1s, dropped internal links, new broken links, changed hreflang, removed social tags and shrunk content. On a page with 1,000 or more impressions, or a money key page, dropped links and shrunk content also block. You can turn that off.
+
+Relay ignores the `X-Robots-Tag: noindex` header that preview platforms add, unless you turn the check on.
+
+## Client-rendered pages
+
+Relay reads the HTML that your server sends. If a page builds its content in the browser, the raw HTML can look empty, and the check reports shrunk content. Turn on **Render up to 5 client-rendered pages in a browser** to check those pages as a browser sees them:
+
+- Relay renders a page on production and on the preview only when its raw HTML looks client-rendered or lost half its text.
+- Each check renders at most 5 pages. Rendering uses credits, at the same price as rendering in site audits.
+- Relay does not render protected previews, because the renderer cannot send your preview access secret.
+
+## Overrides and ignore rules
+
+- To merge on purpose, add the label `relay-seo-override` to the pull request. The check passes, and the Activity page records the override.
+- To silence a rule on some pages, add an ignore rule with the rule name and a path pattern, such as `title-changed` on `/blog/*`.
+
+## Limits
+
+The free plan includes 30 checks a month; paid plans include 1,000. A check covers up to 100 pages: the pages your pull request changed, your key pages, your 30 top-traffic pages and a sample from your sitemap. If Relay cannot finish a check, or the month's checks are used up, the job prints the reason and passes, unless `fail-on` is `warning`.
+
+Relay keeps check results for 90 days.

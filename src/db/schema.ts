@@ -17,9 +17,14 @@ import * as sqliteOpportunityContentGap from "./opportunity-content-gap.schema";
 import * as sqliteOpportunityInvestigations from "./opportunity-investigations.schema";
 import * as sqliteContentBriefs from "./content-briefs.schema";
 import * as sqliteMeasurementGa4 from "./measurement-ga4.schema";
+import * as sqliteGrowthJobs from "./growth-jobs.schema";
 import * as sqlitePublishing from "./publishing.schema";
 import * as sqliteProposalDrafts from "./proposal-drafts.schema";
 import * as sqliteExperiments from "./experiments.schema";
+import * as sqliteSpend from "./spend.schema";
+import * as sqliteAuditEvents from "./audit-events.schema";
+import * as sqliteSeoChecks from "./seo-checks.schema";
+import * as sqliteSplitTests from "./split-tests.schema";
 import * as pgApp from "./pg/app.schema";
 import * as pgProjectContext from "./pg/project-context.schema";
 import * as pgReports from "./pg/reports.schema";
@@ -38,9 +43,14 @@ import * as pgOpportunityContentGap from "./pg/opportunity-content-gap.schema";
 import * as pgOpportunityInvestigations from "./pg/opportunity-investigations.schema";
 import * as pgContentBriefs from "./pg/content-briefs.schema";
 import * as pgMeasurementGa4 from "./pg/measurement-ga4.schema";
+import * as pgGrowthJobs from "./pg/growth-jobs.schema";
 import * as pgPublishing from "./pg/publishing.schema";
 import * as pgProposalDrafts from "./pg/proposal-drafts.schema";
 import * as pgExperiments from "./pg/experiments.schema";
+import * as pgSpend from "./pg/spend.schema";
+import * as pgAuditEvents from "./pg/audit-events.schema";
+import * as pgSeoChecks from "./pg/seo-checks.schema";
+import * as pgSplitTests from "./pg/split-tests.schema";
 
 // Canonical schema barrel. Repositories import their tables from here and the
 // provider-aware `db` from "@/db", so each repository is written ONCE for both
@@ -70,9 +80,14 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteOpportunityInvestigations &
   typeof sqliteContentBriefs &
   typeof sqliteMeasurementGa4 &
+  typeof sqliteGrowthJobs &
   typeof sqlitePublishing &
   typeof sqliteProposalDrafts &
-  typeof sqliteExperiments;
+  typeof sqliteExperiments &
+  typeof sqliteSpend &
+  typeof sqliteAuditEvents &
+  typeof sqliteSeoChecks &
+  typeof sqliteSplitTests;
 
 const runtimeSchema =
   getDatabaseProvider() === "postgres"
@@ -95,9 +110,14 @@ const runtimeSchema =
         ...pgOpportunityInvestigations,
         ...pgContentBriefs,
         ...pgMeasurementGa4,
+        ...pgGrowthJobs,
         ...pgPublishing,
         ...pgProposalDrafts,
         ...pgExperiments,
+        ...pgSpend,
+        ...pgAuditEvents,
+        ...pgSeoChecks,
+        ...pgSplitTests,
       }
     : {
         ...sqliteApp,
@@ -118,9 +138,14 @@ const runtimeSchema =
         ...sqliteOpportunityInvestigations,
         ...sqliteContentBriefs,
         ...sqliteMeasurementGa4,
+        ...sqliteGrowthJobs,
         ...sqlitePublishing,
         ...sqliteProposalDrafts,
         ...sqliteExperiments,
+        ...sqliteSpend,
+        ...sqliteAuditEvents,
+        ...sqliteSeoChecks,
+        ...sqliteSplitTests,
       };
 
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by schema-parity.test.ts
@@ -202,6 +227,11 @@ export const {
   experimentKeyEvents,
   measurementGa4Days,
   measurementGa4EventTotals,
+  growthSchedules,
+  growthJobRuns,
+  growthJobLogs,
+  growthNotifications,
+  growthNotificationReads,
   githubAppInstallations,
   proposalApprovals,
   proposalExecutions,
@@ -210,4 +240,21 @@ export const {
   experimentDeploymentSignals,
   measurementRuns,
   measurementDays,
+  spendLimits,
+  spendLedger,
+  auditEvents,
+  ciTokens,
+  ciCheckRuns,
+  ciCheckUrls,
+  ciCheckFindings,
+  ciCheckIgnores,
+  ciPreviewAccess,
+  ciPreviewHosts,
+  ciProjectSettings,
+  ciWebhookDeliveries,
+  splitTests,
+  splitTestPages,
+  splitTestDays,
+  splitTestVerifications,
+  splitTestAnalyses,
 } = schema;

@@ -42,6 +42,7 @@ import {
   createTopUpCheckout,
 } from "@/serverFunctions/billing";
 import { BILLING_ROUTE, BILLING_TABS } from "@/shared/billing";
+import { SpendLimitsCard } from "@/client/features/spend/SpendLimitsCard"; // playbook-seam
 
 export const Route = createFileRoute("/_app/billing")({
   validateSearch: z.object({
@@ -354,6 +355,9 @@ function BillingPage() {
           </div>
         </>
       )}
+
+      {/* playbook-seam: RFC-0009 spending limit */}
+      <SpendLimitsCard />
 
       <BillingTabs
         tab={tab ?? "usage"}

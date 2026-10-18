@@ -20,6 +20,7 @@ import {
   getProjectNavGroups,
 } from "@/client/navigation/items";
 import { ProjectSwitcher } from "@/client/features/projects/ProjectSwitcher";
+import { NotificationsBell } from "@/client/features/notifications/NotificationsBell"; // playbook-seam
 import {
   SamChatListSkeleton,
   SamSidebarPanel,
@@ -243,6 +244,7 @@ function AccountFooter({ ready, rail }: { ready: boolean; rail: boolean }) {
   return (
     <UiSidebarFooter className="gap-0 px-3 pb-safe pt-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pb-3">
       <SidebarMenu className="gap-px group-data-[collapsible=icon]:items-center">
+        <NotificationsBell /> {/* playbook-seam */}
         <SidebarNavLink
           icon={CircleHelp}
           label="Help & Community"

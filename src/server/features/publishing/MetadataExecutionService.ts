@@ -119,6 +119,15 @@ async function execute(
         const started = await PublishingRepository.beginExecution({
           execution,
           organizationId: context.organizationId,
+          audit: {
+            organizationId: context.organizationId,
+            projectId: input.projectId,
+            actor: context,
+            action: "proposal.approved_and_executed",
+            targetType: "proposal",
+            targetId: proposal.id,
+            summary: `${revert ? "Approved a revert" : "Approved a change"} for ${proposal.targetUrl}`,
+          },
           siteUrl: gsc.siteUrl,
           revert,
           approval: {

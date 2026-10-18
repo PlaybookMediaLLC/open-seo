@@ -9,6 +9,7 @@ import { requireOrgPermission } from "@/server/auth/org-gate";
 import { transferOrganizationOwnership } from "@/server/auth/ownership-transfer";
 import { AuthRepository } from "@/server/auth/repositories/AuthRepository";
 import { sendHostedInvitationEmail } from "@/server/email/relay-email"; // playbook-seam
+import { auditAfter } from "@/server/features/activity/auditLog"; // playbook-seam
 import { AppError } from "@/server/lib/errors";
 import { requireAuthenticatedContext } from "@/serverFunctions/middleware";
 
@@ -165,6 +166,7 @@ export const sendTeamInvitation = createServerFn({ method: "POST" })
       throw new AppError("UPSTREAM_UNAVAILABLE");
     }
 
+    await auditAfter(context, "member.invited"); // playbook-seam
     return { invitationId: invitation.id };
   });
 

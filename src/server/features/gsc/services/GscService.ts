@@ -26,6 +26,7 @@ import type {
   GscSearchAnalyticsRequest,
   GscSearchAnalyticsRow,
 } from "@/server/lib/gscClient";
+import { startSearchConsoleJobs } from "@/server/features/growth/AutomationService"; // playbook-seam
 
 const SITE_UNVERIFIED_PERMISSION = "siteUnverifiedUser";
 
@@ -192,7 +193,7 @@ async function setSite(input: {
     connectedByUserId: input.userId,
     gscAccountId: input.accountId,
     connectedAccountEmail,
-  });
+  }).then(startSearchConsoleJobs); // playbook-seam
 }
 
 async function disconnect(input: { projectId: string }): Promise<void> {

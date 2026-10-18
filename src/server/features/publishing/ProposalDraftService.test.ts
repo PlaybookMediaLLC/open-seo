@@ -64,8 +64,9 @@ vi.mock("./publishingTarget", () => ({
     patch: { beforeDescription: "How Playbook Media approaches software." },
   }),
 }));
-vi.mock("@/server/billing/researchSpend", () => ({
-  billResearchSpend: mocks.bill,
+vi.mock("@/server/billing/researchHold", () => ({
+  holdResearch: async () => null,
+  settleResearch: mocks.bill,
 }));
 vi.mock("@/server/billing/subscription", () => ({
   checkUsageCreditsDepleted: mocks.depleted,
@@ -178,6 +179,7 @@ it("drafts a checked description with its sources and bills the reported cost", 
   expect(draft.claims[0]?.verified).toBe(true);
   expect(mocks.bill).toHaveBeenCalledWith(
     expect.objectContaining({ organizationId: context.organizationId }),
+    null,
     [expect.objectContaining({ provider: "openrouter", costUsd: COST })],
   );
   expect(await ProposalDraftService.list(context, request)).toEqual([draft]);

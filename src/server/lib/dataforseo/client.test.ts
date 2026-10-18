@@ -67,6 +67,14 @@ vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: isHostedServerAuthModeMock,
 }));
 
+// playbook-seam: RFC-0009 limits and the ledger have their own tests
+// (src/server/billing/spendAdmission.test.ts); here they pass through.
+vi.mock("@/server/billing/spendAdmission", async () => ({
+  reserveWithinLimits: (await import("@/server/billing/subscription"))
+    .reserveUsageCredits,
+}));
+vi.mock("@/server/billing/spendLedger", () => ({ recordSettlement: vi.fn() }));
+
 vi.mock("@/server/lib/posthog", () => ({
   captureServerEvent: vi.fn(),
 }));

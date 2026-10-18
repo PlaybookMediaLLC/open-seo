@@ -47,6 +47,7 @@ it("records an installation that the GitHub user can access", async () => {
   expect(response.headers.get("location")).toContain("githubApp=installed");
   expect(mocks.save).toHaveBeenCalledWith(
     expect.objectContaining({ organizationId: "org-1", installationId: 7 }),
+    expect.objectContaining({ action: "github_app.installed" }),
   );
 });
 

@@ -533,6 +533,83 @@
       "when": 1792257495524,
       "tag": "0075_freezing_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "6",
+      "when": 1792260918226,
+      "tag": "0076_messy_the_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "6",
+      "when": 1792266010344,
+      "tag": "0077_known_unus",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "6",
+      "when": 1792269154254,
+      "tag": "0078_unknown_hammerhead",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "6",
+      "when": 1792271423038,
+      "tag": "0079_safe_stranger",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "6",
+      "when": 1792286000533,
+      "tag": "0080_nice_katie_power",
+      "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "6",
+      "when": 1792289813016,
+      "tag": "0081_wandering_shinobi_shaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "6",
+      "when": 1792308187255,
+      "tag": "0082_handy_darkhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 83,
+      "version": "6",
+      "when": 1792309391387,
+      "tag": "0083_even_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "6",
+      "when": 1792310010436,
+      "tag": "0084_real_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 85,
+      "version": "6",
+      "when": 1792310803681,
+      "tag": "0085_confused_imperial_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 86,
+      "version": "6",
+      "when": 1792312211937,
+      "tag": "0086_cool_bastion",
+      "breakpoints": true
     }
   ]
 }

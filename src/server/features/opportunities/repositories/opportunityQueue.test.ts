@@ -4,7 +4,11 @@ import {
   type OpportunityRun,
 } from "@/types/schemas/opportunities";
 import { OpportunityRepository as repo } from "./OpportunityRepository";
-import { candidate, setupRun } from "./opportunityRepositoryTestSupport";
+import {
+  reviewAudit,
+  candidate,
+  setupRun,
+} from "./opportunityRepositoryTestSupport";
 
 const PREFIX = "opportunity-queue-test-";
 const database = await vi.hoisted(async () => {
@@ -134,6 +138,7 @@ describe(`Opportunity queue real ${database.isPostgres ? "Postgres" : "SQLite"}`
     const [first, second] = rows;
     expect(
       await repo.review({
+        audit: reviewAudit,
         projectId,
         opportunityId: first.id,
         expectedVersion: 1,
@@ -147,6 +152,7 @@ describe(`Opportunity queue real ${database.isPostgres ? "Postgres" : "SQLite"}`
       }),
     ).toBe(true);
     await repo.review({
+      audit: reviewAudit,
       projectId,
       opportunityId: second.id,
       expectedVersion: 1,
@@ -174,6 +180,7 @@ describe(`Opportunity queue real ${database.isPostgres ? "Postgres" : "SQLite"}`
     // A stale version loses: the assignment changed the version.
     expect(
       await repo.review({
+        audit: reviewAudit,
         projectId,
         opportunityId: first.id,
         expectedVersion: 1,
@@ -195,6 +202,7 @@ describe(`Opportunity queue real ${database.isPostgres ? "Postgres" : "SQLite"}`
     const [row] = (await list(projectId)).rows;
     const until = "2099-01-01T00:00:00.000Z";
     await repo.review({
+      audit: reviewAudit,
       projectId,
       opportunityId: row.id,
       expectedVersion: 1,
@@ -206,6 +214,7 @@ describe(`Opportunity queue real ${database.isPostgres ? "Postgres" : "SQLite"}`
       deferredUntil: until,
     });
     await repo.review({
+      audit: reviewAudit,
       projectId,
       opportunityId: row.id,
       expectedVersion: 2,

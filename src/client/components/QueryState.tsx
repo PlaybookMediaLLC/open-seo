@@ -6,6 +6,7 @@ import {
 } from "@/client/lib/error-messages";
 import { ErrorState } from "@/client/components/ErrorState";
 import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
+import { SpendLimitError } from "@/client/features/spend/SpendLimitError"; // playbook-seam
 import { SkeletonCard } from "./SkeletonPresets";
 
 /**
@@ -38,6 +39,10 @@ export function QueryError({
 }) {
   if (getErrorCode(error ?? cause) === "INSUFFICIENT_CREDITS") {
     return <InsufficientCreditsError variant={variant} title={title} />;
+  }
+  // playbook-seam: RFC-0009 a refused paid action links to the limit.
+  if (getErrorCode(error ?? cause) === "SPEND_LIMIT_REACHED") {
+    return <SpendLimitError variant={variant} title={title} />;
   }
   return (
     <ErrorState

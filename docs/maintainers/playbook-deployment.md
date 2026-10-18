@@ -200,10 +200,31 @@ Deploys never cancel each other, so a D1 migration is never interrupted midway. 
 5. **GitHub environment:** create an environment named `playbook` and optionally require reviewers to approve each production deploy.
 6. Run the workflow manually (Actions, "Deploy (Playbook Media)", Run workflow). The first run creates every resource, and the custom domain's certificate can take a few minutes to issue.
 7. **GitHub App (optional, RFC-0005 5.7):** create the "Relay SEO" app under the PlaybookMediaLLC organization.
-   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read, Commit statuses read, Issues read and write. Nothing else.
-   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation". No webhook.
+   - Permissions: Metadata read, Contents read and write, Pull requests read and write, Deployments read, Checks read and write, Commit statuses read, Issues read and write. Nothing else.
+   - Callback URL: `https://relay.playbookmedia.io/api/github/app/setup`. Turn on "Request user authorization (OAuth) during installation".
+   - Webhook (RFC-0010 SEO checks in App mode): URL `https://relay.playbookmedia.io/api/github/app/webhook`, a secret from `openssl rand -hex 32`, and the "Deployment status" event. Add the secret as `GITHUB_APP_WEBHOOK_SECRET` to `ENV_PLAYBOOK`. Without it, the webhook answers 404.
    - GitHub issues the private key in PKCS#1 PEM. WebCrypto needs PKCS#8. Convert it once: `openssl pkcs8 -topk8 -nocrypt -in relay-seo.private-key.pem -out relay-seo.pkcs8.pem`.
    - Add `GITHUB_APP_ID`, `GITHUB_APP_SLUG`, `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` and `GITHUB_APP_PRIVATE_KEY` (the PKCS#8 PEM) to `ENV_PLAYBOOK`. `deploy/alchemy/relay-env.ts` passes them to the worker. Without them, only personal tokens are offered.
+
+8. **Scheduled jobs (optional, RFC-0008):** create a Trigger.dev project with staging and production environments.
+   - In Trigger.dev, set `RELAY_INTERNAL_URL` (`https://relay.playbookmedia.io`) and `GROWTH_JOBS_SECRET` (generate it with `openssl rand -hex 32`).
+   - Add `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` (the production secret key) to `ENV_PLAYBOOK`. `GROWTH_JOBS_MODE` defaults to `trigger` when both are set.
+   - Deploy the tasks with `TRIGGER_PROJECT_REF=<ref> pnpm dlx trigger.dev@4.6.4 deploy`. Configure an alert for failed runs to the team's email, and a monthly spend alert.
+   - To rotate the secret, move the old value to `GROWTH_JOBS_SECRET_PREVIOUS` for one deploy, then remove it.
+
+9. **Repository token key (RFC-0009 5.7):** repository tokens use `BETTER_AUTH_SECRET` until `PUBLISHING_TOKEN_KEY` is set. To start or rotate the key:
+   1. Generate a key with `openssl rand -base64 48`.
+   2. In `ENV_PLAYBOOK`, move the current `PUBLISHING_TOKEN_KEY` to `PUBLISHING_TOKEN_KEY_PREVIOUS` (leave it empty the first time).
+   3. Set the new key as `PUBLISHING_TOKEN_KEY` and raise `PUBLISHING_TOKEN_KEY_VERSION` by 1 (start at 1).
+   4. Deploy. Each connection re-encrypts its token with the new key the next time Relay uses it.
+   5. After every active connection shows the new version, remove `PUBLISHING_TOKEN_KEY_PREVIOUS` and deploy again:
+
+      ```sql
+      SELECT token_key_version, count(*) FROM publishing_connections
+      WHERE revoked_at IS NULL AND transport = 'pat' GROUP BY token_key_version;
+      ```
+
+   A token whose key is gone asks the member to reconnect the repository.
 
 Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the stored GitHub publishing tokens, which must then be reconnected.
 
@@ -219,6 +240,22 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
   3. Compare `grep -rn playbook-seam` with the seam list in `vite-plugin-relay-brand.ts`. Conflicts are most likely in `Sidebar.tsx`, `AppShell.tsx`, `ProjectSwitcher.tsx` and `src/routes/__root.tsx`.
   4. Upstream's `pr-preview.yml` and `docker-image.yml` are gated to other repositories and stay inactive here.
 - **Smoke test and uptime:** each deploy ends with a smoke test of the public site (server-rendered pages, docs search, sitemap, `robots.txt`, favicon). `uptime-playbook.yml` checks `/api/health`, `/` and `/docs`. It is scheduled every 15 minutes, but GitHub runs it every 3 to 5 hours. A failed run emails the repository owner. PostHog also emails the owner hourly when production throws exceptions (insight "Exception count", alert "Relay production errors").
+- **Scheduled jobs without Trigger.dev:** any scheduler can call the internal endpoints. Set `GROWTH_JOBS_SECRET` and `GROWTH_JOBS_MODE=trigger`.
+  1. Send `POST` with a JSON body of at most 64 KB.
+  2. Set `x-relay-timestamp` to the current Unix time in seconds. The Worker refuses a timestamp more than 300 seconds from its clock.
+  3. Set `x-relay-signature` to the hex HMAC-SHA256 of `{timestamp}.{body}`, keyed with `GROWTH_JOBS_SECRET`. Sign the exact bytes that you send.
+  4. Call `/api/internal/growth/due` with `{}` every 15 minutes. For each item, call `/api/internal/growth/run` with the item plus `attempt` and `maxAttempts`. Retry on `503`; stop on `422`.
+  5. Call `/api/internal/growth/retention` with `{}` once a day.
+     Every failure answers `404`, with no reason. Audit follow-ups wait as queued rows until the next `due` call.
+- **Failed credit settlements (RFC-0009):** the Trigger.dev task `spend-reconcile` retries failed Autumn settlements every 15 minutes, through `/api/internal/billing/reconcile`. A row stops after 10 attempts. List the stopped rows:
+
+  ```sql
+  SELECT id, organization_id, project_id, feature, actual_credits, cost_usd, attempts, last_error, created_at
+  FROM spend_ledger WHERE status = 'settle_failed' AND attempts >= 10 ORDER BY created_at;
+  ```
+
+  Charge each one by hand in Autumn, then set its `status` to `settled`.
+
 - **Edge rules outside the code:** two Response Header Transform Rules on the `playbookmedia.io` zone (Rules, Transform Rules) apply to `relay.playbookmedia.io` only. The Alchemy deploy does not upload `_headers`, so these rules set the headers instead.
   - "Relay hashed assets: browser cache one year" sets `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` 200 responses.
   - "Relay security headers" sets `Strict-Transport-Security` (no `includeSubDomains`), `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
@@ -239,5 +276,6 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
 | Cloudflare Email Sending                                                      | Outbound     | Yes, for team invitations                                          | `EMAIL` binding, sending domain `mail.playbookmedia.io`                                                          |
 | Loops, Dub                                                                    | Outbound     | Optional in `hosted` mode                                          | Unset here                                                                                                       |
 | Turnstile                                                                     | Inbound      | Not used with Google-only sign-in                                  | `TURNSTILE_*` set, unused                                                                                        |
+| Trigger.dev                                                                   | Scheduler    | Only for scheduled jobs                                            | `TRIGGER_SECRET_KEY`, `GROWTH_JOBS_SECRET`, `GROWTH_JOBS_MODE`                                                   |
 | GitHub Actions                                                                | CI/CD        | Yes                                                                | `deploy-playbook.yml`, `ci.yml`                                                                                  |
 | Alchemy state store                                                           | Deploy state | Yes                                                                | One-time bootstrap in the account                                                                                |

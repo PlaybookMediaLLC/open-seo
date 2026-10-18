@@ -1,6 +1,11 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, exists, isNull } from "drizzle-orm";
 import { db } from "@/db";
+import { runBatch } from "@/db/runBatch";
 import { githubAppInstallations } from "@/db/schema";
+import {
+  auditInsert,
+  type AuditInput,
+} from "@/server/features/activity/auditLog";
 
 type GithubAppInstallation = typeof githubAppInstallations.$inferSelect;
 
@@ -8,21 +13,25 @@ type GithubAppInstallation = typeof githubAppInstallations.$inferSelect;
 // organization. A repeat install clears an earlier revocation.
 export async function saveInstallation(
   installation: Omit<GithubAppInstallation, "id" | "revokedAt">,
+  audit?: AuditInput,
 ) {
-  await db
-    .insert(githubAppInstallations)
-    .values({ ...installation, id: crypto.randomUUID(), revokedAt: null })
-    .onConflictDoUpdate({
-      target: [
-        githubAppInstallations.organizationId,
-        githubAppInstallations.installationId,
-      ],
-      set: {
-        accountLogin: installation.accountLogin,
-        accountType: installation.accountType,
-        revokedAt: null,
-      },
-    });
+  await runBatch((tx) => [
+    tx
+      .insert(githubAppInstallations)
+      .values({ ...installation, id: crypto.randomUUID(), revokedAt: null })
+      .onConflictDoUpdate({
+        target: [
+          githubAppInstallations.organizationId,
+          githubAppInstallations.installationId,
+        ],
+        set: {
+          accountLogin: installation.accountLogin,
+          accountType: installation.accountType,
+          revokedAt: null,
+        },
+      }),
+    ...(audit ? [auditInsert(tx, audit)] : []),
+  ]);
 }
 
 export function listInstallations(organizationId: string) {
@@ -45,14 +54,35 @@ export async function getInstallation(id: string) {
   return row ?? null;
 }
 
-export async function revokeInstallation(id: string) {
-  await db
-    .update(githubAppInstallations)
-    .set({ revokedAt: new Date().toISOString() })
-    .where(
-      and(
-        eq(githubAppInstallations.id, id),
-        isNull(githubAppInstallations.revokedAt),
-      ),
-    );
+/**
+ * The event lands only with the first revocation, never a repeat: it is
+ * written first, while the row is still unrevoked. ponytail: on Postgres,
+ * two concurrent revocations can both write it; D1 runs batches one at a
+ * time.
+ */
+export async function revokeInstallation(id: string, audit?: AuditInput) {
+  const unrevoked = and(
+    eq(githubAppInstallations.id, id),
+    isNull(githubAppInstallations.revokedAt),
+  );
+  await runBatch((tx) => [
+    ...(audit
+      ? [
+          auditInsert(
+            tx,
+            audit,
+            exists(
+              tx
+                .select({ id: githubAppInstallations.id })
+                .from(githubAppInstallations)
+                .where(unrevoked),
+            ),
+          ),
+        ]
+      : []),
+    tx
+      .update(githubAppInstallations)
+      .set({ revokedAt: new Date().toISOString() })
+      .where(unrevoked),
+  ]);
 }

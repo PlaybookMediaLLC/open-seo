@@ -49,33 +49,33 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 
 ## Status of the brief on October 15, 2026
 
-| Brief area                                                           | Status                             | RFC                                                          |
-| -------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ |
-| Launch readiness (credentials, Google verification, live acceptance) | Done: follow-ups in its section 10 | [RFC-0001](0001-launch-readiness.md)                         |
-| A. Opportunity engine                                                | Done: follow-ups in its section 13 | [RFC-0002](0002-opportunity-detectors.md)                    |
-| B. Opportunities queue                                               | Done: follow-ups in its section 11 | [RFC-0003](0003-opportunity-queue.md)                        |
-| C. AI SEO engineer                                                   | Done: follow-ups in its section 13 | [RFC-0004](0004-ai-seo-engineer.md)                          |
-| D. GitHub execution                                                  | Done: accepted on 2026-10-16       | [RFC-0005](0005-github-execution.md)                         |
-| E. Experiments and results                                           | Done: follow-ups in its section 13 | [RFC-0006](0006-outcome-measurement.md)                      |
-| F. Portfolio operations                                              | Deferred by the brief              | [RFC-0007](0007-portfolio-operations.md)                     |
-| 9. Automation and scheduling                                         | Missing                            | [RFC-0008](0008-growth-automation.md)                        |
-| 10. Costs, limits and audit log                                      | Partial                            | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
-| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                            | [RFC-0010](0010-seo-checks-in-ci.md)                         |
-| Controlled page-group split tests (beyond the brief)                 | Missing                            | [RFC-0011](0011-page-group-split-tests.md)                   |
-| Beyond SEO: conversion optimization                                  | Missing                            | [RFC-0012](0012-conversion-optimization.md)                  |
-| Beyond SEO: accessibility fixes in code                              | Missing                            | [RFC-0013](0013-accessibility-fixes.md)                      |
-| Beyond SEO: web performance                                          | Missing                            | [RFC-0014](0014-web-performance.md)                          |
-| Beyond SEO: release quality gate                                     | Missing                            | [RFC-0015](0015-release-quality-gate.md)                     |
-| Beyond SEO: revenue attribution                                      | Missing                            | [RFC-0016](0016-revenue-attribution.md)                      |
-| Beyond SEO: docs and support deflection                              | Missing                            | [RFC-0017](0017-docs-and-support-deflection.md)              |
-| Retention: weekly execution queue and work report                    | Missing                            | [RFC-0018](0018-weekly-execution-queue.md)                   |
-| Retention: release monitoring and regression repair                  | Missing                            | [RFC-0019](0019-release-monitoring-and-regression-repair.md) |
-| Retention: growth campaigns and decay recovery                       | Missing                            | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      |
-| Retention: new pages from verified facts                             | Missing                            | [RFC-0021](0021-new-pages-from-verified-facts.md)            |
-| Retention: competitor change response                                | Missing                            | [RFC-0022](0022-competitor-change-response.md)               |
-| Retention: launch workflows                                          | Missing                            | [RFC-0023](0023-launch-workflows.md)                         |
-| Retention: change history and learning                               | Missing                            | [RFC-0024](0024-change-history-and-learning.md)              |
-| Execution safety: preview sandboxes on Cloudflare                    | Missing                            | [RFC-0025](0025-preview-sandboxes-on-cloudflare.md)          |
+| Brief area                                                           | Status                                     | RFC                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
+| Launch readiness (credentials, Google verification, live acceptance) | Done: follow-ups in its section 10         | [RFC-0001](0001-launch-readiness.md)                         |
+| A. Opportunity engine                                                | Done: follow-ups in its section 13         | [RFC-0002](0002-opportunity-detectors.md)                    |
+| B. Opportunities queue                                               | Done: follow-ups in its section 11         | [RFC-0003](0003-opportunity-queue.md)                        |
+| C. AI SEO engineer                                                   | Done: follow-ups in its section 13         | [RFC-0004](0004-ai-seo-engineer.md)                          |
+| D. GitHub execution                                                  | Done: accepted on 2026-10-16               | [RFC-0005](0005-github-execution.md)                         |
+| E. Experiments and results                                           | Done: follow-ups in its section 13         | [RFC-0006](0006-outcome-measurement.md)                      |
+| F. Portfolio operations                                              | Done: isolation proven; portfolio deferred | [RFC-0007](0007-portfolio-operations.md)                     |
+| 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
+| 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
+| Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
+| Controlled page-group split tests (beyond the brief)                 | Done: follow-ups in its section 12         | [RFC-0011](0011-page-group-split-tests.md)                   |
+| Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
+| Beyond SEO: accessibility fixes in code                              | Missing                                    | [RFC-0013](0013-accessibility-fixes.md)                      |
+| Beyond SEO: web performance                                          | Missing                                    | [RFC-0014](0014-web-performance.md)                          |
+| Beyond SEO: release quality gate                                     | Missing                                    | [RFC-0015](0015-release-quality-gate.md)                     |
+| Beyond SEO: revenue attribution                                      | Missing                                    | [RFC-0016](0016-revenue-attribution.md)                      |
+| Beyond SEO: docs and support deflection                              | Missing                                    | [RFC-0017](0017-docs-and-support-deflection.md)              |
+| Retention: weekly execution queue and work report                    | Missing                                    | [RFC-0018](0018-weekly-execution-queue.md)                   |
+| Retention: release monitoring and regression repair                  | Missing                                    | [RFC-0019](0019-release-monitoring-and-regression-repair.md) |
+| Retention: growth campaigns and decay recovery                       | Missing                                    | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      |
+| Retention: new pages from verified facts                             | Missing                                    | [RFC-0021](0021-new-pages-from-verified-facts.md)            |
+| Retention: competitor change response                                | Missing                                    | [RFC-0022](0022-competitor-change-response.md)               |
+| Retention: launch workflows                                          | Missing                                    | [RFC-0023](0023-launch-workflows.md)                         |
+| Retention: change history and learning                               | Missing                                    | [RFC-0024](0024-change-history-and-learning.md)              |
+| Execution safety: preview sandboxes on Cloudflare                    | Missing                                    | [RFC-0025](0025-preview-sandboxes-on-cloudflare.md)          |
 
 ## Order of work
 
@@ -87,8 +87,8 @@ Each step depends on the steps before it.
 2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
 3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
-5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this.
-6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications.
+5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this. Done; staging checks and the token key setup are follow-ups in its section 12.
+6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications. Done; the Trigger.dev account and live checks are follow-ups in its section 12.
 7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
 8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it.
 9. **RFC-0002, phase 1.** Low click-through rate, cannibalization, decline diagnosis and the GA4 signal.
@@ -103,7 +103,7 @@ Each step depends on the steps before it.
 ### Release 2: growth, launches and revenue
 
 17. **RFC-0025, phase 1.** Previews for every Relay change: the customer's own previews first, Relay-built previews on Cloudflare otherwise. This unlocks `open_pr` for content classes.
-18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules.
+18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules. Done with phases 2 and 3; the installs and live checks are follow-ups in its section 12.
 19. **RFC-0020, phase 2.** Content refresh steps and JSX link insertion.
 20. **RFC-0021, phase 1.** New pages from verified facts.
 21. **RFC-0023, phase 1.** Launch workflows.
@@ -111,7 +111,7 @@ Each step depends on the steps before it.
 23. **RFC-0022, phase 1.** Competitor change response.
 24. **RFC-0024, phase 2.** Track records per change class.
 25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
-26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.**
+26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.** RFC-0011 is done through phase 3; its live test and backtests on a real group are follow-ups in its section 12.
 
 ### Release 3: beyond SEO
 

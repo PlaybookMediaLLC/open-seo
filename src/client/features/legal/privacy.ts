@@ -7,7 +7,7 @@ import type { LegalDocument } from "./LegalPage";
  */
 export const PRIVACY: LegalDocument = {
   title: "Privacy Policy",
-  updated: "October 15, 2026",
+  updated: "October 17, 2026",
   summary: [
     "We collect what we need to run Relay: your Google sign-in details, the data you connect, and what you create.",
     "Search Console and Analytics access is read-only. You can disconnect it at any time.",
@@ -117,7 +117,7 @@ export const PRIVACY: LegalDocument = {
         "We share information only in these cases:",
         {
           list: [
-            "**Service providers** that help us run the Service, under contracts that limit their use of it: Cloudflare (hosting, database, security and bot protection), Google (sign-in and the APIs you connect), GitHub (only when you connect a repository), Autumn and Stripe (billing), DataForSEO (keyword, SERP, backlink and AI-answer research, which receives keywords, domains and URLs but not your Google data), and OpenRouter with the AI model providers it routes to (only when you use AI features).",
+            "**Service providers** that help us run the Service, under contracts that limit their use of it: Cloudflare (hosting, database, security and bot protection), Google (sign-in and the APIs you connect), GitHub (only when you connect a repository), Autumn and Stripe (billing), DataForSEO (keyword, SERP, backlink and AI-answer research, which receives keywords, domains and URLs but not your Google data), OpenRouter with the AI model providers it routes to (only when you use AI features), and Trigger.dev (timing of the scheduled jobs you turn on, which receives project and job identifiers but not your Google data or site content).",
             "**People you choose.** Members of your workspace can see its projects and data. Anyone with a report link that you share can see that report.",
             "**AI clients you connect**, as described above.",
             "**Legal reasons.** When we must do so by law, or to protect the rights, safety and security of our users, the public or Playbook Media.",

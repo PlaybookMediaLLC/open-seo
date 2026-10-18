@@ -132,3 +132,14 @@ export function pairCandidate(
     ],
   });
 }
+
+/** RFC-0009: the audit event that review() writes with its decision. */
+export const reviewAudit = {
+  organizationId: "test-organization",
+  projectId: null,
+  actor: { userId: "test" },
+  action: "opportunity.reviewed",
+  targetType: "opportunity",
+  targetId: "test",
+  summary: "Reviewed in a test",
+} as const;

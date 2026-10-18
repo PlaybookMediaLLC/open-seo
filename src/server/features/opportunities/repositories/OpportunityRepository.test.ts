@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { OpportunityRepository as repo } from "./OpportunityRepository";
 import {
+  reviewAudit,
   candidate,
   finishRun,
   pairCandidate,
@@ -33,6 +34,7 @@ function approval(projectId: string, opportunityId: string) {
     actorUserId: "reviewer",
     decision: "approved",
     note: "Worth doing",
+    audit: reviewAudit,
     fromStatus: "discovered",
     toStatus: "approved",
     deferredUntil: null,
