@@ -46,6 +46,10 @@ export const createSplitTestSchema = project.extend({
     }, "Enter a valid regular expression."),
 });
 export type CreateSplitTestInput = z.infer<typeof createSplitTestSchema>;
+export const backtestPatternSchema = createSplitTestSchema.pick({
+  projectId: true,
+  pagePattern: true,
+});
 
 // RFC-0011 5.7: the end actions.
 export const splitTestEndSchema = splitTestSchema.extend({

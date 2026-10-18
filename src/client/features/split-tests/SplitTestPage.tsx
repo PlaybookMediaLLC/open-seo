@@ -6,6 +6,7 @@ import { QueryError } from "@/client/components/QueryState";
 import { Badge } from "@/client/components/ui/badge";
 import { getSplitTest } from "@/serverFunctions/splitTests";
 import { SplitTestPullCard } from "./SplitTestPullCard";
+import { SplitTestBacktestCard } from "./SplitTestBacktestCard";
 import { SplitTestEndCard } from "./SplitTestEndCard";
 import { SplitTestResultsCard } from "./SplitTestResultsCard";
 
@@ -58,6 +59,12 @@ export function SplitTestPage(props: { projectId: string; testId: string }) {
         <SplitTestResultsCard data={query.data} />
         <SplitTestEndCard data={query.data} />
         <SplitTestPullCard test={test} />
+        {query.data.canManage && (
+          <SplitTestBacktestCard
+            projectId={props.projectId}
+            testId={props.testId}
+          />
+        )}
         <CardShell title="Groups">
           <p className="mb-3 text-sm text-muted-foreground">
             Baseline {test.baselineStart} to {test.baselineEnd}: variant{" "}

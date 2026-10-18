@@ -16,7 +16,11 @@ import {
 } from "@/client/components/ui/sheet";
 import { Textarea } from "@/client/components/ui/textarea";
 import { dateLabel } from "@/client/features/opportunities/shared";
-import { createSplitTest, listSplitTests } from "@/serverFunctions/splitTests";
+import {
+  backtestSplitTestPattern,
+  createSplitTest,
+  listSplitTests,
+} from "@/serverFunctions/splitTests";
 
 // RFC-0011 5.9: recent split tests first; the new-test form is a sheet.
 const splitTestKeys = (projectId: string) =>
@@ -122,6 +126,12 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
     },
   });
   const refused = create.data && !create.data.created ? create.data : null;
+  const backtest = useMutation({
+    mutationFn: () =>
+      backtestSplitTestPattern({
+        data: { projectId: props.projectId, pagePattern },
+      }),
+  });
   return (
     <Sheet open onOpenChange={(next) => !next && props.onClose()}>
       <SheetContent>
@@ -179,6 +189,32 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
               {refused.failures.map((failure) => (
                 <p key={failure}>{failure}</p>
               ))}
+              {refused.summary && (
+                <p className="text-muted-foreground">{refused.summary}</p>
+              )}
+              {backtest.data ? (
+                <p className="text-muted-foreground">
+                  Backtest of {backtest.data.pairs} pairs from{" "}
+                  {backtest.data.start} to {backtest.data.end}: the 90% interval
+                  excluded 0 in{" "}
+                  {Math.round(backtest.data.falsePositiveRate * 100)}% of{" "}
+                  {backtest.data.runs} runs with no change, and a +15% lift was
+                  labeled positive in{" "}
+                  {Math.round(backtest.data.liftDetectedRate * 100)}%.
+                </p>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  pending={backtest.isPending}
+                  onClick={() => backtest.mutate()}
+                >
+                  Run a backtest anyway
+                </Button>
+              )}
+              {backtest.isError && (
+                <p className="text-destructive">{backtest.error.message}</p>
+              )}
             </div>
           )}
         </div>

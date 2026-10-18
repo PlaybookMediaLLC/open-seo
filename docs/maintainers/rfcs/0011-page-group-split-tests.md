@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) part E (the end actions, the chart, the CSV export and the docs) and phase 2 (drafted variant expressions) built.
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) part E (the end actions, the chart, the CSV export and the docs) phase 2 (drafted variant expressions) and phase 3 (GA4 secondary metrics and the backtest report) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -149,6 +149,8 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 
 **As built (part A).** `splitStats.ts` holds the pure functions, and `scripts/split-test-reference.py` reproduces them with the same seeded generator (mulberry32). Each generator output gives 32 signs, bit by bit, so 10,000 draws stay fast. The p-value at any δ reuses the same draws, because each draw's mean of `d − δ` is `a − δ·b`. The balance check measures the click gap against the mean of the two group totals. Two changes to the MDE keep "can detect" true for 15 to 100 pairs, because the plain formula gave 73% to 79% power in simulation: t quantiles replace 1.645 and 0.842, and the spread is its 80% upper confidence bound. With them, an effect equal to the reported MDE is labeled positive in 82% to 87% of simulated runs. The four child tables also carry `project_id`, so every query stays scoped to its project.
 
+**As built (phase 3).** When GA4 is connected, each analysis also estimates organic sessions and key events that start on the test pages, with the same paired method on one GA4 request (landing page and date). They are stored beside the result and never change the label; a GA4 failure leaves them empty. "Run backtest" replays the test 200 times on the 91 days that end with its baseline: each run draws the side of every pair again until the groups balance, as in 5.3, and counts how often the 90% interval excludes 0 with no change, and how often a synthetic +15% lift on the variant side is labeled positive. Backtests use 2,000 draws per test instead of 10,000, which still resolves the p-value to 0.0005. One Search Console request; nothing changes. A refused pattern offers "Run a backtest anyway", which pairs the matching pages by clicks and runs the same backtest without storing anything, as the phase 1a acceptance test needs.
+
 **Wording.** Results say "estimated effect", show the interval, and list the limits: Search Console data only, internal links and cannibalization between groups, and other changes to only one group.
 
 ### 5.6 Live verification
@@ -235,8 +237,8 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 
 ### Phase 3
 
-- [ ] GA4 sessions and key events as secondary metrics, without changing the label rule.
-- [ ] Backtest report: the test's false-positive rate on the customer's own historical data.
+- [x] GA4 sessions and key events as secondary metrics, without changing the label rule.
+- [x] Backtest report: the test's false-positive rate on the customer's own historical data.
 
 ## 10. Real-site acceptance test
 

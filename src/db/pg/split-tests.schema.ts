@@ -142,6 +142,13 @@ export const splitTestAnalyses = pgTable(
     pValue: doublePrecision("p_value"),
     prePeriodPValue: doublePrecision("pre_period_p_value"),
     label: text("label", { enum: SPLIT_TEST_LABELS }).notNull(),
+    // Phase 3: GA4 secondary metrics, never part of the label.
+    sessionsEstimatePct: doublePrecision("sessions_estimate_pct"),
+    sessionsCiLowPct: doublePrecision("sessions_ci_low_pct"),
+    sessionsCiHighPct: doublePrecision("sessions_ci_high_pct"),
+    keyEventsEstimatePct: doublePrecision("key_events_estimate_pct"),
+    keyEventsCiLowPct: doublePrecision("key_events_ci_low_pct"),
+    keyEventsCiHighPct: doublePrecision("key_events_ci_high_pct"),
     notes: text("notes"),
   },
   (t) => [index("split_test_analyses_test_idx").on(t.testId, t.runAt)],

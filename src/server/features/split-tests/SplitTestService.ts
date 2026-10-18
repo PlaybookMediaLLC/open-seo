@@ -24,12 +24,15 @@ import {
   shiftGa4Date,
 } from "@/server/features/ga4/services/Ga4Dates";
 import { groupSeries, pairCsv } from "./splitTestAnalysis";
+import { backtest, type PastPage } from "./splitTestBacktest";
+import { neighbourPairs, pastClicks } from "./splitTestHistory";
 import { latestResults, refreshSplitTest } from "./splitTestRefresh";
 import { routeFiles } from "./splitTestTemplate";
 import {
   assign,
   eligibility,
   minimumDetectableEffect,
+  pairPages,
   randomizationTest,
 } from "./splitStats";
 
@@ -187,8 +190,16 @@ async function create(
   const pages = (
     await loadBaseline(input.projectId, input.pagePattern, window)
   ).filter((page) => page.clicks >= 1);
-  const thresholds = eligibility(pages, null);
-  if (!thresholds.eligible) return refuse(thresholds.failures);
+  // 10 phase 1a: a refusal names the MDE too, from neighbour pairs.
+  const neighbours = pairPages(pages, 0);
+  const thresholds = eligibility(
+    pages,
+    neighbours.length >= 3
+      ? minimumDetectableEffect(prePeriodDifferences(neighbours, pages))
+      : null,
+  );
+  if (!thresholds.eligible)
+    return refuse(thresholds.failures, thresholds.summary);
 
   const connection = await getConnection(input.projectId);
   if (!connection)
@@ -287,4 +298,70 @@ async function create(
   return { created: true as const, testId, summary: result.summary };
 }
 
-export const SplitTestService = { list, get, create, refresh, csv };
+/**
+ * Phase 3: the backtest report of a test, on the 91 days that end with its
+ * baseline. One Search Console request; no page changes.
+ */
+async function backtestReport(
+  context: OpportunityContext,
+  input: { projectId: string; testId: string },
+) {
+  const { test, pages } = await get(context, input);
+  requireOrgPermission(context, { integration: ["manage"] });
+  if (!test.baselineEnd) throw new AppError("CONFLICT");
+  const { start, end, past } = await pastClicks(
+    input.projectId,
+    test.pagePattern,
+    test.baselineEnd,
+  );
+  const pairs = new Map<number, PastPage[]>();
+  for (const page of pages)
+    pairs.set(page.pairIndex, [
+      ...(pairs.get(page.pairIndex) ?? []),
+      past.get(page.path) ?? {
+        baseline: 0,
+        observation: 0,
+        firstHalf: 0,
+        secondHalf: 0,
+      },
+    ]);
+  const complete: Array<[PastPage, PastPage]> = [];
+  for (const [first, second] of pairs.values())
+    if (first && second) complete.push([first, second]);
+  return { start, end, ...backtest(complete, test.seed ?? 0) };
+}
+
+/**
+ * Phase 1a acceptance: a backtest of a pattern that cannot run a test yet,
+ * so an owner sees how a too-small group behaves. Nothing is stored.
+ */
+async function backtestPattern(
+  context: OpportunityContext,
+  input: { projectId: string; pagePattern: string },
+) {
+  await authorize(context, input.projectId);
+  requireOrgPermission(context, { integration: ["manage"] });
+  const { start, end, past } = await pastClicks(
+    input.projectId,
+    input.pagePattern,
+    baselineWindow().end,
+  );
+  const pairs = neighbourPairs(past);
+  const [seed = 0] = crypto.getRandomValues(new Uint32Array(1));
+  return {
+    start,
+    end,
+    pairs: pairs.length,
+    ...backtest(pairs, seed & 0x7f_ff_ff_ff),
+  };
+}
+
+export const SplitTestService = {
+  list,
+  get,
+  create,
+  refresh,
+  csv,
+  backtest: backtestReport,
+  backtestPattern,
+};

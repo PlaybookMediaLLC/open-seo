@@ -155,6 +155,13 @@ export const splitTestAnalyses = sqliteTable(
     pValue: real("p_value"),
     prePeriodPValue: real("pre_period_p_value"),
     label: text("label", { enum: SPLIT_TEST_LABELS }).notNull(),
+    // Phase 3: GA4 secondary metrics, never part of the label.
+    sessionsEstimatePct: real("sessions_estimate_pct"),
+    sessionsCiLowPct: real("sessions_ci_low_pct"),
+    sessionsCiHighPct: real("sessions_ci_high_pct"),
+    keyEventsEstimatePct: real("key_events_estimate_pct"),
+    keyEventsCiLowPct: real("key_events_ci_low_pct"),
+    keyEventsCiHighPct: real("key_events_ci_high_pct"),
     notes: text("notes"),
   },
   (t) => [index("split_test_analyses_test_idx").on(t.testId, t.runAt)],
