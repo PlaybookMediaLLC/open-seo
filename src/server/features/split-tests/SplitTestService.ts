@@ -27,7 +27,7 @@ import { groupSeries, pairCsv } from "./splitTestAnalysis";
 import { backtest, type PastPage } from "./splitTestBacktest";
 import { neighbourPairs, pastClicks } from "./splitTestHistory";
 import { latestResults, refreshSplitTest } from "./splitTestRefresh";
-import { routeFiles } from "./splitTestTemplate";
+import { testTemplate } from "./splitTestTemplate";
 import {
   assign,
   eligibility,
@@ -211,30 +211,16 @@ async function create(
     ]);
   const client = await connectedGithub(
     connection,
-    AbortSignal.timeout(60_000),
-    {
-      metadata: "read",
-      contents: "read",
-    },
+    AbortSignal.timeout(90_000),
+    { metadata: "read", contents: "read" },
+    210,
   );
-  const files = await routeFiles(
+  const template = await testTemplate(
     client,
     connection,
     pages.map((page) => page.path),
   );
-  const templates = new Map<string, number>();
-  for (const file of files.values())
-    templates.set(
-      file ?? "no route file",
-      (templates.get(file ?? "no route file") ?? 0) + 1,
-    );
-  if (templates.size !== 1 || templates.has("no route file"))
-    return refuse([
-      `The pages use ${templates.size} templates: ${[...templates]
-        .slice(0, 5)
-        .map(([file, count]) => `${file} (${count} pages)`)
-        .join(", ")}. A test needs pages that share one template.`,
-    ]);
+  if ("problem" in template) return refuse([template.problem]);
 
   const [firstSeed = 0] = crypto.getRandomValues(new Uint32Array(1));
   const assignment = assign(
@@ -274,7 +260,8 @@ async function create(
       field: input.field,
       pagePattern: input.pagePattern,
       origin,
-      templatePath: [...templates.keys()][0] ?? null,
+      templatePath: template.path,
+      templateHelper: template.helper,
       status: "eligible",
       seed: assignment.seed,
       pairs: assignment.pairs.length,

@@ -45,7 +45,7 @@ export function createGithubClient({
     !/^[\x21-\x7e]+$/.test(token) ||
     !Number.isInteger(maxRequests) ||
     maxRequests < 1 ||
-    maxRequests > 32
+    maxRequests > 256
   ) {
     throw new AppError("VALIDATION_ERROR", "GitHub connection is invalid.");
   }

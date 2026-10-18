@@ -68,6 +68,11 @@ beforeEach(() => {
   });
 });
 
+const encode = (text: string) => ({
+  content: Buffer.from(text).toString("base64"),
+  encoding: "base64",
+});
+
 /** Daily rows for `count` integration pages over the baseline window. */
 function rows(count: number, extra: string[] = []) {
   const { start } = baselineWindow();
@@ -178,8 +183,50 @@ it("refuses pages that do not share one template", async () => {
   const result = await SplitTestService.create(context, input(projectId));
   expect(result).toMatchObject({ created: false });
   expect(result.created ? [] : result.failures).toEqual([
-    `The pages use 2 templates: ${TEMPLATE} (40 pages), app/integrations/special/page.tsx (1 pages). A test needs pages that share one template.`,
+    `The pages use 2 templates: ${TEMPLATE} (40 pages), app/integrations/special/page.tsx (1 pages). A test needs pages that share one route file or one metadata helper.`,
   ]);
+});
+
+it("accepts separate static pages that share one metadata helper", async () => {
+  const { projectId, context } = await project();
+  mocks.performance.mockResolvedValue(rows(40));
+  const pages = Array.from(
+    { length: 40 },
+    (_, index) => `app/(site)/integrations/p${index}/page.tsx`,
+  );
+  mocks.tree.mockImplementation(async (route: string) => {
+    if (route.startsWith("/git/trees/"))
+      return {
+        truncated: false,
+        tree: [
+          ...pages.map((path, index) => ({
+            path,
+            type: "blob",
+            sha: `page${index}`,
+          })),
+          { path: "lib/metadata.ts", type: "blob", sha: "helper" },
+          { path: "tsconfig.json", type: "blob", sha: "tsconfig" },
+        ],
+      };
+    if (route === "/git/blobs/tsconfig")
+      return encode(
+        JSON.stringify({ compilerOptions: { paths: { "@/*": ["./*"] } } }),
+      );
+    const index = Number(route.replace("/git/blobs/page", ""));
+    return encode(
+      `import { pageMetadata } from "@/lib/metadata";\nexport const metadata = pageMetadata("Integration ${index}", "About it", "/integrations/p${index}");\n`,
+    );
+  });
+  const result = await SplitTestService.create(context, input(projectId));
+  if (!result.created) throw new Error(result.failures.join(" "));
+  const { test } = await SplitTestService.get(context, {
+    projectId,
+    testId: result.testId,
+  });
+  expect(test).toMatchObject({
+    templatePath: "lib/metadata.ts",
+    templateHelper: "pageMetadata",
+  });
 });
 
 it("stores a balanced test with its pairs and the original titles", async () => {

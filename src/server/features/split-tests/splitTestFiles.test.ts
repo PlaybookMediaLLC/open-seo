@@ -76,3 +76,29 @@ it("refuses other files, a changed list and use outside the metadata", () => {
     `Edit ${TEMPLATE} in this pull request, as the description shows.`,
   ]);
 });
+
+it("accepts a shared metadata helper as the template, used inside the helper only", () => {
+  const helperPath = "lib/metadata.ts";
+  const helper = (extra = "") => ({
+    path: helperPath,
+    source: `import { inSplitVariant } from "../relay-split";
+${extra}
+export function pageMetadata(title: string, description: string, path: string) {
+  return { title: inSplitVariant(path) ? \`\${title} | Acme\` : title, description };
+}
+`,
+  });
+  const run = (template = helper()) =>
+    diffCheck({
+      changedFiles: [...expected.map((file) => file.path), helperPath],
+      expected,
+      headJson: expected[0]?.source ?? null,
+      template,
+      templatePath: helperPath,
+      helper: "pageMetadata",
+    });
+  expect(run()).toEqual([]);
+  expect(run(helper('const early = inSplitVariant("/a");'))).toEqual([
+    `${helperPath} uses inSplitVariant outside pageMetadata.`,
+  ]);
+});

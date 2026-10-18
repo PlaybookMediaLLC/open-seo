@@ -61,7 +61,7 @@ A test needs a group of pages that share one template.
    - A minimum detectable effect (MDE) of 15% or less, at 80% power and a two-sided 90% interval (see 5.5).
 5. Show the result in plain words. Example: "This group can detect a change of 11% or more. Smaller effects will show as inconclusive." When the group fails, show which requirement failed and by how much.
 
-**As built (part B).** The one Search Console request uses the dimensions `page` and `date`, so the same rows give the 56-day totals and the two 28-day halves of the pre-period check. Relay's client filters with `contains`, so the request asks for the literal start of the pattern, such as `/integrations/`, and Relay applies the full pattern to each path. An ineligible group creates nothing and returns each failed requirement, as the S1 acceptance step expects; the `ineligible` status stays unused. The template check reads the repository tree once and maps each path to the most specific App Router or Pages Router page file. The metadata-helper case (separate static files that share one helper) is not built yet. The original title and description of each page are captured when the test is created, 8 pages at a time. Seeds stay below 2^31 so both databases store them as an integer.
+**As built (part B).** The one Search Console request uses the dimensions `page` and `date`, so the same rows give the 56-day totals and the two 28-day halves of the pre-period check. Relay's client filters with `contains`, so the request asks for the literal start of the pattern, such as `/integrations/`, and Relay applies the full pattern to each path. An ineligible group creates nothing and returns each failed requirement, as the S1 acceptance step expects; the `ineligible` status stays unused. The template check reads the repository tree once and maps each path to the most specific App Router or Pages Router page file. The metadata-helper case came later (2026-10-18): when the pages map to separate static files, Relay reads each one (up to 200, with a larger GitHub request budget) and accepts the group when every file sets its metadata through the same helper, resolved through `tsconfig.json` aliases. The helper file is then the template; the diff check allows `inSplitVariant` only inside that helper function, and drafting stays limited to `generateMetadata` templates. The original title and description of each page are captured when the test is created, 8 pages at a time. Seeds stay below 2^31 so both databases store them as an integer.
 
 ### 5.3 Assignment
 
@@ -216,7 +216,7 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 ### Phase 1
 
 - [x] Five tables with D1 and Postgres migrations and the parity test.
-- [x] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary). The shared-template check covers one route file; the metadata-helper case is open.
+- [x] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary). The shared-template check covers one route file or one shared metadata helper.
 - [x] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
 - [x] Generated files and the pull request description with the template instruction.
 - [x] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
@@ -326,4 +326,4 @@ Each follow-up names its trigger. Check it here when it passes.
 - [ ] Phase 1b live test (section 10), the usability criteria and the value criterion. Trigger: an own or partner site with an eligible template group (30 or more pages with clicks, 1,000 clicks, MDE of 15% or less), the site owner's written approval, and 28 days of observation.
 - [ ] 200 backtests on a real eligible group, with at most 12% false results. Trigger: the same eligible group; "Run backtest" on its test.
 - [ ] The daily refresh runs on its own. Trigger: the RFC-0008 Trigger.dev account exists and `measurement_refresh` runs. Until then, "Refresh now" advances a test.
-- [ ] Templates where separate static files share one metadata helper (RFC-0005 phase 1a) pass the template check. Trigger: a site whose test group uses that pattern.
+- [x] Templates where separate static files share one metadata helper (RFC-0005 phase 1a) pass the template check. Done 2026-10-18 (tests with 40 static pages and one helper).

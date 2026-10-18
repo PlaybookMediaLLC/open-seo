@@ -58,6 +58,8 @@ export const splitTests = sqliteTable(
     // RFC-0011 5.4: the template the pages share, and the pull request
     // that adds the split files. The last check of its head is kept.
     templatePath: text("template_path"),
+    // Set when the template is a metadata helper that separate pages share.
+    templateHelper: text("template_helper"),
     branch: text("branch"),
     pullRequestNumber: integer("pull_request_number"),
     pullRequestUrl: text("pull_request_url"),

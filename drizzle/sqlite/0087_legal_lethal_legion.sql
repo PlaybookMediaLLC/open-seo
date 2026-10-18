@@ -1,0 +1,1 @@
+ALTER TABLE `split_tests` ADD `template_helper` text;

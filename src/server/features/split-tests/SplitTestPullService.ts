@@ -19,15 +19,10 @@ import {
 import { getConnection } from "@/server/features/publishing/repositories/publishingConnections";
 import { sha256Hex } from "@/server/lib/audit/ids";
 import { AppError } from "@/server/lib/errors";
-import {
-  checkVariantText,
-  draftTemplate,
-  type VariantDraft,
-} from "./splitTestDraft";
+import { draftedTemplate, type VariantDraft } from "./splitTestDraft";
 import {
   diffCheck,
   pullBody,
-  relativeImport,
   splitFiles,
   type SplitFile,
 } from "./splitTestFiles";
@@ -88,53 +83,6 @@ async function loadTest(
   };
 }
 
-type Loaded = Awaited<ReturnType<typeof loadTest>>;
-
-/**
- * Phase 2: the drafted template edit, read from the base branch's head and
- * checked with the RFC-0004 rules on each variant page's final value.
- */
-async function draftedTemplate(
-  loaded: Loaded,
-  draft: VariantDraft,
-  client: Awaited<ReturnType<typeof connectedGithub>>,
-  baseSha: string,
-) {
-  const { test, templatePath, files, variants } = loaded;
-  if (test.field === "other")
-    return {
-      template: null,
-      problems: ["Relay drafts titles and descriptions only."],
-    };
-  const current = await client.readFile(templatePath, baseSha);
-  const drafted = draftTemplate({
-    source: current.source,
-    templatePath,
-    field: test.field,
-    draft,
-    importPath: relativeImport(templatePath, files[1]?.path ?? ""),
-  });
-  return {
-    template: {
-      path: templatePath,
-      source: drafted.source,
-      blobSha: current.blobSha,
-    },
-    problems: [
-      ...drafted.problems,
-      ...checkVariantText(
-        test.field,
-        draft,
-        variants.map((page) =>
-          test.field === "title"
-            ? page.originalTitle
-            : page.originalDescription,
-        ),
-      ),
-    ],
-  };
-}
-
 const filesHash = (files: SplitFile[], template: SplitFile | null = null) =>
   sha256Hex(JSON.stringify(template ? [...files, template] : files));
 
@@ -150,7 +98,7 @@ async function preview(
       files,
       problems: [],
       hash: await filesHash(files),
-      body: pullBody(test, templatePath, files),
+      body: pullBody(test, templatePath, files, false, test.templateHelper),
     };
   const client = await connectedGithub(
     connection,
@@ -175,7 +123,13 @@ async function preview(
     files: shown ? [...files, shown] : files,
     problems,
     hash: await filesHash(files, shown),
-    body: pullBody(test, templatePath, files, Boolean(template)),
+    body: pullBody(
+      test,
+      templatePath,
+      files,
+      Boolean(template),
+      test.templateHelper,
+    ),
   };
 }
 
@@ -232,7 +186,13 @@ async function open(
       headBranch: branch,
       baseBranch: connection.baseBranch,
       title: `Split test: ${test.name}`,
-      body: pullBody(test, templatePath, files, Boolean(template)),
+      body: pullBody(
+        test,
+        templatePath,
+        files,
+        Boolean(template),
+        test.templateHelper,
+      ),
     });
     const [updated] = await db
       .update(splitTests)
@@ -301,6 +261,7 @@ async function check(
     template:
       template === null ? null : { path: templatePath, source: template },
     templatePath,
+    helper: test.templateHelper,
   });
   await db
     .update(splitTests)
