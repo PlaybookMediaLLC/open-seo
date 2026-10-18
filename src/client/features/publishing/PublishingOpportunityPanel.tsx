@@ -14,6 +14,7 @@ import { prepareProposalInputSchema } from "@/types/schemas/publishing";
 import { publishingOpportunityOptions, useRefreshPublishing } from "./queries";
 import { PublishingRecovery } from "./PublishingRecovery";
 import { GithubIssueCard } from "./GithubIssueCard";
+import { CopyTextSheet } from "./CopyTextSheet";
 import { IndexingFields, type IndexingValues } from "./IndexingFields";
 import { PublishingProposal } from "./PublishingProposal";
 import { ProposalDrafts, useProposalFilePath } from "./ProposalDrafts";
@@ -110,11 +111,14 @@ export function PublishingOpportunityPanel({
             </div>
           )}
           {enabled && opportunity.status === "approved" ? (
-            <PrepareForm
-              key={`${id}-${connection.id}`}
-              opportunity={opportunity}
-              rootDirectory={connection.rootDirectory}
-            />
+            <>
+              <PrepareForm
+                key={`${id}-${connection.id}`}
+                opportunity={opportunity}
+                rootDirectory={connection.rootDirectory}
+              />
+              <CopyTextSheet projectId={projectId} opportunityId={id} />
+            </>
           ) : (
             opportunity.status !== "approved" && (
               <p className="text-sm text-muted-foreground">

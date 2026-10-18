@@ -27,6 +27,7 @@ import { SplitTestEndService } from "@/server/features/split-tests/SplitTestEndS
 import { SplitTestPullService } from "@/server/features/split-tests/SplitTestPullService";
 import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { ConversionDetectionService } from "@/server/features/conversion/ConversionDetectionService";
+import { CopyLocatorService } from "@/server/features/publishing/CopyLocatorService";
 import { ConversionGateService } from "@/server/features/conversion/ConversionGateService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
@@ -148,6 +149,7 @@ const services: Record<string, Record<string, unknown>> = {
   SplitTestEndService,
   ConversionGateService,
   ConversionDetectionService,
+  CopyLocatorService,
 };
 
 async function growthRowCount() {

@@ -210,6 +210,27 @@ export function createGithubReader(request: GithubRequest) {
       }
       throw new AppError("VALIDATION_ERROR", "GitHub path is not supported.");
     },
+    /** RFC-0012: every file path under a directory, from one recursive tree read. */
+    async listFiles(path: string, commitSha: string) {
+      let treeSha = (await getCommit(commitSha)).treeSha;
+      for (const part of path ? validateGithubPath(path) : []) {
+        const entry = (await readTree(treeSha)).tree.find(
+          (item) => item.path === part && item.type === "tree",
+        );
+        if (!entry) return { paths: [], truncated: false };
+        treeSha = entry.sha;
+      }
+      const tree = await request(
+        `/git/trees/${treeSha}?recursive=1`,
+        treeSchema,
+      );
+      return {
+        paths: tree.tree
+          .filter((item) => item.type === "blob")
+          .map((item) => (path ? `${path}/${item.path}` : item.path)),
+        truncated: tree.truncated,
+      };
+    },
     async verifySingleFileCommit({
       baseSha,
       headSha,
