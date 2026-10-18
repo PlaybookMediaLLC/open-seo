@@ -5,7 +5,21 @@ import { SPLIT_TEST_FIELDS } from "@/db/split-tests.schema";
 const project = z.object({ projectId: z.string().min(1) });
 export const splitTestProjectSchema = project;
 export const splitTestSchema = project.extend({ testId: z.string().min(1) });
-export const openSplitTestPullSchema = splitTestSchema.extend({
+// RFC-0011 phase 2: the pattern Relay drafts into the template.
+const variantDraftSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.enum(["suffix", "prefix"]),
+    text: z.string().min(1).max(60),
+  }),
+  z.object({
+    kind: z.literal("swap"),
+    expression: z.string().trim().min(1).max(100),
+  }),
+]);
+export const previewSplitTestPullSchema = splitTestSchema.extend({
+  draft: variantDraftSchema.optional(),
+});
+export const openSplitTestPullSchema = previewSplitTestPullSchema.extend({
   hash: z.string().regex(/^[0-9a-f]{64}$/),
 });
 export const confirmSplitTestDeploymentSchema = splitTestSchema.extend({

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CardShell } from "@/client/components/CardShell";
 import { Button } from "@/client/components/ui/button";
 import { Checkbox } from "@/client/components/ui/checkbox";
+import { Input } from "@/client/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -128,18 +129,43 @@ export function SplitTestPullCard({ test }: { test: Test }) {
   );
 }
 
+type Draft =
+  | { kind: "suffix" | "prefix"; text: string }
+  | { kind: "swap"; expression: string };
+const DRAFT_KINDS = [
+  { value: "none", label: "A developer writes the edit" },
+  { value: "suffix", label: "Relay adds text after the current value" },
+  { value: "prefix", label: "Relay adds text before the current value" },
+  { value: "swap", label: "Relay uses another field" },
+] as const;
+
 function ReviewSheet(props: {
   ids: { projectId: string; testId: string };
   onClose: () => void;
 }) {
   const client = useQueryClient();
+  const [kind, setKind] =
+    useState<(typeof DRAFT_KINDS)[number]["value"]>("none");
+  const [text, setText] = useState("");
+  const draft: Draft | undefined =
+    kind === "none" || !text.trim()
+      ? undefined
+      : kind === "swap"
+        ? { kind, expression: text }
+        : { kind, text };
   const preview = useQuery({
-    queryKey: ["split-tests", props.ids.projectId, props.ids.testId, "pull"],
-    queryFn: () => previewSplitTestPull({ data: props.ids }),
+    queryKey: [
+      "split-tests",
+      props.ids.projectId,
+      props.ids.testId,
+      "pull",
+      draft,
+    ],
+    queryFn: () => previewSplitTestPull({ data: { ...props.ids, draft } }),
   });
   const open = useMutation({
     mutationFn: (hash: string) =>
-      openSplitTestPull({ data: { ...props.ids, hash } }),
+      openSplitTestPull({ data: { ...props.ids, hash, draft } }),
     onSuccess: async () => {
       await client.invalidateQueries({
         queryKey: ["split-tests", props.ids.projectId],
@@ -147,6 +173,7 @@ function ReviewSheet(props: {
       props.onClose();
     },
   });
+  const problems = preview.data?.problems ?? [];
   return (
     <Sheet open onOpenChange={(next) => !next && props.onClose()}>
       <SheetContent className="sm:max-w-2xl">
@@ -158,12 +185,45 @@ function ReviewSheet(props: {
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-3 overflow-auto px-4 text-sm">
+          <select
+            aria-label="Template edit"
+            className="h-9 w-full rounded-md border bg-background px-2"
+            value={kind}
+            onChange={(event) =>
+              setKind(
+                DRAFT_KINDS.find(
+                  (option) => option.value === event.target.value,
+                )?.value ?? "none",
+              )
+            }
+          >
+            {DRAFT_KINDS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          {kind !== "none" && (
+            <Input
+              aria-label={kind === "swap" ? "Other field" : "Text"}
+              placeholder={
+                kind === "swap" ? "integration.name" : " for Conduitt"
+              }
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+            />
+          )}
           {preview.isPending && <p>Loading…</p>}
           {preview.isError && (
             <p role="alert" className="text-destructive">
               {preview.error.message}
             </p>
           )}
+          {problems.map((problem) => (
+            <p key={problem} role="alert">
+              {problem}
+            </p>
+          ))}
           {preview.data && (
             <>
               <pre className="whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">
@@ -188,7 +248,7 @@ function ReviewSheet(props: {
         <SheetFooter>
           <Button
             pending={open.isPending}
-            disabled={!preview.data}
+            disabled={!preview.data || problems.length > 0}
             onClick={() => preview.data && open.mutate(preview.data.hash)}
           >
             Approve and open

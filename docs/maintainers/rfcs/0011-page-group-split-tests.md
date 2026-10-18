@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) and part E (the end actions, the chart, the CSV export and the docs) built.
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) part B (eligibility, assignment, the Split tests section and the assignment view) part C (the pull request, its diff check and the deployment confirmation) part D (live verification, the daily refresh, analysis runs and the harm notice) part E (the end actions, the chart, the CSV export and the docs) and phase 2 (drafted variant expressions) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -105,6 +105,8 @@ title: inSplitVariant(`/integrations/${params.slug}`)
 **Phase 2:** Relay drafts the variant expression for simple patterns (a fixed suffix, a prefix, or a field swap), with the RFC-0004 checks, and edits only the targeted property in the AST.
 
 The same exact-change approval and execution rules from RFC-0005 apply.
+
+**As built (phase 2).** The review sheet offers "A developer writes the edit" or a draft: text after the current value, text before it, or another plain field such as `integration.name`. Relay reads the template at the head of the base branch and finds the one object literal that `generateMetadata` returns. It wraps only the targeted property in `inSplitVariant(path) ? variant : current` and adds the import. The page path comes from the `await params` destructuring or from `params.name`; when Relay cannot find it, the owner writes the edit by hand. The AST check re-parses the result and compares every other property of the object with the original. Each variant page's final value (its live original plus the text) passes the RFC-0004 checks: length, control characters, unchanged text and unsupported claims. A swap has no known values, so it has no text checks. The drafted template is part of the approved hash and goes into the same pull request, and the part C diff check still runs.
 
 **As built (part C).** "Review pull request" shows the exact files and the description; "Approve and open" sends their hash, and Relay refuses to write when the files changed since the review. Relay creates the branch `relay/split-test-{id}`, adds both files, opens the pull request and records `split_test.pr_opened` with the hash. The description names the template, the import path from its folder and the page path built from its dynamic segments. "Check pull request" reads the pull request's files and its head: only the two files and the template may change, the variant list must equal the stored assignment, and every use of `inSplitVariant` must sit inside the `metadata` export or `generateMetadata`. The check covers App Router templates. The result is kept with the head SHA. "Confirm deployment" needs a merged pull request whose merged head passed the last check, then takes GitHub's successful production deployment of the merge commit, or the owner's attestation when GitHub reports none. It records `split_test.deployment_confirmed` and sets the windows: the deployment day and the next 6 days are excluded, and the observation covers the next 28 days.
 
@@ -228,8 +230,8 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 
 ### Phase 2
 
-- [ ] Drafted variant expressions for suffix, prefix and field swap patterns.
-- [ ] AST check that only the targeted property changed (tests).
+- [x] Drafted variant expressions for suffix, prefix and field swap patterns.
+- [x] AST check that only the targeted property changed (tests).
 
 ### Phase 3
 

@@ -1,4 +1,5 @@
 import { sortBy } from "remeda";
+import type { splitTests } from "@/db/schema";
 import {
   isNamed,
   parseSource,
@@ -159,4 +160,62 @@ export function diffCheck(input: {
   if (!calls)
     problems.push(`${input.templatePath} never calls inSplitVariant.`);
   return [...new Set(problems)];
+}
+
+/** The import path from the template's folder to the split folder. */
+export function relativeImport(templatePath: string, splitFile: string) {
+  const from = templatePath.split("/").slice(0, -1);
+  const to = splitFile.split("/").slice(0, -1);
+  let shared = 0;
+  while (from[shared] !== undefined && from[shared] === to[shared]) shared++;
+  return [...from.slice(shared).map(() => ".."), ...to.slice(shared)].join("/");
+}
+
+/** The page path as a template literal, from the route's dynamic segments. */
+function pathExpression(templatePath: string) {
+  const route = templatePath
+    .replace(/^.*?app\//, "")
+    .split("/")
+    .slice(0, -1)
+    .filter((segment) => !/^\(.*\)$/.test(segment) && !segment.startsWith("@"))
+    .map((segment) =>
+      segment.startsWith("[...")
+        ? `\${params.${segment.slice(4, -1)}.join("/")}`
+        : segment.startsWith("[")
+          ? `\${params.${segment.slice(1, -1)}}`
+          : segment,
+    );
+  return `\`/${route.join("/")}\``;
+}
+
+export function pullBody(
+  test: Pick<
+    typeof splitTests.$inferSelect,
+    "name" | "hypothesis" | "pairs" | "field"
+  >,
+  templatePath: string,
+  files: SplitFile[],
+  drafted = false,
+) {
+  const field = test.field === "other" ? "the field you test" : test.field;
+  const edit = drafted
+    ? `**Relay drafted the template edit** in \`${templatePath}\`: it uses the helper to pick the variant value of ${field}. Review it like any other change.`
+    : `**One edit finishes it.** In \`${templatePath}\`, inside \`generateMetadata\` or the \`metadata\` export, use the helper to pick the variant value of ${field}:
+
+\`\`\`ts
+import { inSplitVariant } from "${relativeImport(templatePath, files[1]?.path ?? "")}";
+
+${test.field === "description" ? "description" : "title"}: inSplitVariant(${pathExpression(templatePath)})
+  ? /* the variant value */
+  : /* the current value */,
+\`\`\``;
+  return `Relay split test: **${test.name}**
+
+Hypothesis: ${test.hypothesis}
+
+This pull request adds the list of the ${test.pairs ?? 0} variant pages (\`${files[0]?.path}\`) and the helper \`inSplitVariant\` (\`${files[1]?.path}\`). The helper reads that static list only, so search engines always see the same version of a page.
+
+${edit}
+
+Change nothing else. Before you merge, Relay checks the final diff: only these three files change, the variant list matches the test, and \`inSplitVariant\` appears only inside the metadata. Variant pages keep their group until the test ends.`;
 }

@@ -19,7 +19,18 @@ import {
 import { getConnection } from "@/server/features/publishing/repositories/publishingConnections";
 import { sha256Hex } from "@/server/lib/audit/ids";
 import { AppError } from "@/server/lib/errors";
-import { diffCheck, splitFiles, type SplitFile } from "./splitTestFiles";
+import {
+  checkVariantText,
+  draftTemplate,
+  type VariantDraft,
+} from "./splitTestDraft";
+import {
+  diffCheck,
+  pullBody,
+  relativeImport,
+  splitFiles,
+  type SplitFile,
+} from "./splitTestFiles";
 
 // RFC-0011 5.4: Relay opens one pull request with the split files, the
 // developer adds the template edit, and Relay checks the final diff. Every
@@ -44,7 +55,11 @@ async function loadTest(
     );
   if (!test?.templatePath) throw new AppError("NOT_FOUND");
   const variants = await db
-    .select({ path: splitTestPages.path })
+    .select({
+      path: splitTestPages.path,
+      originalTitle: splitTestPages.originalTitle,
+      originalDescription: splitTestPages.originalDescription,
+    })
     .from(splitTestPages)
     .where(
       and(
@@ -64,95 +79,138 @@ async function loadTest(
     variants.map((row) => row.path),
     connection.rootDirectory,
   );
-  return { test, templatePath: test.templatePath, connection, files };
+  return {
+    test,
+    templatePath: test.templatePath,
+    connection,
+    files,
+    variants,
+  };
 }
 
-/** The import path from the template's folder to the split folder. */
-function relativeImport(templatePath: string, splitFile: string) {
-  const from = templatePath.split("/").slice(0, -1);
-  const to = splitFile.split("/").slice(0, -1);
-  let shared = 0;
-  while (from[shared] !== undefined && from[shared] === to[shared]) shared++;
-  return [...from.slice(shared).map(() => ".."), ...to.slice(shared)].join("/");
-}
+type Loaded = Awaited<ReturnType<typeof loadTest>>;
 
-/** The page path as a template literal, from the route's dynamic segments. */
-function pathExpression(templatePath: string) {
-  const route = templatePath
-    .replace(/^.*?app\//, "")
-    .split("/")
-    .slice(0, -1)
-    .filter((segment) => !/^\(.*\)$/.test(segment) && !segment.startsWith("@"))
-    .map((segment) =>
-      segment.startsWith("[...")
-        ? `\${params.${segment.slice(4, -1)}.join("/")}`
-        : segment.startsWith("[")
-          ? `\${params.${segment.slice(1, -1)}}`
-          : segment,
-    );
-  return `\`/${route.join("/")}\``;
-}
-
-function pullBody(
-  test: typeof splitTests.$inferSelect,
-  templatePath: string,
-  files: SplitFile[],
+/**
+ * Phase 2: the drafted template edit, read from the base branch's head and
+ * checked with the RFC-0004 rules on each variant page's final value.
+ */
+async function draftedTemplate(
+  loaded: Loaded,
+  draft: VariantDraft,
+  client: Awaited<ReturnType<typeof connectedGithub>>,
+  baseSha: string,
 ) {
-  const field = test.field === "other" ? "the field you test" : test.field;
-  return `Relay split test: **${test.name}**
-
-Hypothesis: ${test.hypothesis}
-
-This pull request adds the list of the ${test.pairs ?? 0} variant pages (\`${files[0]?.path}\`) and the helper \`inSplitVariant\` (\`${files[1]?.path}\`). The helper reads that static list only, so search engines always see the same version of a page.
-
-**One edit finishes it.** In \`${templatePath}\`, inside \`generateMetadata\` or the \`metadata\` export, use the helper to pick the variant value of ${field}:
-
-\`\`\`ts
-import { inSplitVariant } from "${relativeImport(templatePath, files[1]?.path ?? "")}";
-
-${test.field === "description" ? "description" : "title"}: inSplitVariant(${pathExpression(templatePath)})
-  ? /* the variant value */
-  : /* the current value */,
-\`\`\`
-
-Change nothing else. Before you merge, Relay checks the final diff: only these three files change, the variant list matches the test, and \`inSplitVariant\` appears only inside the metadata. Variant pages keep their group until the test ends.`;
+  const { test, templatePath, files, variants } = loaded;
+  if (test.field === "other")
+    return {
+      template: null,
+      problems: ["Relay drafts titles and descriptions only."],
+    };
+  const current = await client.readFile(templatePath, baseSha);
+  const drafted = draftTemplate({
+    source: current.source,
+    templatePath,
+    field: test.field,
+    draft,
+    importPath: relativeImport(templatePath, files[1]?.path ?? ""),
+  });
+  return {
+    template: {
+      path: templatePath,
+      source: drafted.source,
+      blobSha: current.blobSha,
+    },
+    problems: [
+      ...drafted.problems,
+      ...checkVariantText(
+        test.field,
+        draft,
+        variants.map((page) =>
+          test.field === "title"
+            ? page.originalTitle
+            : page.originalDescription,
+        ),
+      ),
+    ],
+  };
 }
 
-const filesHash = (files: SplitFile[]) => sha256Hex(JSON.stringify(files));
+const filesHash = (files: SplitFile[], template: SplitFile | null = null) =>
+  sha256Hex(JSON.stringify(template ? [...files, template] : files));
 
 /** What the owner approves: the exact files, their hash and the description. */
 async function preview(
   context: OpportunityContext,
-  input: { projectId: string; testId: string },
+  input: { projectId: string; testId: string; draft?: VariantDraft },
 ) {
-  const { test, templatePath, files } = await loadTest(context, input);
+  const loaded = await loadTest(context, input);
+  const { test, templatePath, files, connection } = loaded;
+  if (!input.draft)
+    return {
+      files,
+      problems: [],
+      hash: await filesHash(files),
+      body: pullBody(test, templatePath, files),
+    };
+  const client = await connectedGithub(
+    connection,
+    AbortSignal.timeout(60_000),
+    {
+      metadata: "read",
+      contents: "read",
+    },
+  );
+  const base = await client.getRef(connection.baseBranch);
+  if (!base) throw new AppError("NOT_FOUND", "The base branch was not found.");
+  const { template, problems } = await draftedTemplate(
+    loaded,
+    input.draft,
+    client,
+    base.sha,
+  );
+  const shown = template
+    ? { path: template.path, source: template.source }
+    : null;
   return {
-    files,
-    hash: await filesHash(files),
-    body: pullBody(test, templatePath, files),
+    files: shown ? [...files, shown] : files,
+    problems,
+    hash: await filesHash(files, shown),
+    body: pullBody(test, templatePath, files, Boolean(template)),
   };
 }
 
 async function open(
   context: OpportunityContext,
-  input: { projectId: string; testId: string; hash: string },
+  input: {
+    projectId: string;
+    testId: string;
+    hash: string;
+    draft?: VariantDraft;
+  },
 ) {
-  const { test, templatePath, connection, files } = await loadTest(
-    context,
-    input,
-  );
+  const loaded = await loadTest(context, input);
+  const { test, templatePath, connection, files } = loaded;
   if (test.status !== "eligible" || test.pullRequestNumber)
     throw new AppError("CONFLICT", "This test already has a pull request.");
-  if ((await filesHash(files)) !== input.hash)
-    throw new AppError(
-      "CONFLICT",
-      "The files changed since you reviewed them. Review them again.",
-    );
   return withPublishingClaim(context, input.projectId, async (_, signal) => {
     const client = await connectedGithub(connection, signal);
     const base = await client.getRef(connection.baseBranch);
     if (!base)
       throw new AppError("NOT_FOUND", "The base branch was not found.");
+    const drafted = input.draft
+      ? await draftedTemplate(loaded, input.draft, client, base.sha)
+      : null;
+    if (drafted?.problems.length)
+      throw new AppError("VALIDATION_ERROR", drafted.problems[0]);
+    const template = drafted?.template ?? null;
+    const shown = template
+      ? { path: template.path, source: template.source }
+      : null;
+    if ((await filesHash(files, shown)) !== input.hash)
+      throw new AppError(
+        "CONFLICT",
+        "The files changed since you reviewed them. Review them again.",
+      );
     const branch = `relay/split-test-${test.id.slice(0, 8)}`;
     await client.createRef(branch, base.sha);
     for (const file of files)
@@ -162,11 +220,19 @@ async function open(
         source: file.source,
         message: `Add Relay split test files for ${test.name}`,
       });
+    if (template)
+      await client.updateFile({
+        branch,
+        path: template.path,
+        source: template.source,
+        blobSha: template.blobSha,
+        message: `Draft the split test variant for ${test.name}`,
+      });
     const pull = await client.createPullRequest({
       headBranch: branch,
       baseBranch: connection.baseBranch,
       title: `Split test: ${test.name}`,
-      body: pullBody(test, templatePath, files),
+      body: pullBody(test, templatePath, files, Boolean(template)),
     });
     const [updated] = await db
       .update(splitTests)
