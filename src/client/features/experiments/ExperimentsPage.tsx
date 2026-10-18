@@ -21,6 +21,7 @@ import {
   EXPERIMENT_LABELS,
   type ExperimentLabel,
 } from "@/types/schemas/experiments";
+import { SplitTestsSection } from "@/client/features/split-tests/SplitTestsSection";
 import { experimentListOptions } from "./queries";
 
 const LABEL_TEXT: Record<ExperimentLabel, string> = {
@@ -44,6 +45,7 @@ export function ExperimentsPage({ projectId }: { projectId: string }) {
           title="Experiments & Results"
           description="Track reviewed changes from pull request to human-confirmed deployment and Search Console observations."
         />
+        <SplitTestsSection projectId={projectId} />
         <div className="rounded-xl border bg-card p-4 text-sm space-y-2">
           <p className="font-medium">Observed change is not causal proof.</p>
           <p className="text-muted-foreground">

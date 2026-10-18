@@ -1,6 +1,6 @@
 # RFC-0011: Page-group split tests
 
-- **Status:** Draft
+- **Status:** In progress. Part A (the five tables and the statistics module, checked against a reference script and by simulation) and part B (eligibility, assignment, the Split tests section and the assignment view) built.
 - **Date:** 2026-10-15
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
@@ -60,6 +60,8 @@ A test needs a group of pages that share one template.
    - At least 1,000 clicks in total over the 56-day baseline.
    - A minimum detectable effect (MDE) of 15% or less, at 80% power and a two-sided 90% interval (see 5.5).
 5. Show the result in plain words. Example: "This group can detect a change of 11% or more. Smaller effects will show as inconclusive." When the group fails, show which requirement failed and by how much.
+
+**As built (part B).** The one Search Console request uses the dimensions `page` and `date`, so the same rows give the 56-day totals and the two 28-day halves of the pre-period check. Relay's client filters with `contains`, so the request asks for the literal start of the pattern, such as `/integrations/`, and Relay applies the full pattern to each path. An ineligible group creates nothing and returns each failed requirement, as the S1 acceptance step expects; the `ineligible` status stays unused. The template check reads the repository tree once and maps each path to the most specific App Router or Pages Router page file. The metadata-helper case (separate static files that share one helper) is not built yet. The original title and description of each page are captured when the test is created, 8 pages at a time. Seeds stay below 2^31 so both databases store them as an integer.
 
 ### 5.3 Assignment
 
@@ -141,6 +143,8 @@ The same exact-change approval and execution rules from RFC-0005 apply.
 
 **Early stop for harm only.** After 14 observation days, if the estimate is −10% or worse and the one-sided p-value for harm is below 0.05, notify the owner and offer a removal pull request. A positive label is never given before the window ends.
 
+**As built (part A).** `splitStats.ts` holds the pure functions, and `scripts/split-test-reference.py` reproduces them with the same seeded generator (mulberry32). Each generator output gives 32 signs, bit by bit, so 10,000 draws stay fast. The p-value at any δ reuses the same draws, because each draw's mean of `d − δ` is `a − δ·b`. The balance check measures the click gap against the mean of the two group totals. Two changes to the MDE keep "can detect" true for 15 to 100 pairs, because the plain formula gave 73% to 79% power in simulation: t quantiles replace 1.645 and 0.842, and the spread is its 80% upper confidence bound. With them, an effect equal to the reported MDE is labeled positive in 82% to 87% of simulated runs. The four child tables also carry `project_id`, so every query stays scoped to its project.
+
 **Wording.** Results say "estimated effect", show the interval, and list the limits: Search Console data only, internal links and cannibalization between groups, and other changes to only one group.
 
 ### 5.6 Live verification
@@ -199,15 +203,15 @@ Free providers only. One Search Console request per daily refresh. Live verifica
 
 ### Phase 1
 
-- [ ] Five tables with D1 and Postgres migrations and the parity test.
-- [ ] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary).
-- [ ] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
+- [x] Five tables with D1 and Postgres migrations and the parity test.
+- [x] Eligibility: pattern listing, shared-template check, the three thresholds and the MDE (tests with fixtures at each boundary). The shared-template check covers one route file; the metadata-helper case is open.
+- [x] Assignment: pairing, seeded draw, balance check and re-draw limit (tests prove reproducibility from the seed).
 - [ ] Generated files and the pull request description with the template instruction.
 - [ ] Diff check: only the allowed files changed, and `inSplitVariant` is called only inside the metadata object (tests).
 - [ ] Live verification at start, day 7 and day 21, with the 95% start rule and the 5% drift rule (tests).
-- [ ] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results.
-- [ ] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
-- [ ] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
+- [x] Analysis: estimate, randomization p-value, inverted interval, pre-period check and labels. Test against a reference implementation in a notebook on fixed data, with matching results. The reference is `scripts/split-test-reference.py`; 5 fixed datasets match to 2 decimal places.
+- [x] Simulation test: on synthetic data with no effect, the 90% interval excludes 0 in 8% to 12% of 1,000 runs.
+- [x] Simulation test: a true +15% effect on an eligible design is labeled positive in at least 80% of runs.
 - [ ] Early harm stop with notification and the removal pull request.
 - [ ] End actions with exact-change approval.
 - [ ] Daily refresh through an RFC-0008 task.

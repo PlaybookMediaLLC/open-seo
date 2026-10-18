@@ -14,6 +14,7 @@ import * as draftsSchema from "@/db/proposal-drafts.schema";
 import * as publishingSchema from "@/db/publishing.schema";
 import * as spendSchema from "@/db/spend.schema";
 import * as seoChecksSchema from "@/db/seo-checks.schema";
+import * as splitTestsSchema from "@/db/split-tests.schema";
 import { DeploymentSignalService } from "@/server/features/experiments/DeploymentSignalService";
 import { ExperimentService } from "@/server/features/experiments/ExperimentService";
 import { MeasurementService } from "@/server/features/experiments/MeasurementService";
@@ -22,6 +23,7 @@ import { RevertService } from "@/server/features/experiments/RevertService";
 import { AutomationService } from "./AutomationService";
 import { SpendLimitService } from "@/server/features/spend/SpendLimitService";
 import { SeoCheckSettingsService } from "@/server/features/seo-checks/SeoCheckSettingsService";
+import { SplitTestService } from "@/server/features/split-tests/SplitTestService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -75,6 +77,7 @@ const growthTables = tablesOf(
   growthJobsSchema,
   spendSchema,
   seoChecksSchema,
+  splitTestsSchema,
 );
 
 let seed: Awaited<ReturnType<typeof deployed>>;
@@ -134,6 +137,7 @@ const services: Record<string, Record<string, unknown>> = {
   // The organization view has no project boundary; it reads only its own.
   SpendLimitService: { ...SpendLimitService, organization: undefined },
   SeoCheckSettingsService,
+  SplitTestService,
 };
 
 async function growthRowCount() {
