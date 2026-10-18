@@ -20,6 +20,8 @@ const database = await vi.hoisted(async () => {
   return createExperimentTestDatabase();
 });
 const mocks = vi.hoisted(() => ({
+  ga4Connection: vi.fn(),
+  runReport: vi.fn(),
   performance: vi.fn(),
   titles: new Map<string, string>(),
 }));
@@ -31,6 +33,12 @@ vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: { getPerformance: mocks.performance },
+}));
+vi.mock("@/server/features/ga4/repositories/Ga4ConnectionRepository", () => ({
+  Ga4ConnectionRepository: { getByProjectId: mocks.ga4Connection },
+}));
+vi.mock("@/server/lib/ga4Client", () => ({
+  createGa4DataClient: () => ({ runReport: mocks.runReport }),
 }));
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: async (url: string) => url,
@@ -59,6 +67,7 @@ afterAll(async () => {
   await database.close();
 });
 beforeEach(() => {
+  mocks.ga4Connection.mockResolvedValue(null);
   mocks.titles.clear();
   // Variant pages (even indexes) show their new title.
   for (const [index, path] of PATHS.entries())
@@ -166,4 +175,43 @@ it("labels a finished window, concludes the test and tells the project", async (
   ).toEqual([
     { title: `Split test result: ${analysis?.label} for Integration titles` },
   ]);
+});
+
+it("adds GA4 sessions and key events beside the result", async () => {
+  const test = await seededTest("running");
+  mocks.performance.mockResolvedValue({ rows: [] });
+  mocks.ga4Connection.mockResolvedValue({
+    propertyTimeZone: "America/Los_Angeles",
+    connectedByUserId: "owner",
+    ga4AccountId: "account",
+    propertyId: "1",
+  });
+  const rows = [];
+  for (
+    let date = "2026-09-01";
+    date <= "2026-11-30";
+    date = shiftGa4Date(date, 1)
+  )
+    for (const [index, path] of PATHS.entries())
+      rows.push({
+        dimensionValues: [{ value: path }, { value: date.replaceAll("-", "") }],
+        metricValues: [
+          {
+            value: String(
+              20 +
+                (index % 3) +
+                (index % 2 === 0 && date >= "2026-11-03" ? 4 : 0),
+            ),
+          },
+          { value: "1" },
+        ],
+      });
+  mocks.runReport.mockResolvedValue({ rows });
+  await refreshSplitTest(test, test.projectId, NOW);
+  const [analysis] = await db
+    .select()
+    .from(splitTestAnalyses)
+    .where(eq(splitTestAnalyses.testId, test.id));
+  expect(analysis?.sessionsEstimatePct).toBeGreaterThan(10);
+  expect(analysis?.keyEventsEstimatePct).toBe(0);
 });

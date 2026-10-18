@@ -123,6 +123,17 @@ export function SplitTestResultsCard({ data }: { data: Data }) {
                 A positive label is given only when the window ends.
               </p>
             )}
+            {analysis.sessionsEstimatePct !== null && (
+              <p className="text-muted-foreground">
+                GA4, not used for the label: organic sessions{" "}
+                {pct(analysis.sessionsEstimatePct)} (90% interval{" "}
+                {pct(analysis.sessionsCiLowPct)} to{" "}
+                {pct(analysis.sessionsCiHighPct)}), key events{" "}
+                {pct(analysis.keyEventsEstimatePct)} (
+                {pct(analysis.keyEventsCiLowPct)} to{" "}
+                {pct(analysis.keyEventsCiHighPct)}).
+              </p>
+            )}
           </div>
         ) : (
           live && (

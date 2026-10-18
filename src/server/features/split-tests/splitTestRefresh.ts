@@ -18,6 +18,7 @@ import { GscService } from "@/server/features/gsc/services/GscService";
 import { GrowthJobRepository } from "@/server/features/growth/repositories/GrowthJobRepository";
 import { literalPrefix } from "./splitTestBaseline";
 import { analyzeDays } from "./splitTestAnalysis";
+import { ga4Secondary } from "./splitTestGa4";
 
 // RFC-0011 5.5 and 5.6: live verification at the start, on day 7 and on
 // day 21; the daily Search Console data; and the analysis with its label.
@@ -27,6 +28,9 @@ const LIVE_FETCHES = 8;
 // 8 columns a row: 12 rows stay inside D1's 100 bound parameters.
 const ROWS_PER_INSERT = 12;
 const INSERTS_PER_BATCH = 50;
+
+const finite = (value: number | undefined) =>
+  value !== undefined && Number.isFinite(value) ? value : null;
 
 type Test = typeof splitTests.$inferSelect;
 type Page = typeof splitTestPages.$inferSelect;
@@ -240,6 +244,8 @@ export async function refreshSplitTest(
     .select({ contaminated: splitTests.contaminated })
     .from(splitTests)
     .where(eq(splitTests.id, test.id));
+  // A GA4 failure leaves the secondary metrics empty, never the result.
+  const ga4 = await ga4Secondary(test, pages, finalDate, now).catch(() => null);
   const notes = [
     result.prePeriodP <= 0.2 && "imbalanced",
     fresh?.contaminated && "contaminated",
@@ -259,6 +265,12 @@ export async function refreshSplitTest(
     prePeriodPValue: result.prePeriodP,
     label: result.label,
     notes: notes.join(", ") || null,
+    sessionsEstimatePct: finite(ga4?.sessions?.estimatePct),
+    sessionsCiLowPct: finite(ga4?.sessions?.ciLowPct),
+    sessionsCiHighPct: finite(ga4?.sessions?.ciHighPct),
+    keyEventsEstimatePct: finite(ga4?.keyEvents?.estimatePct),
+    keyEventsCiLowPct: finite(ga4?.keyEvents?.ciLowPct),
+    keyEventsCiHighPct: finite(ga4?.keyEvents?.ciHighPct),
   });
   const estimate = `${result.estimatePct.toFixed(1)}% (90% interval ${result.ciLowPct.toFixed(1)}% to ${result.ciHighPct.toFixed(1)}%)`;
   if (result.harmful && !result.windowComplete)

@@ -70,6 +70,13 @@ export const confirmSplitTestDeployment = createServerFn({ method: "POST" })
     pulls.confirmDeployment(context, { ...data, projectId: context.projectId }),
   );
 
+export const backtestSplitTest = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(splitTestSchema)
+  .handler(({ context, data }) =>
+    service.backtest(context, { ...data, projectId: context.projectId }),
+  );
+
 export const exportSplitTestCsv = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(splitTestSchema)

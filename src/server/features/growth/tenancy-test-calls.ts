@@ -317,11 +317,19 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           renderedMode: false,
         }),
     },
+    ...splitTestCalls(projectId, ctx),
+  };
+}
+
+/** RFC-0011: the split test services. */
+function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
+  return {
     SplitTestService: {
       list: () => splitTests.list(ctx, projectId),
       get: () => splitTests.get(ctx, { projectId, testId: "x" }),
       refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),
       csv: () => splitTests.csv(ctx, { projectId, testId: "x" }),
+      backtest: () => splitTests.backtest(ctx, { projectId, testId: "x" }),
       create: () =>
         splitTests.create(ctx, {
           projectId,
