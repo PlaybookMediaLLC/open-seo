@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -99,6 +99,8 @@ This is a new publishing change kind, `copy_text`. RFC-0013, RFC-0014 and RFC-00
 
 On S1, the `/approach` hero text resolves to `apps/www/lib/content.ts`.
 
+**As built (part C1).** "Change page text" in the publishing panel of an approved opportunity reads the live page once, without following a redirect, and lists up to 100 headings, links, buttons, form labels and paragraphs of 300 characters or fewer. It uses the page analyzer's streaming HTML parser, because `analyzeHtml` keeps headings only. The locator starts at the page file that RFC-0004 finds. It resolves relative imports and `@/` from the root directory, tries the usual extensions and `index` files, and skips type-only imports. Files over GitHub's 32 KB read limit are skipped. In Markdown, a node is one heading, list item, quote or paragraph line without markup. The S1 hero title carries an underscore accent in the source, so it is markup and the locator refuses it; the hero introduction resolves to `apps/www/lib/content.ts`. The sharing check reads the app directory's file list in one request and up to 30 other page files. A page shares the text when it imports the module that holds it, and the export that holds it, if there is one. Nothing is written in this step.
+
 ### 5.5 Drafted copy
 
 Reuse the RFC-0004 drafting service with a conversion prompt.
@@ -165,7 +167,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - [x] Four detectors with boundary tests, and the skip reason when form events are missing.
 - [x] Evidence columns added in D1 and Postgres, with the parity test.
 - [x] Value text with the "not a forecast" label.
-- [ ] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`).
+- [x] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`). The test copy is trimmed, because S1's repository is private and this one is public.
 - [ ] `change_kind`, `proposal_text_edits` and fingerprint version 3.
 - [ ] Execution writes the text edits in one commit (test against the GitHub mock).
 - [ ] Conversion drafting with one test per dark-pattern rule.
