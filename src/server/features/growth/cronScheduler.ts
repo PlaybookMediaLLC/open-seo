@@ -1,4 +1,5 @@
 import { reconcileSpend } from "@/server/billing/spendReconcile";
+import { sendDigests } from "./emailDigest";
 import { GrowthJobService } from "./GrowthJobService";
 import { growthJobsMode } from "./internalAuth";
 import { GrowthJobRepository } from "./repositories/GrowthJobRepository";
@@ -23,6 +24,11 @@ export async function runGrowthCron(scheduledTime: number) {
   if (now.getUTCHours() === 3 && minute >= 30 && minute < 35)
     await GrowthJobService.retention(now).catch((error: unknown) =>
       console.error("[cron] growth retention failed", error),
+    );
+  // RFC-0008 5.11: the email digests go out on the 08:00 tick.
+  if (now.getUTCHours() === 8 && minute < 5)
+    await sendDigests(now).catch((error: unknown) =>
+      console.error("[cron] email digest failed", error),
     );
   const started = Date.now();
   let ran = 0;

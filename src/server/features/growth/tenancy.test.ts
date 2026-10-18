@@ -57,10 +57,12 @@ vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 
 // Not project-scoped by design: an App installation serves many projects,
-// and a webhook delivery id is claimed before its project is known.
+// a webhook delivery id is claimed before its project is known, and an email
+// digest preference belongs to a member of the organization.
 const UNSCOPED_TABLES = new Set([
   "github_app_installations",
   "ci_webhook_deliveries",
+  "growth_email_preferences",
 ]);
 const tablesOf = (...schemas: object[]) =>
   schemas.flatMap((schema) =>
