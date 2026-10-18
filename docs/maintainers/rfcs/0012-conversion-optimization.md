@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run. Part C1 built: the text picker and the copy locator. Part C2 built: `copy_text` proposals and their one-commit pull requests. Part D built: conversion copy drafts and the Conversion filter group. Part E1 built: the conversion metric in experiments and `content/docs/conversion.mdx`. Phase 2 built: split tests on the chosen conversion.
+- **Status:** Done on 2026-10-18. Built in PRs #119 to #125: the tracking gate and Conversion settings (A), the four detectors and the conversion run (B), the text picker and copy locator (C1), `copy_text` proposals in one commit (C2), checked copy drafts and the Conversion filter group (D), the conversion metric in experiments and the user guide (E1), and split tests on the chosen conversion (phase 2). Phase 3 waits for its own security and SEO review. The live acceptance tests and the completion criteria are follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -249,3 +249,15 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 
 - Every result below the thresholds says "inconclusive" with the reason.
 - No screen promises a conversion lift.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 1 acceptance on S2 (section 10, steps 1 to 4 and 6): the gate, the detector counts, the owner's review of every item, three items checked against a GA4 Exploration, and one approved copy change that ships and is tracked. Trigger: the owner connects GA4 to the S2 project, with a key event for demo or sign-up requests. On 2026-10-18 no production project had GA4 connected.
+- [ ] Phase 1 acceptance on S1 (section 10, step 5): the `/approach` hero introduction resolves to `apps/www/lib/content.ts`, a draft and the proposal. The hero title carries an underscore accent in the source, so the locator refuses it as markup. Trigger: the GitHub App is installed again on PlaybookMediaLLC; both production connections use it.
+- [ ] Phase 2 acceptance (section 10): a split test on the chosen conversion with a clear yes or no on eligibility, and a label with an interval. Trigger: a site with a template group of 30 or more pages, 1,000 conversions in 56 days and GA4 connected.
+- [ ] Completion criteria (section 11): accuracy against GA4 Explorations, usefulness reviews, the copy locator on 10 text blocks, and 20 rated drafts including 5 staging pages seeded with fake urgency and fake reviews. Trigger: the S2 acceptance above.
+- [ ] Phase 3, visitor-level tests (section 5.7). Trigger: the owner approves a separate security and SEO review. Then the middleware snippet, the consent hook, the GA4 custom dimension guide and the two-proportion analysis.
+
+**Production smoke check (2026-10-18, Playbook Media project):** Project settings > Conversion showed the gate's "Connect Google Analytics" step and no chosen conversion. "Find conversion problems" answered "Connect Google Analytics and choose the conversion in Project settings > Conversion first." The type filter showed the Search and Conversion groups with the four conversion types.

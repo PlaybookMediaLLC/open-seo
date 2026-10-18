@@ -62,7 +62,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
 | Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
 | Controlled page-group split tests (beyond the brief)                 | Done: follow-ups in its section 12         | [RFC-0011](0011-page-group-split-tests.md)                   |
-| Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
+| Beyond SEO: conversion optimization                                  | Done: follow-ups in its section 12         | [RFC-0012](0012-conversion-optimization.md)                  |
 | Beyond SEO: accessibility fixes in code                              | Missing                                    | [RFC-0013](0013-accessibility-fixes.md)                      |
 | Beyond SEO: web performance                                          | Missing                                    | [RFC-0014](0014-web-performance.md)                          |
 | Beyond SEO: release quality gate                                     | Missing                                    | [RFC-0015](0015-release-quality-gate.md)                     |
@@ -115,7 +115,7 @@ Each step depends on the steps before it.
 
 ### Release 3: beyond SEO
 
-27. **RFC-0012, phases 1 and 2.** Conversion detectors and copy changes.
+27. **RFC-0012, phases 1 and 2.** Conversion detectors and copy changes. Done; its live acceptance and phase 3 are follow-ups in its section 12.
 28. **RFC-0013, phase 1.** Accessibility detection and fixes.
 29. **RFC-0015, phase 1.** The release gate.
 30. **RFC-0014.** Web performance.
