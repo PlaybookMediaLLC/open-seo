@@ -139,17 +139,18 @@ const deployment = (environment: string) => ({
 
 it("accepts only signed deliveries, once each", async () => {
   const body = JSON.stringify({ zen: "hi" });
-  const first = await verifyWebhook(await signed(body, "delivery-1"));
+  const delivery = crypto.randomUUID();
+  const first = await verifyWebhook(await signed(body, delivery));
   expect(first).toMatchObject({ ok: true, duplicate: false });
-  expect(await verifyWebhook(await signed(body, "delivery-1"))).toMatchObject({
+  expect(await verifyWebhook(await signed(body, delivery))).toMatchObject({
     ok: true,
     duplicate: true,
   });
   expect(
-    await verifyWebhook(await signed(body, "delivery-2", "wrong")),
+    await verifyWebhook(await signed(body, crypto.randomUUID(), "wrong")),
   ).toEqual({ ok: false, status: 401 });
   mocks.secret.mockResolvedValue(undefined);
-  expect(await verifyWebhook(await signed(body, "delivery-3"))).toEqual({
+  expect(await verifyWebhook(await signed(body, crypto.randomUUID()))).toEqual({
     ok: false,
     status: 404,
   });
