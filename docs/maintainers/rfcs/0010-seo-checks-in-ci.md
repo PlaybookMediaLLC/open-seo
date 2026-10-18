@@ -1,6 +1,6 @@
 # RFC-0010: SEO checks on pull requests
 
-- **Status:** In progress. Part A (tables, CI tokens, preview hosts, check API) part B (the runner and the rules) and part C (the settings tab, history, override audit, docs) built
+- **Status:** Done on 2026-10-18. Built in PRs #100 to #104: tables, CI tokens and the check API (A), the runner and rules (B), the settings tab, history and docs (C), the public action `PlaybookMediaLLC/relay-seo-check` v1 (D), GitHub App mode (E) and rendered mode (F). Two production smoke tests passed. The owner decided on 2026-10-18 that the follow-ups in section 12 do not block closing this RFC.
 - **Decision (owner, 2026-10-18):** run each check in a Cloudflare Workflow, the engine of site audits, instead of a Trigger.dev task, so checks work before the RFC-0008 Trigger.dev account exists. Create the public action repository `PlaybookMediaLLC/relay-seo-check`.
 - **Date:** 2026-10-15
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
@@ -243,11 +243,11 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 - [x] Composite action repository with a tagged `v1` release and a README. `PlaybookMediaLLC/relay-seo-check`, release v1.0.0; a production smoke test passed through it.
 - [x] SEO checks tab with tokens, hosts, access, ignores and history.
 - [x] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
-- [ ] Installed on Relay's own previews and on the monorepo for S1.
+- [ ] Installed on Relay's own previews and on the monorepo for S1. Follow-up in section 12.
 
 ### Phase 2
 
-- [ ] App permissions and webhook subscriptions added. Owner step in the App settings, listed in `playbook-deployment.md`.
+- [ ] App permissions and webhook subscriptions added. Follow-up in section 12.
 - [x] Signature check and delivery deduplication (tests).
 - [x] Automatic run from a Vercel preview `deployment_status` (test; live check waits for the App settings).
 - [x] Check Run with annotations on the mapped files (test).
@@ -324,3 +324,25 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 **Adoption**
 
 - The check runs on every pull request of Relay and the monorepo for 2 weeks, with no manual retry.
+
+**Met now (2026-10-18):**
+
+- 0 fetches in a test of 20 disallowed hosts, including owner-added private addresses that the URL policy stops.
+- A run makes 2 page requests per URL in the end-to-end test; redirects are not followed.
+- No code in the check runner logs, and findings and summaries hold page values only, so preview access secrets cannot appear there (search check).
+- The action script exits 0 on a Relay or quota failure unless `fail-on` is `warning`.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 2 live check (section 10). Trigger: the owner adds the webhook URL, the `GITHUB_APP_WEBHOOK_SECRET`, the "Deployment status" event and Checks write to the App, following `playbook-deployment.md`, and a Vercel test repository has the App installed.
+- [ ] Phase 3 live check: a flagged page renders on both hosts and the run settles its rendering hold. Trigger: a client-rendered site with previews is connected to a project.
+- [ ] Phase 1 acceptance on S1 and S3 (section 10) and the detection and speed criteria of section 11. Trigger: the monorepo's GitHub billing is fixed (S1), and Relay has previews (S3, RFC-0025).
+- [ ] Usability: a developer new to Relay installs the action from the docs in under 10 minutes. Trigger: the first outside install.
+- [ ] Adoption: the check runs on every pull request of Relay and the monorepo for 2 weeks with no manual retry. Trigger: the S1 and S3 installs.
+
+**Smoke tests, production (Playbook Media project, preview `https://playbookmedia.io`):**
+
+1. 2026-10-17, after part C: a token created in the tab started a check through the API (202). The Workflow finished in about 9 seconds: 10 pages, 0 findings. A bad token got 401 and a disallowed host got 400. The revoked token got 401.
+2. 2026-10-18, after parts E and F: a new token started a check (202). It succeeded on 10 pages with 0 findings and appeared in Recent checks. After the revoke, the token got 401. The rendered mode switch shows in the tab, off by default.

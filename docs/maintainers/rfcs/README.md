@@ -60,7 +60,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | F. Portfolio operations                                              | Done: isolation proven; portfolio deferred | [RFC-0007](0007-portfolio-operations.md)                     |
 | 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
 | 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
-| Prevention: SEO checks on pull requests (beyond the brief)           | Missing                                    | [RFC-0010](0010-seo-checks-in-ci.md)                         |
+| Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
 | Controlled page-group split tests (beyond the brief)                 | Missing                                    | [RFC-0011](0011-page-group-split-tests.md)                   |
 | Beyond SEO: conversion optimization                                  | Missing                                    | [RFC-0012](0012-conversion-optimization.md)                  |
 | Beyond SEO: accessibility fixes in code                              | Missing                                    | [RFC-0013](0013-accessibility-fixes.md)                      |
@@ -103,7 +103,7 @@ Each step depends on the steps before it.
 ### Release 2: growth, launches and revenue
 
 17. **RFC-0025, phase 1.** Previews for every Relay change: the customer's own previews first, Relay-built previews on Cloudflare otherwise. This unlocks `open_pr` for content classes.
-18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules.
+18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules. Done with phases 2 and 3; the installs and live checks are follow-ups in its section 12.
 19. **RFC-0020, phase 2.** Content refresh steps and JSX link insertion.
 20. **RFC-0021, phase 1.** New pages from verified facts.
 21. **RFC-0023, phase 1.** Launch workflows.
