@@ -1,6 +1,6 @@
 # RFC-0012: Conversion optimization for landing pages
 
-- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion.
+- **Status:** In progress. Part A built: the tracking gate and Project settings > Conversion. Part B built: the four detectors and the conversion run.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
@@ -76,6 +76,8 @@ Evidence: extend RFC-0002's `opportunity_ga4_evidence` with `device` (nullable),
 **Value.** Show "If this page converted at the site median, it would get about N more conversions in 28 days." When the owner set a value per conversion, also show the amount. Label it "not a forecast".
 
 **Score.** Use the RFC-0002 formula. Commercial score = 1.0 for pages whose conversions carry value, else the key-page role score. Demand = `min(1, log10(1 + sessions) / 4)`. Visibility = the conversion gap as a share of the median.
+
+**As built (part B).** "Find conversion problems" on the Opportunities page starts a conversion run. It runs only after the tracking gate passes, and at most once in 24 hours. Opportunities belong to a Search Console property, so the run also needs the Search Console connection. It reads one GA4 report of sessions, engaged sessions and the chosen key event by landing page and device, and one report of `form_start` and `form_submit` by page when GA4 records form interactions. Without form interactions, the form check is skipped, and the run result and the gate say so. Both reports cover the last 28 complete days, for organic search or for all traffic as the owner chooses. Medians use only the pages with 300 or more sessions. The value sentence uses the median for pages with the same role. Visibility is 1 minus the page rate divided by the reference rate: the role median, a 30% submit rate, the desktop rate or the site engagement median. Difficulty is a neutral 0.5, confidence is 0.5 and effort is 2 hours. Device rows are stored as separate evidence rows, so the evidence key now includes the device.
 
 ### 5.4 Copy locator and text edit
 
@@ -160,9 +162,9 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 ### Phase 1
 
 - [x] Tracking gate with `project_conversion_events`, and the setup guidance when it fails.
-- [ ] Four detectors with boundary tests, and the skip reason when form events are missing.
-- [ ] Evidence columns added in D1 and Postgres, with the parity test.
-- [ ] Value text with the "not a forecast" label.
+- [x] Four detectors with boundary tests, and the skip reason when form events are missing.
+- [x] Evidence columns added in D1 and Postgres, with the parity test.
+- [x] Value text with the "not a forecast" label.
 - [ ] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`).
 - [ ] `change_kind`, `proposal_text_edits` and fingerprint version 3.
 - [ ] Execution writes the text edits in one commit (test against the GitHub mock).

@@ -221,6 +221,11 @@ export function scoreCandidate(
     ga4: ga4Rows.map(({ hostName: _hostName, ...row }) => ({
       ...row,
       currency: context.currency,
+      device: "all" as const,
+      engagedSessions: null,
+      keyEventName: null,
+      formStarts: null,
+      formSubmits: null,
     })),
   };
 }

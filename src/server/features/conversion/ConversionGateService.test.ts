@@ -34,6 +34,7 @@ vi.mock("@/server/features/ga4/services/Ga4ReportingService", () => ({
 
 const health = (webStreamCount: number, eventNames: string[]) => ({
   summary: { webStreamCount },
+  webStreams: [],
   keyEvents: eventNames.map((eventName) => ({ eventName })),
 });
 const report = (counts: Record<string, number>) => ({
@@ -91,6 +92,7 @@ it("passes only when the chosen key event has 30 events in 28 days", async () =>
       eventName,
       valueMinor: 5000,
       currency: "USD",
+      channel: "organic_search",
     });
   const gate = async () =>
     (await ConversionGateService.get(context, projectId)).gate;
@@ -105,6 +107,7 @@ it("passes only when the chosen key event has 30 events in 28 days", async () =>
     eventName: "generate_lead",
     valueMinor: 5000,
     currency: "USD",
+    channel: "organic_search",
   });
   const events = await db
     .select({ action: auditEvents.action })

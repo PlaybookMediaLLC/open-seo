@@ -128,6 +128,11 @@ export function pairCandidate(
         keyEvents: 3,
         revenue: null,
         currency: "USD",
+        device: "all",
+        engagedSessions: null,
+        keyEventName: null,
+        formStarts: null,
+        formSubmits: null,
       },
     ],
   });

@@ -477,6 +477,13 @@
       "when": 1792322478269,
       "tag": "0067_brown_loners",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1792323535002,
+      "tag": "0068_wild_kang",
+      "breakpoints": true
     }
   ]
 }

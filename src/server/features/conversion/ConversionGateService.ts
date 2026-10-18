@@ -32,6 +32,7 @@ async function conversionOf(projectId: string) {
       eventName: projectConversionEvents.eventName,
       valueMinor: projectConversionEvents.valueMinor,
       currency: projectConversionEvents.currency,
+      channel: projectConversionEvents.channel,
     })
     .from(projectConversionEvents)
     .where(eq(projectConversionEvents.projectId, projectId));
@@ -83,6 +84,12 @@ async function gate(projectId: string, eventName: string | null) {
       keyEvents,
       currency: report.request.currencyCode,
       dateRange: report.request.resolvedDateRange,
+      // RFC-0012 5.3: the form detector needs GA4's form interaction events.
+      formsMeasured: health.webStreams.some(
+        (stream) =>
+          stream.enhancedMeasurement.streamEnabled &&
+          stream.enhancedMeasurement.formInteractionsEnabled,
+      ),
     };
   } catch (error) {
     return {
@@ -95,13 +102,20 @@ async function gate(projectId: string, eventName: string | null) {
   }
 }
 
-async function get(context: OpportunityContext, projectId: string) {
-  await authorize(context, projectId);
+/** The chosen conversion and the gate result. The caller authorizes. */
+export async function readGate(projectId: string) {
   const conversion = await conversionOf(projectId);
   return {
-    canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
     conversion,
     gate: await gate(projectId, conversion?.eventName ?? null),
+  };
+}
+
+async function get(context: OpportunityContext, projectId: string) {
+  await authorize(context, projectId);
+  return {
+    canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    ...(await readGate(projectId)),
   };
 }
 
@@ -112,6 +126,7 @@ async function save(
     eventName: string;
     valueMinor: number | null;
     currency: string | null;
+    channel: "organic_search" | "all";
   },
 ) {
   await authorize(context, input.projectId);
@@ -120,6 +135,7 @@ async function save(
     eventName: input.eventName,
     valueMinor: input.valueMinor,
     currency: input.valueMinor === null ? null : input.currency,
+    channel: input.channel,
     createdBy: context.userId,
     updatedAt: new Date().toISOString(),
   };

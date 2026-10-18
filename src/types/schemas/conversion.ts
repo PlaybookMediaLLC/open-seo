@@ -14,6 +14,7 @@ export const saveConversionEventSchema = project
       .string()
       .regex(/^[A-Z]{3}$/)
       .nullable(),
+    channel: z.enum(["organic_search", "all"]),
   })
   .refine((input) => input.valueMinor === null || input.currency !== null, {
     message: "A value needs a currency.",
