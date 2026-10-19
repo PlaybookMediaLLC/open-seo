@@ -100,6 +100,7 @@ beforeEach(async () => {
     listDirectory: vi.fn<GithubClient["listDirectory"]>(),
     readFileHead: vi.fn<GithubClient["readFileHead"]>(),
     listFiles: vi.fn<GithubClient["listFiles"]>(),
+    lastCommitDate: vi.fn<GithubClient["lastCommitDate"]>(),
     deleteFile: vi.fn<GithubClient["deleteFile"]>(),
     commitFiles: vi.fn<GithubClient["commitFiles"]>(),
     verifyCommitFiles: vi.fn<GithubClient["verifyCommitFiles"]>(),

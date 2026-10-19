@@ -188,3 +188,10 @@ export function urlJoinKey(url: string): string | null {
     return null;
   }
 }
+
+/** The site's home page URL, also for a domain property. */
+export function siteRoot(siteUrl: string): string {
+  return siteUrl.startsWith("sc-domain:")
+    ? `https://${siteUrl.slice("sc-domain:".length)}/`
+    : siteUrl;
+}

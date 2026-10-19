@@ -26,3 +26,20 @@ Relay reads the Markdown and MDX files in the docs directory on the base branch,
 - A file larger than 32 KB keeps its path, but Relay does not read its title or headings.
 - The **Docs index** job in **Automation** runs once a day. It reads only the files that changed, up to 200 files a run.
 - When you change the docs paths, Relay deletes the index and builds it again.
+
+## 3. Find docs gaps
+
+On the **Opportunities** page, select **Find docs gaps**. The run is free. It reads the last 28 days of Search Console and GA4 data and the docs index, and it runs once a day at most.
+
+| Check               | Rule                                                                                                                                                     |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Docs search gap     | Visitors searched the site for a term 20 or more times, and no docs title or heading contains all its words. Plurals and verb endings count as one word. |
+| Docs page ranks low | A docs page has 500 or more impressions, and an average position below 10 or a click-through rate of half or less of the docs median at its position.    |
+| Stale docs page     | A docs page has 500 or more views, and its file has not changed for 12 months or more.                                                                   |
+
+- The search gap and stale page checks need GA4. The search gap check also needs site search in GA4 enhanced measurement.
+- The docs median at a position needs 3 docs pages there with 100 or more impressions each.
+- Relay reads the last change date for the 50 most-viewed docs pages only, with one GitHub request each.
+- The run says which checks it skipped and why.
+
+Product changes and launches also move docs searches and traffic. Treat each item as a question to check, not as proof.

@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
@@ -29,4 +30,12 @@ export const indexDocsNow = createServerFn({ method: "POST" })
   .validator(docsProjectSchema)
   .handler(({ context }) =>
     DocsSettingsService.indexNow(context, context.projectId),
+  );
+
+// RFC-0017 5.3: one free docs run from Search Console, GA4 and the index.
+export const findDocsOpportunities = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(docsProjectSchema)
+  .handler(({ context }) =>
+    DocsDetectionService.detect(context, context.projectId),
   );

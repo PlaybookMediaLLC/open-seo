@@ -1,3 +1,4 @@
+import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
@@ -94,6 +95,9 @@ export function accessibilityCalls(
           directory: "content/docs",
         }),
       indexNow: () => DocsSettingsService.indexNow(ctx, projectId),
+    },
+    DocsDetectionService: {
+      detect: () => DocsDetectionService.detect(ctx, projectId),
     },
   };
 }

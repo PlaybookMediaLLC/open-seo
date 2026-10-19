@@ -232,6 +232,22 @@ export function createGithubReader(
         throw new AppError("UPSTREAM_UNAVAILABLE", "GitHub raw reads are off.");
       return requestBytes(`/git/blobs/${entry.sha}`, maxBytes);
     },
+    /** RFC-0017 5.3: the time of the newest commit on a branch that changed a file. */
+    async lastCommitDate(path: string, branch: string) {
+      validateGithubPath(path);
+      validateGithubBranch(branch);
+      const history = await request(
+        `/commits?sha=${encodeURIComponent(branch)}&path=${encodeURIComponent(path)}&per_page=1`,
+        z.array(
+          z.object({
+            commit: z.object({
+              committer: z.object({ date: z.string() }).nullable(),
+            }),
+          }),
+        ),
+      );
+      return history[0]?.commit.committer?.date ?? null;
+    },
     /** RFC-0012: every file path under a directory, from one recursive tree read. */
     async listFiles(path: string, commitSha: string) {
       let treeSha = (await getCommit(commitSha)).treeSha;

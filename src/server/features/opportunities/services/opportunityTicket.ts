@@ -52,6 +52,12 @@ const VERIFY: Record<OpportunityType, string> = {
     "After the change ships, wait 28 days. Then compare the page's mobile and desktop conversion rates with the GA4 evidence above.",
   cro_low_engagement:
     "After the change ships, wait 28 days. Then compare the page's engagement rate with the GA4 evidence above.",
+  docs_search_gap:
+    "After the docs change ships, wait 4 weeks. Then compare the searches for this term with the evidence above.",
+  docs_page_underperforming:
+    "After the docs change ships, wait 4 weeks. Then compare the page's position and click-through rate with the evidence above.",
+  docs_stale_page:
+    "After the docs change ships, check that the page matches the current product. Then compare its views and searches after 4 weeks.",
 };
 
 // axe-core's color-contrast summary: the ratio, both colors, the target.

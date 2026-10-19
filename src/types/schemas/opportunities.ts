@@ -19,6 +19,10 @@ export const OPPORTUNITY_TYPES = [
   "cro_form_drop_off",
   "cro_device_gap",
   "cro_low_engagement",
+  // RFC-0017: docs gaps, from GA4, Search Console and the docs index.
+  "docs_search_gap",
+  "docs_page_underperforming",
+  "docs_stale_page",
 ] as const;
 export const OPPORTUNITY_DIAGNOSES = [
   "ranking_drop",
@@ -32,6 +36,7 @@ export const OPPORTUNITY_RUN_KINDS = [
   "search_console",
   "content_gap",
   "conversion",
+  "docs",
 ] as const;
 // The year-ago periods are the current and previous windows moved back 364
 // days, so weekdays match.
