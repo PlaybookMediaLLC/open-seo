@@ -246,6 +246,7 @@ async function detect(
     );
     const notes = detectionNotes({
       ga4Connected: Boolean(ga4Connection),
+      revenue: Boolean(signals.inputs.revenue),
       ga4Failed: Boolean(ga4Connection) && !ga4Rows,
       audit: signals.audit,
       inspectionSkipped:

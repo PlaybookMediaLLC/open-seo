@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AccessibilityFixCheck } from "@/client/features/accessibility/AccessibilityFixCheck";
+import { ExperimentRevenue } from "@/client/features/revenue/ExperimentRevenue";
 import { safeHttpUrl } from "@/shared/safe-url";
 import { useQuery } from "@tanstack/react-query";
 import { BackLink, PageHeader } from "@/client/components/PageHeader";
@@ -143,6 +144,7 @@ export function ExperimentDetailPage({
         )}
         <MeasurementResults detail={detail} assessment={detail.assessment} />
         <Ga4Results detail={detail} />
+        <ExperimentRevenue revenue={detail.revenue} />
         <LongTermCheck detail={detail} canManage={detail.canManage} />
         {detail.canManage &&
           experiment.pullRequestState === "merged" &&

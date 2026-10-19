@@ -13,6 +13,7 @@ import {
   type PublishingContext,
 } from "@/server/features/publishing/publishingAccess";
 import { PublishingRepository } from "@/server/features/publishing/repositories/PublishingRepository";
+import { experimentRevenue } from "@/server/features/revenue/RevenueReportService";
 import { AppError } from "@/server/lib/errors";
 import {
   confirmDeploymentInputSchema,
@@ -51,19 +52,21 @@ async function get(context: PublishingContext, raw: ExperimentInput) {
     input.experimentId,
   );
   if (!detail) throw new AppError("NOT_FOUND");
-  const [gsc, github, overlappingChanges] = await Promise.all([
+  const [gsc, github, overlappingChanges, revenue] = await Promise.all([
     GscService.getConnection(input.projectId),
     PublishingRepository.getConnection(input.projectId),
     ExperimentRepository.hasOverlappingChanges(
       input.projectId,
       input.experimentId,
     ),
+    experimentRevenue(input.projectId, detail.experiment),
   ]);
   return {
     ...detail,
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
     configured: Boolean(await publishingEncryptionKey()),
     connected: gsc?.siteUrl === detail.experiment.siteUrl,
+    revenue,
     githubConnected: Boolean(
       github &&
       github.repositoryId === detail.publishing.connection.repositoryId &&

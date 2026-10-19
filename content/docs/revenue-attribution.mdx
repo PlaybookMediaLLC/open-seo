@@ -91,6 +91,15 @@ Open **Experiments & Results**. The **Revenue by first touch** section shows the
 - For each currency, Relay shows revenue, new customers and the average first payment by channel and by first landing page (top 20).
 - Revenue is payments minus refunds in the period. Relay does not convert currencies.
 
+## 6. Priority and experiment results
+
+When at least 80% of new customers in the last 90 days have attribution data, Relay uses revenue in two more places.
+
+- **Opportunity priority.** The commercial score of a page is its first-touch revenue in 90 days divided by the 90th percentile across pages, at most 1. The page role score is the minimum. Revenue replaces the GA4 key-event score. The score explanation shows the amounts.
+- **Experiment results.** An experiment shows the new customers and revenue whose first touch is the changed page, in the baseline and observation windows. Relay shows them only when each window has at least 10 new customers.
+
+Payments can come weeks after the first visit. Relay counts each payment on its payment date, so a short observation window can miss later payments.
+
 ## Channels
 
 Relay sorts each first touch into one channel:
