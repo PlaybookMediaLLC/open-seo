@@ -1,0 +1,33 @@
+---
+title: "Web performance"
+description: "How Relay reads real-user Core Web Vitals from the Chrome UX Report, and why field data changes slowly."
+---
+
+**Field data shows real Chrome users over the last 28 days, so a change needs about 4 weeks to show fully.** Relay never says that a speed change caused a ranking change.
+
+## Field data and lab data
+
+- **Field data** comes from the [Chrome UX Report](https://developer.chrome.com/docs/crux) (CrUX). It is the 75th percentile of real Chrome users on phones or desktops, over 28 days. Google uses field data for Core Web Vitals.
+- **Lab data** comes from Lighthouse in a site audit. It is one simulated load on one device. It is useful to find a cause, but it can differ from what real users see.
+
+Relay shows three field metrics, with Google's "good" limits at the 75th percentile:
+
+| Metric                          | Good             |
+| ------------------------------- | ---------------- |
+| Largest Contentful Paint (LCP)  | 2,500 ms or less |
+| Interaction to Next Paint (INP) | 200 ms or less   |
+| Cumulative Layout Shift (CLS)   | 0.1 or less      |
+
+## Weekly field data refresh
+
+The **Field data refresh** job in **Automation** runs once a week. It reads CrUX for:
+
+1. your site's origin, from your Search Console property;
+2. the key pages in your project context;
+3. the pages with the most organic clicks in the last 28 days.
+
+It reads phones and desktops, at most 70 requests for each project. CrUX is free. A page with too few Chrome users has no page-level data. For those pages, Relay uses the origin and says so.
+
+## Self-hosting
+
+Set `CRUX_API_KEY` to a Google API key with the Chrome UX Report API turned on. Without the key, the job skips and says that field data access is not configured.

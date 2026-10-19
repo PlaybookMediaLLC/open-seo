@@ -213,6 +213,7 @@ export const {
   auditPageInlinks,
   opportunityAuditEvidence,
   opportunityAccessibilityEvidence,
+  cwvSnapshots,
   opportunityInspectionEvidence,
   opportunityLinkEvidence,
   opportunityRankEvidence,

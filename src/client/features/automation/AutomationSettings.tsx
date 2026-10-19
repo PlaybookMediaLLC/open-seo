@@ -39,6 +39,10 @@ const JOBS = {
     label: "Recommendation re-check",
     text: "Counts open items that the latest analysis no longer found. It changes no status.",
   },
+  cwv_refresh: {
+    label: "Field data refresh",
+    text: "Reads real-user Core Web Vitals from the Chrome UX Report for your site, key pages and top pages. Free.",
+  },
 } as const;
 type Kind = keyof typeof JOBS;
 type Schedule = {

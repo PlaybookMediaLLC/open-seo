@@ -17,6 +17,8 @@ export const GROWTH_JOB_KINDS = [
   "deployment_check",
   "traffic_watch",
   "recommendation_recheck",
+  // RFC-0014 5.2: weekly Chrome UX Report field data.
+  "cwv_refresh",
 ] as const;
 
 export const growthSchedules = sqliteTable(

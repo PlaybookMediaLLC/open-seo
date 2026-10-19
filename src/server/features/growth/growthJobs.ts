@@ -1,6 +1,7 @@
 import type { GrowthJobKind } from "@/types/schemas/growthJobs";
 import type { LogLine } from "./repositories/GrowthJobRepository";
 import { auditFollowupJob } from "./jobs/auditFollowup";
+import { cwvRefreshJob } from "./jobs/cwvRefresh";
 import { deploymentCheckJob } from "./jobs/deploymentCheck";
 import { measurementRefreshJob } from "./jobs/measurementRefresh";
 import {
@@ -33,4 +34,5 @@ export const GROWTH_JOBS: Partial<Record<GrowthJobKind, Job>> = {
   traffic_watch: trafficWatchJob,
   recommendation_recheck: recommendationRecheckJob,
   audit_followup: auditFollowupJob,
+  cwv_refresh: cwvRefreshJob,
 };
