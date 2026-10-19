@@ -19,7 +19,11 @@ export type PageFacts = {
   jsonLd: Array<{ parses: boolean; types: string[] }>;
   /** The raw HTML looks like a client-rendered app shell (5.13). */
   shell?: boolean;
+  /** RFC-0015: the HTML size and the page's subresources, at most 100. */
+  bytes?: number;
+  assets?: Array<{ url: string; kind: AssetKind }>;
 };
+export type AssetKind = "image" | "script" | "style" | "frame" | "media";
 
 export type Snapshot = {
   /** The first response's status; null when the request failed. */

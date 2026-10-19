@@ -35,7 +35,11 @@ vi.mock("@/server/lib/audit/url-policy", () => ({
 const base = "https://example.com";
 // A trailing-slash site lists /pricing/ and redirects /pricing (bug found
 // on the Relay Lab live check).
-const site = vi.hoisted(() => ({ slash: false, securityDrop: false }));
+const site = vi.hoisted(() => ({
+  slash: false,
+  securityDrop: false,
+  newLink: false,
+}));
 const preview = "https://pr-7.vercel.app";
 vi.mock("@/server/lib/audit/discovery", () => ({
   discoverUrls: async (origin: string) => ({
@@ -59,6 +63,7 @@ const html = (robots: string, count: number) =>
 
 const pageFetch = vi.fn(async (url: string) => {
   const { pathname } = new URL(url);
+  if (pathname === "/missing") return new Response(null, { status: 404 });
   if (site.slash && pathname !== "/" && !pathname.endsWith("/"))
     return new Response(null, {
       status: 301,
@@ -69,6 +74,9 @@ const pageFetch = vi.fn(async (url: string) => {
   const body = html(
     onPreview && pricing ? "noindex" : "index",
     onPreview && pricing ? 60 : 300,
+  ).replace(
+    "</body>",
+    site.newLink && onPreview ? '<a href="/missing">New</a></body>' : "</body>",
   );
   return new Response(body, {
     headers: {
@@ -232,4 +240,17 @@ it("shows a header that every page drops once, as a site-wide finding", async ()
       severity: "warning",
     },
   ]);
+});
+
+it("blocks a broken new link with the links pack", async () => {
+  site.newLink = true;
+  const { runId } = await queuedRun({ packsEnabled: "links" });
+  const plan = await planCheck(runId);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  site.newLink = false;
+  expect(await stored(runId)).toContainEqual({
+    path: plan.urls[0].path,
+    rule: "broken-internal-link",
+    severity: "blocking",
+  });
 });
