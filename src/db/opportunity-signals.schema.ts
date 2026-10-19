@@ -218,3 +218,34 @@ export const opportunityAccessibilityEvidence = sqliteTable(
     ),
   ],
 );
+
+// RFC-0014 5.2: real-user Core Web Vitals from the Chrome UX Report, the
+// 75th percentile over the 28 days that end on `collection_end`.
+export const cwvSnapshots = sqliteTable(
+  "cwv_snapshots",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    scope: text("scope", { enum: ["url", "origin"] }).notNull(),
+    target: text("target").notNull(),
+    formFactor: text("form_factor", { enum: ["phone", "desktop"] }).notNull(),
+    collectionEnd: text("collection_end").notNull(),
+    lcpP75Ms: real("lcp_p75_ms"),
+    inpP75Ms: real("inp_p75_ms"),
+    clsP75: real("cls_p75"),
+    source: text("source", { enum: ["crux", "crux_history"] }).notNull(),
+    fetchedAt: text("fetched_at").notNull(),
+  },
+  (t) => [
+    uniqueIndex("cwv_snapshots_target_idx").on(
+      t.projectId,
+      t.scope,
+      t.target,
+      t.formFactor,
+      t.collectionEnd,
+      t.source,
+    ),
+  ],
+);

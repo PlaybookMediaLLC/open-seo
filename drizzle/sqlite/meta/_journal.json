@@ -680,6 +680,13 @@
       "when": 1792377323023,
       "tag": "0096_nebulous_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "6",
+      "when": 1792396075750,
+      "tag": "0097_glossy_bug",
+      "breakpoints": true
     }
   ]
 }

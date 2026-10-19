@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** Draft
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -52,6 +52,8 @@ Relay's own landing page is a real example: Lighthouse mobile shows a simulated 
 2. Add `cwv_snapshots`: `id`, `project_id` (FK cascade), `scope` (`url`, `origin`), `target`, `form_factor` (`phone`, `desktop`), `collection_end`, `lcp_p75_ms`, `inp_p75_ms`, `cls_p75`, `source` (`crux`, `crux_history`), `fetched_at`. Unique on (`project_id`, `scope`, `target`, `form_factor`, `collection_end`, `source`).
 3. Refresh weekly through an RFC-0008 task for key pages, the 30 pages with the most organic clicks, and the origin. At most 70 requests per project per week, within the CrUX quota.
 4. When a URL has no data, use the origin and say so.
+
+**As built (part A).** `CRUX_API_KEY` is an optional secret; without it, the weekly job skips with "Chrome UX Report access is not configured." The client asks for the three metrics and treats a 404 as "too few users", not an error; a 429 maps to a rate limit. CrUX returns the CLS p75 as a string, so all three values are read as numbers. The targets are, in order, the origin of the Search Console property (`sc-domain:example.com` becomes `https://example.com`), the key pages, and the top 30 pages by organic clicks over 28 days. They are cut to 35, so that phones and desktops stay within 70 requests; requests run five at a time. A second refresh in the same CrUX week updates the stored row through the unique key, so a repeated run never duplicates data. The table lives with the other opportunity signals, which keeps it inside the tenancy test. The job `cwv_refresh` runs weekly at 05:00 UTC and is listed in the Automation tab as "Field data refresh". Only `crux` rows are written in part A; `crux_history` comes with measurement.
 
 ### 5.3 Detection
 
@@ -118,8 +120,8 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 
 ### Phase 1
 
-- [ ] `CRUX_API_KEY`, the CrUX clients and `cwv_snapshots` in D1 and Postgres.
-- [ ] Weekly refresh task with the 70-request cap.
+- [x] `CRUX_API_KEY`, the CrUX clients and `cwv_snapshots` in D1 and Postgres.
+- [x] Weekly refresh task with the 70-request cap.
 - [ ] Template grouping and `performance_issue` detection with threshold tests.
 - [ ] Cause mapping table with one test per Lighthouse id.
 - [ ] Tickets for every cause.

@@ -113,6 +113,7 @@ export function createOpportunityTestDatabase(
         "0093_lowly_sentinel.sql",
         "0094_acoustic_ma_gnuci.sql",
         "0096_nebulous_korvac.sql",
+        "0097_glossy_bug.sql",
       ])
         await sqlite.executeMultiple(
           readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

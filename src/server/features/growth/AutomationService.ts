@@ -25,6 +25,7 @@ const DEFAULTS: Record<
   recommendation_recheck: { interval: "weekly", hourUtc: 8 },
   measurement_refresh: { interval: "daily", hourUtc: 9 },
   deployment_check: { interval: "daily", hourUtc: 10 },
+  cwv_refresh: { interval: "weekly", hourUtc: 5 },
 };
 export const SEARCH_CONSOLE_JOBS: Kind[] = [
   "opportunity_refresh",

@@ -33,6 +33,8 @@ export const relayDataEnv = {
   PUBLISHING_TOKEN_KEY_PREVIOUS: optionalSecret(
     "PUBLISHING_TOKEN_KEY_PREVIOUS",
   ),
+  // Chrome UX Report field data (RFC-0014 5.2). Empty turns it off.
+  CRUX_API_KEY: optionalSecret("CRUX_API_KEY"),
 };
 
 // Fork bindings of the app worker, created in the stack's own scope.
