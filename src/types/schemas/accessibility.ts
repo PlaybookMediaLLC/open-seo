@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { draftAnchorInputSchema } from "./proposalDrafts";
 
 // RFC-0013 5.4: the person's choices for an accessibility fix in code.
 export const accessibilityFixInputSchema = z.object({
@@ -63,3 +64,8 @@ export type AccessibilityTrend = {
   }>;
   fixesPassed: number;
 };
+
+/** RFC-0013 5.4: an alt text draft; phase 2 lets the model see the image. */
+export const draftAltTextInputSchema = draftAnchorInputSchema.extend({
+  vision: z.boolean().default(false),
+});

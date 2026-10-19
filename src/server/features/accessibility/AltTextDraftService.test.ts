@@ -10,7 +10,8 @@ const mocks = vi.hoisted(() => ({
   generate:
     vi.fn<
       (options: {
-        prompt: string;
+        prompt?: string;
+        messages?: Array<{ content: unknown[] }>;
         onStepFinish: (step: unknown) => Promise<void>;
       }) => Promise<unknown>
     >(),
@@ -32,6 +33,9 @@ vi.mock("@/server/lib/runtime-env", () => ({
   getOptionalEnvValue: async () => undefined,
 }));
 vi.mock("@/server/lib/openrouter", () => ({ buildChatAgentModel: () => ({}) }));
+vi.mock("@/server/lib/audit/url-policy", () => ({
+  normalizeAndValidateStartUrl: async (url: string) => url,
+}));
 vi.mock("@/server/lib/scrape", () => ({
   readPages: async () => ({
     pages: [
@@ -105,21 +109,20 @@ function answers(...texts: string[]) {
     });
 }
 
+const context = {
+  organizationId: "org",
+  userId: "reviewer",
+  userEmail: "reviewer@example.com",
+  role: "owner",
+};
+
 it('retries a draft that starts with "image of", and returns the clean one', async () => {
   answers("Image of the team planning", "The team planning a release");
-  const draft = await AltTextDraftService.draft(
-    {
-      organizationId: "org",
-      userId: "reviewer",
-      userEmail: "reviewer@example.com",
-      role: "owner",
-    },
-    {
-      projectId: "p",
-      opportunityId: "opportunity-1",
-      expectedOpportunityVersion: 1,
-    },
-  );
+  const draft = await AltTextDraftService.draft(context, {
+    projectId: "p",
+    opportunityId: "opportunity-1",
+    expectedOpportunityVersion: 1,
+  });
   expect(draft).toMatchObject({
     kind: "alt_text",
     status: "generated",
@@ -127,4 +130,21 @@ it('retries a draft that starts with "image of", and returns the clean one', asy
   });
   expect(mocks.generate.mock.calls[0][0].prompt).toContain("team-planning.jpg");
   expect(mocks.generate.mock.calls[1][0].prompt).toContain('"image of"');
+});
+
+it("lets the model see the image from its public URL when the person allows it", async () => {
+  answers("The team planning a release");
+  const draft = await AltTextDraftService.draft(context, {
+    projectId: "p",
+    opportunityId: "opportunity-1",
+    expectedOpportunityVersion: 1,
+    vision: true,
+  });
+  expect(draft.promptVersion).toBe("alt-text-vision-v1");
+  expect(mocks.generate.mock.calls[0][0].messages?.[0].content[1]).toEqual({
+    type: "image",
+    image: new URL(
+      "https://example.com/_next/static/media/team-planning.8f3a2c1d.jpg",
+    ),
+  });
 });

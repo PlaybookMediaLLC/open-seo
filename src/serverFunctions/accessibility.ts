@@ -6,12 +6,10 @@ import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   accessibilityFixInputSchema,
   accessibilityTrendInputSchema,
+  draftAltTextInputSchema,
 } from "@/types/schemas/accessibility";
 import { experimentInputSchema } from "@/types/schemas/experiments";
-import {
-  draftAnchorInputSchema,
-  opportunityDraftInputSchema,
-} from "@/types/schemas/proposalDrafts";
+import { opportunityDraftInputSchema } from "@/types/schemas/proposalDrafts";
 
 // RFC-0013 5.4: prepare an alt text or page language fix for review.
 export const prepareAccessibilityFix = createServerFn({ method: "POST" })
@@ -36,7 +34,7 @@ export const suggestAccessibleName = createServerFn({ method: "POST" })
 
 export const draftAltText = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
-  .validator(draftAnchorInputSchema)
+  .validator(draftAltTextInputSchema)
   .handler(({ context, data }) =>
     AltTextDraftService.draft(context, {
       ...data,

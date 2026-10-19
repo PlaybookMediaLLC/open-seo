@@ -105,6 +105,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 **As built (part E1).** `link-name`, `button-name` and `label` items have the same sheet with an "accessible name" field, and the fix sets `aria-label`. Relay matches the element by its first literal attribute in this order: `id`, `data-testid`, then `href` for a link or `name` and `placeholder` for a field. Without one, it uses every class of the selector's last part, and the element's class list must contain all of them. Escaped class names, such as Tailwind's `md\:flex`, are left out. Links match `<a>` and `<Link>`, buttons `<button>`, and fields `<input>`, `<select>` and `<textarea>`. **Suggest a name** fills the field with the title of the linked page when it is on the same site, or with the field's placeholder; a button has no suggestion, because its action is not in the stored element. Linking an existing `<label>` with `htmlFor` and `id` is not built: `aria-label` covers the rule with one attribute.
 
+**As built (part E2).** The alt text sheet has a **Let the model see the image** checkbox. Its text says that a draft that sees the image costs more, and that Relay holds up to 50 credits for a draft and charges the real cost; the draft button stays a text draft until the person ticks it. Relay resolves the image URL against the page, uses the original image of a Next.js optimizer URL, drops the query, checks it with the audit SSRF guard, and sends it to the model as an image part with the same prompt. Only JPEG, PNG, GIF and WebP URLs are accepted: the OpenRouter provider passes those to the model provider, which fetches the image, while the AI SDK would download any other URL in Relay's server, past the guard's redirect checks. The public URL is the only input about the image. The draft uses its own prompt version, `alt-text-vision-v1`, and the same checks as a text draft: a number that the model reads from the image but that is not in the file name, the element or the page text is refused, which is stricter than needed for charts.
+
 ### 5.5 Verification and tracking
 
 1. After the deployment is confirmed, run axe-core again on the affected pages in the cluster (at most 10).
@@ -161,7 +163,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 ### Phase 2
 
 - [x] Link, button and field name fixes.
-- [ ] Vision alt-text drafts behind a cost confirmation.
+- [x] Vision alt-text drafts behind a cost confirmation.
 - [ ] Contrast and heading-order tickets.
 
 ### Phase 3

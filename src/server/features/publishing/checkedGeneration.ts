@@ -25,6 +25,8 @@ export async function generateChecked<T>(options: {
   check: (output: T) => string[];
   maxOutputTokens: number;
   timeoutMs: number;
+  /** Public image URLs that the model sees with the prompt. */
+  images?: URL[];
 }) {
   const model = buildChatAgentModel(
     await getRequiredEnvValue("OPENROUTER_API_KEY"),
@@ -44,6 +46,9 @@ export async function generateChecked<T>(options: {
   });
   try {
     for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+      const prompt = failures.length
+        ? `${options.prompt}\n\nYour previous answer failed these checks. Fix every one:\n- ${failures.join("\n- ")}`
+        : options.prompt;
       try {
         const result = await generateText({
           model,
@@ -52,9 +57,22 @@ export async function generateChecked<T>(options: {
           maxOutputTokens: options.maxOutputTokens,
           abortSignal: AbortSignal.timeout(options.timeoutMs),
           system: options.system,
-          prompt: failures.length
-            ? `${options.prompt}\n\nYour previous answer failed these checks. Fix every one:\n- ${failures.join("\n- ")}`
-            : options.prompt,
+          ...(options.images
+            ? {
+                messages: [
+                  {
+                    role: "user" as const,
+                    content: [
+                      { type: "text" as const, text: prompt },
+                      ...options.images.map((image) => ({
+                        type: "image" as const,
+                        image,
+                      })),
+                    ],
+                  },
+                ],
+              }
+            : { prompt }),
           onStepFinish: (step) => {
             const stepCost = requireOpenRouterCostUsd(step.providerMetadata);
             costUsd += stepCost;

@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRefreshPublishing } from "@/client/features/publishing/queries";
 import { Button } from "@/client/components/ui/button";
+import { Checkbox } from "@/client/components/ui/checkbox";
 import { Input } from "@/client/components/ui/input";
 import { Label } from "@/client/components/ui/label";
 import {
@@ -45,6 +46,7 @@ export function AccessibilityFixSheet(props: {
   const [decorative, setDecorative] = useState(false);
   const [text, setText] = useState("");
   const [draftId, setDraftId] = useState<string | undefined>();
+  const [vision, setVision] = useState(false);
   const scope = {
     projectId: props.opportunity.projectId,
     opportunityId: props.opportunity.id,
@@ -53,7 +55,7 @@ export function AccessibilityFixSheet(props: {
   // A checked draft fills the field; the person edits and approves it.
   const draft = useMutation({
     meta: { errorToast: false },
-    mutationFn: () => draftAltText({ data: scope }),
+    mutationFn: () => draftAltText({ data: { ...scope, vision } }),
     onSuccess: (result) => {
       if (result.status !== "generated") return;
       setText(result.valueAfter);
@@ -178,13 +180,22 @@ export function AccessibilityFixSheet(props: {
                     value={text}
                     onChange={(event) => setText(event.target.value)}
                   />
+                  <Label className="flex items-start gap-2 font-normal">
+                    <Checkbox
+                      checked={vision}
+                      onCheckedChange={(checked) => setVision(checked)}
+                    />
+                    Let the model see the image. This costs more than a text
+                    draft. Relay holds up to 50 credits for a draft and charges
+                    the real cost.
+                  </Label>
                   <Button
                     size="sm"
                     variant="outline"
                     pending={draft.isPending}
                     onClick={() => draft.mutate()}
                   >
-                    Draft with AI
+                    {vision ? "Draft with AI from the image" : "Draft with AI"}
                   </Button>
                   {draft.isError && (
                     <p role="alert" className="text-destructive">
