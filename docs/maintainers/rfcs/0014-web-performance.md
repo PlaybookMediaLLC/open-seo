@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code. Part E built: lab checks of three Lighthouse runs. Phase 3 built: the Web Vitals snippet and its GA4 report.
+- **Status:** Done on 2026-10-19. Built in PRs #138 to #143: CrUX field data and the weekly refresh (A), `performance_issue` detection with the cause table and tickets (B), the field result over 4 weeks (C), the three phase 2 fixes in code (D), lab checks of three Lighthouse runs (E), and the Web Vitals snippet with its GA4 report (phase 3). The real-site acceptance test, the completion criteria and a few small items are follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -208,3 +208,15 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 **Honesty**
 
 - Every field result shows the 28-day window and the delay. No screen claims that a change caused a ranking change.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Field data in production. Trigger: the owner creates a Google API key with the Chrome UX Report API and adds it as `CRUX_API_KEY` to the production settings. Then the weekly job reads data; until then it skips with "Chrome UX Report access is not configured".
+- [ ] Phase 1 acceptance (section 10) on S3 and S1: CrUX values against PageSpeed Insights for 3 URLs, a performance issue on S3 that names the render-blocking stylesheet, and pages without data that use the origin. Trigger: field data in production, and an S3 audit with Lighthouse.
+- [ ] Phase 2 acceptance (section 10) on S1 or S2: one fix merged and deployed, a lab median that improves by 10% or more, and the field result after 8 weeks. Trigger: the GitHub App installed again on PlaybookMediaLLC, and credits for lab checks.
+- [ ] Completion criteria (section 11): CrUX against PageSpeed Insights for 5 URLs, 4 weeks of weekly refreshes, named causes confirmed on 5 failing templates, 10 test images sized correctly, and a 10% lab gain on a real site. Trigger: the acceptance above.
+- [ ] Organic CTR, engagement and conversions next to the field result (5.6 item 4). Trigger: the first performance item with a measured field result.
+- [ ] `sizes` for `fill` images from the rendered layout width (5.5 item 2), and the priority hint on plain `<img>` elements (`fetchPriority`). Trigger: a real item whose LCP image or unsized image uses one of them.
+- [ ] Detection from the snippet's GA4 events for pages without CrUX data. Trigger: a site with the snippet and its custom dimension, and a failing page that CrUX does not cover.
