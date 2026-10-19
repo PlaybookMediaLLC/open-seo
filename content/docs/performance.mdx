@@ -65,6 +65,12 @@ If your project has a connected GitHub repository, a page-level item can have a 
 
 If Relay finds no element, or more than one, it stops and tells you to fix it by hand. Nothing is written to GitHub until you approve the change.
 
+## Lab check
+
+A page-level item has a **Lab check** section. **Run a lab check** runs Lighthouse 3 times on the page from a phone, and keeps the median of each metric. The button shows the cost first: each run is one paid Lighthouse request.
+
+Run one check before the change ships and one after it. When the item is marked **Implemented**, Relay compares the newest full check before that day with the newest one after it, and shows the change in percent. Lighthouse cannot measure Interaction to Next Paint without a person, so for an INP item the lab check shows Total Blocking Time instead.
+
 ## Field result after a change
 
 Phase 1 changes ship through a ticket, so Relay measures from the day a person marks the item **Implemented**.

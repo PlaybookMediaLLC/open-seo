@@ -540,6 +540,13 @@
       "when": 1792397080778,
       "tag": "0076_empty_doctor_doom",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1792401023981,
+      "tag": "0077_acoustic_glorian",
+      "breakpoints": true
     }
   ]
 }

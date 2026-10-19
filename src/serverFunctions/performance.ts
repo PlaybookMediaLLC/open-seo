@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
+import { PerformanceLabService } from "@/server/features/performance/PerformanceLabService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import { performanceFixInputSchema } from "@/types/schemas/performance";
@@ -32,6 +33,27 @@ export const preparePerformanceFix = createServerFn({ method: "POST" })
   .validator(performanceFixInputSchema)
   .handler(({ context, data }) =>
     PerformanceFixService.prepare(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0014 5.6: lab checks of three Lighthouse runs.
+export const getPerformanceLab = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDraftInputSchema)
+  .handler(({ context, data }) =>
+    PerformanceLabService.state(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const runPerformanceLab = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDraftInputSchema)
+  .handler(({ context, data }) =>
+    PerformanceLabService.run(context, {
       ...data,
       projectId: context.projectId,
     }),

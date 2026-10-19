@@ -11,6 +11,7 @@
 // (vite-plugin-lean-worker-bundle.ts asserts this at build time).
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { getAuditScratchpad } from "@/server/features/audit/AuditScratchpad";
+import type { LabCheckInput } from "@/server/features/performance/labChecks"; // playbook-seam
 
 export { SiteAuditWorkflow } from "./server/workflows/SiteAuditWorkflow";
 export { AuditScratchpad } from "./server/features/audit/AuditScratchpad";
@@ -30,4 +31,10 @@ export default class AuditEngine extends WorkerEntrypoint {
   async destroyScratchpad(auditId: string): Promise<void> {
     await getAuditScratchpad(auditId).destroy();
   }
+
+  async runLabChecks(input: LabCheckInput) {
+    // playbook-seam: RFC-0014 lab runs
+    const lab = await import("@/server/features/performance/labChecks"); // playbook-seam
+    return lab.runLabChecks(input); // playbook-seam
+  } // playbook-seam
 }

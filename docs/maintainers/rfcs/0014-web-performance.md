@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code.
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code. Part E built: lab checks of three Lighthouse runs.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -104,6 +104,8 @@ All fixes use the RFC-0013 `jsx_attribute` change kind and its element matching 
 
 **As built (part C, field).** Phase 1 has no Relay change to track, so the field result belongs to the opportunity and starts on the day of its newest "implemented" decision. **Check the field result** asks the CrUX History API for the measured target and form factor once an hour at most (a lease per item), stores the weekly points as `crux_history` rows, and computes the result from stored rows; viewing the page makes no request. The comparison takes the 4 points that end before the change day and the first 4 points that end 28 days or more after it, and compares their medians. A missing week in either group gives "not enough data"; fewer than 4 later points gives "waiting" with the date of the 4th point, 49 days after the change. "Improved" and "worse" follow item 3, with Google's poor limits (LCP 4,000 ms, INP 500 ms, CLS 0.25) for the ratings. Lab runs at deploy (item 1) are phase 2, and item 4 is a follow-up: the item page does not yet show organic CTR, engagement and conversions next to the field result.
 
+**As built (part E, lab).** A lab check is a person's action on a page-level item, not an automatic step at deploy: Relay does not know when a ticket ships, and each run costs credits. The button shows the estimate first (3 × the DataForSEO Lighthouse price, marked up on hosted plans). The audit worker runs the three mobile runs one after another through a new RPC method, `runLabChecks`, behind a marked seam in `src/audit-worker.ts`: the multi-MB payloads that once ran the app worker out of memory never leave it, and only LCP, CLS, Total Blocking Time and the score return. Each run is metered like any DataForSEO call; a refusal for credits or spending limits stops the remaining runs. `performance_lab_checks` stores the medians and the number of finished runs. The comparison takes the newest check with all three runs before the item's "implemented" decision and the newest one after it. Lighthouse has no lab INP, so an INP item compares Total Blocking Time, and the page says so.
+
 ### 5.7 Phase 3: monitoring snippet
 
 For sites without CrUX data, an optional snippet uses the `web-vitals` library to send LCP, INP and CLS to the site's own GA4 as events. Relay reads them as an event report. No data goes to Relay directly.
@@ -141,7 +143,7 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 - [x] Priority hint by Next.js version (tests for each supported version and the unknown case).
 - [x] Image size from file headers for 4 formats (tests with real files), with the 64 KB cap.
 - [x] Script strategy change for listed hosts only (test that other hosts are refused).
-- [ ] Lab verification with 3 runs and the median.
+- [x] Lab verification with 3 runs and the median.
 
 ### Phase 3
 

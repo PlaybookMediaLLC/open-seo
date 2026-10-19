@@ -60,6 +60,9 @@ import type { Plugin } from "vite";
  * - src/server/features/audit/services/AuditService.ts: starting an audit
  *   saves its top-clicked pages for that step
  *   (src/server/features/accessibility/accessibilityTargets.ts).
+ * - src/audit-worker.ts: the audit worker runs the three Lighthouse lab
+ *   checks of a performance fix, so their payloads never reach the app
+ *   worker (src/server/features/performance/labChecks.ts).
  * - src/server/features/gsc/services/GscService.ts: connecting Search Console
  *   starts the default growth schedules (src/server/features/growth/).
  * - src/client/features/projects/SettingsTabs.tsx: adds the Automation tab
