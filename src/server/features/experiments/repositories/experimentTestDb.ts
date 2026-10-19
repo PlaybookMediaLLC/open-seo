@@ -24,6 +24,7 @@ export function createExperimentTestDatabase() {
           "0088_petite_vindicator.sql",
           "0092_nervous_kinsey_walden.sql",
           "0095_right_captain_cross.sql",
+          "0104_unique_khan.sql",
         ])
           await database.client.executeMultiple(
             readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

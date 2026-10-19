@@ -116,6 +116,11 @@ import type { Plugin } from "vite";
  *   modules pass through to upstream's billing in this test.
  * - src/shared/error-codes.ts and src/client/lib/error-messages.ts: the
  *   SPEND_LIMIT_REACHED code and its copy (src/shared/spendLimits.ts).
+ * - src/client/navigation/items.ts: adds "This week" first in the project
+ *   navigation (RFC-0018; src/client/features/work/ThisWeekPage.tsx).
+ * - src/client/features/dashboard/DashboardPage.tsx: shows the This week
+ *   card at the top of the project home
+ *   (src/client/features/work/ThisWeekCard.tsx).
  */
 const RELAY = "https://relay.playbookmedia.io";
 

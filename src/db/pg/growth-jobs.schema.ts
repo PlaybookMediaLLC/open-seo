@@ -112,6 +112,8 @@ export const growthNotifications = pgTable(
         "new_technical_issues",
         "job_failed",
         "spend_warning",
+        // RFC-0018 5.10: one notification per weekly cycle.
+        "weekly_cycle",
       ],
     }).notNull(),
     title: text("title").notNull(),

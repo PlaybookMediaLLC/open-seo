@@ -3,6 +3,7 @@ import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsResultService } from "@/server/features/docs/DocsResultService";
 import { SupportSourceService } from "@/server/features/support/SupportSourceService";
+import { WorkService } from "@/server/features/work/WorkService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
@@ -113,6 +114,20 @@ export function accessibilityCalls(
     },
     DocsDetectionService: {
       detect: () => DocsDetectionService.detect(ctx, projectId),
+    },
+    // RFC-0018: the weekly cycle.
+    WorkService: {
+      thisWeek: () => WorkService.thisWeek(ctx, projectId),
+      history: () => WorkService.history(ctx, projectId),
+      saveSettings: () =>
+        WorkService.saveSettings(ctx, {
+          projectId,
+          qualityBar: 40,
+          openPrLimit: 3,
+          cycleDay: 1,
+          cycleHour: 6,
+          timeZone: "UTC",
+        }),
     },
     SupportSourceService: {
       status: () => SupportSourceService.status(ctx, projectId),

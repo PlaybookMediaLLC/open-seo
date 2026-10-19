@@ -25,6 +25,8 @@ export const GROWTH_JOB_KINDS = [
   "docs_index",
   // RFC-0017 5.4: daily support topics from GitHub Issues.
   "support_topics",
+  // RFC-0018 5.2: the weekly cycle.
+  "weekly_cycle",
 ] as const;
 
 export const growthSchedules = sqliteTable(
@@ -125,6 +127,8 @@ export const growthNotifications = sqliteTable(
         "new_technical_issues",
         "job_failed",
         "spend_warning",
+        // RFC-0018 5.10: one notification per weekly cycle.
+        "weekly_cycle",
       ],
     }).notNull(),
     title: text("title").notNull(),

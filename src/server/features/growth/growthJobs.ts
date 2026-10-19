@@ -5,6 +5,7 @@ import { cwvRefreshJob } from "./jobs/cwvRefresh";
 import { revenueSyncJob } from "./jobs/revenueSync";
 import { docsIndexJob } from "./jobs/docsIndex";
 import { supportTopicsJob } from "./jobs/supportTopics";
+import { weeklyCycleJob } from "./jobs/weeklyCycle";
 import { deploymentCheckJob } from "./jobs/deploymentCheck";
 import { measurementRefreshJob } from "./jobs/measurementRefresh";
 import {
@@ -41,4 +42,5 @@ export const GROWTH_JOBS: Partial<Record<GrowthJobKind, Job>> = {
   revenue_sync: revenueSyncJob,
   docs_index: docsIndexJob,
   support_topics: supportTopicsJob,
+  weekly_cycle: weeklyCycleJob,
 };

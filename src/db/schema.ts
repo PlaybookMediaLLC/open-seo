@@ -29,6 +29,7 @@ import * as sqliteAccessibility from "./accessibility.schema";
 import * as sqliteRevenue from "./revenue.schema";
 import * as sqliteDocs from "./docs.schema";
 import * as sqliteSupport from "./support.schema";
+import * as sqliteWork from "./work.schema";
 import * as pgApp from "./pg/app.schema";
 import * as pgProjectContext from "./pg/project-context.schema";
 import * as pgReports from "./pg/reports.schema";
@@ -59,6 +60,7 @@ import * as pgAccessibility from "./pg/accessibility.schema";
 import * as pgRevenue from "./pg/revenue.schema";
 import * as pgDocs from "./pg/docs.schema";
 import * as pgSupport from "./pg/support.schema";
+import * as pgWork from "./pg/work.schema";
 
 // Canonical schema barrel. Repositories import their tables from here and the
 // provider-aware `db` from "@/db", so each repository is written ONCE for both
@@ -99,7 +101,8 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteAccessibility &
   typeof sqliteRevenue &
   typeof sqliteDocs &
-  typeof sqliteSupport;
+  typeof sqliteSupport &
+  typeof sqliteWork;
 
 const runtimeSchema =
   getDatabaseProvider() === "postgres"
@@ -134,6 +137,7 @@ const runtimeSchema =
         ...pgRevenue,
         ...pgDocs,
         ...pgSupport,
+        ...pgWork,
       }
     : {
         ...sqliteApp,
@@ -166,6 +170,7 @@ const runtimeSchema =
         ...sqliteRevenue,
         ...sqliteDocs,
         ...sqliteSupport,
+        ...sqliteWork,
       };
 
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by schema-parity.test.ts
@@ -298,4 +303,7 @@ export const {
   supportSources,
   supportTopics,
   supportTopicExcerpts,
+  workSettings,
+  workCycles,
+  workCycleEntries,
 } = schema;

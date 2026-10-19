@@ -8,6 +8,7 @@ import {
   IconFlask as FlaskConical,
   IconWorld as Globe,
   IconLayoutDashboard as LayoutDashboard,
+  IconListCheck as ListCheck, // playbook-seam
   IconLink as Link2,
   IconMessage as MessageSquare,
   IconSearch as Search,
@@ -18,6 +19,7 @@ import { linkOptions } from "@tanstack/react-router";
 import { GoogleGlyphMuted } from "@/client/features/gsc/GoogleGlyph";
 
 const projectNavItems = [
+  { to: "/p/$projectId/work" as const, label: "This week", icon: ListCheck }, // playbook-seam
   {
     to: "/p/$projectId" as const,
     label: "Dashboard",
@@ -135,6 +137,7 @@ export function getProjectNavGroups(projectId: string) {
     {
       label: "Overview",
       items: [
+        byPath("/p/$projectId/work"), // playbook-seam
         byPath("/p/$projectId"),
         byPath("/p/$projectId/opportunities"),
         byPath("/p/$projectId/experiments"),

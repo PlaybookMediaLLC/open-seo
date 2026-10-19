@@ -28,6 +28,7 @@ import {
 import { Ga4Card } from "@/client/features/dashboard/Ga4Card";
 import { WorkspaceMergeBanner } from "@/client/features/dashboard/WorkspaceMergeBanner";
 import { QueryError } from "@/client/components/QueryState";
+import { ThisWeekCard } from "@/client/features/work/ThisWeekCard"; // playbook-seam
 import {
   getDashboardActivation,
   getDashboardOverview,
@@ -183,6 +184,7 @@ export function DashboardPage({
           </Button>
         </div>
 
+        <ThisWeekCard projectId={projectId} /* playbook-seam */ />
         <WorkspaceMergeBanner />
 
         {activationQuery.isError ? (

@@ -1,0 +1,46 @@
+---
+title: "This week"
+description: "What Relay completed, what it is still measuring, and what comes next, from real records only."
+---
+
+**This week** is the first page of each project. It answers three questions: what changed, what is still measuring, and what is worth doing next. Every item links to its record. Relay never adds work to fill the page.
+
+## The sections
+
+| Section            | What it holds                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Waiting on you** | Changes that Relay prepared more than 3 days ago and nobody approved, and pull requests open for more than 7 days.                |
+| **Next**           | Up to 5 opportunities that pass every quality rule, highest priority first.                                                       |
+| **Measuring**      | Deployed changes and split tests inside their measurement windows. They show the days left and no result label yet.               |
+| **Completed**      | Changes whose pull request merged and whose deployment was verified or confirmed by a person this week, and deployed split tests. |
+
+## What Next leaves out
+
+An open opportunity goes to Next only when all of these are true:
+
+- Relay found its evidence in the last 14 days.
+- Its confidence is 0.4 or more.
+- Its priority is at or above the quality bar. The default bar is 40.
+- Its page did not change in the last 28 days, and no change on the page is still measuring.
+- The same kind of change did not have a negative result on the same page in the last 180 days.
+- GitHub is connected, so Relay can prepare the change.
+
+When more than the limit of Relay pull requests are open (3 by default), Next still shows its items, marked **Ready after current changes merge**.
+
+## Empty or short weeks
+
+Next has no weekly quota. When it has fewer than 5 items, the page says why, for example:
+
+- "2 items are on pages that changed in the last 28 days or are measuring. Results arrive on 2026-11-12."
+- "The best other candidate scored 32. The bar is 40."
+- "The latest detection is 9 days old. Relay waits for complete data."
+
+## The weekly cycle
+
+The lists on the page are live. Once a week, the **Weekly cycle** job also saves a snapshot of the week for the history, and it sends an in-app notification.
+
+1. Select **Cycle settings** on the **This week** page.
+2. Set the quality bar (20 to 80), the limit of open Relay pull requests (1 to 10), and the day, hour and time zone of the cycle. The time zone starts as your Google Analytics property's time zone, or UTC.
+3. Select **Save**. This turns the weekly cycle on.
+
+When a week ends, Relay recomputes its Completed list from the records of that week and closes it. **History** shows the earlier weeks as Relay saved them. If the latest Search Console analysis is older than 7 days, the cycle runs it first, within its usual cooldown.

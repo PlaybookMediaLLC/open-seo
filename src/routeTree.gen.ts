@@ -65,6 +65,7 @@ import { Route as AppPProjectIdSamRouteImport } from './routes/_app/p/$projectId
 import { Route as AppPProjectIdSavedRouteImport } from './routes/_app/p/$projectId/saved'
 import { Route as AppPProjectIdSearchPerformanceRouteImport } from './routes/_app/p/$projectId/search-performance'
 import { Route as AppPProjectIdSettingsRouteImport } from './routes/_app/p/$projectId/settings'
+import { Route as AppPProjectIdWorkRouteImport } from './routes/_app/p/$projectId/work'
 import { Route as ApiCiV1ChecksRouteImport } from './routes/api/ci/v1/checks'
 import { Route as ApiGa4OauthCallbackRouteImport } from './routes/api/ga4/oauth/callback'
 import { Route as ApiGithubAppSetupRouteImport } from './routes/api/github/app/setup'
@@ -383,6 +384,11 @@ const AppPProjectIdSettingsRoute = AppPProjectIdSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppPProjectIdRouteRoute,
 } as any)
+const AppPProjectIdWorkRoute = AppPProjectIdWorkRouteImport.update({
+  id: '/work',
+  path: '/work',
+  getParentRoute: () => AppPProjectIdRouteRoute,
+} as any)
 const ApiCiV1ChecksRoute = ApiCiV1ChecksRouteImport.update({
   id: '/api/ci/v1/checks',
   path: '/api/ci/v1/checks',
@@ -620,6 +626,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/p/$projectId/work': typeof AppPProjectIdWorkRoute
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
@@ -702,6 +709,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/sam': typeof AppPProjectIdSamRoute
   '/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
+  '/p/$projectId/work': typeof AppPProjectIdWorkRoute
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
@@ -793,6 +801,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/saved': typeof AppPProjectIdSavedRoute
   '/_app/p/$projectId/search-performance': typeof AppPProjectIdSearchPerformanceRoute
   '/_app/p/$projectId/settings': typeof AppPProjectIdSettingsRouteWithChildren
+  '/_app/p/$projectId/work': typeof AppPProjectIdWorkRoute
   '/api/ci/v1/checks': typeof ApiCiV1ChecksRouteWithChildren
   '/api/ga4/oauth/callback': typeof ApiGa4OauthCallbackRoute
   '/api/github/app/setup': typeof ApiGithubAppSetupRoute
@@ -882,6 +891,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
     | '/p/$projectId/settings'
+    | '/p/$projectId/work'
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
@@ -964,6 +974,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/sam'
     | '/p/$projectId/saved'
     | '/p/$projectId/search-performance'
+    | '/p/$projectId/work'
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
@@ -1054,6 +1065,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/saved'
     | '/_app/p/$projectId/search-performance'
     | '/_app/p/$projectId/settings'
+    | '/_app/p/$projectId/work'
     | '/api/ci/v1/checks'
     | '/api/ga4/oauth/callback'
     | '/api/github/app/setup'
@@ -1519,6 +1531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsRouteImport
       parentRoute: typeof AppPProjectIdRouteRoute
     }
+    '/_app/p/$projectId/work': {
+      id: '/_app/p/$projectId/work'
+      path: '/work'
+      fullPath: '/p/$projectId/work'
+      preLoaderRoute: typeof AppPProjectIdWorkRouteImport
+      parentRoute: typeof AppPProjectIdRouteRoute
+    }
     '/api/ci/v1/checks': {
       id: '/api/ci/v1/checks'
       path: '/api/ci/v1/checks'
@@ -1838,6 +1857,7 @@ interface AppPProjectIdRouteRouteChildren {
   AppPProjectIdSavedRoute: typeof AppPProjectIdSavedRoute
   AppPProjectIdSearchPerformanceRoute: typeof AppPProjectIdSearchPerformanceRoute
   AppPProjectIdSettingsRoute: typeof AppPProjectIdSettingsRouteWithChildren
+  AppPProjectIdWorkRoute: typeof AppPProjectIdWorkRoute
   AppPProjectIdIndexRoute: typeof AppPProjectIdIndexRoute
   AppPProjectIdExperimentsExperimentIdRoute: typeof AppPProjectIdExperimentsExperimentIdRoute
   AppPProjectIdOpportunitiesOpportunityIdRoute: typeof AppPProjectIdOpportunitiesOpportunityIdRoute
@@ -1864,6 +1884,7 @@ const AppPProjectIdRouteRouteChildren: AppPProjectIdRouteRouteChildren = {
   AppPProjectIdSavedRoute: AppPProjectIdSavedRoute,
   AppPProjectIdSearchPerformanceRoute: AppPProjectIdSearchPerformanceRoute,
   AppPProjectIdSettingsRoute: AppPProjectIdSettingsRouteWithChildren,
+  AppPProjectIdWorkRoute: AppPProjectIdWorkRoute,
   AppPProjectIdIndexRoute: AppPProjectIdIndexRoute,
   AppPProjectIdExperimentsExperimentIdRoute:
     AppPProjectIdExperimentsExperimentIdRoute,

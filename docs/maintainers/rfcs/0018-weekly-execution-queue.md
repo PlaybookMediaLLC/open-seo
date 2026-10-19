@@ -1,6 +1,6 @@
 # RFC-0018: Weekly execution queue and work report
 
-- **Status:** Draft
+- **Status:** In progress. Phase 1 built: the weekly cycle, the view, selection, empty-week reasons, the notification and history.
 - **Date:** 2026-10-15
 - **Area:** retention. Build this first.
 - **Depends on:** RFC-0001, RFC-0005 (execution and deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled tasks and notifications), RFC-0009 (audit log and limits). Standing approvals for content classes depend on RFC-0025 (previews). It reads work from RFC-0002, RFC-0019, RFC-0020, RFC-0023 and RFC-0024 as they ship.
@@ -70,6 +70,8 @@ The queue never invents work. When nothing is worth changing, it says so and exp
 | **Next**           | Selected candidates (5.4).                                                                                                                                                                                                         | Evidence in one sentence, the pages, estimated effort, and the approval needed.                         |
 | **Waiting on you** | Approvals pending for more than 3 days, and pull requests open for more than 7 days.                                                                                                                                               | Age, and one action button.                                                                             |
 
+**As built (phase 1, sections).** Completed holds experiments whose pull request merged and whose deployment basis is verified or human-attested, with the deployment inside the week, and split tests deployed in the week. Measuring holds deployed experiments whose primary window is not complete, and running or verifying split tests. Waiting on you holds the newest unexecuted proposal of each approved item when it is more than 3 days old and unapproved, and Relay pull requests open for more than 7 days. Regressions (RFC-0019), launches (RFC-0023), new pages (RFC-0021) and campaigns (RFC-0020) join when those RFCs ship. Closed GitHub issues from tickets are not in Completed yet, because the ticket table does not record the issue state; reading it needs one GitHub request per ticket, so it is a follow-up.
+
 ### 5.4 Selection for Next
 
 **Candidate pool:** open opportunities from all detectors, open regressions (RFC-0019), due campaign steps (RFC-0020), launch steps (RFC-0023), and revert recommendations from negative results.
@@ -95,6 +97,8 @@ The queue never invents work. When nothing is worth changing, it says so and exp
 - "2 changes are still measuring. Results arrive on November 12."
 - "The best new candidate scored 32. The bar is 40."
 - "Search Console data is 3 days old. Relay waits for complete data."
+
+**As built (phase 1, selection).** Open means discovered, reviewed or approved. "The page changed" means an experiment on the same URL join key deployed in the last 28 days or still measuring; "the same change class" is the same opportunity type, with a negative primary result in the last 180 days. A missing GitHub connection excludes items and gives the setup reason "Connect GitHub to prepare N changes." instead of a Next entry, because an entry must link to exactly one record. At the open pull request limit, the items stay in Next with the reason "Ready after current changes merge". Every filter outcome adds its own empty-week reason when Next holds fewer than 5 items, and the reasons carry codes for analytics.
 
 ### 5.5 Standing approvals
 
@@ -212,6 +216,8 @@ The entries are a weekly snapshot. Live status comes from the linked records.
 4. "History" lists earlier weeks with their snapshots.
 5. Settings → "Autonomy": the level per change class, the weekly limits, the quality bar, the open pull request limit, and the cycle day and hour.
 
+**As built (phase 1, cycle and view).** The cycle is the RFC-0008 growth job `weekly_cycle`, run by the Worker cron like the other jobs (the owner's 2026-10-18 decision). Saving the cycle settings writes `work_settings` and sets the job's next run to the chosen weekday and hour in the chosen time zone; the weekly interval then keeps the weekday. A week starts at local midnight of the cycle day. The job runs the Search Console analysis first when the latest run is older than 7 days, writes the week once (a second run, or a concurrent one stopped by the unique index, writes nothing), recomputes and closes the earlier open weeks' Completed lists, sends one in-app notification per week, and captures `work_cycle:generated` with the counts and reason codes. "This week" (`/p/$projectId/work`) runs the same builder live; the weekly snapshot feeds History. The database refuses an entry with two links through a CHECK constraint; the code always writes exactly one, and a deleted record clears its link while the entry keeps its title. Settings and history live in sheets on the page, since Project settings belongs to upstream.
+
 ### 5.10 Digest
 
 1. Always: an in-app notification per cycle.
@@ -248,15 +254,15 @@ No paid providers. One cycle task per project per week. Detection refreshes stay
 
 ### Phase 1
 
-- [ ] `work_cycles` and `work_cycle_entries` in D1 and Postgres, with the one-link check and the parity test.
-- [ ] `weekly-cycle` task, idempotent per project and week (test: two runs give one cycle).
-- [ ] Completed computed only from merged and verified records (test with merged-not-deployed cases).
-- [ ] Selection with each hard filter (one test each) and the order and limits.
-- [ ] Empty-week reasons for each filter outcome (tests).
-- [ ] "This week" route, project home card (one seam line), history and settings.
-- [ ] In-app notification per cycle.
-- [ ] Product analytics events for the success metrics.
-- [ ] `content/docs/this-week.mdx` explains the sections, the bar and empty weeks.
+- [x] `work_cycles` and `work_cycle_entries` in D1 and Postgres, with the one-link check and the parity test.
+- [x] `weekly-cycle` task, idempotent per project and week (test: two runs give one cycle).
+- [x] Completed computed only from merged and verified records (test with merged-not-deployed cases).
+- [x] Selection with each hard filter (one test each) and the order and limits.
+- [x] Empty-week reasons for each filter outcome (tests).
+- [x] "This week" route, project home card (one seam line), history and settings.
+- [x] In-app notification per cycle.
+- [x] Product analytics events for the success metrics.
+- [x] `content/docs/this-week.mdx` explains the sections, the bar and empty weeks.
 
 ### Phase 2
 
