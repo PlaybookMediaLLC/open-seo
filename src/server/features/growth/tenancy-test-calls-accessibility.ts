@@ -1,3 +1,4 @@
+import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
@@ -82,6 +83,17 @@ export function accessibilityCalls(
         AccessibilityCheckService.latest(ctx, { projectId, experimentId }),
       trend: () => AccessibilityCheckService.trend(ctx, projectId),
       statement: () => AccessibilityCheckService.statement(ctx, projectId),
+    },
+    // RFC-0017: the docs paths and the docs index.
+    DocsSettingsService: {
+      get: () => DocsSettingsService.get(ctx, projectId),
+      save: () =>
+        DocsSettingsService.save(ctx, {
+          projectId,
+          pathPrefix: "/docs/",
+          directory: "content/docs",
+        }),
+      indexNow: () => DocsSettingsService.indexNow(ctx, projectId),
     },
   };
 }

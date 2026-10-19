@@ -1,3 +1,4 @@
+import { DocsSettings } from "@/client/features/docs/DocsSettings";
 import { useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { IconBrandGithub as Github } from "@tabler/icons-react";
@@ -340,6 +341,7 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
           pull requests.
         </ConfirmDialog>
       )}
+      {active && <DocsSettings projectId={projectId} />}
     </CardShell>
   );
 }

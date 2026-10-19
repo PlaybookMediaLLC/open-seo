@@ -40,7 +40,9 @@ import { PerformanceResultService } from "@/server/features/performance/Performa
 import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { RevenueConnectionService } from "@/server/features/revenue/RevenueConnectionService";
 import { RevenueReportService } from "@/server/features/revenue/RevenueReportService";
+import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import * as revenueSchema from "@/db/revenue.schema";
+import * as docsSchema from "@/db/docs.schema";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -98,6 +100,7 @@ const growthTables = tablesOf(
   seoChecksSchema,
   splitTestsSchema,
   revenueSchema,
+  docsSchema,
 );
 
 let seed: Awaited<ReturnType<typeof deployed>>;
@@ -174,6 +177,7 @@ const services: Record<string, Record<string, unknown>> = {
   PerformanceVitalsService,
   RevenueConnectionService,
   RevenueReportService,
+  DocsSettingsService,
 };
 
 async function growthRowCount() {

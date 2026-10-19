@@ -27,6 +27,7 @@ import * as sqliteSeoChecks from "./seo-checks.schema";
 import * as sqliteSplitTests from "./split-tests.schema";
 import * as sqliteAccessibility from "./accessibility.schema";
 import * as sqliteRevenue from "./revenue.schema";
+import * as sqliteDocs from "./docs.schema";
 import * as pgApp from "./pg/app.schema";
 import * as pgProjectContext from "./pg/project-context.schema";
 import * as pgReports from "./pg/reports.schema";
@@ -55,6 +56,7 @@ import * as pgSeoChecks from "./pg/seo-checks.schema";
 import * as pgSplitTests from "./pg/split-tests.schema";
 import * as pgAccessibility from "./pg/accessibility.schema";
 import * as pgRevenue from "./pg/revenue.schema";
+import * as pgDocs from "./pg/docs.schema";
 
 // Canonical schema barrel. Repositories import their tables from here and the
 // provider-aware `db` from "@/db", so each repository is written ONCE for both
@@ -93,7 +95,8 @@ type AppSchema = typeof sqliteApp &
   typeof sqliteSeoChecks &
   typeof sqliteSplitTests &
   typeof sqliteAccessibility &
-  typeof sqliteRevenue;
+  typeof sqliteRevenue &
+  typeof sqliteDocs;
 
 const runtimeSchema =
   getDatabaseProvider() === "postgres"
@@ -126,6 +129,7 @@ const runtimeSchema =
         ...pgSplitTests,
         ...pgAccessibility,
         ...pgRevenue,
+        ...pgDocs,
       }
     : {
         ...sqliteApp,
@@ -156,6 +160,7 @@ const runtimeSchema =
         ...sqliteSplitTests,
         ...sqliteAccessibility,
         ...sqliteRevenue,
+        ...sqliteDocs,
       };
 
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- guarded by schema-parity.test.ts
@@ -282,4 +287,7 @@ export const {
   auditAccessibilityHeadings,
   revenueConnections,
   revenueEvents,
+  docsSettings,
+  docsPages,
+  docsPageHeadings,
 } = schema;

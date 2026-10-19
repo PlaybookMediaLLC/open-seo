@@ -21,6 +21,8 @@ export const GROWTH_JOB_KINDS = [
   "cwv_refresh",
   // RFC-0016 5.4: daily Stripe revenue sync.
   "revenue_sync",
+  // RFC-0017 5.2: daily docs index.
+  "docs_index",
 ] as const;
 
 export const growthSchedules = sqliteTable(

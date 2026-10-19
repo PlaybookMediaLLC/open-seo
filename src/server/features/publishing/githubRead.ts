@@ -65,6 +65,7 @@ export function createGithubReader(
         mode: z.string(),
         type: z.string(),
         sha: githubShaSchema,
+        size: z.number().int().optional(),
       }),
     ),
   });
@@ -238,17 +239,24 @@ export function createGithubReader(
         const entry = (await readTree(treeSha)).tree.find(
           (item) => item.path === part && item.type === "tree",
         );
-        if (!entry) return { paths: [], truncated: false };
+        if (!entry) return { paths: [], files: [], truncated: false };
         treeSha = entry.sha;
       }
       const tree = await request(
         `/git/trees/${treeSha}?recursive=1`,
         treeSchema,
       );
+      // RFC-0017 5.2: the blob sha and size let an index skip unchanged files.
+      const files = tree.tree
+        .filter((item) => item.type === "blob")
+        .map((item) => ({
+          path: path ? `${path}/${item.path}` : item.path,
+          sha: item.sha,
+          size: item.size ?? 0,
+        }));
       return {
-        paths: tree.tree
-          .filter((item) => item.type === "blob")
-          .map((item) => (path ? `${path}/${item.path}` : item.path)),
+        paths: files.map((file) => file.path),
+        files,
         truncated: tree.truncated,
       };
     },

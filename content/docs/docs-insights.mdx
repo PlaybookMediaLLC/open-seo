@@ -1,0 +1,28 @@
+---
+title: "Docs insights"
+description: "Find the questions your docs do not answer, from your docs search terms and Search Console data."
+---
+
+Relay reads the titles and headings of your docs from your repository. It compares them with what people search for, so you can see where the docs fall short.
+
+## 1. Set the docs paths
+
+You need a connected repository. See [GitHub publishing](/docs/github-publishing).
+
+1. Open **Project settings > Integrations**.
+2. In the **GitHub publishing** card, find **Docs** and select **Set docs paths**.
+3. Enter the docs path on your site, such as `/docs/`.
+4. Enter the docs directory in your repository, such as `content/docs`.
+5. Select **Save**, then **Index now**.
+
+## 2. The docs index
+
+Relay reads the Markdown and MDX files in the docs directory on the base branch, with read-only access.
+
+- Relay stores the file path, the page URL, the title, the headings with their anchors and the word count. It does not store the text.
+- The title comes from the `title` field in the front matter, or from the first `#` heading.
+- A file such as `content/docs/guides/index.mdx` becomes the page `/docs/guides`.
+- Relay reads up to 500 files and 10 MB, in path order.
+- A file larger than 32 KB keeps its path, but Relay does not read its title or headings.
+- The **Docs index** job in **Automation** runs once a day. It reads only the files that changed, up to 200 files a run.
+- When you change the docs paths, Relay deletes the index and builds it again.
