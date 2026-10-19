@@ -4,6 +4,7 @@ import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraf
 import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
 import { PerformanceLabService } from "@/server/features/performance/PerformanceLabService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
+import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import type { INTRUDER } from "./tenancy-test-calls";
 
 /** RFC-0013 and RFC-0014: the accessibility and performance services. */
@@ -45,6 +46,9 @@ export function accessibilityCalls(
         PerformanceLabService.state(ctx, { projectId, opportunityId: "x" }),
       run: () =>
         PerformanceLabService.run(ctx, { projectId, opportunityId: "x" }),
+    },
+    PerformanceVitalsService: {
+      report: () => PerformanceVitalsService.report(ctx, projectId),
     },
     // RFC-0014: the field result of a performance item.
     PerformanceResultService: {

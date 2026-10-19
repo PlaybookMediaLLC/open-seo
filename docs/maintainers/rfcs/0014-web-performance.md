@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code. Part E built: lab checks of three Lighthouse runs.
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code. Part E built: lab checks of three Lighthouse runs. Phase 3 built: the Web Vitals snippet and its GA4 report.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -110,6 +110,8 @@ All fixes use the RFC-0013 `jsx_attribute` change kind and its element matching 
 
 For sites without CrUX data, an optional snippet uses the `web-vitals` library to send LCP, INP and CLS to the site's own GA4 as events. Relay reads them as an event report. No data goes to Relay directly.
 
+**As built (phase 3).** The snippet is a Next.js client component that calls `useReportWebVitals` from `next/web-vitals` and sends `LCP`, `INP` and `CLS` events through the site's own `gtag`, with web-vitals' rating as the `metric_rating` parameter. The package needs nothing new. GA4 cannot return a percentile of an event value, so Relay reads event counts by page, event and the `customEvent:metric_rating` dimension over 28 days, and shows the share of loads rated good for the 20 busiest pages. A metric passes at 75% or more, which is the same test as a good 75th percentile. The owner registers the custom dimension in GA4; until then, or until events arrive, GA4 refuses the report and the card shows the setup steps. The report shows on the Opportunities page under the Performance filter. Detection does not use these events yet: it still reads CrUX only.
+
 ## 6. Security
 
 1. The CrUX key is a server secret.
@@ -147,7 +149,7 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 
 ### Phase 3
 
-- [ ] Monitoring snippet and the GA4 event report.
+- [x] Monitoring snippet and the GA4 event report.
 
 ## 10. Real-site acceptance test
 

@@ -87,6 +87,16 @@ The labels are:
 
 Other changes, seasons and traffic shifts also move field data. Relay shows the result without a claim about what caused it.
 
+## Web Vitals snippet for pages without field data
+
+Pages with few Chrome users have no Chrome UX Report data. For them, you can add an optional snippet to your Next.js site. It sends each page load's LCP, INP and CLS, with its rating, to **your own** Google Analytics. Nothing goes to Relay.
+
+1. Filter the **Opportunities** page by **Performance issue**, and select **Set up the snippet**.
+2. Add the component to your app, and render it once in the root layout.
+3. In Google Analytics, create an event-scoped custom dimension for the event parameter `metric_rating`.
+
+After a day, the same card shows your busiest pages with the share of loads rated good for each metric, over 28 days. A metric passes at 75% or more, which is the same test as a good 75th percentile. Relay uses this test because Google Analytics cannot report a percentile of an event value.
+
 ## Self-hosting
 
 Set `CRUX_API_KEY` to a Google API key with the Chrome UX Report API turned on. Without the key, the job skips and says that field data access is not configured.

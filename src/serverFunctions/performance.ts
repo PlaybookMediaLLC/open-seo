@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
 import { PerformanceLabService } from "@/server/features/performance/PerformanceLabService";
+import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
+import { accessibilityProjectInputSchema } from "@/types/schemas/accessibility";
 import { performanceFixInputSchema } from "@/types/schemas/performance";
 import { opportunityDraftInputSchema } from "@/types/schemas/proposalDrafts";
 
@@ -57,4 +59,12 @@ export const runPerformanceLab = createServerFn({ method: "POST" })
       ...data,
       projectId: context.projectId,
     }),
+  );
+
+// RFC-0014 5.7: the snippet's events from the site's own GA4.
+export const getWebVitalsReport = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(accessibilityProjectInputSchema)
+  .handler(({ context }) =>
+    PerformanceVitalsService.report(context, context.projectId),
   );
