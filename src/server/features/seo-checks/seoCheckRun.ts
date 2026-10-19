@@ -87,15 +87,20 @@ export async function checkBatch(
   });
   const findings: Finding[] = [];
   let linksChecked = 0;
+  const seo = plan.packs.includes("seo");
+  // RFC-0015 5.3: with the links pack, a broken new link blocks.
+  const links = plan.packs.includes("links");
   for (const { url, base, preview } of pages) {
-    findings.push(
-      ...comparePage(base, preview, {
-        path: url.path,
-        baseOrigin: plan.baseOrigin,
-        previewOrigin: plan.previewOrigin,
-        checkRobotsHeader: plan.checkRobotsHeader,
-      }),
-    );
+    if (seo)
+      findings.push(
+        ...comparePage(base, preview, {
+          path: url.path,
+          baseOrigin: plan.baseOrigin,
+          previewOrigin: plan.previewOrigin,
+          checkRobotsHeader: plan.checkRobotsHeader,
+        }),
+      );
+    if (!seo && !links) continue;
     const known = new Set(base.page?.internalLinks ?? []);
     const added = (preview.page?.internalLinks ?? []).filter(
       (link) => !known.has(link),
@@ -111,7 +116,8 @@ export async function checkBatch(
         findings.push({
           path: url.path,
           rule: "broken-internal-link",
-          severity: "warning",
+          pack: links ? "links" : "seo",
+          severity: links ? "blocking" : "warning",
           before: null,
           after: `${link} (${status})`,
           message: "A link that is new on the preview is broken.",
@@ -145,15 +151,18 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
   };
   const findings = weigh(
     [
-      ...compareSite({
-        paths: plan.urls.map((url) => url.path),
-        baseAllows: (path) =>
-          plan.urls.find((url) => url.path === path)?.baseAllowed ?? true,
-        previewAllows: (path) =>
-          plan.urls.find((url) => url.path === path)?.previewAllowed ?? true,
-        baseSitemapCount: plan.baseSitemapCount,
-        previewSitemapCount: plan.previewSitemapCount,
-      }),
+      ...(plan.packs.includes("seo")
+        ? compareSite({
+            paths: plan.urls.map((url) => url.path),
+            baseAllows: (path) =>
+              plan.urls.find((url) => url.path === path)?.baseAllowed ?? true,
+            previewAllows: (path) =>
+              plan.urls.find((url) => url.path === path)?.previewAllowed ??
+              true,
+            baseSitemapCount: plan.baseSitemapCount,
+            previewSitemapCount: plan.previewSitemapCount,
+          })
+        : []),
       ...batches.flatMap((batch) => batch.findings),
     ],
     traffic,
@@ -193,6 +202,7 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
               projectId: plan.projectId,
               path: finding.path,
               rule: finding.rule,
+              pack: finding.pack ?? "seo",
               severity: finding.severity,
               beforeValue: finding.before,
               afterValue: finding.after,

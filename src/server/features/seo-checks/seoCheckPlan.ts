@@ -1,3 +1,8 @@
+import {
+  DEFAULT_BUDGETS,
+  GATE_PACKS,
+  parseGateConfig,
+} from "@/shared/releaseGate";
 import { eq } from "drizzle-orm";
 import robotsParser from "robots-parser";
 import { db } from "@/db";
@@ -144,6 +149,10 @@ export async function planCheck(runId: string) {
     })
     .from(ciCheckIgnores)
     .where(eq(ciCheckIgnores.projectId, run.projectId));
+  // RFC-0015 5.4: the file was validated when the run was queued.
+  const gate = run.gateConfig ? parseGateConfig(run.gateConfig) : null;
+  const config = gate && "config" in gate ? gate.config : null;
+  const enabled = run.packsEnabled.split(" ");
   const nested = baseSite.urls.flatMap((url) => {
     const path = new URL(url).pathname;
     return path === "/" ? [] : [path];
@@ -159,7 +168,16 @@ export async function planCheck(runId: string) {
     raiseOnHighTraffic: settings?.raiseOnHighTraffic ?? true,
     checkRobotsHeader: settings?.checkPreviewRobotsHeader ?? false,
     renderedMode: settings?.renderedMode ?? false,
-    ignores,
+    packs: GATE_PACKS.filter((pack) => enabled.includes(pack)),
+    budgets: { ...DEFAULT_BUDGETS, ...config?.budgets },
+    fileIgnores: config?.ignore ?? [],
+    ignores: [
+      ...ignores,
+      ...(config?.ignore ?? []).map((ignore) => ({
+        rule: ignore.rule,
+        pathRegex: ignore.path,
+      })),
+    ],
     baseSitemapCount: baseSite.urls.length,
     previewSitemapCount: previewSite.urls.length,
     urls: urls.map((url) => {

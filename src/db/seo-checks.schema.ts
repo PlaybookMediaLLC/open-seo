@@ -6,6 +6,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 import { projects } from "./app.schema";
+import { GATE_PACKS } from "@/shared/releaseGate";
 
 // RFC-0010: SEO checks on pull requests. A project-scoped CI token starts a
 // run that compares a preview deployment with production.
@@ -64,6 +65,11 @@ export const ciCheckRuns = sqliteTable(
     overrideUsed: integer("override_used", { mode: "boolean" })
       .notNull()
       .default(false),
+    // RFC-0015 5.4 and 5.6: relay-gate.json as sent, its hash, and the
+    // space-separated packs that the run uses.
+    gateConfig: text("gate_config"),
+    configHash: text("config_hash"),
+    packsEnabled: text("packs_enabled").notNull().default("seo"),
     createdAt: text("created_at").notNull(),
     startedAt: text("started_at"),
     finishedAt: text("finished_at"),
@@ -109,6 +115,8 @@ export const ciCheckFindings = sqliteTable(
     projectId: text("project_id").notNull(),
     path: text("path").notNull(),
     rule: text("rule").notNull(),
+    // RFC-0015 5.6: the rule pack of the finding.
+    pack: text("pack", { enum: GATE_PACKS }).notNull().default("seo"),
     severity: text("severity", { enum: ["blocking", "warning"] }).notNull(),
     beforeValue: text("before_value"),
     afterValue: text("after_value"),
@@ -178,6 +186,16 @@ export const ciProjectSettings = sqliteTable("ci_project_settings", {
     .default(false),
   // RFC-0010 5.13: render client-side pages in a browser (uses credits).
   renderedMode: integer("rendered_mode", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  // RFC-0015 5.4: the project's pack defaults. relay-gate.json wins.
+  accessibilityPack: integer("accessibility_pack", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  linksPack: integer("links_pack", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  securityPack: integer("security_pack", { mode: "boolean" })
     .notNull()
     .default(false),
   updatedAt: text("updated_at").notNull(),

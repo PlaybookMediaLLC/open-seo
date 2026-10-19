@@ -1,3 +1,4 @@
+import type { GatePack } from "@/shared/releaseGate";
 import { sort } from "remeda";
 
 // RFC-0010 5.5 to 5.8: compare a preview page with production. Pure, so
@@ -30,6 +31,8 @@ export type Snapshot = {
 export type Finding = {
   path: string;
   rule: string;
+  /** RFC-0015: the rule pack; SEO when absent. */
+  pack?: GatePack;
   severity: "blocking" | "warning";
   before: string | null;
   after: string | null;
@@ -276,7 +279,8 @@ export function weigh(
   traffic: (path: string) => PageTraffic | undefined,
   options: {
     raiseOnHighTraffic: boolean;
-    ignores: Array<{ rule: string; pathPattern: string }>;
+    /** Project globs with "*", or RFC-0015 relay-gate.json expressions. */
+    ignores: Array<{ rule: string; pathPattern?: string; pathRegex?: string }>;
   },
 ): Finding[] {
   const ignored = (finding: Finding) =>
@@ -284,7 +288,8 @@ export function weigh(
       (ignore) =>
         ignore.rule === finding.rule &&
         new RegExp(
-          `^${ignore.pathPattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*")}$`,
+          ignore.pathRegex ??
+            `^${(ignore.pathPattern ?? "").replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*")}$`,
         ).test(finding.path),
     );
   return findings

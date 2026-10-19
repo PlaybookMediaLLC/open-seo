@@ -91,6 +91,9 @@ async function get(context: OpportunityContext, projectId: string) {
     raiseOnHighTraffic: settings?.raiseOnHighTraffic ?? true,
     checkPreviewRobotsHeader: settings?.checkPreviewRobotsHeader ?? false,
     renderedMode: settings?.renderedMode ?? false,
+    accessibilityPack: settings?.accessibilityPack ?? false,
+    linksPack: settings?.linksPack ?? false,
+    securityPack: settings?.securityPack ?? false,
     runs: runs.map(({ changedFiles: _files, tokenId: _token, ...row }) => row),
   };
 }
@@ -257,6 +260,9 @@ async function saveSettings(
     raiseOnHighTraffic: boolean;
     checkPreviewRobotsHeader: boolean;
     renderedMode: boolean;
+    accessibilityPack?: boolean;
+    linksPack?: boolean;
+    securityPack?: boolean;
   },
 ) {
   await manage(context, input.projectId);
@@ -264,6 +270,9 @@ async function saveSettings(
     raiseOnHighTraffic: input.raiseOnHighTraffic,
     checkPreviewRobotsHeader: input.checkPreviewRobotsHeader,
     renderedMode: input.renderedMode,
+    accessibilityPack: input.accessibilityPack ?? false,
+    linksPack: input.linksPack ?? false,
+    securityPack: input.securityPack ?? false,
     updatedAt: new Date().toISOString(),
   };
   await db

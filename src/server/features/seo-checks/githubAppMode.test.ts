@@ -61,13 +61,16 @@ afterAll(async () => {
 beforeEach(() => {
   mocks.secret.mockResolvedValue(SECRET);
   mocks.fetch.mockImplementation(async (url: string) =>
-    Response.json(
-      url.endsWith(`/commits/${SHA}/pulls`)
-        ? [{ number: 7, state: "open", labels: [] }]
-        : url.includes("/pulls/7/files")
-          ? [{ filename: FILE }]
-          : {},
-    ),
+    // The repository has no relay-gate.json.
+    url.includes("/contents/relay-gate.json")
+      ? new Response("{}", { status: 404 })
+      : Response.json(
+          url.endsWith(`/commits/${SHA}/pulls`)
+            ? [{ number: 7, state: "open", labels: [] }]
+            : url.includes("/pulls/7/files")
+              ? [{ filename: FILE }]
+              : {},
+        ),
   );
 });
 
@@ -209,6 +212,8 @@ it("reports the run as a Check Run with annotations on the mapped files", async 
     head_sha: SHA,
     conclusion: "failure",
     output: {
+      // RFC-0015: findings grouped by rule pack.
+      summary: "### SEO\n\n- **blocking** /pricing: newly-noindex",
       annotations: [
         {
           path: FILE,

@@ -197,3 +197,29 @@ it("deletes runs older than the retention cutoff", async () => {
       .where(eq(ciCheckRuns.projectId, projectId)),
   ).toEqual([]);
 });
+
+// RFC-0015 5.4: relay-gate.json from the repository switches packs, and a
+// mistake in it fails the request with the exact reason.
+it("takes the packs from relay-gate.json, and refuses an invalid file", async () => {
+  const { context } = await project();
+  const invalid = await createCheck(context, {
+    ...body(sha("f")),
+    gateConfig: '{"packs":{"links":"on"}}',
+  });
+  expect(invalid).toMatchObject({
+    status: 400,
+    body: { error: "invalid_gate_config" },
+  });
+  expect(String(invalid.body.message)).toContain("packs.links");
+  const queued = await createCheck(context, {
+    ...body(sha("f")),
+    gateConfig:
+      '{"packs":{"links":true},"ignore":[{"rule":"title-changed","path":"^/legacy/"}]}',
+  });
+  const run = await getCheck(context, String(queued.body.id));
+  expect(run.body).toMatchObject({
+    packs: ["seo", "links"],
+    fileIgnores: [{ rule: "title-changed", path: "^/legacy/" }],
+  });
+  expect(String(run.body.configHash)).toMatch(/^[0-9a-f]{64}$/);
+});

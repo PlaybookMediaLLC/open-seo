@@ -1,0 +1,36 @@
+import { expect, it } from "vitest";
+import { enabledPacks, parseGateConfig } from "./releaseGate";
+
+// RFC-0015 5.4: the repository file wins, and a mistake is shown exactly.
+const defaults = {
+  seo: true,
+  accessibility: false,
+  links: false,
+  security: false,
+  performance: false,
+};
+
+it("lets the repository file switch packs over the project defaults", () => {
+  const parsed = parseGateConfig(
+    '{"packs":{"seo":false,"accessibility":true,"securityHeaders":true}}',
+  );
+  expect("config" in parsed && enabledPacks(defaults, parsed.config)).toEqual([
+    "accessibility",
+    "security",
+  ]);
+  expect(enabledPacks(defaults, null)).toEqual(["seo"]);
+});
+
+it("reports the exact reason an invalid file fails", () => {
+  const reason = (text: string) => {
+    const parsed = parseGateConfig(text);
+    return "error" in parsed ? parsed.error : null;
+  };
+  expect(
+    reason('{"packs":{"seo":"yes"},"ignore":[{"rule":"x","path":"("}]}'),
+  ).toMatch(
+    /^relay-gate\.json is invalid: packs\.seo: .+; ignore\.0\.path: Use a valid regular expression\.$/,
+  );
+  expect(reason("{")).toBe("relay-gate.json is not valid JSON.");
+  expect(reason('{"extra":1}')).toContain("relay-gate.json is invalid");
+});
