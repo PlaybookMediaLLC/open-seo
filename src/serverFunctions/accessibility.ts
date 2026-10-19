@@ -5,7 +5,7 @@ import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraf
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   accessibilityFixInputSchema,
-  accessibilityTrendInputSchema,
+  accessibilityProjectInputSchema,
   draftAltTextInputSchema,
 } from "@/types/schemas/accessibility";
 import { experimentInputSchema } from "@/types/schemas/experiments";
@@ -65,7 +65,15 @@ export const getAccessibilityFixCheck = createServerFn({ method: "POST" })
 
 export const getAccessibilityTrend = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
-  .validator(accessibilityTrendInputSchema)
+  .validator(accessibilityProjectInputSchema)
   .handler(({ context }) =>
     AccessibilityCheckService.trend(context, context.projectId),
+  );
+
+// RFC-0013 5.7: the stored facts behind an accessibility statement draft.
+export const getAccessibilityStatementFacts = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(accessibilityProjectInputSchema)
+  .handler(({ context }) =>
+    AccessibilityCheckService.statement(context, context.projectId),
   );
