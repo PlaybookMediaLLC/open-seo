@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources.
+- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources. Part E built: measurement.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -103,6 +103,8 @@ For each shipped docs change, compare 4 weeks before and 4 weeks after:
 
 Directional labels need ≥ 50 searches or ≥ 20 tickets in each window, and a change of ≥ 25%. Otherwise "inconclusive". Show the caveat that product changes and launches also move these numbers.
 
+**As built (part E).** A shipped docs change is an RFC-0006 experiment, so its page already measures Search Console clicks and position for the target URL. The "Docs search result" card adds the GA4 part: on request, it counts `view_search_results` events whose term has the same words as the item's search term, in the 28 days before the deployment day and the 28 days from it. The result is read when asked, not stored, and is ready two days after the second window ends. An item without a search term (a ranking or stale page item) has no search result, only the Search Console measurement. The thresholds apply to searches; tickets wait for phase 2.
+
 ## 6. Privacy and security
 
 1. Ticket text is personal data. Process it once, keep only redacted excerpts and counts, and delete raw text.
@@ -128,8 +130,8 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 - [x] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
 - [x] Test: JSX blocks and front matter stay byte-identical.
 - [x] Drafts with the allowed sources and placeholders. Approval is blocked while placeholders remain (test).
-- [ ] Measurement with the thresholds.
-- [ ] `content/docs/docs-insights.mdx`.
+- [x] Measurement with the thresholds.
+- [x] `content/docs/docs-insights.mdx`.
 
 ### Phase 2
 

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
 import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
+import { DocsResultService } from "@/server/features/docs/DocsResultService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
@@ -10,6 +11,7 @@ import {
   docsProjectSchema,
   docsSettingsInputSchema,
 } from "@/types/schemas/docs";
+import { experimentInputSchema } from "@/types/schemas/experiments";
 
 // RFC-0017 5.2: the docs paths and the docs index.
 export const getDocsSettings = createServerFn({ method: "POST" })
@@ -68,6 +70,17 @@ export const draftDocsText = createServerFn({ method: "POST" })
   .validator(docsDraftInputSchema)
   .handler(({ context, data }) =>
     DocsDraftService.draft(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0017 5.7: searches for the topic before and after a docs change.
+export const measureDocsResult = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(experimentInputSchema)
+  .handler(({ context, data }) =>
+    DocsResultService.measure(context, {
       ...data,
       projectId: context.projectId,
     }),
