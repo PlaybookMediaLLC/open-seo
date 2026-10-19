@@ -23,6 +23,8 @@ export const GROWTH_JOB_KINDS = [
   "revenue_sync",
   // RFC-0017 5.2: daily docs index.
   "docs_index",
+  // RFC-0017 5.4: daily support topics from GitHub Issues.
+  "support_topics",
 ] as const;
 
 export const growthSchedules = sqliteTable(

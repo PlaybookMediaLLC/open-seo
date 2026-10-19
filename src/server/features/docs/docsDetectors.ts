@@ -17,6 +17,7 @@ const LOW_CTR_SHARE = 0.5;
 const CURVE_MIN_IMPRESSIONS = 100;
 const CURVE_MIN_PAGES = 3;
 const MIN_VIEWS = 500;
+const MIN_TICKETS = 10;
 const STALE_DAYS = 365;
 /** Commit dates are read for this many of the most-viewed docs pages. */
 export const COMMIT_READS = 50;
@@ -40,7 +41,8 @@ const stem = (word: string) =>
         .replace(/(?<=s|x|z|ch|sh)es$|(?<!s)s$/, "")
         .replace(/(?:ing|ed)$/, "")
         .replace(/e$/, "");
-const tokensOf = (text: string) =>
+/** Words without stop words, stemmed, for matching titles and terms. */
+export const docsTokens = (text: string) =>
   new Set(
     text
       .toLowerCase()
@@ -52,7 +54,7 @@ const tokensOf = (text: string) =>
   );
 /** Terms with the same words share this key, such as "API keys" and "api key". */
 export const termKey = (text: string) =>
-  sort([...tokensOf(text)], (a, b) => a.localeCompare(b)).join(" ");
+  sort([...docsTokens(text)], (a, b) => a.localeCompare(b)).join(" ");
 const pathKey = (path: string) => path.replace(/\/+$/, "") || "/";
 const percent = (value: number) => `${Math.round(value * 1000) / 10}%`;
 function median(values: number[]) {
@@ -64,6 +66,7 @@ function median(values: number[]) {
 }
 
 export type DocsPage = {
+  id: string;
   filePath: string;
   urlPath: string;
   title: string | null;
@@ -90,7 +93,10 @@ export function viewedDocsPages(
 }
 
 function candidate(
-  type: Extract<OpportunityCandidate["type"], `docs_${string}`>,
+  type: Extract<
+    OpportunityCandidate["type"],
+    `docs_${string}` | "support_topic"
+  >,
   url: string,
   query: string | null,
   facts: {
@@ -144,6 +150,14 @@ export function detectDocsProblems(input: {
   gscPages: GscSearchAnalyticsRow[];
   /** The most-viewed docs pages, with the date of their last commit. */
   viewed: Array<{ page: DocsPage; views: number; lastChanged: string | null }>;
+  /** RFC-0017 5.4: support topics with redacted example subjects. */
+  topics: Array<{
+    label: string;
+    ticketCount28d: number;
+    ticketCountPrev28d: number;
+    docsPageId: string | null;
+    excerpts: string[];
+  }>;
   now: Date;
 }): OpportunityCandidate[] {
   const found: OpportunityCandidate[] = [];
@@ -154,10 +168,10 @@ export function detectDocsProblems(input: {
   // docs_search_gap: the same words count once, under the most-searched term.
   const texts = input.pages
     .flatMap((page) => [page.title ?? "", ...page.headings])
-    .map(tokensOf);
+    .map(docsTokens);
   const terms = new Map<string, { term: string; top: number; total: number }>();
   for (const row of input.searches ?? []) {
-    const tokens = tokensOf(row.term);
+    const tokens = docsTokens(row.term);
     if (
       !tokens.size ||
       texts.some((text) => [...tokens].every((token) => text.has(token)))
@@ -262,6 +276,33 @@ export function detectDocsProblems(input: {
         visibilityRule: `min(1, ${days} days since the last change / ${2 * STALE_DAYS})`,
         effortHours: 2,
       }),
+    );
+  }
+  // support_topic: 10 or more tickets in 28 days.
+  for (const topic of input.topics) {
+    if (topic.ticketCount28d < MIN_TICKETS) continue;
+    const page = input.pages.find((item) => item.id === topic.docsPageId);
+    found.push(
+      candidate(
+        "support_topic",
+        page ? docsUrl(page) : input.docsRoot,
+        topic.label,
+        {
+          title: page
+            ? `Improve the docs page for the support topic "${topic.label}"`
+            : `Answer the support topic "${topic.label}" in the docs`,
+          explanation: `${topic.ticketCount28d} GitHub issues in the last 28 days are about "${topic.label}" (${topic.ticketCountPrev28d} in the 28 days before). ${page ? `The best matching docs page is ${page.filePath}.` : "No docs title or heading matches the topic."} Examples: ${topic.excerpts.map((text) => `"${text}"`).join(", ")}.`,
+          recommendedAction:
+            "Read the tickets on this topic. Answer the question in the docs from verified sources only, then link the answer in your replies.",
+          demand: topic.ticketCount28d,
+          demandRule: `min(1, log10(1 + ${topic.ticketCount28d} tickets) / 4)`,
+          visibility: page ? 0.5 : 1,
+          visibilityRule: page
+            ? "0.5, because a docs page covers part of the topic"
+            : "1, because no docs page matches",
+          effortHours: 2,
+        },
+      ),
     );
   }
   return sort(found, (a, b) => b.priority - a.priority).slice(0, 50);

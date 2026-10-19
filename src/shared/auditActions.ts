@@ -36,4 +36,7 @@ export const AUDIT_ACTIONS = [
   // RFC-0016 6.5: the read-only Stripe connection.
   "integration.stripe_connected",
   "integration.stripe_disconnected",
+  // RFC-0017 6.2: the read-only support source.
+  "integration.support_connected",
+  "integration.support_disconnected",
 ] as const;

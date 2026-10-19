@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources. Part E built: measurement.
+- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources. Part E built: measurement. Phase 2 built for GitHub Issues, behind a server switch.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -73,6 +73,8 @@ Developer-tool companies lose sign-ups and pay for support when their docs miss 
 6. Store only `support_topics` (`id`, `project_id`, `label`, `ticket_count_28d`, `ticket_count_prev_28d`, `docs_page_id` nullable, `updated_at`) and up to 3 redacted excerpts per topic, at most 200 characters each. Delete raw text after processing.
 7. Detector `support_topic`: a topic with ≥ 10 tickets in 28 days.
 
+**As built (phase 2, GitHub Issues).** The owner chose on 2026-10-19 to build the GitHub Issues connector now and to keep Intercom and Zendesk as follow-ups. The whole phase is behind the server switch `RELAY_SUPPORT_TOPICS=on`, off by default, so no real ticket is read before the privacy policy covers it (section 6.3). A project turns GitHub Issues on from the Docs section; connecting and disconnecting write audit events, and disconnecting deletes every topic and excerpt. The daily `support_topics` job, or **Read tickets now**, reads up to 500 issues created in the last 90 days with a read-only Issues token, skipping pull requests. Redaction runs first: links with token parameters, email addresses, digit runs of 9 or more as phone numbers, and the issue author's login (the only requester field GitHub gives). Embeddings are OpenRouter `openai/text-embedding-3-small` on the redacted title and first 1,000 characters of the first message, held and settled through RFC-0009. Grouping is one greedy pass in time order against each topic's mean vector at a cosine threshold of 0.6. A label is the three most common title words, counted by stem and shown in their most common written form; the docs page is the one whose title and headings share the most label stems, at least 2. Only the label, both 28-day counts, the page and up to 3 redacted titles of 200 characters are stored, and the previous topics are replaced; ticket text exists only in memory. The detector `support_topic` joins the docs run.
+
 ### 5.5 Docs edits
 
 Add the change kind `markdown`.
@@ -135,10 +137,10 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 
 ### Phase 2
 
-- [ ] Intercom, Zendesk and GitHub Issues connectors, read-only.
-- [ ] Redaction tests with seeded emails, phone numbers and names.
-- [ ] Topic grouping and docs mapping.
-- [ ] Raw text deletion after processing (test).
+- [ ] Intercom, Zendesk and GitHub Issues connectors, read-only. GitHub Issues is built; Intercom and Zendesk are follow-ups.
+- [x] Redaction tests with seeded emails, phone numbers and names.
+- [x] Topic grouping and docs mapping.
+- [x] Raw text deletion after processing (test).
 - [ ] Privacy policy and processing agreement updated.
 
 ### Phase 3

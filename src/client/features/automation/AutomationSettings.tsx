@@ -51,6 +51,10 @@ const JOBS = {
     label: "Docs index",
     text: "Reads the titles and headings of changed docs files in the connected repository. Free.",
   },
+  support_topics: {
+    label: "Support topics",
+    text: "Groups the last 90 days of GitHub issues into topics, without storing their text. Uses a few credits.",
+  },
 } as const;
 type Kind = keyof typeof JOBS;
 type Schedule = {

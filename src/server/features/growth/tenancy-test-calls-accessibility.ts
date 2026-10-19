@@ -2,6 +2,7 @@ import { DocsDetectionService } from "@/server/features/docs/DocsDetectionServic
 import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsResultService } from "@/server/features/docs/DocsResultService";
+import { SupportSourceService } from "@/server/features/support/SupportSourceService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
@@ -112,6 +113,12 @@ export function accessibilityCalls(
     },
     DocsDetectionService: {
       detect: () => DocsDetectionService.detect(ctx, projectId),
+    },
+    SupportSourceService: {
+      status: () => SupportSourceService.status(ctx, projectId),
+      connect: () => SupportSourceService.connect(ctx, projectId),
+      disconnect: () => SupportSourceService.disconnect(ctx, projectId),
+      processNow: () => SupportSourceService.processNow(ctx, projectId),
     },
     DocsResultService: {
       measure: () =>

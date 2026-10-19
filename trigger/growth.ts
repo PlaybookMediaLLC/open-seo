@@ -72,6 +72,7 @@ export const auditFollowup = growthTask("audit-followup", 180, 3);
 export const cwvRefresh = growthTask("cwv-refresh", 180, 3);
 export const revenueSync = growthTask("revenue-sync", 300, 3);
 export const docsIndex = growthTask("docs-index", 300, 3);
+export const supportTopics = growthTask("support-topics", 300, 3);
 
 const TASK_IDS: Record<string, string> = {
   opportunity_refresh: "opportunity-refresh",
@@ -83,6 +84,7 @@ const TASK_IDS: Record<string, string> = {
   cwv_refresh: "cwv-refresh",
   revenue_sync: "revenue-sync",
   docs_index: "docs-index",
+  support_topics: "support-topics",
 };
 
 /** Every 15 minutes: ask what is due and start one child run per item. */

@@ -27,3 +27,4 @@ export * from "./experiments.schema";
 export * from "./accessibility.schema";
 export * from "./revenue.schema";
 export * from "./docs.schema";
+export * from "./support.schema";

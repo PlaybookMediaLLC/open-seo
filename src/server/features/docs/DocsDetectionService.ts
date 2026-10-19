@@ -1,6 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { docsPageHeadings, docsPages, docsSettings } from "@/db/schema";
+import {
+  docsPageHeadings,
+  docsPages,
+  docsSettings,
+  supportTopicExcerpts,
+  supportTopics,
+} from "@/db/schema";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import {
@@ -52,11 +58,35 @@ async function indexedPages(projectId: string): Promise<DocsPage[]> {
       .from(docsPageHeadings)
       .where(eq(docsPageHeadings.projectId, projectId)),
   ]);
-  return pages.map(({ id, ...page }) => ({
+  return pages.map((page) => ({
     ...page,
     headings: headings
-      .filter((heading) => heading.pageId === id)
+      .filter((heading) => heading.pageId === page.id)
       .map((heading) => heading.text),
+  }));
+}
+
+/** RFC-0017 5.4: the stored support topics with their redacted excerpts. */
+async function storedTopics(projectId: string) {
+  const [topics, excerpts] = await Promise.all([
+    db
+      .select()
+      .from(supportTopics)
+      .where(eq(supportTopics.projectId, projectId)),
+    db
+      .select({
+        topicId: supportTopicExcerpts.topicId,
+        text: supportTopicExcerpts.text,
+      })
+      .from(supportTopicExcerpts)
+      .where(eq(supportTopicExcerpts.projectId, projectId))
+      .orderBy(supportTopicExcerpts.position),
+  ]);
+  return topics.map((topic) => ({
+    ...topic,
+    excerpts: excerpts
+      .filter((excerpt) => excerpt.topicId === topic.id)
+      .map((excerpt) => excerpt.text),
   }));
 }
 
@@ -193,6 +223,7 @@ async function detect(
       searches: ga4?.searches ?? null,
       gscPages: gsc.rows,
       viewed: dated,
+      topics: await storedTopics(projectId),
       now: new Date(),
     });
     run.currentPageRows = gsc.rows.length;

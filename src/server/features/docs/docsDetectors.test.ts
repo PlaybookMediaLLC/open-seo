@@ -8,6 +8,7 @@ import {
 // RFC-0017 5.3: each rule at its threshold and one step below it.
 const NOW = new Date("2026-10-19T00:00:00Z");
 const page: DocsPage = {
+  id: "p1",
   filePath: "content/docs/keys.mdx",
   urlPath: "/docs/keys",
   title: "API keys",
@@ -20,6 +21,7 @@ const detect = (input: Partial<Parameters<typeof detectDocsProblems>[0]>) =>
     searches: null,
     gscPages: [],
     viewed: [],
+    topics: [],
     now: NOW,
     ...input,
   }).map((item) => [item.type, item.query ?? item.url]);
@@ -111,5 +113,23 @@ describe("docs_stale_page", () => {
         viewed: [{ ...viewed[0], lastChanged: "2025-10-20T00:00:00Z" }],
       }),
     ).toEqual([]);
+  });
+});
+
+describe("support_topic", () => {
+  it("needs 10 tickets in 28 days, and links the matching docs page", () => {
+    const topic = {
+      label: "key rotat",
+      ticketCountPrev28d: 2,
+      excerpts: ["Rotate a key fails"],
+    };
+    expect(
+      detect({
+        topics: [
+          { ...topic, ticketCount28d: 10, docsPageId: "p1" },
+          { ...topic, label: "sso", ticketCount28d: 9, docsPageId: null },
+        ],
+      }),
+    ).toEqual([["support_topic", "key rotat"]]);
   });
 });

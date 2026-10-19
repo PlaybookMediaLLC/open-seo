@@ -59,6 +59,7 @@ export const typeLabels: Record<OpportunityType, string> = {
   docs_search_gap: "Docs search gap",
   docs_page_underperforming: "Docs page ranks low",
   docs_stale_page: "Stale docs page",
+  support_topic: "Support topic",
 };
 export const typeHelp: Record<OpportunityType, string> = {
   striking_distance:
@@ -93,6 +94,8 @@ export const typeHelp: Record<OpportunityType, string> = {
     "A docs page with 500 or more impressions ranks below position 10, or gets half or less of the docs median click-through rate at its position.",
   docs_stale_page:
     "A docs page with 500 or more views in 28 days has not changed for 12 months or more.",
+  support_topic:
+    "10 or more GitHub issues in 28 days are about the same topic.",
 };
 export const statusLabels: Record<OpportunityStatus, string> = {
   discovered: "Discovered",

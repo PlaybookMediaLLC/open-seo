@@ -23,6 +23,8 @@ export const OPPORTUNITY_TYPES = [
   "docs_search_gap",
   "docs_page_underperforming",
   "docs_stale_page",
+  // RFC-0017 5.4: a frequent support topic, from GitHub Issues.
+  "support_topic",
 ] as const;
 export const OPPORTUNITY_DIAGNOSES = [
   "ranking_drop",
