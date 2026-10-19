@@ -37,6 +37,7 @@ import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraf
 import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
 import { PerformanceLabService } from "@/server/features/performance/PerformanceLabService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
+import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -166,6 +167,7 @@ const services: Record<string, Record<string, unknown>> = {
   PerformanceResultService,
   PerformanceFixService,
   PerformanceLabService,
+  PerformanceVitalsService,
 };
 
 async function growthRowCount() {

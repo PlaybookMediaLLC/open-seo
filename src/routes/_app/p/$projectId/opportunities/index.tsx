@@ -15,6 +15,7 @@ import { OpportunitiesList } from "@/client/features/opportunities/Opportunities
 import { ContentGapSheet } from "@/client/features/opportunities/PaidChecks";
 import { ConversionRunButton } from "@/client/features/conversion/ConversionRunButton";
 import { AccessibilityTrend } from "@/client/features/accessibility/AccessibilityTrend";
+import { WebVitalsCard } from "@/client/features/performance/WebVitalsCard";
 import {
   ConnectSearchConsole,
   dateLabel,
@@ -193,6 +194,9 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
                   />
                   {filters.type === "accessibility_issue" ? (
                     <AccessibilityTrend projectId={projectId} />
+                  ) : null}
+                  {filters.type === "performance_issue" ? (
+                    <WebVitalsCard projectId={projectId} />
                   ) : null}
                   <OpportunitiesList
                     rows={data.rows}

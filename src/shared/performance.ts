@@ -209,3 +209,27 @@ export function fieldResult(
     label,
   };
 }
+
+/**
+ * RFC-0014 5.7: the optional snippet. It sends each page view's LCP, INP and
+ * CLS, with web-vitals' own rating, to the site's own GA4. Nothing goes to
+ * Relay.
+ */
+export const VITALS_SNIPPET = `"use client";
+import { useReportWebVitals } from "next/web-vitals";
+
+// Add <WebVitals /> once to the root layout, next to the GA4 tag.
+export function WebVitals() {
+  useReportWebVitals((metric) => {
+    if (!["LCP", "INP", "CLS"].includes(metric.name)) return;
+    window.gtag?.("event", metric.name, {
+      metric_rating: metric.rating,
+      value: Math.round(metric.name === "CLS" ? metric.value * 1000 : metric.value),
+      non_interaction: true,
+    });
+  });
+  return null;
+}`;
+
+/** A page passes a metric when 75% or more of its loads are rated good. */
+export const GOOD_SHARE = 0.75;
