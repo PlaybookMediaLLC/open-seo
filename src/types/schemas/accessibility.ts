@@ -21,6 +21,16 @@ export const accessibilityFixInputSchema = z.object({
           "Enter a language tag such as en or fr-CA.",
         ),
     }),
+    // Phase 2: the aria-label of a link, button or form field.
+    z.object({
+      kind: z.literal("name"),
+      text: z
+        .string()
+        .trim()
+        .min(1, "Enter the name.")
+        .max(100)
+        .regex(/^[^\p{Cc}]*$/u, "Remove the control characters."),
+    }),
   ]),
   /** The alt text draft the person started from, if any. */
   draftId: z.string().min(1).optional(),

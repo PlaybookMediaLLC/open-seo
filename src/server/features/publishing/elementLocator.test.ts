@@ -1,6 +1,11 @@
 import { expect, it } from "vitest";
 import { AppError } from "@/server/lib/errors";
-import { imageFileName, locateElement, withAttribute } from "./elementLocator";
+import {
+  imageFileName,
+  locateElement,
+  withAttribute,
+  type ElementTarget,
+} from "./elementLocator";
 
 // RFC-0013 5.4: the one element an accessibility fix changes.
 const PAGE = "app/about/page.tsx";
@@ -64,4 +69,34 @@ it("adds the attribute last, and refuses one that a later spread overrides", () 
   expect(() =>
     withAttribute(file(spread), { start: 0, end: spread.length }, "alt", "y"),
   ).toThrow("spread");
+});
+
+it("matches by one literal attribute, and a class list by every token", async () => {
+  const files = {
+    [PAGE]:
+      'export default () => (<nav><a href="/pricing"><svg /></a><button className="menu-toggle p-2"><svg /></button><button className="p-2" /></nav>);',
+  };
+  const locate = (target: ElementTarget) =>
+    locateElement({
+      reader: site(files),
+      rootDirectory: "",
+      pageFile: PAGE,
+      sha: "a".repeat(40),
+      target,
+    });
+  const link = await locate({
+    kind: "attribute",
+    tags: ["a", "Link"],
+    name: "href",
+    value: "/pricing",
+  });
+  expect(link.found).toHaveLength(1);
+  const button = await locate({
+    kind: "attribute",
+    tags: ["button"],
+    name: "className",
+    value: "menu-toggle",
+    tokens: true,
+  });
+  expect(button.found).toHaveLength(1);
 });

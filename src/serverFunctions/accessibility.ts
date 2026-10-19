@@ -8,7 +8,10 @@ import {
   accessibilityTrendInputSchema,
 } from "@/types/schemas/accessibility";
 import { experimentInputSchema } from "@/types/schemas/experiments";
-import { draftAnchorInputSchema } from "@/types/schemas/proposalDrafts";
+import {
+  draftAnchorInputSchema,
+  opportunityDraftInputSchema,
+} from "@/types/schemas/proposalDrafts";
 
 // RFC-0013 5.4: prepare an alt text or page language fix for review.
 export const prepareAccessibilityFix = createServerFn({ method: "POST" })
@@ -16,6 +19,16 @@ export const prepareAccessibilityFix = createServerFn({ method: "POST" })
   .validator(accessibilityFixInputSchema)
   .handler(({ context, data }) =>
     AccessibilityFixService.prepare(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+export const suggestAccessibleName = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(opportunityDraftInputSchema)
+  .handler(({ context, data }) =>
+    AccessibilityFixService.suggestName(context, {
       ...data,
       projectId: context.projectId,
     }),

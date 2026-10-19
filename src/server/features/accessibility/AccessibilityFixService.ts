@@ -18,12 +18,14 @@ import {
 } from "@/server/features/publishing/publishingAccess";
 import { PublishingRepository } from "@/server/features/publishing/repositories/PublishingRepository";
 import { AppError } from "@/server/lib/errors";
+import { readPages } from "@/server/lib/scrape";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
 import type { AccessibilityFixInput } from "@/types/schemas/accessibility";
 import type {
   MetadataProposal,
   PublishingMutationResult,
 } from "@/types/schemas/publishing";
+import { NAME_RULES, nameTarget, snippetAttributes } from "./accessibleName";
 import { altTextProblems, snippetSrc } from "./altText";
 
 // RFC-0013 5.4 phase 1: alt text and the page language, fixed in code by a
@@ -31,12 +33,19 @@ import { altTextProblems, snippetSrc } from "./altText";
 const READ_ONLY = { metadata: "read", contents: "read" } as const;
 const MAX_REQUESTS = 200;
 const LANG_RULES = new Set(["html-has-lang", "html-lang-valid"]);
+const ATTRIBUTES = { lang: "lang", alt: "alt", name: "aria-label" } as const;
+const EFFECTS = {
+  lang: "Screen readers read the pages with the right language.",
+  alt: "Screen readers describe the image, or skip it when it is decorative.",
+  name: "Screen readers announce the name of the link, button or field.",
+} as const;
 const LAYOUTS = ["app", "src/app"].flatMap((directory) =>
   ["tsx", "jsx", "js"].map((extension) => `${directory}/layout.${extension}`),
 );
 
 function checkedValue(fix: AccessibilityFixInput["fix"]) {
   if (fix.kind === "lang") return fix.language;
+  if (fix.kind === "name") return fix.text;
   if (fix.decorative) return "";
   const text = (fix.text ?? "").trim();
   if (!text)
@@ -72,15 +81,18 @@ async function prepare(
             "VALIDATION_ERROR",
             "Only accessibility issues have this fix.",
           );
-        const lang = input.fix.kind === "lang";
+        const { kind } = input.fix;
+        const lang = kind === "lang";
         if (
           lang
             ? !LANG_RULES.has(evidence.ruleId)
-            : evidence.ruleId !== "image-alt"
+            : kind === "alt"
+              ? evidence.ruleId !== "image-alt"
+              : !NAME_RULES[evidence.ruleId]
         )
           throw new AppError(
             "VALIDATION_ERROR",
-            `Relay fixes alt text and the page language in code. Fix ${evidence.ruleId} by hand.`,
+            `Relay fixes alt text, the page language, and link, button and field names in code. Fix ${evidence.ruleId} by hand.`,
           );
         const value = checkedValue(input.fix);
         const connection = await PublishingRepository.getConnection(
@@ -127,11 +139,19 @@ async function prepare(
           pageFile = layout;
           target = { kind: "html" };
         } else {
-          const src = snippetSrc(evidence.exampleSnippet);
-          if (!src)
+          const src =
+            kind === "alt" ? snippetSrc(evidence.exampleSnippet) : null;
+          const element: ElementTarget | null = src
+            ? { kind: "image", src }
+            : nameTarget(
+                evidence.ruleId,
+                evidence.exampleSnippet,
+                evidence.exampleSelector,
+              );
+          if (!element)
             throw new AppError(
               "VALIDATION_ERROR",
-              "The stored element has no image src. Fix it by hand.",
+              "The stored element has no literal attribute that Relay can match in code. Fix it by hand.",
             );
           const located = await locateMetadataFile(
             client.request,
@@ -141,7 +161,7 @@ async function prepare(
           if (located.status !== "found")
             throw new AppError("VALIDATION_ERROR", located.message);
           pageFile = located.filePath;
-          target = { kind: "image", src };
+          target = element;
         }
         const { found } = await locateElement({
           reader: client,
@@ -158,7 +178,7 @@ async function prepare(
               : "Relay did not find the element in the page file or the files it imports. Fix it by hand.",
           );
         const [{ file, element }] = found;
-        const name = lang ? "lang" : "alt";
+        const name = ATTRIBUTES[kind];
         const { files, textEdits } = await applyCopyEdits(
           new Map([[file.path, file]]),
           [
@@ -224,9 +244,7 @@ async function prepare(
           draftId: input.fix.kind === "alt" ? (input.draftId ?? null) : null,
           changeHash: "",
           reason: opportunity.explanation,
-          expectedEffect: lang
-            ? "Screen readers read the pages with the right language. Run a new audit after the change deploys to check it."
-            : "Screen readers describe the image, or skip it when it is decorative. Run a new audit after the change deploys to check it.",
+          expectedEffect: `${EFFECTS[kind]} Run a new audit after the change deploys to check it.`,
           risk: `${shared.length ? `The component also renders on: ${shared.join(", ")}. ` : ""}Only the ${name} attribute of one element changes. ${ACCESSIBILITY_LIMITS} A pull request may trigger repository CI.`,
           verificationPlan:
             "Review the exact diff. Run the repository build and tests in CI. After your authorized deployment, Relay checks the affected pages again with axe-core.",
@@ -267,4 +285,44 @@ async function prepare(
   }
 }
 
-export const AccessibilityFixService = { prepare };
+/**
+ * A starting name for a link or a field: the title of the linked page on
+ * the same site, or the field's placeholder. The person edits it.
+ */
+async function suggestName(
+  context: PublishingContext,
+  input: { projectId: string; opportunityId: string },
+) {
+  await authorizePublishing(context, input.projectId);
+  const detail = await OpportunityRepository.getDetail(
+    input.projectId,
+    input.opportunityId,
+  );
+  if (!detail) throw new AppError("NOT_FOUND");
+  const evidence = detail.accessibilityEvidence.find(
+    (row) => row.runId === detail.opportunity.evidenceRunId,
+  );
+  const attributes = evidence ? snippetAttributes(evidence.exampleSnippet) : {};
+  if (evidence?.ruleId === "label" && attributes.placeholder)
+    return {
+      text: attributes.placeholder.slice(0, 100),
+      source: "From the field's placeholder.",
+    };
+  if (evidence?.ruleId === "link-name" && attributes.href) {
+    const url = URL.parse(attributes.href, evidence.exampleUrl);
+    if (url && url.origin === new URL(evidence.exampleUrl).origin) {
+      const page = (await readPages([url.href], 1)).pages[0];
+      if (page?.title)
+        return {
+          text: page.title.slice(0, 100),
+          source: `From the title of ${url.pathname}.`,
+        };
+    }
+  }
+  return {
+    text: null,
+    source: "Relay has no suggestion. Write what the element does.",
+  };
+}
+
+export const AccessibilityFixService = { prepare, suggestName };

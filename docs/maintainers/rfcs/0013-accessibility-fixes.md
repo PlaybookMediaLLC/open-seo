@@ -103,6 +103,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 **As built (part C2).** For an image, the sheet has a **Draft with AI** button. The draft reads the image file name from the stored `src`, the stored element, and the live page's title and first 2,000 characters of text. Relay stores only the element, so the page text stands in for the text around the image. The draft passes the RFC-0004 grounded-text checks: at most 125 characters, no control characters, and no number or risky claim that the inputs do not contain. It also passes the same alt text rules as typed text. A failing answer is retried once with the reasons. Drafts use the RFC-0004 daily limits with the kind `alt_text`, and a draft becomes "used" with the proposal that used it. The model does not see the image, and the draft's summary tells the person to check that the text describes it.
 
+**As built (part E1).** `link-name`, `button-name` and `label` items have the same sheet with an "accessible name" field, and the fix sets `aria-label`. Relay matches the element by its first literal attribute in this order: `id`, `data-testid`, then `href` for a link or `name` and `placeholder` for a field. Without one, it uses every class of the selector's last part, and the element's class list must contain all of them. Escaped class names, such as Tailwind's `md\:flex`, are left out. Links match `<a>` and `<Link>`, buttons `<button>`, and fields `<input>`, `<select>` and `<textarea>`. **Suggest a name** fills the field with the title of the linked page when it is on the same site, or with the field's placeholder; a button has no suggestion, because its action is not in the stored element. Linking an existing `<label>` with `htmlFor` and `id` is not built: `aria-label` covers the rule with one attribute.
+
 ### 5.5 Verification and tracking
 
 1. After the deployment is confirmed, run axe-core again on the affected pages in the cluster (at most 10).
@@ -158,7 +160,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 ### Phase 2
 
-- [ ] Link, button and field name fixes.
+- [x] Link, button and field name fixes.
 - [ ] Vision alt-text drafts behind a cost confirmation.
 - [ ] Contrast and heading-order tickets.
 

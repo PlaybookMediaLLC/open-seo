@@ -16,17 +16,30 @@ import {
 import {
   draftAltText,
   prepareAccessibilityFix,
+  suggestAccessibleName,
 } from "@/serverFunctions/accessibility";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
 
 const LANG_RULES = new Set(["html-has-lang", "html-lang-valid"]);
+const NAME_RULES = new Set(["link-name", "button-name", "label"]);
+const TITLES = {
+  lang: "Set the page language",
+  alt: "Add alternative text",
+  name: "Add an accessible name",
+} as const;
 
-/** RFC-0013 5.4: alt text or the page language, prepared for review. */
+/** RFC-0013 5.4: alt text, the page language or a name, for review. */
 export function AccessibilityFixSheet(props: {
   opportunity: { id: string; projectId: string; version: number };
   ruleId: string;
 }) {
-  const lang = LANG_RULES.has(props.ruleId);
+  const mode = LANG_RULES.has(props.ruleId)
+    ? "lang"
+    : props.ruleId === "image-alt"
+      ? "alt"
+      : NAME_RULES.has(props.ruleId)
+        ? "name"
+        : null;
   const refresh = useRefreshPublishing(props.opportunity.projectId);
   const [open, setOpen] = useState(false);
   const [decorative, setDecorative] = useState(false);
@@ -47,15 +60,25 @@ export function AccessibilityFixSheet(props: {
       setDraftId(result.id);
     },
   });
+  const suggest = useMutation({
+    meta: { errorToast: false },
+    mutationFn: () => suggestAccessibleName({ data: scope }),
+    onSuccess: (result) => {
+      if (result.text) setText(result.text);
+    },
+  });
   const prepare = useMutation({
     meta: { errorToast: false },
     mutationFn: () =>
       prepareAccessibilityFix({
         data: {
           ...scope,
-          fix: lang
-            ? { kind: "lang", language: text.trim() }
-            : { kind: "alt", decorative, text },
+          fix:
+            mode === "lang"
+              ? { kind: "lang", language: text.trim() }
+              : mode === "alt"
+                ? { kind: "alt", decorative, text }
+                : { kind: "name", text },
           draftId,
         },
       }),
@@ -66,7 +89,7 @@ export function AccessibilityFixSheet(props: {
       setOpen(false);
     },
   });
-  if (!lang && props.ruleId !== "image-alt") return null;
+  if (!mode) return null;
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <Button variant="outline" onClick={() => setOpen(true)}>
@@ -74,16 +97,51 @@ export function AccessibilityFixSheet(props: {
       </Button>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>
-            {lang ? "Set the page language" : "Add alternative text"}
-          </SheetTitle>
+          <SheetTitle>{TITLES[mode]}</SheetTitle>
           <SheetDescription>
             Relay finds the one element in your repository and prepares a pull
             request for review. {ACCESSIBILITY_LIMITS}
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-3 px-4 text-sm">
-          {lang ? (
+          {mode === "name" ? (
+            <>
+              <Label htmlFor="fix-name">Accessible name</Label>
+              <Input
+                id="fix-name"
+                maxLength={100}
+                placeholder={
+                  props.ruleId === "label" ? "Email address" : "View pricing"
+                }
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+              />
+              {props.ruleId !== "button-name" && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  pending={suggest.isPending}
+                  onClick={() => suggest.mutate()}
+                >
+                  Suggest a name
+                </Button>
+              )}
+              {suggest.isError && (
+                <p role="alert" className="text-destructive">
+                  {suggest.error.message}
+                </p>
+              )}
+              {suggest.data && (
+                <p className="text-xs text-muted-foreground">
+                  {suggest.data.source}
+                </p>
+              )}
+              <p className="text-muted-foreground">
+                Relay sets aria-label. Say what the element does, such as
+                &quot;Open the menu&quot;.
+              </p>
+            </>
+          ) : mode === "lang" ? (
             <>
               <Label htmlFor="fix-language">Language tag of the pages</Label>
               <Input
