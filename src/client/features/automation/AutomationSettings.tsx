@@ -43,6 +43,10 @@ const JOBS = {
     label: "Field data refresh",
     text: "Reads real-user Core Web Vitals from the Chrome UX Report for your site, key pages and top pages. Free.",
   },
+  revenue_sync: {
+    label: "Revenue sync",
+    text: "Reads new paid invoices and refunds from Stripe with the read-only key. Free.",
+  },
 } as const;
 type Kind = keyof typeof JOBS;
 type Schedule = {

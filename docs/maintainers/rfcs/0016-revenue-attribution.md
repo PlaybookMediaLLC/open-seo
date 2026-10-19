@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection.
+- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -91,6 +91,8 @@ A small open-source package `@relay/attribution`, at most 2 KB, plus a Next.js h
 
 6. Refunds are separate rows with negative amounts.
 
+**As built (part C).** The job `revenue_sync` runs daily at 04:00 UTC. Stripe lists newest first and cannot sort oldest first, so the sync walks 7-day windows forward from the cursor, pages each window whole and stops at the first window boundary after 5,000 invoices: a window is never half-synced, and the cursor moves to the end of the last full window. Each run starts one window before the cursor, so an invoice paid after it was created is still found; the unique hash keeps one row per payment. The first sync reads 365 days. `billing_reason` gives the kind: `subscription_create` is a first payment, other `subscription_*` reasons are renewals, anything else is one-time. Metadata comes from the invoice's subscription details (both API shapes), then the newest Checkout session of the customer with a `relay_ft_at` key, then the customer; customer lookups are cached for the run. Refunds come from `/v1/refunds` with the charge expanded, which needs read access to Refunds and Charges; without it the sync skips refunds and says so. A refund takes the first touch of the invoice it refunds, from the same run or the stored row. Ids are hashed with the connection's salt, and Zod reads only the listed fields, so the fixtures' names, emails and addresses never reach the database (tested). A key under the previous RFC-0009 key version is re-encrypted on the next sync.
+
 ### 5.5 Channel rules
 
 | Channel          | Rule                                                                                                                                 |
@@ -146,8 +148,8 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 - [ ] Next.js helper and Stripe metadata docs for Checkout and sign-up.
 - [ ] Restricted-key check: refuses `sk_` keys, and refuses a restricted key with write access (probe tested in Stripe test mode).
 - [x] `revenue_connections` and `revenue_events` in D1 and Postgres.
-- [ ] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
-- [ ] Test: no personal field reaches the database.
+- [x] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
+- [x] Test: no personal field reaches the database.
 - [x] Channel rules with one test per channel.
 - [ ] Reports with coverage first, and amounts per currency.
 - [x] Disconnect deletes the key and all revenue rows (test).

@@ -63,7 +63,7 @@ await stripe.customers.create({
 
 ## 3. Connect Stripe
 
-In Stripe, create a [restricted key](https://docs.stripe.com/keys#create-restricted-api-secret-key) with **Read** access to Invoices, Subscriptions, Checkout Sessions and Customers, and no write access. Then open **Project settings > Conversion** in Relay and paste it under **Revenue from Stripe**.
+In Stripe, create a [restricted key](https://docs.stripe.com/keys#create-restricted-api-secret-key) with **Read** access to Invoices, Subscriptions, Checkout Sessions and Customers, and no write access. To also count refunds, give it **Read** access to Refunds and Charges. Then open **Project settings > Conversion** in Relay and paste it under **Revenue from Stripe**.
 
 Relay checks the key before it saves it:
 
@@ -72,6 +72,16 @@ Relay checks the key before it saves it:
 - It sends Stripe a create request with an unknown field. A read-only key gets a permission error, so nothing can be created. If Stripe accepts the key for writing, Relay refuses it.
 
 Relay encrypts the key. **Disconnect** deletes the key and all revenue data of the project.
+
+## 4. Daily sync
+
+The **Revenue sync** job in **Automation** runs once a day. It reads the paid invoices and refunds created since the last sync. The first sync reads the last 365 days.
+
+- Each payment becomes one row: its kind (first payment, renewal, one-time or refund), amount, currency, time and first touch. A refund is a negative amount with the first touch of the payment it refunds.
+- Relay reads the first touch from the subscription, then the Checkout session, then the customer.
+- Relay stores only a salted hash of Stripe ids, so they cannot be matched across projects. It never stores names, emails, addresses or payment details.
+- Each run reads at most about 5,000 invoices, in whole weeks. The rest follows in the next run.
+- A run looks one week back, so a payment made late is still counted. Running it again adds no duplicate rows.
 
 ## Channels
 
