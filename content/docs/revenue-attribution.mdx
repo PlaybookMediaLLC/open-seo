@@ -1,0 +1,75 @@
+---
+title: "Revenue attribution"
+description: "Record the first landing page and source of each new customer, and pass it to Stripe without personal data."
+---
+
+Relay can show which landing pages and channels bring paying customers, not only visitors. It uses one first-party cookie on your site and the metadata of your Stripe payments. Relay stores no names, emails, addresses or payment details.
+
+## 1. Record the first touch
+
+Copy [`attribution.ts`](https://github.com/PlaybookMediaLLC/open-seo/blob/main/src/shared/attribution.ts) into your app. It has no dependencies, and the browser part is under 1 KB minified.
+
+On the first page view, `startAttribution` writes the cookie `relay_ft` with the landing path, the referring host, `utm_source`, `utm_medium`, `utm_campaign` and the time. The cookie expires after 90 days. It never overwrites an existing `relay_ft` cookie, so it keeps the first touch.
+
+In a Next.js app, start it once in a client component in the root layout:
+
+```tsx
+"use client";
+import { useEffect } from "react";
+import { startAttribution } from "@/lib/attribution";
+
+export function Attribution() {
+  useEffect(() => {
+    const attribution = startAttribution({ consentRequired: true });
+    // Call this from your consent tool when the visitor accepts analytics.
+    window.addEventListener("analytics-consent", () =>
+      attribution.grantConsent(),
+    );
+  }, []);
+  return null;
+}
+```
+
+With `consentRequired: true`, nothing is written until `grantConsent()` runs. Use `consentRequired: false` only where you do not need consent for analytics cookies.
+
+## 2. Pass it to Stripe
+
+`relayAttributionMetadata(cookieHeader)` turns the cookie into Stripe metadata keys: `relay_ft_path`, `relay_ft_referrer`, `relay_ft_source`, `relay_ft_medium`, `relay_ft_campaign` and `relay_ft_at`.
+
+**Stripe Checkout.** Add the metadata to the session and to the subscription it creates:
+
+```ts
+import { cookies } from "next/headers";
+import { relayAttributionMetadata } from "@/lib/attribution";
+
+const metadata = relayAttributionMetadata((await cookies()).toString());
+const session = await stripe.checkout.sessions.create({
+  mode: "subscription",
+  line_items: [{ price: priceId, quantity: 1 }],
+  metadata,
+  subscription_data: { metadata },
+  success_url,
+  cancel_url,
+});
+```
+
+**Sign-up.** If customers sign up before they pay, add the metadata to the Stripe customer that you create at sign-up:
+
+```ts
+await stripe.customers.create({
+  metadata: relayAttributionMetadata(request.headers.get("cookie")),
+});
+```
+
+## Channels
+
+Relay sorts each first touch into one channel:
+
+| Channel        | Rule                                                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Paid           | `utm_medium` is `cpc`, `ppc`, `paid` or `paidsearch`.                                                            |
+| Email          | `utm_medium` is `email`.                                                                                         |
+| Organic search | The referrer is Google, Bing, DuckDuckGo, Yahoo, Ecosia or Brave Search, and `utm_medium` is empty or `organic`. |
+| Referral       | Another referring host, or a UTM source without a referrer.                                                      |
+| Direct         | No referrer and no UTM values.                                                                                   |
+| Unknown        | The payment has no attribution metadata.                                                                         |
