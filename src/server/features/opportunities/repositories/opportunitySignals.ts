@@ -17,6 +17,7 @@ import {
   auditPages,
   audits,
   opportunityAccessibilityEvidence,
+  opportunityPerformanceEvidence,
   opportunityAuditEvidence,
   opportunityInspectionEvidence,
   opportunityLinkEvidence,
@@ -230,6 +231,9 @@ const { projectId: _rank, ...rankColumns } = getTableColumns(
 const { projectId: _accessibility, ...accessibilityColumns } = getTableColumns(
   opportunityAccessibilityEvidence,
 );
+const { projectId: _performance, ...performanceColumns } = getTableColumns(
+  opportunityPerformanceEvidence,
+);
 
 /** The phase 2 evidence of one opportunity, newest run first. */
 async function evidenceFor(projectId: string, opportunityId: string) {
@@ -239,6 +243,7 @@ async function evidenceFor(projectId: string, opportunityId: string) {
     linkEvidence,
     rankEvidence,
     accessibilityEvidence,
+    performanceEvidence,
   ] = await Promise.all([
     db
       .select(auditColumns)
@@ -288,6 +293,15 @@ async function evidenceFor(projectId: string, opportunityId: string) {
           eq(opportunityAccessibilityEvidence.opportunityId, opportunityId),
         ),
       ),
+    db
+      .select(performanceColumns)
+      .from(opportunityPerformanceEvidence)
+      .where(
+        and(
+          eq(opportunityPerformanceEvidence.projectId, projectId),
+          eq(opportunityPerformanceEvidence.opportunityId, opportunityId),
+        ),
+      ),
   ]);
   return {
     auditEvidence,
@@ -295,6 +309,7 @@ async function evidenceFor(projectId: string, opportunityId: string) {
     linkEvidence,
     rankEvidence,
     accessibilityEvidence,
+    performanceEvidence,
   };
 }
 

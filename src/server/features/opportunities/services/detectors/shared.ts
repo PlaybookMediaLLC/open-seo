@@ -5,6 +5,7 @@ import type {
   OpportunityMetrics,
   RankEvidence,
 } from "@/types/schemas/opportunities";
+import type { PerformanceSignals } from "@/server/features/performance/performanceSignals";
 
 export type Ga4LandingPageRow = Pick<
   Ga4LandingPageMetrics,
@@ -37,6 +38,8 @@ export type DetectionInput = {
   aiCitations: AiCitations | null;
   /** Live results checks from the last 24 hours, by URL join key. */
   serpChecks: Map<string, { value: number; reason: string }>;
+  /** RFC-0014: recent field data and Lighthouse causes. Null without data. */
+  performance: PerformanceSignals | null;
 };
 
 export type AiCitations = {

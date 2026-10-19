@@ -113,4 +113,33 @@ describe("opportunityTicket", () => {
       "- h1 `Welcome`\n- h2 `Features`\n- h4 `Pricing` (skips from h2)",
     );
   });
+
+  it("lists each named performance cause with its change", () => {
+    const value = opportunityDetail("approved");
+    value.performanceEvidence = [
+      {
+        id: "p1",
+        opportunityId: value.opportunity.id,
+        runId: value.opportunity.evidenceRunId,
+        template: "/blog/:slug",
+        metric: "lcp",
+        formFactor: "phone",
+        p75Value: 3_100,
+        threshold: 2_500,
+        scope: "url",
+        target: "https://example.com/blog/a-b-c",
+        collectionEnd: "2026-10-17",
+        labValue: 3_700,
+        causeIds: "render_blocking slow_server",
+      },
+    ];
+    const { body } = opportunityTicket(value);
+    expect(body).toContain(
+      "Largest Contentful Paint 3.1 s at the 75th percentile on phones; good is 2.5 s or less",
+    );
+    expect(body).toContain(
+      "## Causes\n\n- Render-blocking CSS or JavaScript: Inline the CSS",
+    );
+    expect(body).toContain("- Slow server response: Cache the page");
+  });
 });

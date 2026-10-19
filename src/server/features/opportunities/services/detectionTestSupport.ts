@@ -33,6 +33,7 @@ export function input(
     rankHistory: new Map(),
     aiCitations: null,
     serpChecks: new Map(),
+    performance: null,
     truncated: false,
     ...overrides,
   };

@@ -1,3 +1,4 @@
+import { loadPerformanceSignals } from "@/server/features/performance/performanceSignals";
 import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
@@ -46,6 +47,7 @@ export async function loadDetectionSignals(project: {
     inspectionsToday,
     aiCitations,
     serpChecks,
+    performance,
   ] = await Promise.all([
     ProjectContextRepository.listKeyPages(projectId),
     BrandTermService.get(projectId),
@@ -74,6 +76,7 @@ export async function loadDetectionSignals(project: {
       projectId,
       daysAgo(SERP_CHECK_HOURS / 24),
     ),
+    loadPerformanceSignals(projectId),
   ]);
   return {
     ga4Connection,
@@ -87,6 +90,7 @@ export async function loadDetectionSignals(project: {
       rankHistory,
       aiCitations,
       serpChecks,
+      performance,
     },
     // Inspections only check audit issues, so a run without an audit needs none.
     inspectionBudget: audit

@@ -214,6 +214,7 @@ export const {
   opportunityAuditEvidence,
   opportunityAccessibilityEvidence,
   cwvSnapshots,
+  opportunityPerformanceEvidence,
   opportunityInspectionEvidence,
   opportunityLinkEvidence,
   opportunityRankEvidence,

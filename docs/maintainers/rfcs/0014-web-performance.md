@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh.
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -65,6 +65,8 @@ Thresholds at the 75th percentile: LCP good ≤ 2,500 ms, INP good ≤ 200 ms, C
 4. Priority: visibility = how far the metric is above "good" (capped at 2× the threshold); demand = organic clicks of the template's pages; commercial = key-page role or conversions (RFC-0012).
 5. Evidence `opportunity_performance_evidence`: `id`, the three FKs, `metric`, `form_factor`, `p75_value`, `threshold`, `scope`, `collection_end`, `lab_value` (nullable), `cause_ids`.
 
+**As built (part B).** Detection reads the newest `crux` row of each target from the last 35 days. Templates come from `detectUrlTemplate` over the pages with organic clicks in the current Search Console period and the key pages, so a page with neither is not grouped. A template is measured on its most-visited page with page-level data, on phones first and desktops when a page has only desktop data. Templates with no page-level data do not each take the origin's values: they share one item per failing metric, with the template `*`, so one slow origin gives at most three items. The identity is the template and the metric. Confidence is 0.6, difficulty 0.5 and effort 4 hours; commercial is the best key-page role or the GA4 key events of the template's pages. The evidence also stores the measured target and the template. The type filter gets a Performance group.
+
 ### 5.4 Cause mapping
 
 Read the stored Lighthouse JSON for the template's sampled page. Map audit or insight ids to plain causes. The ids depend on the Lighthouse version that DataForSEO runs, so keep the mapping as one table in code with a test per id.
@@ -79,6 +81,8 @@ Read the stored Lighthouse JSON for the template's sampled page. Map audit or in
 | Large or old-format images         | `uses-responsive-images`, `modern-image-formats`, `image-delivery-insight` | Ticket.                                                                              |
 | Unused JavaScript                  | `unused-javascript`                                                        | Ticket.                                                                              |
 | Slow server response               | `server-response-time`, `slow-response` issue                              | Ticket.                                                                              |
+
+**As built (part B, causes).** The table is `PERFORMANCE_CAUSES` in `src/shared/performance.ts`, an array with one test per Lighthouse id. Relay reads the stored reports of the newest audit with Lighthouse results in the last 30 days, from R2, and maps the `auditKey` of each failing audit; a report that cannot be read names no cause. Each cause lists the metrics it affects, so an LCP item never names unsized images. The lab value is the measured page's own report first, then mobile reports. The `slow-response` audit issue is not read: `server-response-time` covers the same cause from Lighthouse. Every cause is a ticket in phase 1: the ticket lists the field data, the measured target, the lab value, and each cause with its change.
 
 ### 5.5 Fixes (phase 2)
 
@@ -122,9 +126,9 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 
 - [x] `CRUX_API_KEY`, the CrUX clients and `cwv_snapshots` in D1 and Postgres.
 - [x] Weekly refresh task with the 70-request cap.
-- [ ] Template grouping and `performance_issue` detection with threshold tests.
-- [ ] Cause mapping table with one test per Lighthouse id.
-- [ ] Tickets for every cause.
+- [x] Template grouping and `performance_issue` detection with threshold tests.
+- [x] Cause mapping table with one test per Lighthouse id.
+- [x] Tickets for every cause.
 - [ ] Field measurement with the 4-week offset and the labels.
 - [ ] `content/docs/performance.mdx` explains field and lab data and the delays.
 

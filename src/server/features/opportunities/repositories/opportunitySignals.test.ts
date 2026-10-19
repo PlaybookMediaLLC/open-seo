@@ -266,6 +266,7 @@ describe(`Opportunity signals real ${database.isPostgres ? "Postgres" : "SQLite"
       linkEvidence: [],
       rankEvidence: [],
       accessibilityEvidence: [],
+      performanceEvidence: [],
     });
     // Deleting the audit removes its evidence and keeps the run.
     await run("DELETE FROM audits WHERE id = ?", [auditId]);

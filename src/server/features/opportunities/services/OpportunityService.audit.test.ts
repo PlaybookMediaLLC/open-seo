@@ -41,6 +41,9 @@ vi.mock("../repositories/contentGapRepository", () => ({
     recentSerpChecks: mocks.serpChecks,
   },
 }));
+vi.mock("@/server/features/performance/performanceSignals", () => ({
+  loadPerformanceSignals: async () => null,
+}));
 vi.mock("../repositories/opportunitySignals", () => ({
   OpportunitySignalRepository: {
     latestAudit: mocks.latestAudit,

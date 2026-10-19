@@ -1,4 +1,5 @@
 import type { AccessibilityTicketFacts } from "@/server/features/accessibility/accessibilityTicket";
+import { causesOf, METRIC_NAMES, metricValue } from "@/shared/performance";
 import type { ProposalDraft } from "@/types/schemas/proposalDrafts";
 import { sort } from "remeda";
 import type {
@@ -41,6 +42,8 @@ const VERIFY: Record<OpportunityType, string> = {
     "After the page ships, track the topic's keywords for 28 days and compare their positions with the competitor positions above.",
   accessibility_issue:
     "Run a new site audit after the change deploys. The rule must no longer fail on the affected pages. Automated checks find only some accessibility issues; test with assistive technology too.",
+  performance_issue:
+    "Run Lighthouse on the page after the change deploys for the lab value. Field data needs about 4 weeks: compare the 75th percentile with the evidence above after that.",
   cro_low_conversion:
     "After the change ships, wait 28 days. Then compare the page's conversion rate with the GA4 evidence above.",
   cro_form_drop_off:
@@ -110,6 +113,8 @@ export function opportunityTicket(
   const [link] = latest(detail.linkEvidence);
   const keywords = latest(detail.keywordEvidence).slice(0, KEYWORD_ROWS);
   const [accessibility] = latest(detail.accessibilityEvidence);
+  const [performance] = latest(detail.performanceEvidence);
+  const causes = causesOf(performance?.causeIds ?? "");
   const summary =
     accessibilityFacts?.summary?.replace(/\s+/g, " ").trim() ?? null;
   const contrast =
@@ -144,6 +149,17 @@ export function opportunityTicket(
           ...(summary ? [`- axe-core: ${summary}`] : []),
         ]
       : []),
+    ...(performance
+      ? [
+          `- Chrome UX Report, 28 days to ${performance.collectionEnd}: ${METRIC_NAMES[performance.metric]} ${metricValue(performance.metric, performance.p75Value)} at the 75th percentile on ${performance.formFactor === "phone" ? "phones" : "desktops"}; good is ${metricValue(performance.metric, performance.threshold)} or less`,
+          `- Measured on ${performance.target}${performance.scope === "origin" ? " (the whole site)" : ""}, for ${performance.template === "*" ? "pages without their own field data" : `pages like ${performance.template}`}`,
+          ...(performance.labValue === null
+            ? []
+            : [
+                `- Lighthouse lab value: ${metricValue(performance.metric, performance.labValue)}`,
+              ]),
+        ]
+      : []),
   ];
   return {
     title: item.title.slice(0, 200),
@@ -160,6 +176,11 @@ export function opportunityTicket(
       ...(contrast
         ? [
             `## Contrast\n\n- Measured ratio: ${contrast[1]}:1\n- Foreground color: ${contrast[2]}\n- Background color: ${contrast[3]}\n- Required ratio: ${contrast[4]}:1`,
+          ]
+        : []),
+      ...(performance
+        ? [
+            `## Causes\n\n${causes.length ? causes.map((cause) => `- ${cause.label}: ${cause.fix}`).join("\n") : "- The latest Lighthouse report names no cause. Run a site audit with Lighthouse on the page."}`,
           ]
         : []),
       ...(accessibility && accessibilityFacts?.headings.length
