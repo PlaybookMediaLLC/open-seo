@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
+import { WorkReportService } from "@/server/features/work/WorkReportService";
 import { WorkService } from "@/server/features/work/WorkService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
   workProjectSchema,
+  workReportInputSchema,
   workSettingsInputSchema,
 } from "@/types/schemas/work";
 
@@ -22,6 +24,17 @@ export const saveWorkSettings = createServerFn({ method: "POST" })
   .validator(workSettingsInputSchema)
   .handler(({ context, data }) =>
     WorkService.saveSettings(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0018 5.7: the monthly work report.
+export const getWorkReport = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(workReportInputSchema)
+  .handler(({ context, data }) =>
+    WorkReportService.monthly(context, {
       ...data,
       projectId: context.projectId,
     }),

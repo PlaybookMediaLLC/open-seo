@@ -45,12 +45,30 @@ export async function weeklyCycleJob(context: JobContext) {
     count("waiting"),
   ];
   const summary = `${completed} completed, ${measuring} measuring, ${next} next, ${waiting} waiting on you.`;
+  // RFC-0018 5.10: the email digest carries this body, so it lists items.
+  const list = (section: string, label: string) => {
+    const titles = cycle.entries
+      .filter((entry) => entry.section === section)
+      .map((entry) => entry.title);
+    return titles.length
+      ? `${label}: ${titles.slice(0, 3).join("; ")}${titles.length > 3 ? `, and ${titles.length - 3} more` : ""}.`
+      : "";
+  };
   await GrowthJobRepository.notify({
     organizationId: context.organizationId,
     projectId,
     kind: "weekly_cycle",
     title: `This week: ${next ? `${next} next` : "nothing worth changing"}`,
-    body: `${summary}${cycle.emptyReasons ? ` ${cycle.emptyReasons}` : ""}`,
+    body: [
+      summary,
+      list("waiting", "Waiting on you"),
+      list("next", "Next"),
+      list("completed", "Completed"),
+      list("measuring", "Measuring"),
+      cycle.emptyReasons,
+    ]
+      .filter(Boolean)
+      .join(" "),
     linkPath: `/p/${projectId}/work`,
     dedupeKey: week.startDate,
   });

@@ -1,6 +1,6 @@
 # RFC-0018: Weekly execution queue and work report
 
-- **Status:** In progress. Phase 1 built: the weekly cycle, the view, selection, empty-week reasons, the notification and history.
+- **Status:** In progress. Phase 1 built: the weekly cycle, the view, selection, empty-week reasons, the notification and history. Phase 2 in part: the monthly work report and the weekly digest.
 - **Date:** 2026-10-15
 - **Area:** retention. Build this first.
 - **Depends on:** RFC-0001, RFC-0005 (execution and deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled tasks and notifications), RFC-0009 (audit log and limits). Standing approvals for content classes depend on RFC-0025 (previews). It reads work from RFC-0002, RFC-0019, RFC-0020, RFC-0023 and RFC-0024 as they ship.
@@ -176,6 +176,8 @@ A monthly page, and a quarterly export through the existing report share links (
 
 The report answers the renewal question "Is this still doing valuable work for us?" with records, not claims.
 
+**As built (phase 2, report).** The monthly report is a sheet on "This week", computed from records when asked: experiments deployed in the month with their deployment basis and the approver's name, the complete primary results that finished in the month (one per experiment, negative ones listed first, with the conversion event's GA4 totals before and after when RFC-0012 data exists, and first-touch revenue when RFC-0016 has 10 customers in each window), the approvals of the month with the median hours from preparation, and the approvals waiting now. Regressions join with RFC-0019. Effort is the sum of the completed items' effort estimates, labeled as Relay's estimate.
+
 ### 5.8 Data model
 
 `work_cycles`:
@@ -222,6 +224,8 @@ The entries are a weekly snapshot. Live status comes from the linked records.
 
 1. Always: an in-app notification per cycle.
 2. When Loops is configured (RFC-0001 B3): a weekly email to opted-in members with the same three sections and Waiting on you.
+
+**As built (phase 2, digest).** Relay sends email through the Cloudflare Email binding of RFC-0008 5.11, not Loops. The weekly cycle notification lists the top three items of each section and the short-week reasons, and the opt-in daily or weekly digest carries unread notifications, so it carries the sections.
 
 ### 5.11 Success metrics
 
@@ -271,8 +275,8 @@ No paid providers. One cycle task per project per week. Detection refreshes stay
 - [ ] Policy pause and revert preparation after a failed verification (test).
 - [ ] Plan limits through Autumn, the usage line, and "Over the plan limit" (tests).
 - [ ] Regression restores excluded from the change limit (test).
-- [ ] Monthly work report with negative results included.
-- [ ] Weekly email digest when Loops is configured.
+- [x] Monthly work report with negative results included.
+- [x] Weekly email digest when Loops is configured. Built on the RFC-0008 email digest, which uses the Cloudflare Email binding.
 
 ### Phase 3
 
