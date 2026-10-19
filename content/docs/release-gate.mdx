@@ -67,7 +67,7 @@ Put `relay-gate.json` at the root of the repository:
 
 Relay validates the file. If it is not valid, the check fails with the exact reason, for example `relay-gate.json is invalid: packs.links: Invalid input: expected boolean, received string`.
 
-With the GitHub App, Relay reads `relay-gate.json` from the commit that it checks. The GitHub Action does not send the file yet, so for Action runs, set the packs in Project settings.
+With the GitHub App, Relay reads `relay-gate.json` from the commit that it checks. The GitHub Action sends the file from version `v2` (`PlaybookMediaLLC/relay-seo-check@v2`); set another path with its `config-path` input. `v1` does not send it, so for `v1` runs, set the packs in Project settings.
 
 ## Results
 

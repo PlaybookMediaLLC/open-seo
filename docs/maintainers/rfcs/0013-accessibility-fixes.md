@@ -173,7 +173,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 ### Phase 3
 
 - [x] Statement draft from stored facts only.
-- [ ] Pull request checks through RFC-0015.
+- [x] Pull request checks through RFC-0015.
 
 ## 10. Real-site acceptance test
 
@@ -232,7 +232,7 @@ Each follow-up names its trigger. Check it here when it passes.
 
 - [ ] Phase 1 acceptance (section 10) on S1 staging, S1, S3 and S4: the seeded staging page, a hand check of 20 violations, one `image-alt` cluster and the `lang` issue fixed by pull request, and the fix check after deployment. Trigger: the account has credits for the browser hold, the GitHub App is installed again on PlaybookMediaLLC, and the owner seeds the S1 staging page.
 - [ ] Completion criteria (section 11): violation accuracy, clustering on S4, the element locator on 10 real violations, 10 rated alt text drafts, and the step's time on a 50-page audit. Trigger: the acceptance above.
-- [ ] Pull request checks through RFC-0015 (section 5.7): compare axe-core results on the preview and production, and block new serious or critical violations. Trigger: RFC-0015 phase 1 ships its preview comparison.
+- [x] Pull request checks through RFC-0015 (section 5.7): compare axe-core results on the preview and production, and block new serious or critical violations. Passed on 2026-10-19: the RFC-0015 accessibility pack (PR #148).
 - [ ] Exact-price browser hold. The audit step and the fix check hold the rendering estimate's high end, which includes a Context fallback that axe-core never uses: 16 credits for 4 pages, while the most they can use is 3. Hold only the browser attempts, through a marked, generic option on the upstream `lockRenderingCredits`. Trigger: an owner reports skipped checks with a small balance, or the next upstream sync touches rendering billing.
 
 **Production smoke check (2026-10-19, Relay Lab project):** a 4-page audit completed. The accessibility step held no credits, because the account had 1 credit and the 4-page hold is 16, so it checked nothing and stored no results, as designed. The trend card, the statement draft and the opportunities therefore show no accessibility data for that audit, rather than "no issues".

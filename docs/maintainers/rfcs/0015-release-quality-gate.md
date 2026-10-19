@@ -1,6 +1,6 @@
 # RFC-0015: Release quality gate for websites
 
-- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack. Part C built: the links and assets pack, without console errors. Part D built: the accessibility pack. Part E built: the trend line in the summary.
+- **Status:** Done on 2026-10-19. Built in PRs #145 to #149: `relay-gate.json`, the pack columns and summaries grouped by pack (A), the security header pack (B), the links and assets pack (C), the accessibility pack (D) and the trend line (E). The public action `PlaybookMediaLLC/relay-seo-check` v2.0.0 sends the file. The owner chose on 2026-10-19 to keep the performance pack, the gate-only plan and the console-error rule as follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. One pull request check for website quality.
 - **Depends on:** RFC-0010 (SEO checks on pull requests). Uses rules from RFC-0013 (accessibility) and RFC-0014 (performance).
@@ -107,7 +107,7 @@ A file `relay-gate.json` at the app root, validated with Zod:
 3. An invalid file fails the run with the exact Zod error, so mistakes are visible.
 4. Changes to ignore rules in the file show in the run summary.
 
-**As built (part A).** The check API takes the file as `gateConfig` text (20 KB at most) and validates it when the run is queued; an invalid file answers 400 `invalid_gate_config` with every Zod issue as `path: message`, so the mistake shows in CI. The run stores the text, its SHA-256 as `config_hash`, and the space-separated `packs_enabled` from the project defaults and the file. Project settings hold the defaults for the accessibility, links and security packs (all off, so existing projects see no new findings); SEO stays on unless the file turns it off. In App mode, Relay reads `relay-gate.json` at the deployed commit with `contents: read`. The public action does not send the file yet: that needs a new action version, which the owner approves before it is pushed. File ignores are regular expressions, as in the example; project ignores keep their `*` globs. The API returns each finding's pack, the packs, the hash, the file's ignore rules and a Markdown `summary` grouped by pack, which the App Check Run uses. With the links pack, a broken new link is blocking in the links pack; without it, it stays an SEO warning.
+**As built (part A).** The check API takes the file as `gateConfig` text (20 KB at most) and validates it when the run is queued; an invalid file answers 400 `invalid_gate_config` with every Zod issue as `path: message`, so the mistake shows in CI. The run stores the text, its SHA-256 as `config_hash`, and the space-separated `packs_enabled` from the project defaults and the file. Project settings hold the defaults for the accessibility, links and security packs (all off, so existing projects see no new findings); SEO stays on unless the file turns it off. In App mode, Relay reads `relay-gate.json` at the deployed commit with `contents: read`. The public action sends the file from v2.0.0, which the owner approved on 2026-10-19; v1 is unchanged. File ignores are regular expressions, as in the example; project ignores keep their `*` globs. The API returns each finding's pack, the packs, the hash, the file's ignore rules and a Markdown `summary` grouped by pack, which the App Check Run uses. With the links pack, a broken new link is blocking in the links pack; without it, it stays an SEO warning.
 
 **As built (part B, security).** The page snapshot keeps the six headers of the response that the check already fetches, so the pack costs no request. The frame rule passes when either `X-Frame-Options` or a non-empty CSP `frame-ancestors` is present. Platform hosts are the RFC-0010 preview platforms (`.vercel.app`, `.netlify.app`, `.pages.dev`, `.workers.dev`); every other allowed preview host counts as a custom domain. `'unsafe-inline'` is read from `script-src`, or from `default-src` when the policy has no `script-src`. Each header change is kept once per run, on the first page that shows it, because headers are usually site-wide.
 
@@ -201,3 +201,13 @@ Browser and Lighthouse runs use Trigger.dev compute only. No paid provider. Phas
 - Identical blocking results in 10 of 10 repeated runs of one commit.
 - Phase 1 run under 5 minutes for 30 pages. Phase 2 run under 10 minutes.
 - A new developer installs the gate with `relay-gate.json` in under 10 minutes from the docs.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Real-site acceptance (section 10) on S1 staging and S3: 5 runs of a control pull request, a seeded pull request with the five phase 1 problems, and an S3 install that honors an ignore rule. Trigger: the GitHub App installed again on PlaybookMediaLLC, or a CI token on S1, and a staging host on the S1 project.
+- [ ] Completion criteria (section 11): seeded problems found, no false blocking findings on 10 real pull requests, 10 identical repeated runs, run times, and a 10-minute install. Trigger: the acceptance above.
+- [ ] Performance pack and `ci_check_metrics` (phase 2). The owner decided on 2026-10-19 to wait: checks run in a Cloudflare Workflow (the RFC-0010 decision), so Lighthouse would come from DataForSEO at about $0.005 a run, up to about $0.30 a check, instead of the free Trigger.dev compute that section 7 assumed. Trigger: a free Lighthouse runner, or the owner approves the paid path.
+- [ ] Gate-only plan and a free tier for public repositories (phase 3). Trigger: the owner sets the price and creates the product in Autumn; then the plan check is wired.
+- [ ] Console errors in the links and assets pack. Browser Run quick actions cannot observe console messages during page load, and a browser session library such as `@cloudflare/puppeteer` is a new dependency. Trigger: a real pull request that ships a console error the gate should have caught.
