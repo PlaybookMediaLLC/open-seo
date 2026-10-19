@@ -43,5 +43,18 @@ export const docsEditInputSchema = docsProjectSchema.extend({
   expectedOpportunityVersion: z.number().int().positive(),
   filePath: z.string().min(1).max(500),
   edit: markdownEditSchema,
+  /** RFC-0017 5.6: the draft the text came from, if any. */
+  draftId: z.string().min(1).optional(),
 });
 export type DocsEditInput = z.infer<typeof docsEditInputSchema>;
+export const docsDraftInputSchema = docsProjectSchema.extend({
+  opportunityId: z.string().min(1),
+  expectedOpportunityVersion: z.number().int().positive(),
+  filePath: z.string().min(1).max(500),
+  kind: z.enum(["insert_section", "add_faq_item", "replace_paragraph"]),
+  /** The heading, or the paragraph to replace. */
+  target: z.string().max(5_000),
+  /** Facts the owner types in. */
+  facts: z.string().max(2_000).default(""),
+});
+export type DocsDraftInput = z.infer<typeof docsDraftInputSchema>;

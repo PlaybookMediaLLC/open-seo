@@ -14,7 +14,11 @@ import {
 } from "@/client/components/ui/sheet";
 import { Textarea } from "@/client/components/ui/textarea";
 import { useRefreshPublishing } from "@/client/features/publishing/queries";
-import { getDocsPages, prepareDocsEdit } from "@/serverFunctions/docs";
+import {
+  draftDocsText,
+  getDocsPages,
+  prepareDocsEdit,
+} from "@/serverFunctions/docs";
 import type { MarkdownEdit } from "@/types/schemas/docs";
 
 const KINDS = {
@@ -40,6 +44,8 @@ export function DocsEditSheet({
   const [heading, setHeading] = useState("");
   const [before, setBefore] = useState("");
   const [text, setText] = useState("");
+  const [facts, setFacts] = useState("");
+  const [draftId, setDraftId] = useState<string>();
   const pages = useQuery({
     queryKey: ["docs-pages", projectId],
     queryFn: () => getDocsPages({ data: { projectId } }),
@@ -52,17 +58,36 @@ export function DocsEditSheet({
       : kind === "add_faq_item"
         ? { kind, heading, item: text }
         : { kind, heading, markdown: text };
+  const scope = {
+    projectId,
+    opportunityId: opportunity.id,
+    expectedOpportunityVersion: opportunity.version,
+    filePath,
+  };
+  const draft = useMutation({
+    meta: { errorToast: false },
+    mutationFn: () =>
+      draftDocsText({
+        data: {
+          ...scope,
+          kind,
+          target: kind === "replace_paragraph" ? before : heading,
+          facts,
+        },
+      }),
+    onSuccess: (result) => {
+      if (!result.valueAfter) return;
+      setText(result.valueAfter);
+      setDraftId(result.id);
+    },
+  });
+  // RFC-0017 5.6: a placeholder blocks the change until the owner fills it.
+  const placeholders = (text.match(/\[Owner:[^\]]*\]/gi) ?? []).length;
   const prepare = useMutation({
     meta: { errorToast: false },
     mutationFn: () =>
       prepareDocsEdit({
-        data: {
-          projectId,
-          opportunityId: opportunity.id,
-          expectedOpportunityVersion: opportunity.version,
-          filePath,
-          edit,
-        },
+        data: { ...scope, edit, draftId },
       }),
     onSuccess: (result) => {
       void refresh();
@@ -154,6 +179,35 @@ export function DocsEditSheet({
                   </select>
                 </>
               )}
+              <Label htmlFor="docs-facts">Facts for a draft (optional)</Label>
+              <Textarea
+                id="docs-facts"
+                rows={3}
+                placeholder="Commands, options and answers that the docs do not have yet."
+                value={facts}
+                onChange={(event) => setFacts(event.target.value)}
+              />
+              <Button
+                variant="outline"
+                pending={draft.isPending}
+                disabled={
+                  !filePath ||
+                  (kind === "replace_paragraph" ? !before.trim() : !heading)
+                }
+                onClick={() => draft.mutate()}
+              >
+                Draft with AI (uses credits)
+              </Button>
+              {draft.data && (
+                <p role="status" className="text-muted-foreground">
+                  {draft.data.rationale} {draft.data.validationSummary}
+                </p>
+              )}
+              {draft.isError && (
+                <p role="alert" className="text-destructive">
+                  {draft.error.message}
+                </p>
+              )}
               <Label htmlFor="docs-text">
                 {kind === "insert_section"
                   ? "New section, starting with a heading at the same level"
@@ -167,6 +221,12 @@ export function DocsEditSheet({
                 value={text}
                 onChange={(event) => setText(event.target.value)}
               />
+              {placeholders > 0 && (
+                <p role="alert" className="text-destructive">
+                  Fill {placeholders} [Owner: …] placeholder
+                  {placeholders === 1 ? "" : "s"} before you prepare the change.
+                </p>
+              )}
               {text.trim() && (
                 <section aria-label="Preview" className="rounded-lg border p-3">
                   <p className="mb-2 text-xs font-medium text-muted-foreground">
@@ -189,6 +249,7 @@ export function DocsEditSheet({
             disabled={
               !filePath ||
               !text.trim() ||
+              placeholders > 0 ||
               (kind === "replace_paragraph" ? !before.trim() : !heading)
             }
             onClick={() => prepare.mutate()}

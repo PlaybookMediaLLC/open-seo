@@ -51,6 +51,17 @@ describe("markdown edits", () => {
     expect(edited).not.toContain("You can also copy");
   });
 
+  // RFC-0017 5.6: a draft's placeholder blocks the change until it is filled.
+  it("refuses text that still has an owner placeholder", () => {
+    expect(() =>
+      edit({
+        kind: "add_faq_item",
+        heading: "Set up your agent",
+        item: "[Gemini](/docs/mcp): [Owner: add the setup steps]",
+      }),
+    ).toThrow("Fill every [Owner: …] placeholder first.");
+  });
+
   it("refuses edits that would touch JSX or front matter, or add JSX", () => {
     const callout = "# Page\n\n<Callout>\n\nOld text.\n\n</Callout>\n";
     expect(() =>

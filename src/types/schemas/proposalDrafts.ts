@@ -9,6 +9,8 @@ export const DRAFT_KINDS = [
   "page_copy",
   // RFC-0013 5.4: alt text for one image.
   "alt_text",
+  // RFC-0017 5.6: Markdown for one docs edit, from verified sources only.
+  "docs_markdown",
 ] as const;
 export const DRAFT_STATUSES = [
   "generated",
