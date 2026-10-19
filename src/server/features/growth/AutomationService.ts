@@ -26,6 +26,7 @@ const DEFAULTS: Record<
   measurement_refresh: { interval: "daily", hourUtc: 9 },
   deployment_check: { interval: "daily", hourUtc: 10 },
   cwv_refresh: { interval: "weekly", hourUtc: 5 },
+  revenue_sync: { interval: "daily", hourUtc: 4 },
 };
 export const SEARCH_CONSOLE_JOBS: Kind[] = [
   "opportunity_refresh",

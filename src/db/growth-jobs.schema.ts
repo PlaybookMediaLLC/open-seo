@@ -19,6 +19,8 @@ export const GROWTH_JOB_KINDS = [
   "recommendation_recheck",
   // RFC-0014 5.2: weekly Chrome UX Report field data.
   "cwv_refresh",
+  // RFC-0016 5.4: daily Stripe revenue sync.
+  "revenue_sync",
 ] as const;
 
 export const growthSchedules = sqliteTable(
