@@ -5,6 +5,7 @@ import {
 } from "cloudflare:workers";
 import { pgStep } from "@/server/workflows/pgStep";
 import { reportCheckRun } from "./githubAppMode";
+import { MAX_ACCESSIBILITY_PAGES } from "./accessibilityPack";
 import { MAX_RENDERED_PAGES } from "./seoCheckRender";
 import { planCheck } from "./seoCheckPlan";
 import {
@@ -37,14 +38,16 @@ export class SeoCheckWorkflow extends WorkflowEntrypoint<
       let links = LINK_BUDGET;
       let renders = MAX_RENDERED_PAGES;
       let assets = ASSET_BUDGET;
+      let accessibility = MAX_ACCESSIBILITY_PAGES;
       for (let index = 0; index < plan.urls.length; index += BATCH_SIZE) {
-        const budget = { links, renders, assets };
+        const budget = { links, renders, assets, accessibility };
         const result = await pgStep(step, `check-${index}`, STEP, () =>
           checkBatch(plan, plan.urls.slice(index, index + BATCH_SIZE), budget),
         );
         links -= result.linksChecked;
         renders -= result.pagesRendered;
         assets -= result.assetsChecked ?? 0;
+        accessibility -= result.accessibilityChecked ?? 0;
         batches.push(result);
       }
       await pgStep(step, "finish", STEP, () => finishCheck(plan, batches));

@@ -5,6 +5,7 @@ import { runBatch } from "@/db/runBatch";
 import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
 import { assetSize, linkStatus, fetchSnapshot } from "./pageSnapshot";
 import { assetWeight, mixedContent, WEIGHED } from "./assetRules";
+import { checkAccessibility } from "./accessibilityPack";
 import { pageUrl, previewAccess, type CheckPlan } from "./seoCheckPlan";
 import { isPlatformHost } from "./previewHosts";
 import { renderPages } from "./seoCheckRender";
@@ -30,6 +31,7 @@ export type BatchResult = {
   linksChecked: number;
   pagesRendered: number;
   assetsChecked?: number;
+  accessibilityChecked?: number;
 };
 
 /** 5.13: the raw HTML looks client-rendered, or lost half its text. */
@@ -54,7 +56,12 @@ async function inPool<T, R>(items: T[], work: (item: T) => Promise<R>) {
 export async function checkBatch(
   plan: CheckPlan,
   batch: PlannedUrl[],
-  budget: { links: number; renders: number; assets?: number },
+  budget: {
+    links: number;
+    renders: number;
+    assets?: number;
+    accessibility?: number;
+  },
 ): Promise<BatchResult> {
   const linkBudget = budget.links;
   const access = await previewAccess(plan.projectId, plan.previewOrigin);
@@ -109,6 +116,18 @@ export async function checkBatch(
     : [];
   const measured = await inPool(wanted, (url) => assetSize(url, access));
   wanted.forEach((url, index) => sizes.set(url, measured[index]));
+  // RFC-0015 5.3: axe-core on pages that loaded on both hosts.
+  const a11yPaths = plan.packs.includes("accessibility")
+    ? pages
+        .filter(
+          ({ base, preview }) => base.status === 200 && preview.status === 200,
+        )
+        .map(({ url }) => url.path)
+        .slice(0, budget.accessibility ?? 0)
+    : [];
+  findings.push(
+    ...(await checkAccessibility(plan, a11yPaths, access !== null)),
+  );
   for (const { url, base, preview } of pages) {
     if (seo)
       findings.push(
@@ -171,6 +190,7 @@ export async function checkBatch(
     linksChecked,
     pagesRendered: toRender.length,
     assetsChecked: wanted.length,
+    accessibilityChecked: a11yPaths.length,
   };
 }
 
@@ -181,7 +201,11 @@ export async function checkBatch(
 function siteWide(findings: Finding[]) {
   const seen = new Set<string>();
   return findings.filter((finding) => {
-    if (finding.pack !== "security") return true;
+    if (
+      finding.pack !== "security" &&
+      finding.rule !== "accessibility-not-checked"
+    )
+      return true;
     const key = `${finding.rule} ${finding.before} ${finding.after}`;
     if (seen.has(key)) return false;
     seen.add(key);
