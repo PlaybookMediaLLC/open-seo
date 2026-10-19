@@ -50,6 +50,9 @@ const tokensOf = (text: string) =>
       .filter((word) => word && !STOP_WORDS.has(word))
       .map(stem),
   );
+/** Terms with the same words share this key, such as "API keys" and "api key". */
+export const termKey = (text: string) =>
+  sort([...tokensOf(text)], (a, b) => a.localeCompare(b)).join(" ");
 const pathKey = (path: string) => path.replace(/\/+$/, "") || "/";
 const percent = (value: number) => `${Math.round(value * 1000) / 10}%`;
 function median(values: number[]) {
@@ -160,7 +163,7 @@ export function detectDocsProblems(input: {
       texts.some((text) => [...tokens].every((token) => text.has(token)))
     )
       continue;
-    const key = sort([...tokens], (a, b) => a.localeCompare(b)).join(" ");
+    const key = termKey(row.term);
     const group = terms.get(key) ?? { term: row.term, top: 0, total: 0 };
     if (row.searches > group.top)
       Object.assign(group, { term: row.term, top: row.searches });
