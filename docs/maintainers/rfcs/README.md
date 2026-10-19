@@ -67,7 +67,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | Beyond SEO: web performance                                          | Done: follow-ups in its section 12         | [RFC-0014](0014-web-performance.md)                          |
 | Beyond SEO: release quality gate                                     | Done: follow-ups in its section 12         | [RFC-0015](0015-release-quality-gate.md)                     |
 | Beyond SEO: revenue attribution                                      | Done: follow-ups in its section 12         | [RFC-0016](0016-revenue-attribution.md)                      |
-| Beyond SEO: docs and support deflection                              | Missing                                    | [RFC-0017](0017-docs-and-support-deflection.md)              |
+| Beyond SEO: docs and support deflection                              | Done: follow-ups in its section 12         | [RFC-0017](0017-docs-and-support-deflection.md)              |
 | Retention: weekly execution queue and work report                    | Missing                                    | [RFC-0018](0018-weekly-execution-queue.md)                   |
 | Retention: release monitoring and regression repair                  | Missing                                    | [RFC-0019](0019-release-monitoring-and-regression-repair.md) |
 | Retention: growth campaigns and decay recovery                       | Missing                                    | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      |
