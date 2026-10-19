@@ -10,10 +10,22 @@ The release gate grows the [SEO check](/docs/seo-checks) into one check with rul
 | Pack              | What it checks                                                            | Default |
 | ----------------- | ------------------------------------------------------------------------- | ------- |
 | `seo`             | The SEO rules of the SEO check.                                           | On      |
+| `accessibility`   | New accessibility violations that axe-core finds, on up to 10 pages.      | Off     |
 | `links`           | Broken new links, mixed content, heavy new images and page weight growth. | Off     |
 | `securityHeaders` | Security response headers that the preview drops or weakens.              | Off     |
 
 Turn packs on in **Project settings > SEO checks**, or in `relay-gate.json`. The file wins.
+
+## Accessibility
+
+The accessibility pack runs [axe-core](https://github.com/dequelabs/axe-core) 4.13.0 on production and on the preview, for up to 10 checked pages in each run.
+
+- A violation is new when the preview has an element that production does not, for a rule that fails on more elements on the preview than on production. The second part keeps a class name that changed between builds from looking new.
+- New `serious` and `critical` violations **block**. New `moderate` ones warn. `minor` ones are not reported.
+- The browser time is billed like rendered audit pages. Without room in your credits or spending limits, the run checks no page for accessibility and says so.
+- A protected preview cannot be loaded in the browser with its access header, so the run says that accessibility was not checked.
+
+Automated checks find only some accessibility issues. Manual testing with assistive technology is still needed.
 
 ## Links and assets
 

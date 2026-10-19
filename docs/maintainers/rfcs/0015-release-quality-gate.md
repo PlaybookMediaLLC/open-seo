@@ -1,6 +1,6 @@
 # RFC-0015: Release quality gate for websites
 
-- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack. Part C built: the links and assets pack, without console errors.
+- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack. Part C built: the links and assets pack, without console errors. Part D built: the accessibility pack.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. One pull request check for website quality.
 - **Depends on:** RFC-0010 (SEO checks on pull requests). Uses rules from RFC-0013 (accessibility) and RFC-0014 (performance).
@@ -113,6 +113,8 @@ A file `relay-gate.json` at the app root, validated with Zod:
 
 **As built (part C, links and assets).** Page facts now list up to 100 subresources (images, scripts, stylesheets, frames, media) and the HTML size. A subresource is new when its absolute URL is not on production's page. Mixed content needs no request. Image and page sizes come from `HEAD` requests (Content-Length), deduplicated in a batch and capped at 200 for each run; images, scripts and stylesheets count toward the weight, and a page's weight compares only when every counted size is known on both versions. Each rule reports at most five findings a page. The console-error rule is not built: Cloudflare Browser Run quick actions cannot observe console messages during page load, and a browser session library would be a new dependency, so it is a follow-up.
 
+**As built (part D, accessibility and browser runs).** Browser packs run in the RFC-0010 Cloudflare Workflow on Cloudflare Browser Run, not on a Trigger.dev machine: the owner chose the Workflow for RFC-0010 so that checks need no other account, and the same reasoning holds here. The RFC-0010 safety rules still apply: the host allowlist and URL policy choose the URLs, `runAxe` refuses a URL that is not crawlable, and a protected preview is not rendered, because the renderer would need the access secret; the run then shows one "accessibility not checked" warning. The pack checks up to 10 pages a run that loaded with status 200 on both hosts, and bills the browser time like rendered mode; without room in the credits or limits it checks nothing and says so. A violation is new when the preview has a node whose RFC-0013 cluster key production lacks, on a rule with more nodes on the preview than on production: the count stops a class name that changed between builds from looking new. Serious and critical block, moderate warns, minor is not reported. Findings use the axe-core rule id as their rule, so `relay-gate.json` can ignore `color-contrast` on a path.
+
 ### 5.5 Stable results
 
 1. Fixed viewport, user agent, cold cache and the same network.
@@ -151,8 +153,8 @@ Browser and Lighthouse runs use Trigger.dev compute only. No paid provider. Phas
 
 ### Phase 1
 
-- [ ] Headless Chromium in the Trigger.dev task with the RFC-0010 safety rules.
-- [ ] Accessibility pack with new-violation detection by cluster key (tests).
+- [x] Headless Chromium in the Trigger.dev task with the RFC-0010 safety rules.
+- [x] Accessibility pack with new-violation detection by cluster key (tests).
 - [ ] Links and assets pack (one test per rule).
 - [x] Security header pack with the custom-domain and platform-host rules (tests).
 - [x] `relay-gate.json` schema, precedence and error reporting (tests).

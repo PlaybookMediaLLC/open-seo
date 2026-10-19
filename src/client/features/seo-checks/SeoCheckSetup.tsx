@@ -221,6 +221,11 @@ export function SeoCheckSetup({
             },
             // RFC-0015: release gate packs; relay-gate.json can override.
             {
+              key: "accessibilityPack" as const,
+              label:
+                "Release gate: block new serious accessibility violations on up to 10 pages. Uses rendering credits.",
+            },
+            {
               key: "linksPack" as const,
               label:
                 "Release gate: block broken new links and mixed content, and warn on heavy images and pages.",
