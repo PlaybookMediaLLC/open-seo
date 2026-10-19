@@ -43,3 +43,19 @@ On the **Opportunities** page, select **Find docs gaps**. The run is free. It re
 - The run says which checks it skipped and why.
 
 Product changes and launches also move docs searches and traffic. Treat each item as a question to check, not as proof.
+
+## 4. Edit the docs
+
+Approve a docs opportunity, then select **Edit the docs** in its publishing section. Choose a file from the docs index and one change:
+
+- **Insert a section after a heading.** The new section goes at the end of the chosen heading's section. Start it with a heading at the same level.
+- **Add an item to the list under a heading.** Relay uses the list's own bullet or number style.
+- **Replace one paragraph.** Paste the current paragraph exactly. Relay replaces top-level paragraphs only.
+
+Relay then checks the change:
+
+- The front matter and every JSX block, import, expression and HTML block stay byte-identical. Relay refuses an edit inside a JSX block.
+- The new text must be Markdown only, without JSX, imports or HTML.
+- The heading or paragraph must appear exactly once at the top level of the file.
+
+The proposal shows the exact Markdown and the rendered text, before and after. Nothing is written to GitHub until you approve the pull request.

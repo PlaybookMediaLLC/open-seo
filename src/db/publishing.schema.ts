@@ -155,6 +155,8 @@ export const proposalTextEdits = sqliteTable(
         "jsx_text",
         "markdown_text",
         "jsx_attribute",
+        // RFC-0017 5.5: one Markdown block span in a docs file.
+        "markdown_block",
       ],
     }).notNull(),
     beforeBlobSha: text("before_blob_sha").notNull(),

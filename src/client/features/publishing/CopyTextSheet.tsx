@@ -21,6 +21,7 @@ import {
 } from "@/serverFunctions/copyText";
 import { PerformanceFixSheet } from "@/client/features/performance/PerformanceFixSheet";
 import { AccessibilityFixSheet } from "@/client/features/accessibility/AccessibilityFixSheet";
+import { DocsEditSheet } from "@/client/features/docs/DocsEditSheet";
 import { useRefreshPublishing } from "./queries";
 
 type Scope = { projectId: string; opportunityId: string };
@@ -44,6 +45,7 @@ type SheetOpportunity = {
   id: string;
   projectId: string;
   version: number;
+  type?: string;
   accessibilityRule?: string;
   performanceCauses?: string;
 };
@@ -62,6 +64,9 @@ export function CodeChangeSheets({
           opportunity={opportunity}
           ruleId={opportunity.accessibilityRule}
         />
+      )}
+      {opportunity.type?.startsWith("docs_") && (
+        <DocsEditSheet opportunity={opportunity} />
       )}
       {opportunity.performanceCauses !== undefined && (
         <PerformanceFixSheet

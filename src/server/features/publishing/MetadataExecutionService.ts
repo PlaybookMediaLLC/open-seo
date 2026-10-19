@@ -177,7 +177,8 @@ async function execute(
           // RFC-0012 5.4: a page text change commits every edit at once.
           if (
             proposal.changeKind === "copy_text" ||
-            proposal.changeKind === "jsx_attribute"
+            proposal.changeKind === "jsx_attribute" ||
+            proposal.changeKind === "markdown"
           ) {
             await publishCopyProposal(
               client,
