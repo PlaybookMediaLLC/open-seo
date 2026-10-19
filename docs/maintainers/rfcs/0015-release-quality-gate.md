@@ -1,6 +1,6 @@
 # RFC-0015: Release quality gate for websites
 
-- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack. Part C built: the links and assets pack, without console errors. Part D built: the accessibility pack.
+- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack. Part C built: the links and assets pack, without console errors. Part D built: the accessibility pack. Part E built: the trend line in the summary.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. One pull request check for website quality.
 - **Depends on:** RFC-0010 (SEO checks on pull requests). Uses rules from RFC-0013 (accessibility) and RFC-0014 (performance).
@@ -134,6 +134,8 @@ Extend RFC-0010:
 1. Phase 3 adds a gate-only plan per repository, with a free tier for public repositories.
 2. The pull request summary shows a trend line from the last 10 runs on the base branch.
 
+**As built (part E, trend).** Runs do not record a base branch, so the trend uses the repository's last 10 finished runs up to the current one, oldest first. It is one line of block characters with the counts in brackets, so it renders in the Action's job summary and in a Check Run without images. Fewer than two runs show no trend.
+
 ## 6. Security
 
 1. The same host allowlist, URL policy and secret handling as RFC-0010.
@@ -160,7 +162,7 @@ Browser and Lighthouse runs use Trigger.dev compute only. No paid provider. Phas
 - [x] `relay-gate.json` schema, precedence and error reporting (tests).
 - [x] Pack column, config hash and packs-enabled columns in D1 and Postgres.
 - [x] Summary groups findings by pack.
-- [ ] `content/docs/release-gate.mdx` with the file reference.
+- [x] `content/docs/release-gate.mdx` with the file reference.
 
 ### Phase 2
 
@@ -170,7 +172,7 @@ Browser and Lighthouse runs use Trigger.dev compute only. No paid provider. Phas
 ### Phase 3
 
 - [ ] Gate-only plan and the public-repository free tier.
-- [ ] Trend line in the summary.
+- [x] Trend line in the summary.
 
 ## 10. Real-site acceptance test
 

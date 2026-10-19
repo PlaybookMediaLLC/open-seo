@@ -131,6 +131,21 @@ export function gateSummary(
   ].join("\n\n");
 }
 
+const BARS = "▁▂▃▄▅▆▇█";
+
+/**
+ * RFC-0015 5.7: blocking findings of the last runs, oldest first, as a
+ * one-line text chart that fits in any pull request summary.
+ */
+export function gateTrend(blocking: number[]) {
+  if (blocking.length < 2) return "";
+  const top = Math.max(...blocking, 1);
+  const line = blocking
+    .map((count) => BARS[Math.round((count / top) * (BARS.length - 1))])
+    .join("");
+  return `Blocking findings in the last ${blocking.length} runs: ${line} (${blocking.join(", ")})`;
+}
+
 /** The packs a run uses: the project's defaults, then the file. */
 export function enabledPacks(
   defaults: Record<GatePack, boolean>,

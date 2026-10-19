@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
-import { and, asc, count, eq, gte } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lte } from "drizzle-orm";
+import { reverse } from "remeda";
 import { db } from "@/db";
 import {
   ciCheckFindings,
@@ -15,6 +16,7 @@ import { sha256Hex } from "@/server/lib/audit/ids";
 import {
   enabledPacks,
   gateSummary,
+  gateTrend,
   parseGateConfig,
 } from "@/shared/releaseGate";
 import type { CreateCheckInput } from "@/types/schemas/seoChecks";
@@ -199,6 +201,28 @@ export async function queueCheck(
   return { status: 202, body: run ?? { id, status: "queued" } };
 }
 
+/** RFC-0015 5.7: blocking counts of the repository's last 10 runs. */
+export async function recentBlocking(run: {
+  projectId: string;
+  repository: string;
+  createdAt: string;
+}) {
+  const rows = await db
+    .select({ blocking: ciCheckRuns.blockingCount })
+    .from(ciCheckRuns)
+    .where(
+      and(
+        eq(ciCheckRuns.projectId, run.projectId),
+        eq(ciCheckRuns.repository, run.repository),
+        eq(ciCheckRuns.status, "succeeded"),
+        lte(ciCheckRuns.createdAt, run.createdAt),
+      ),
+    )
+    .orderBy(desc(ciCheckRuns.createdAt))
+    .limit(10);
+  return reverse(rows.map((row) => row.blocking));
+}
+
 /** A run of the token's own project, with its findings and traffic. */
 export async function getCheck(
   token: CiTokenContext,
@@ -238,7 +262,12 @@ export async function getCheck(
       packs: run.packsEnabled.split(" "),
       configHash: run.configHash,
       fileIgnores,
-      summary: gateSummary(findings, fileIgnores),
+      summary: [
+        gateSummary(findings, fileIgnores),
+        gateTrend(await recentBlocking(run)),
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
       findings: findings.map((finding) => {
         const page = urls.find((url) => url.path === finding.path);
         return {
