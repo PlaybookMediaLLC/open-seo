@@ -91,10 +91,13 @@ afterAll(async () => {
   await database.close();
 });
 
-async function queuedRun() {
+async function queuedRun(
+  gate: { packsEnabled?: string; gateConfig?: string } = {},
+) {
   const { run } = await setupRun(database.client, database.slugPrefix);
   const runId = crypto.randomUUID();
   await db.insert(ciCheckRuns).values({
+    ...gate,
     id: runId,
     projectId: run.projectId,
     repository: "acme/site",
@@ -187,4 +190,22 @@ it("fetches a trailing-slash site in its own style instead of skipping redirects
     .where(eq(ciCheckUrls.runId, runId));
   expect(statuses.map((row) => row.status)).toEqual([200, 200, 200]);
   site.slash = false;
+});
+
+// RFC-0015 5.4: the run's packs and the repository file's ignore rules.
+it("checks only the enabled packs, and applies the file's ignore rules", async () => {
+  const ignored = await queuedRun({
+    packsEnabled: "seo",
+    gateConfig: '{"ignore":[{"rule":"newly-noindex","path":"^/pric"}]}',
+  });
+  let plan = await planCheck(ignored.runId);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  const rules = (await stored(ignored.runId)).map((finding) => finding.rule);
+  expect(rules).toContain("content-shrunk");
+  expect(rules).not.toContain("newly-noindex");
+
+  const linksOnly = await queuedRun({ packsEnabled: "links" });
+  plan = await planCheck(linksOnly.runId);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  expect(await stored(linksOnly.runId)).toEqual([]);
 });

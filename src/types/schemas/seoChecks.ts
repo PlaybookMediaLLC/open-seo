@@ -11,6 +11,8 @@ export const createCheckInputSchema = z.object({
   headSha: z.string().regex(/^[0-9a-f]{40}$/),
   changedFiles: z.array(z.string().min(1).max(500)).max(300).default([]),
   override: z.boolean().default(false),
+  // RFC-0015 5.4: the repository's relay-gate.json, as text.
+  gateConfig: z.string().max(20_000).optional(),
 });
 export type CreateCheckInput = z.infer<typeof createCheckInputSchema>;
 
@@ -62,4 +64,8 @@ export const saveSeoCheckSettingsSchema = project.extend({
   raiseOnHighTraffic: z.boolean(),
   checkPreviewRobotsHeader: z.boolean(),
   renderedMode: z.boolean(),
+  // RFC-0015 5.4: the release gate packs that runs use by default.
+  accessibilityPack: z.boolean().default(false),
+  linksPack: z.boolean().default(false),
+  securityPack: z.boolean().default(false),
 });

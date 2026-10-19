@@ -6,10 +6,17 @@ import {
   ciCheckRuns,
   ciCheckUrls,
   ciPreviewHosts,
+  ciProjectSettings,
 } from "@/db/schema";
 import { customerHasPaidPlan } from "@/server/billing/subscription";
 import { normalizeAndValidateStartUrl } from "@/server/lib/audit/url-policy";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
+import { sha256Hex } from "@/server/lib/audit/ids";
+import {
+  enabledPacks,
+  gateSummary,
+  parseGateConfig,
+} from "@/shared/releaseGate";
 import type { CreateCheckInput } from "@/types/schemas/seoChecks";
 import type { CiTokenContext } from "./ciTokens";
 import { recordAudit } from "@/server/features/activity/auditLog";
@@ -114,6 +121,24 @@ export async function queueCheck(
       "That preview host is blocked.",
     );
   }
+  // RFC-0015 5.4: an invalid file fails the run with the exact error.
+  const gate = input.gateConfig ? parseGateConfig(input.gateConfig) : null;
+  if (gate && "error" in gate)
+    return fail(400, "invalid_gate_config", gate.error);
+  const [settings] = await db
+    .select()
+    .from(ciProjectSettings)
+    .where(eq(ciProjectSettings.projectId, token.projectId));
+  const packs = enabledPacks(
+    {
+      seo: true,
+      accessibility: settings?.accessibilityPack ?? false,
+      links: settings?.linksPack ?? false,
+      security: settings?.securityPack ?? false,
+      performance: false,
+    },
+    gate?.config ?? null,
+  );
   const scope = and(
     eq(ciCheckRuns.projectId, token.projectId),
     eq(ciCheckRuns.headSha, input.headSha),
@@ -147,6 +172,9 @@ export async function queueCheck(
       source: origin.source,
       installationId: origin.installationId,
       overrideUsed: input.override,
+      gateConfig: input.gateConfig ?? null,
+      configHash: input.gateConfig ? await sha256Hex(input.gateConfig) : null,
+      packsEnabled: packs.join(" "),
       createdAt: now.toISOString(),
     })
     .onConflictDoNothing();
@@ -194,6 +222,8 @@ export async function getCheck(
       .orderBy(asc(ciCheckFindings.path)),
     db.select().from(ciCheckUrls).where(eq(ciCheckUrls.runId, run.id)),
   ]);
+  const gate = run.gateConfig ? parseGateConfig(run.gateConfig) : null;
+  const fileIgnores = gate && "config" in gate ? gate.config.ignore : [];
   return {
     status: 200,
     body: {
@@ -204,11 +234,17 @@ export async function getCheck(
       urls: run.urlCount,
       overrideUsed: run.overrideUsed,
       error: run.error,
+      // RFC-0015: the packs, the file's hash and its ignore rules.
+      packs: run.packsEnabled.split(" "),
+      configHash: run.configHash,
+      fileIgnores,
+      summary: gateSummary(findings, fileIgnores),
       findings: findings.map((finding) => {
         const page = urls.find((url) => url.path === finding.path);
         return {
           path: finding.path,
           rule: finding.rule,
+          pack: finding.pack,
           severity: finding.severity,
           before: finding.beforeValue,
           after: finding.afterValue,

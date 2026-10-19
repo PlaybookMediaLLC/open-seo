@@ -219,6 +219,11 @@ export function SeoCheckSetup({
               label:
                 "Render up to 5 client-rendered pages in a browser. Uses rendering credits.",
             },
+            // RFC-0015: release gate packs; relay-gate.json can override.
+            {
+              key: "linksPack" as const,
+              label: "Release gate: a broken new link blocks the pull request.",
+            },
           ].map((option) => (
             <label key={option.key} className="flex items-center gap-3">
               <Switch
@@ -232,6 +237,9 @@ export function SeoCheckSetup({
                         raiseOnHighTraffic: data.raiseOnHighTraffic,
                         checkPreviewRobotsHeader: data.checkPreviewRobotsHeader,
                         renderedMode: data.renderedMode,
+                        accessibilityPack: data.accessibilityPack,
+                        linksPack: data.linksPack,
+                        securityPack: data.securityPack,
                         [option.key]: checked,
                       },
                     }),

@@ -1,0 +1,41 @@
+---
+title: "Release gate"
+description: "One pull request check for SEO, links and more, with settings that live in your repository."
+---
+
+The release gate grows the [SEO check](/docs/seo-checks) into one check with rule packs. Each pack compares the preview of a pull request with production, and reports only the problems that the pull request adds.
+
+## Rule packs
+
+| Pack    | What it checks                                                                                                                              | Default |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `seo`   | The SEO rules of the SEO check.                                                                                                             | On      |
+| `links` | A link that is new on the preview and returns 4xx or 5xx blocks the pull request. Without this pack, the SEO check reports it as a warning. | Off     |
+
+Turn packs on in **Project settings > SEO checks**, or in `relay-gate.json`. The file wins.
+
+## relay-gate.json
+
+Put `relay-gate.json` at the root of the repository:
+
+```json
+{
+  "packs": {
+    "seo": true,
+    "links": true
+  },
+  "ignore": [{ "rule": "title-changed", "path": "^/legacy/" }]
+}
+```
+
+- `packs`: turn a pack on with `true` or off with `false`. A pack that the file does not name uses the project setting.
+- `ignore`: each entry skips one rule on the paths that match `path`, a regular expression. The check summary lists these entries, so every reviewer sees them.
+- `budgets`: limits for later packs. The file accepts `lcpWorsePercent`, `tbtWorsePercent`, `clsWorsePercent`, `jsGrowthPercent` and `imageMaxKb`.
+
+Relay validates the file. If it is not valid, the check fails with the exact reason, for example `relay-gate.json is invalid: packs.links: Invalid input: expected boolean, received string`.
+
+With the GitHub App, Relay reads `relay-gate.json` from the commit that it checks. The GitHub Action does not send the file yet, so for Action runs, set the packs in Project settings.
+
+## Results
+
+The check summary groups the findings by pack. Each run stores the hash of the file it used and the packs it ran, so you can see which settings gave a result.

@@ -547,6 +547,13 @@
       "when": 1792401023981,
       "tag": "0077_acoustic_glorian",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1792403482427,
+      "tag": "0078_secret_randall",
+      "breakpoints": true
     }
   ]
 }

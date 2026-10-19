@@ -16,6 +16,8 @@ import {
   installationToken,
 } from "@/server/features/publishing/githubApp";
 import { getOptionalEnvValue } from "@/server/lib/runtime-env";
+import { AppError } from "@/server/lib/errors";
+import { gateSummary, parseGateConfig } from "@/shared/releaseGate";
 import { queueCheck } from "./CheckApi";
 
 // RFC-0010 5.12: GitHub App mode. A successful preview deployment of a pull
@@ -146,7 +148,7 @@ export async function handleDeploymentStatus(payload: unknown) {
   const token = await installationToken({
     installationId: installation.id,
     repositoryId,
-    permissions: { metadata: "read", pull_requests: "read" },
+    permissions: { metadata: "read", pull_requests: "read", contents: "read" },
   });
   const repo = `${API}/repos/${repository.full_name}`;
   const pulls = await githubJson(
@@ -162,6 +164,24 @@ export async function handleDeploymentStatus(payload: unknown) {
     filesSchema,
     { token },
   );
+  // RFC-0015 5.4: the repository's relay-gate.json at the commit, if any.
+  const gateConfig = await githubJson(
+    `${repo}/contents/relay-gate.json?ref=${deployment.sha}`,
+    z.object({ encoding: z.literal("base64"), content: z.string() }),
+    { token },
+  ).then(
+    (file) =>
+      new TextDecoder().decode(
+        Uint8Array.from(atob(file.content.replace(/\s/g, "")), (char) =>
+          char.charCodeAt(0),
+        ),
+      ),
+    (error: unknown) => {
+      if (error instanceof AppError && error.code === "NOT_FOUND")
+        return undefined;
+      throw error;
+    },
+  );
   const results = await Promise.all(
     previews.map(({ productionEnvironment: _env, ...target }) =>
       queueCheck(
@@ -175,6 +195,7 @@ export async function handleDeploymentStatus(payload: unknown) {
           override: pull.labels.some(
             (label) => label.name === "relay-seo-override",
           ),
+          gateConfig,
         },
         { source: "app", installationId: installation.id },
       ),
@@ -197,6 +218,11 @@ export async function reportCheckRun(runId: string) {
     db.select().from(ciCheckUrls).where(eq(ciCheckUrls.runId, runId)),
   ]);
   const blocked = run.blockingCount > 0 && !run.overrideUsed;
+  const gate = run.gateConfig ? parseGateConfig(run.gateConfig) : null;
+  const summary = gateSummary(
+    findings,
+    gate && "config" in gate ? gate.config.ignore : [],
+  );
   const annotations = findings.flatMap((finding) => {
     const file = urls.find((url) => url.path === finding.path)?.sourceFile;
     return file
@@ -245,15 +271,9 @@ export async function reportCheckRun(runId: string) {
           run.status === "failed"
             ? "Relay could not complete the check"
             : `${run.blockingCount} blocking, ${run.warningCount} warnings`,
-        summary: findings.length
-          ? findings
-              .map(
-                (finding) =>
-                  `- **${finding.severity}** ${finding.path}: ${finding.rule}`,
-              )
-              .join("\n")
-              .slice(0, 60_000)
-          : `${run.urlCount} pages checked. No findings.`,
+        summary: (
+          summary || `${run.urlCount} pages checked. No findings.`
+        ).slice(0, 60_000),
         annotations: annotations.slice(0, MAX_ANNOTATIONS),
       },
     },
