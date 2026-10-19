@@ -5,7 +5,17 @@ import { parseSource, walk, type Program } from "./metadataSyntax";
 // RFC-0013 5.4: find the one JSX element that an accessibility fix changes,
 // and set one attribute on it. RFC-0014 reuses this change kind. Parsing
 // reads syntax only; nothing executes.
-export type ElementTarget = { kind: "image"; src: string } | { kind: "html" };
+export type ElementTarget =
+  | { kind: "image"; src: string }
+  | { kind: "html" }
+  // One literal attribute; with `tokens`, a class list that has every token.
+  | {
+      kind: "attribute";
+      tags: string[];
+      name: string;
+      value: string;
+      tokens?: boolean;
+    };
 type Range = { start: number; end: number };
 type Found = { file: SourceFile; element: Range; line: number };
 type Reader = Parameters<typeof reachableFiles>[0]["reader"];
@@ -67,6 +77,24 @@ function matches(
 ) {
   const name: unknown = field(field(node, "name"), "name");
   if (target.kind === "html") return name === "html";
+  if (target.kind === "attribute") {
+    if (typeof name !== "string" || !target.tags.includes(name)) return false;
+    const names =
+      target.name === "className" ? ["className", "class"] : [target.name];
+    const value = field(
+      list(field(node, "attributes")).find(
+        (attribute) =>
+          field(attribute, "type") === "JSXAttribute" &&
+          names.includes(String(field(field(attribute, "name"), "name"))),
+      ),
+      "value",
+    );
+    if (field(value, "type") !== "StringLiteral") return false;
+    const literal = String(field(value, "value"));
+    if (!target.tokens) return literal === target.value;
+    const present = new Set(literal.split(/\s+/));
+    return target.value.split(/\s+/).every((token) => present.has(token));
+  }
   if (name !== "img" && name !== "Image") return false;
   const src = list(field(node, "attributes")).find(
     (attribute) =>

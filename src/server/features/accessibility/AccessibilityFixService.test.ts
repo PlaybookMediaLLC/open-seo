@@ -50,7 +50,15 @@ vi.mock(
 vi.mock("@/server/features/publishing/githubClient", () => ({
   createGithubClient: mocks.client,
 }));
+vi.mock("@/server/features/publishing/fileLocator", () => ({
+  locateMetadataFile: async () => ({
+    status: "found",
+    filePath: "app/pricing/page.tsx",
+  }),
+}));
 
+const PAGE =
+  'export default () => (<nav><a href="/pricing" className="icon"><svg /></a></nav>);\n';
 const LAYOUT =
   'export default function Root({ children }) {\n  return <html lang="en_US"><body>{children}</body></html>;\n}\n';
 let fixture: Awaited<ReturnType<typeof makePublishingFixture>>;
@@ -88,8 +96,11 @@ beforeEach(async () => {
   mocks.gsc.mockResolvedValue({ siteUrl: fixture.detail.opportunity.siteUrl });
   mocks.save.mockResolvedValue(true);
   mocks.readFile.mockImplementation(async (path: string) => {
-    if (path !== "app/layout.tsx") throw new AppError("NOT_FOUND");
-    return { source: LAYOUT, blobSha: "c".repeat(40) };
+    const source = { "app/layout.tsx": LAYOUT, "app/pricing/page.tsx": PAGE }[
+      path
+    ];
+    if (!source) throw new AppError("NOT_FOUND");
+    return { source, blobSha: "c".repeat(40) };
   });
   mocks.client.mockReturnValue({
     getRepository: async () => fixture.repository,
@@ -126,4 +137,23 @@ it('refuses alt text that starts with "image of", before any GitHub read', async
   expect(result.message).toContain("image of");
   expect(mocks.client).not.toHaveBeenCalled();
   expect(mocks.save).not.toHaveBeenCalled();
+});
+
+it("names an icon link by its href, with aria-label", async () => {
+  fixture.detail.accessibilityEvidence = [
+    {
+      ...evidence("link-name"),
+      exampleSelector: "nav > a.icon",
+      exampleSnippet: '<a href="/pricing" class="icon"><svg></svg></a>',
+    },
+  ];
+  const result = await AccessibilityFixService.prepare(fixture.context, {
+    ...input,
+    fix: { kind: "name", text: "View pricing" },
+  });
+  expect(result.ok).toBe(true);
+  expect(mocks.save.mock.calls[0][0].textEdits?.[0]).toMatchObject({
+    filePath: "app/pricing/page.tsx",
+    afterText: '<a href="/pricing" className="icon" aria-label="View pricing">',
+  });
 });

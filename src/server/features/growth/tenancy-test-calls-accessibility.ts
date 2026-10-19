@@ -21,6 +21,11 @@ export function accessibilityCalls(
           ...opportunity,
           fix: { kind: "lang", language: "en" },
         }),
+      suggestName: () =>
+        AccessibilityFixService.suggestName(ctx, {
+          projectId,
+          opportunityId: "x",
+        }),
     },
     AltTextDraftService: {
       draft: () => AltTextDraftService.draft(ctx, opportunity),
