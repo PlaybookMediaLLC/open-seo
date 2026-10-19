@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { enabledPacks, parseGateConfig } from "./releaseGate";
+import { enabledPacks, gateTrend, parseGateConfig } from "./releaseGate";
 
 // RFC-0015 5.4: the repository file wins, and a mistake is shown exactly.
 const defaults = {
@@ -33,4 +33,12 @@ it("reports the exact reason an invalid file fails", () => {
   );
   expect(reason("{")).toBe("relay-gate.json is not valid JSON.");
   expect(reason('{"extra":1}')).toContain("relay-gate.json is invalid");
+});
+
+// RFC-0015 5.7: the trend of blocking findings, oldest run first.
+it("draws the blocking findings of the last runs as one line", () => {
+  expect(gateTrend([0, 2, 4, 1])).toBe(
+    "Blocking findings in the last 4 runs: ▁▅█▃ (0, 2, 4, 1)",
+  );
+  expect(gateTrend([3])).toBe("");
 });

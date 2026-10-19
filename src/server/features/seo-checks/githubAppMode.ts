@@ -17,8 +17,8 @@ import {
 } from "@/server/features/publishing/githubApp";
 import { getOptionalEnvValue } from "@/server/lib/runtime-env";
 import { AppError } from "@/server/lib/errors";
-import { gateSummary, parseGateConfig } from "@/shared/releaseGate";
-import { queueCheck } from "./CheckApi";
+import { gateSummary, gateTrend, parseGateConfig } from "@/shared/releaseGate";
+import { queueCheck, recentBlocking } from "./CheckApi";
 
 // RFC-0010 5.12: GitHub App mode. A successful preview deployment of a pull
 // request starts a check with no workflow step, and the result comes back
@@ -219,10 +219,12 @@ export async function reportCheckRun(runId: string) {
   ]);
   const blocked = run.blockingCount > 0 && !run.overrideUsed;
   const gate = run.gateConfig ? parseGateConfig(run.gateConfig) : null;
-  const summary = gateSummary(
-    findings,
-    gate && "config" in gate ? gate.config.ignore : [],
-  );
+  const summary = [
+    gateSummary(findings, gate && "config" in gate ? gate.config.ignore : []),
+    gateTrend(await recentBlocking(run)),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
   const annotations = findings.flatMap((finding) => {
     const file = urls.find((url) => url.path === finding.path)?.sourceFile;
     return file
