@@ -1,3 +1,4 @@
+import { RevenueReport } from "@/client/features/revenue/RevenueReport";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export function ExperimentsPage({ projectId }: { projectId: string }) {
           title="Experiments & Results"
           description="Track reviewed changes from pull request to human-confirmed deployment and Search Console observations."
         />
+        <RevenueReport projectId={projectId} />
         <SplitTestsSection projectId={projectId} />
         <div className="rounded-xl border bg-card p-4 text-sm space-y-2">
           <p className="font-medium">Observed change is not causal proof.</p>

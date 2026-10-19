@@ -39,6 +39,7 @@ import { PerformanceLabService } from "@/server/features/performance/Performance
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { RevenueConnectionService } from "@/server/features/revenue/RevenueConnectionService";
+import { RevenueReportService } from "@/server/features/revenue/RevenueReportService";
 import * as revenueSchema from "@/db/revenue.schema";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
@@ -172,6 +173,7 @@ const services: Record<string, Record<string, unknown>> = {
   PerformanceLabService,
   PerformanceVitalsService,
   RevenueConnectionService,
+  RevenueReportService,
 };
 
 async function growthRowCount() {

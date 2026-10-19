@@ -83,6 +83,14 @@ The **Revenue sync** job in **Automation** runs once a day. It reads the paid in
 - Each run reads at most about 5,000 invoices, in whole weeks. The rest follows in the next run.
 - A run looks one week back, so a payment made late is still counted. Running it again adds no duplicate rows.
 
+## 5. Reports
+
+Open **Experiments & Results**. The **Revenue by first touch** section shows the last 30, 90 or 365 days.
+
+- **Coverage** comes first: the share of new customers with attribution data. Under 80%, Relay shows a warning. Check the snippet and the Stripe metadata.
+- For each currency, Relay shows revenue, new customers and the average first payment by channel and by first landing page (top 20).
+- Revenue is payments minus refunds in the period. Relay does not convert currencies.
+
 ## Channels
 
 Relay sorts each first touch into one channel:
