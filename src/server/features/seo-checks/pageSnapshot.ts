@@ -4,6 +4,7 @@ import { analyzeHtml } from "@/server/lib/audit/page-analyzer";
 import { normalizeAndValidateStartUrl } from "@/server/lib/audit/url-policy";
 import { crawlerHeadersFor, type CrawlerAccess } from "@/shared/crawler-access";
 import type { PageFacts, Snapshot } from "./seoRules";
+import { readSecurityHeaders } from "./securityRules";
 
 // RFC-0010 5.4: one request per page and host. A redirect is itself a
 // finding and the rules need production's 200, so hops are not followed;
@@ -118,6 +119,7 @@ export async function fetchSnapshot(
       status: response.status,
       redirected: response.status >= 300 && response.status < 400,
       robotsHeader: response.headers.get("x-robots-tag"),
+      security: readSecurityHeaders(response.headers),
       page: null,
     };
     const html = response.headers.get("content-type")?.includes("text/html");

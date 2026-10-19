@@ -5,7 +5,9 @@ import { runBatch } from "@/db/runBatch";
 import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
 import { linkStatus, fetchSnapshot } from "./pageSnapshot";
 import { pageUrl, previewAccess, type CheckPlan } from "./seoCheckPlan";
+import { isPlatformHost } from "./previewHosts";
 import { renderPages } from "./seoCheckRender";
+import { compareSecurity } from "./securityRules";
 import {
   comparePage,
   compareSite,
@@ -100,6 +102,13 @@ export async function checkBatch(
           checkRobotsHeader: plan.checkRobotsHeader,
         }),
       );
+    if (plan.packs.includes("security"))
+      findings.push(
+        ...compareSecurity(base, preview, {
+          path: url.path,
+          platformPreview: isPlatformHost(new URL(plan.previewOrigin).hostname),
+        }),
+      );
     if (!seo && !links) continue;
     const known = new Set(base.page?.internalLinks ?? []);
     const added = (preview.page?.internalLinks ?? []).filter(
@@ -136,6 +145,21 @@ export async function checkBatch(
   };
 }
 
+/**
+ * RFC-0015: response headers are usually set for the whole site, so each
+ * change of one header shows once, on the first page that has it.
+ */
+function siteWide(findings: Finding[]) {
+  const seen = new Set<string>();
+  return findings.filter((finding) => {
+    if (finding.pack !== "security") return true;
+    const key = `${finding.rule} ${finding.before} ${finding.after}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 /** Adds the site rules, weighs and filters findings, and stores the result. */
 export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
   const urls = batches.flatMap((batch) => batch.urls);
@@ -150,7 +174,7 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
       : undefined;
   };
   const findings = weigh(
-    [
+    siteWide([
       ...(plan.packs.includes("seo")
         ? compareSite({
             paths: plan.urls.map((url) => url.path),
@@ -164,7 +188,7 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
           })
         : []),
       ...batches.flatMap((batch) => batch.findings),
-    ],
+    ]),
     traffic,
     { raiseOnHighTraffic: plan.raiseOnHighTraffic, ignores: plan.ignores },
   );

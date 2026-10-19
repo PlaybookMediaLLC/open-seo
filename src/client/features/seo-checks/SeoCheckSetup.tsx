@@ -224,6 +224,11 @@ export function SeoCheckSetup({
               key: "linksPack" as const,
               label: "Release gate: a broken new link blocks the pull request.",
             },
+            {
+              key: "securityPack" as const,
+              label:
+                "Release gate: flag security headers that the preview drops or weakens.",
+            },
           ].map((option) => (
             <label key={option.key} className="flex items-center gap-3">
               <Switch

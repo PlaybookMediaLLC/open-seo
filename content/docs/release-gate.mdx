@@ -7,12 +7,22 @@ The release gate grows the [SEO check](/docs/seo-checks) into one check with rul
 
 ## Rule packs
 
-| Pack    | What it checks                                                                                                                              | Default |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `seo`   | The SEO rules of the SEO check.                                                                                                             | On      |
-| `links` | A link that is new on the preview and returns 4xx or 5xx blocks the pull request. Without this pack, the SEO check reports it as a warning. | Off     |
+| Pack              | What it checks                                                                                                                              | Default |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `seo`             | The SEO rules of the SEO check.                                                                                                             | On      |
+| `links`           | A link that is new on the preview and returns 4xx or 5xx blocks the pull request. Without this pack, the SEO check reports it as a warning. | Off     |
+| `securityHeaders` | Security response headers that the preview drops or weakens.                                                                                | Off     |
 
 Turn packs on in **Project settings > SEO checks**, or in `relay-gate.json`. The file wins.
+
+## Security headers
+
+The security pack compares these response headers on production and the preview: `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and protection against framing (`X-Frame-Options`, or `frame-ancestors` in the CSP).
+
+- A header that production sends and the preview drops **blocks** on a preview on your own domain. On a platform preview host, such as `*.vercel.app` or `*.pages.dev`, it is a warning, because platforms set some headers themselves.
+- A weaker value is a warning: a shorter HSTS `max-age`, or `'unsafe-inline'` added to `script-src`.
+
+Headers are usually the same on every page, so the summary shows each change once, on the first page that has it. This pack checks headers only. It is not a security scan.
 
 ## relay-gate.json
 

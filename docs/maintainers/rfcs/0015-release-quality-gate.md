@@ -1,6 +1,6 @@
 # RFC-0015: Release quality gate for websites
 
-- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack.
+- **Status:** In progress. Part A built: `relay-gate.json`, the pack and run columns, the links pack's blocking rule, and summaries grouped by pack. Part B built: the security header pack.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. One pull request check for website quality.
 - **Depends on:** RFC-0010 (SEO checks on pull requests). Uses rules from RFC-0013 (accessibility) and RFC-0014 (performance).
@@ -109,6 +109,8 @@ A file `relay-gate.json` at the app root, validated with Zod:
 
 **As built (part A).** The check API takes the file as `gateConfig` text (20 KB at most) and validates it when the run is queued; an invalid file answers 400 `invalid_gate_config` with every Zod issue as `path: message`, so the mistake shows in CI. The run stores the text, its SHA-256 as `config_hash`, and the space-separated `packs_enabled` from the project defaults and the file. Project settings hold the defaults for the accessibility, links and security packs (all off, so existing projects see no new findings); SEO stays on unless the file turns it off. In App mode, Relay reads `relay-gate.json` at the deployed commit with `contents: read`. The public action does not send the file yet: that needs a new action version, which the owner approves before it is pushed. File ignores are regular expressions, as in the example; project ignores keep their `*` globs. The API returns each finding's pack, the packs, the hash, the file's ignore rules and a Markdown `summary` grouped by pack, which the App Check Run uses. With the links pack, a broken new link is blocking in the links pack; without it, it stays an SEO warning.
 
+**As built (part B, security).** The page snapshot keeps the six headers of the response that the check already fetches, so the pack costs no request. The frame rule passes when either `X-Frame-Options` or a non-empty CSP `frame-ancestors` is present. Platform hosts are the RFC-0010 preview platforms (`.vercel.app`, `.netlify.app`, `.pages.dev`, `.workers.dev`); every other allowed preview host counts as a custom domain. `'unsafe-inline'` is read from `script-src`, or from `default-src` when the policy has no `script-src`. Each header change is kept once per run, on the first page that shows it, because headers are usually site-wide.
+
 ### 5.5 Stable results
 
 1. Fixed viewport, user agent, cold cache and the same network.
@@ -150,7 +152,7 @@ Browser and Lighthouse runs use Trigger.dev compute only. No paid provider. Phas
 - [ ] Headless Chromium in the Trigger.dev task with the RFC-0010 safety rules.
 - [ ] Accessibility pack with new-violation detection by cluster key (tests).
 - [ ] Links and assets pack (one test per rule).
-- [ ] Security header pack with the custom-domain and platform-host rules (tests).
+- [x] Security header pack with the custom-domain and platform-host rules (tests).
 - [x] `relay-gate.json` schema, precedence and error reporting (tests).
 - [x] Pack column, config hash and packs-enabled columns in D1 and Postgres.
 - [x] Summary groups findings by pack.

@@ -1,4 +1,5 @@
 import type { GatePack } from "@/shared/releaseGate";
+import type { SecurityHeaders } from "./securityRules";
 import { sort } from "remeda";
 
 // RFC-0010 5.5 to 5.8: compare a preview page with production. Pure, so
@@ -25,6 +26,8 @@ export type Snapshot = {
   status: number | null;
   redirected: boolean;
   robotsHeader: string | null;
+  /** RFC-0015: the security headers of the response. */
+  security?: SecurityHeaders | null;
   page: PageFacts | null;
 };
 

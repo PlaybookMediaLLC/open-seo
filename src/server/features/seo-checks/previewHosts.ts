@@ -8,6 +8,10 @@ const PLATFORM_SUFFIXES = [
   ".workers.dev",
 ];
 
+/** RFC-0015: a preview on a hosting platform, which sets its own headers. */
+export const isPlatformHost = (host: string) =>
+  PLATFORM_SUFFIXES.some((suffix) => host.toLowerCase().endsWith(suffix));
+
 const under = (host: string, domain: string) =>
   host === domain || host.endsWith(`.${domain}`);
 

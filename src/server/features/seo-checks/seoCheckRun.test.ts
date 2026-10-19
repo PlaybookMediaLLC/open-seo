@@ -35,7 +35,7 @@ vi.mock("@/server/lib/audit/url-policy", () => ({
 const base = "https://example.com";
 // A trailing-slash site lists /pricing/ and redirects /pricing (bug found
 // on the Relay Lab live check).
-const site = vi.hoisted(() => ({ slash: false }));
+const site = vi.hoisted(() => ({ slash: false, securityDrop: false }));
 const preview = "https://pr-7.vercel.app";
 vi.mock("@/server/lib/audit/discovery", () => ({
   discoverUrls: async (origin: string) => ({
@@ -70,7 +70,15 @@ const pageFetch = vi.fn(async (url: string) => {
     onPreview && pricing ? "noindex" : "index",
     onPreview && pricing ? 60 : 300,
   );
-  return new Response(body, { headers: { "content-type": "text/html" } });
+  return new Response(body, {
+    headers: {
+      "content-type": "text/html",
+      // RFC-0015: production sends a header that the preview drops.
+      ...(site.securityDrop && !onPreview
+        ? { "referrer-policy": "strict-origin-when-cross-origin" }
+        : {}),
+    },
+  });
 });
 
 beforeAll(async () => {
@@ -208,4 +216,20 @@ it("checks only the enabled packs, and applies the file's ignore rules", async (
   plan = await planCheck(linksOnly.runId);
   await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
   expect(await stored(linksOnly.runId)).toEqual([]);
+});
+
+it("shows a header that every page drops once, as a site-wide finding", async () => {
+  site.securityDrop = true;
+  const { runId } = await queuedRun({ packsEnabled: "security" });
+  const plan = await planCheck(runId);
+  await finishCheck(plan, [await checkBatch(plan, plan.urls, budget)]);
+  site.securityDrop = false;
+  // pr-7.vercel.app is a platform host, so the drop warns.
+  expect(await stored(runId)).toEqual([
+    {
+      path: plan.urls[0].path,
+      rule: "security-header-dropped",
+      severity: "warning",
+    },
+  ]);
 });
