@@ -14,7 +14,7 @@ The check reads rendered HTML, so it works with any framework.
 3. Add this step to the workflow that deploys your preview, after the deploy step:
 
    ```yaml
-   - uses: PlaybookMediaLLC/relay-seo-check@v1
+   - uses: PlaybookMediaLLC/relay-seo-check@v2
      with:
        token: ${{ secrets.RELAY_CI_TOKEN }}
        preview-url: ${{ steps.deploy.outputs.url }}
