@@ -1,5 +1,6 @@
-import { sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { chunk } from "remeda";
+import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { cwvSnapshots } from "@/db/schema";
 import {
@@ -20,6 +21,7 @@ const AT_ONCE = 5;
 // D1 binds at most 100 parameters per statement; a snapshot row has 12.
 const ROWS_PER_INSERT = 8;
 const FORM_FACTORS: FormFactor[] = ["phone", "desktop"];
+type FieldTarget = typeof cwvSnapshots.$inferSelect;
 
 /** The property's origin: "sc-domain:example.com" or "https://example.com/". */
 function originOf(siteUrl: string) {
@@ -64,6 +66,34 @@ async function fieldTargets(projectId: string, now: Date) {
   ].slice(0, MAX_REQUESTS / FORM_FACTORS.length);
 }
 
+/** One row per target, form factor, week and source: a rerun updates it. */
+async function upsertSnapshots(rows: Array<typeof cwvSnapshots.$inferInsert>) {
+  if (!rows.length) return;
+  await runBatch((tx) =>
+    chunk(rows, ROWS_PER_INSERT).map((values) =>
+      tx
+        .insert(cwvSnapshots)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [
+            cwvSnapshots.projectId,
+            cwvSnapshots.scope,
+            cwvSnapshots.target,
+            cwvSnapshots.formFactor,
+            cwvSnapshots.collectionEnd,
+            cwvSnapshots.source,
+          ],
+          set: {
+            lcpP75Ms: sql`excluded.lcp_p75_ms`,
+            inpP75Ms: sql`excluded.inp_p75_ms`,
+            clsP75: sql`excluded.cls_p75`,
+            fetchedAt: sql`excluded.fetched_at`,
+          },
+        }),
+    ),
+  );
+}
+
 export async function refreshFieldData(projectId: string, now: Date) {
   const apiKey = await getOptionalEnvValue("CRUX_API_KEY");
   if (!apiKey) return { configured: false, stored: 0, noData: 0, failed: 0 };
@@ -95,29 +125,54 @@ export async function refreshFieldData(projectId: string, now: Date) {
         }
       }),
     );
-  if (rows.length)
-    await runBatch((tx) =>
-      chunk(rows, ROWS_PER_INSERT).map((values) =>
-        tx
-          .insert(cwvSnapshots)
-          .values(values)
-          .onConflictDoUpdate({
-            target: [
-              cwvSnapshots.projectId,
-              cwvSnapshots.scope,
-              cwvSnapshots.target,
-              cwvSnapshots.formFactor,
-              cwvSnapshots.collectionEnd,
-              cwvSnapshots.source,
-            ],
-            set: {
-              lcpP75Ms: sql`excluded.lcp_p75_ms`,
-              inpP75Ms: sql`excluded.inp_p75_ms`,
-              clsP75: sql`excluded.cls_p75`,
-              fetchedAt: sql`excluded.fetched_at`,
-            },
-          }),
-      ),
-    );
+  await upsertSnapshots(rows);
   return { configured: true, stored: rows.length, noData, failed };
+}
+
+type Target = Pick<FieldTarget, "scope" | "target" | "formFactor">;
+
+/** RFC-0014 5.6: stores the weekly CrUX History points of one target. */
+export async function storeFieldHistory(
+  projectId: string,
+  target: Target,
+  points: Array<
+    Pick<
+      typeof cwvSnapshots.$inferInsert,
+      "collectionEnd" | "lcpP75Ms" | "inpP75Ms" | "clsP75"
+    >
+  >,
+  now: Date,
+) {
+  await upsertSnapshots(
+    points.map((point) => ({
+      ...point,
+      ...target,
+      id: crypto.randomUUID(),
+      projectId,
+      source: "crux_history",
+      fetchedAt: now.toISOString(),
+    })),
+  );
+}
+
+/** The stored weekly points of one target, oldest first. */
+export function fieldHistory(projectId: string, target: Target) {
+  return db
+    .select({
+      collectionEnd: cwvSnapshots.collectionEnd,
+      lcpP75Ms: cwvSnapshots.lcpP75Ms,
+      inpP75Ms: cwvSnapshots.inpP75Ms,
+      clsP75: cwvSnapshots.clsP75,
+    })
+    .from(cwvSnapshots)
+    .where(
+      and(
+        eq(cwvSnapshots.projectId, projectId),
+        eq(cwvSnapshots.scope, target.scope),
+        eq(cwvSnapshots.target, target.target),
+        eq(cwvSnapshots.formFactor, target.formFactor),
+        eq(cwvSnapshots.source, "crux_history"),
+      ),
+    )
+    .orderBy(asc(cwvSnapshots.collectionEnd));
 }

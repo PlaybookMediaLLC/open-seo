@@ -55,6 +55,22 @@ Relay reads the latest site audit's Lighthouse reports for the pages in the grou
 
 When no audit ran Lighthouse on those pages, the item says so. Run a site audit with **Lighthouse** turned on to find the cause. Approve an item to copy its ticket or create a GitHub issue. The ticket lists the field data, the lab value and each cause with its change.
 
+## Field result after a change
+
+Phase 1 changes ship through a ticket, so Relay measures from the day a person marks the item **Implemented**.
+
+1. On the item, select **Check the field result**. Relay reads the weekly history of the measured page from the Chrome UX Report. It reads once an hour at most, and the request is free.
+2. Relay compares the median of the 4 weekly points before the change with the median of the 4 points that start 4 weeks after it. Each point covers 28 days, so the points after the change hold only days after it.
+3. The result is ready about 7 weeks after the change. Until then, Relay shows the date to check again.
+
+The labels are:
+
+- **Improved**: the value became good, or it improved by 15% or more.
+- **Worse**: the value stopped being good, or it got 15% or more slower.
+- **No clear change**: anything else.
+
+Other changes, seasons and traffic shifts also move field data. Relay shows the result without a claim about what caused it.
+
 ## Self-hosting
 
 Set `CRUX_API_KEY` to a Google API key with the Chrome UX Report API turned on. Without the key, the job skips and says that field data access is not configured.

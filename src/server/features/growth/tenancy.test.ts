@@ -34,6 +34,7 @@ import { ConversionGateService } from "@/server/features/conversion/ConversionGa
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
+import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -160,6 +161,7 @@ const services: Record<string, Record<string, unknown>> = {
   AccessibilityFixService,
   AltTextDraftService,
   AccessibilityCheckService,
+  PerformanceResultService,
 };
 
 async function growthRowCount() {

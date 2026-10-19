@@ -1,3 +1,5 @@
+import { sort } from "remeda";
+
 // RFC-0014: Core Web Vitals thresholds at the 75th percentile, and the plain
 // causes that Relay names from a stored Lighthouse report.
 export const PERFORMANCE_METRICS = ["lcp", "inp", "cls"] as const;
@@ -113,4 +115,97 @@ export function causesFor(lighthouseIds: Iterable<string>) {
 export function causesOf(causeIds: string) {
   const ids = new Set(causeIds.split(" "));
   return PERFORMANCE_CAUSES.filter((cause) => ids.has(cause.id));
+}
+
+/** Google's "poor" limits; between good and poor is "needs improvement". */
+const POOR: Record<PerformanceMetric, number> = {
+  lcp: 4_000,
+  inp: 500,
+  cls: 0.25,
+};
+const rating = (metric: PerformanceMetric, value: number) =>
+  value <= GOOD[metric]
+    ? "good"
+    : value <= POOR[metric]
+      ? "needs improvement"
+      : "poor";
+
+const DAY_MS = 86_400_000;
+const POINTS = 4;
+// A 28-day window: after 4 weeks, every day in a point is after the change.
+const OFFSET_DAYS = 28;
+
+const median = (values: number[]) => {
+  const sorted = sort(values, (a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
+};
+
+const values = (rows: Array<{ value: number | null }>) =>
+  rows.flatMap((row) => (row.value === null ? [] : [row.value]));
+
+export type FieldResult =
+  | { status: "waiting"; readyOn: string }
+  | { status: "not_enough_data" }
+  | {
+      status: "measured";
+      before: number;
+      after: number;
+      beforeRating: string;
+      afterRating: string;
+      label: "improved" | "worse" | "no clear change";
+    };
+
+/**
+ * RFC-0014 5.6: the median of the 4 weekly points before the change against
+ * the 4 points that start 4 weeks after it. "Improved" when the value
+ * becomes good or improves by 15% or more; "worse" for the reverse.
+ */
+export function fieldResult(
+  points: Array<{ collectionEnd: string; value: number | null }>,
+  changedOn: string,
+  metric: PerformanceMetric,
+): FieldResult {
+  const start = new Date(`${changedOn.slice(0, 10)}T00:00:00Z`).getTime();
+  const firstAfter = new Date(start + OFFSET_DAYS * DAY_MS)
+    .toISOString()
+    .slice(0, 10);
+  const sorted = sort(points, (a, b) =>
+    a.collectionEnd.localeCompare(b.collectionEnd),
+  );
+  const before = sorted
+    .filter((point) => point.collectionEnd < changedOn.slice(0, 10))
+    .slice(-POINTS);
+  const after = sorted
+    .filter((point) => point.collectionEnd >= firstAfter)
+    .slice(0, POINTS);
+  if (after.length < POINTS)
+    return {
+      status: "waiting",
+      readyOn: new Date(start + (OFFSET_DAYS + (POINTS - 1) * 7) * DAY_MS)
+        .toISOString()
+        .slice(0, 10),
+    };
+  if (values(before).length < POINTS || values(after).length < POINTS)
+    return { status: "not_enough_data" };
+  const was = median(values(before));
+  const now = median(values(after));
+  const beforeRating = rating(metric, was);
+  const afterRating = rating(metric, now);
+  const label =
+    (beforeRating !== "good" && afterRating === "good") || now <= was * 0.85
+      ? "improved"
+      : (beforeRating === "good" && afterRating !== "good") || now >= was * 1.15
+        ? "worse"
+        : "no clear change";
+  return {
+    status: "measured",
+    before: was,
+    after: now,
+    beforeRating,
+    afterRating,
+    label,
+  };
 }

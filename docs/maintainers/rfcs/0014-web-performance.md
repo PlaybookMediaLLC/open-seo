@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets.
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -100,6 +100,8 @@ All fixes use the RFC-0013 `jsx_attribute` change kind and its element matching 
 3. **Labels:** "improved" when the p75 moves from poor or needs-improvement to good, or improves by 15% or more. "Worse" for the reverse. Otherwise "no clear change".
 4. Show organic CTR, engagement and conversions for the same pages next to it (RFC-0006, RFC-0012), without a causal claim.
 
+**As built (part C, field).** Phase 1 has no Relay change to track, so the field result belongs to the opportunity and starts on the day of its newest "implemented" decision. **Check the field result** asks the CrUX History API for the measured target and form factor once an hour at most (a lease per item), stores the weekly points as `crux_history` rows, and computes the result from stored rows; viewing the page makes no request. The comparison takes the 4 points that end before the change day and the first 4 points that end 28 days or more after it, and compares their medians. A missing week in either group gives "not enough data"; fewer than 4 later points gives "waiting" with the date of the 4th point, 49 days after the change. "Improved" and "worse" follow item 3, with Google's poor limits (LCP 4,000 ms, INP 500 ms, CLS 0.25) for the ratings. Lab runs at deploy (item 1) are phase 2, and item 4 is a follow-up: the item page does not yet show organic CTR, engagement and conversions next to the field result.
+
 ### 5.7 Phase 3: monitoring snippet
 
 For sites without CrUX data, an optional snippet uses the `web-vitals` library to send LCP, INP and CLS to the site's own GA4 as events. Relay reads them as an event report. No data goes to Relay directly.
@@ -129,8 +131,8 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 - [x] Template grouping and `performance_issue` detection with threshold tests.
 - [x] Cause mapping table with one test per Lighthouse id.
 - [x] Tickets for every cause.
-- [ ] Field measurement with the 4-week offset and the labels.
-- [ ] `content/docs/performance.mdx` explains field and lab data and the delays.
+- [x] Field measurement with the 4-week offset and the labels.
+- [x] `content/docs/performance.mdx` explains field and lab data and the delays.
 
 ### Phase 2
 
