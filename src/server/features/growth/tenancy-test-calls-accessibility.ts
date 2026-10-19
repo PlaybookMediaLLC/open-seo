@@ -1,9 +1,10 @@
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
+import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import type { INTRUDER } from "./tenancy-test-calls";
 
-/** RFC-0013: the accessibility fix, draft and check services. */
+/** RFC-0013 and RFC-0014: the accessibility and performance services. */
 export function accessibilityCalls(
   projectId: string,
   experimentId: string,
@@ -29,6 +30,16 @@ export function accessibilityCalls(
     },
     AltTextDraftService: {
       draft: () => AltTextDraftService.draft(ctx, opportunity),
+    },
+    // RFC-0014: the field result of a performance item.
+    PerformanceResultService: {
+      get: () =>
+        PerformanceResultService.get(ctx, { projectId, opportunityId: "x" }),
+      refresh: () =>
+        PerformanceResultService.refresh(ctx, {
+          projectId,
+          opportunityId: "x",
+        }),
     },
     AccessibilityCheckService: {
       check: () =>

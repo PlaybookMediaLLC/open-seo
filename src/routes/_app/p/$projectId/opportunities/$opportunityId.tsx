@@ -1,4 +1,5 @@
 import { PublishingOpportunityPanel } from "@/client/features/publishing/PublishingOpportunityPanel";
+import { PerformanceFieldResult } from "@/client/features/performance/PerformanceFieldResult";
 import { AnchorDraftCard } from "@/client/features/publishing/AnchorDraftCard";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -81,6 +82,9 @@ function OpportunityDetailPage() {
     ga4Evidence,
     decisions,
   } = query.data;
+  const performance = query.data.performanceEvidence.find(
+    (row) => row.runId === item.evidenceRunId,
+  );
   const factors = [
     ["Commercial value", item.commercialScore],
     ["Search demand", item.demandScore],
@@ -239,6 +243,13 @@ function OpportunityDetailPage() {
             canDraft={
               access.isSuccess && access.data.canReview && !query.isError
             }
+          />
+        )}
+        {performance && (
+          <PerformanceFieldResult
+            projectId={projectId}
+            opportunityId={item.id}
+            metric={performance.metric}
           />
         )}
         {item.type === "declining_page" && (
