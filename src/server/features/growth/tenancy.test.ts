@@ -45,10 +45,12 @@ import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsResultService } from "@/server/features/docs/DocsResultService";
 import { SupportSourceService } from "@/server/features/support/SupportSourceService";
+import { WorkService } from "@/server/features/work/WorkService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import * as revenueSchema from "@/db/revenue.schema";
 import * as docsSchema from "@/db/docs.schema";
 import * as supportSchema from "@/db/support.schema";
+import * as workSchema from "@/db/work.schema";
 import { deployed } from "@/server/features/experiments/repositories/experimentTestFixtures";
 import { INTRUDER, tenancyCalls } from "./tenancy-test-calls";
 import { ContentBriefService } from "@/server/features/opportunities/services/ContentBriefService";
@@ -108,6 +110,7 @@ const growthTables = tablesOf(
   revenueSchema,
   docsSchema,
   supportSchema,
+  workSchema,
 );
 
 let seed: Awaited<ReturnType<typeof deployed>>;
@@ -190,6 +193,7 @@ const services: Record<string, Record<string, unknown>> = {
   DocsEditService,
   DocsResultService,
   SupportSourceService,
+  WorkService,
 };
 
 async function growthRowCount() {

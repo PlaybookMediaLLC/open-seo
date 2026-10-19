@@ -29,6 +29,7 @@ const DEFAULTS: Record<
   revenue_sync: { interval: "daily", hourUtc: 4 },
   docs_index: { interval: "daily", hourUtc: 3 },
   support_topics: { interval: "daily", hourUtc: 2 },
+  weekly_cycle: { interval: "weekly", hourUtc: 6 },
 };
 export const SEARCH_CONSOLE_JOBS: Kind[] = [
   "opportunity_refresh",

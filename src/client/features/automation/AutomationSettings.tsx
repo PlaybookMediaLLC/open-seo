@@ -51,6 +51,10 @@ const JOBS = {
     label: "Docs index",
     text: "Reads the titles and headings of changed docs files in the connected repository. Free.",
   },
+  weekly_cycle: {
+    label: "Weekly cycle",
+    text: "Writes this week's Completed, Measuring, Next and Waiting lists, and tells you. Set the day and hour in This week. Free.",
+  },
   support_topics: {
     label: "Support topics",
     text: "Groups the last 90 days of GitHub issues into topics, without storing their text. Uses a few credits.",
