@@ -519,6 +519,13 @@
       "when": 1792342704254,
       "tag": "0073_thin_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1792377326630,
+      "tag": "0074_mixed_arachne",
+      "breakpoints": true
     }
   ]
 }

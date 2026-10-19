@@ -1,3 +1,4 @@
+import type { AccessibilityTicketFacts } from "@/server/features/accessibility/accessibilityTicket";
 import type { ProposalDraft } from "@/types/schemas/proposalDrafts";
 import { sort } from "remeda";
 import type {
@@ -50,6 +51,23 @@ const VERIFY: Record<OpportunityType, string> = {
     "After the change ships, wait 28 days. Then compare the page's engagement rate with the GA4 evidence above.",
 };
 
+// axe-core's color-contrast summary: the ratio, both colors, the target.
+const CONTRAST =
+  /contrast of ([\d.]+) \(foreground color: (#[0-9a-f]{3,8}), background color: (#[0-9a-f]{3,8}).*?\)\. Expected contrast ratio of ([\d.]+):1/i;
+
+/** RFC-0013 phase 2: headings in page order, with each skipped level. */
+function headingOutline(headings: AccessibilityTicketFacts["headings"]) {
+  let previous = 0;
+  return headings
+    .map(({ level, text }) => {
+      const skip = previous > 0 && level > previous + 1;
+      const line = `- h${level} \`${text.replaceAll("`", "'") || "(empty)"}\`${skip ? ` (skips from h${previous})` : ""}`;
+      previous = level;
+      return line;
+    })
+    .join("\n");
+}
+
 /** RFC-0004 phase 3: a checked internal-link anchor draft. */
 type TicketAnchor = Pick<
   ProposalDraft,
@@ -64,6 +82,7 @@ type TicketAnchor = Pick<
 export function opportunityTicket(
   detail: OpportunityDetail,
   anchor: TicketAnchor | null = null,
+  accessibilityFacts: AccessibilityTicketFacts | null = null,
 ) {
   const { opportunity: item } = detail;
   const latest = <T extends { runId: string }>(rows: T[]) =>
@@ -90,6 +109,13 @@ export function opportunityTicket(
   const [inspection] = latest(detail.inspectionEvidence);
   const [link] = latest(detail.linkEvidence);
   const keywords = latest(detail.keywordEvidence).slice(0, KEYWORD_ROWS);
+  const [accessibility] = latest(detail.accessibilityEvidence);
+  const summary =
+    accessibilityFacts?.summary?.replace(/\s+/g, " ").trim() ?? null;
+  const contrast =
+    accessibility?.ruleId === "color-contrast" && summary
+      ? CONTRAST.exec(summary)
+      : null;
   const evidence = [
     ...searchRows,
     ...(audit
@@ -111,6 +137,13 @@ export function opportunityTicket(
       (row) =>
         `- "${row.keyword}": ${row.searchVolume} monthly searches; ${row.competitorDomain} ranks at position ${row.competitorPosition}`,
     ),
+    ...(accessibility
+      ? [
+          `- axe-core rule ${accessibility.ruleId} (${accessibility.impact}) on ${accessibility.pagesAffected} pages${accessibility.wcagTags ? `, ${accessibility.wcagTags}` : ""}`,
+          `- Example on ${accessibility.exampleUrl}: \`${accessibility.exampleSelector.replaceAll("`", "'")}\``,
+          ...(summary ? [`- axe-core: ${summary}`] : []),
+        ]
+      : []),
   ];
   return {
     title: item.title.slice(0, 200),
@@ -122,6 +155,16 @@ export function opportunityTicket(
       ...(anchor
         ? [
             `## Suggested link\n\nOn ${anchor.targetUrl}, link the words "${anchor.valueAfter}" to ${item.url}. They stand in this sentence:\n\n> ${anchor.valueBefore ?? ""}\n\nRelay drafted this with AI and checked that the sentence is on the page.`,
+          ]
+        : []),
+      ...(contrast
+        ? [
+            `## Contrast\n\n- Measured ratio: ${contrast[1]}:1\n- Foreground color: ${contrast[2]}\n- Background color: ${contrast[3]}\n- Required ratio: ${contrast[4]}:1`,
+          ]
+        : []),
+      ...(accessibility && accessibilityFacts?.headings.length
+        ? [
+            `## Heading outline\n\nOn ${accessibility.exampleUrl}:\n\n${headingOutline(accessibilityFacts.headings)}`,
           ]
         : []),
       `## Risk\n\n${item.uncertainty} Estimated effort: ${item.effortHours} hours.`,

@@ -4,6 +4,7 @@ import { chunk, sortBy } from "remeda";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
+  auditAccessibilityHeadings,
   auditAccessibilityResults,
   auditAccessibilityTargets,
   auditAccessibilityViolations,
@@ -30,6 +31,8 @@ import { clusterKey, loadAxe, runAxe } from "./axeRun";
 const MAX_PAGES = 50;
 const PAGES_PER_STEP = 5;
 const VIOLATION_ROWS_PER_INSERT = 9;
+// D1 binds at most 100 parameters per statement; a heading row has 5.
+const HEADING_ROWS_PER_INSERT = 19;
 const CHECK_STEP = {
   retries: { limit: 0, delay: "1 second" },
   timeout: "10 minutes",
@@ -120,6 +123,17 @@ async function storeResult(
     ...chunk(violations, VIOLATION_ROWS_PER_INSERT).map((rows) =>
       tx.insert(auditAccessibilityViolations).values(rows),
     ),
+    ...chunk(
+      "result" in outcome
+        ? outcome.result.headings.map((heading, position) => ({
+            ...heading,
+            id: crypto.randomUUID(),
+            resultId,
+            position,
+          }))
+        : [],
+      HEADING_ROWS_PER_INSERT,
+    ).map((rows) => tx.insert(auditAccessibilityHeadings).values(rows)),
   ]);
 }
 

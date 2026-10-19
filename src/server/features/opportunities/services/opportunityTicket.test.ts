@@ -75,4 +75,42 @@ describe("opportunityTicket", () => {
     expect(body).not.toContain("999 clicks");
     expect(body).not.toMatch(/ghp_|secret|admin/);
   });
+
+  it("states the contrast values and the heading outline of a cluster", () => {
+    const value = opportunityDetail("approved");
+    const evidence = {
+      id: "a1",
+      opportunityId: value.opportunity.id,
+      runId: value.opportunity.evidenceRunId,
+      auditId: "audit-1",
+      clusterKey: "cluster",
+      impact: "serious" as const,
+      wcagTags: "wcag2aa wcag143",
+      pagesAffected: 4,
+      exampleUrl: "https://example.com/",
+      exampleSelector: ".hero p",
+      exampleSnippet: "<p>",
+    };
+    value.accessibilityEvidence = [{ ...evidence, ruleId: "color-contrast" }];
+    const contrast = opportunityTicket(value, null, {
+      summary:
+        "Fix any of the following:\n  Element has insufficient color contrast of 2.52 (foreground color: #aaaaaa, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1",
+      headings: [],
+    });
+    expect(contrast.body).toContain(
+      "## Contrast\n\n- Measured ratio: 2.52:1\n- Foreground color: #aaaaaa\n- Background color: #ffffff\n- Required ratio: 4.5:1",
+    );
+    value.accessibilityEvidence = [{ ...evidence, ruleId: "heading-order" }];
+    const outline = opportunityTicket(value, null, {
+      summary: null,
+      headings: [
+        { level: 1, text: "Welcome" },
+        { level: 2, text: "Features" },
+        { level: 4, text: "Pricing" },
+      ],
+    });
+    expect(outline.body).toContain(
+      "- h1 `Welcome`\n- h2 `Features`\n- h4 `Pricing` (skips from h2)",
+    );
+  });
 });
