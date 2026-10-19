@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** Draft
+- **Status:** In progress. Part A built: the docs settings and the daily docs index.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -50,6 +50,8 @@ Developer-tool companies lose sign-ups and pay for support when their docs miss 
 2. A daily task reads the docs directory through the GitHub reader. At most 500 files and 10 MB.
 3. For each file, store `docs_pages`: `id`, `project_id` (FK cascade), `file_path`, `url_path`, `title`, `headings` (in `docs_page_headings`: `page_id`, `level`, `text`, `anchor`), `word_count`, `blob_sha`, `indexed_at`.
 4. Store no full text. Matching reads the files again when needed.
+
+**As built (part A).** The docs paths are a "Docs" section of the GitHub publishing card in **Project settings > Integrations**, with the form in a sheet; the card is the fork's, so no upstream seam is needed. `docs_settings` holds one row per project. Every docs table has `project_id`, so the tenancy test covers it; headings carry their position. The job `docs_index` runs daily at 03:00 UTC, and saving the paths turns it on. It reads the docs directory with one recursive tree read on the base branch and a read-only token, keeps `.md` and `.mdx` files in path order up to 500 files and 10 MB, and reads only files whose blob sha changed. One run reads at most 200 files, to stay inside the Worker's request limit; the rest follows the next day, and **Index now** runs the same step at once. The GitHub reader reads files up to 32 KB, so a bigger file keeps its path and URL with no title or headings, and the run says so. The parser is the repository's MDX tooling (`mdast-util-from-markdown` with the MDX extensions, already in the lockfile through `fumadocs-mdx`). Front matter is cut off before parsing, because no front matter extension is installed; the title comes from its `title`, then the first H1. Anchors follow GitHub's slugger, and a Fumadocs `[#anchor]` suffix wins. All 111 MDX files of Relay's app docs and website parse. A file becomes a URL by its path under the directory, without the extension and a final `index`. Changing the paths deletes the index.
 
 ### 5.3 Detectors (phase 1)
 
@@ -114,8 +116,8 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 
 ### Phase 1
 
-- [ ] Docs settings, `docs_pages` and `docs_page_headings` in D1 and Postgres.
-- [ ] Daily docs index task with the file and size caps.
+- [x] Docs settings, `docs_pages` and `docs_page_headings` in D1 and Postgres.
+- [x] Daily docs index task with the file and size caps.
 - [ ] Three detectors with boundary tests, and skip reasons.
 - [ ] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
 - [ ] Test: JSX blocks and front matter stay byte-identical.

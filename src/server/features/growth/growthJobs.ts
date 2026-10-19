@@ -3,6 +3,7 @@ import type { LogLine } from "./repositories/GrowthJobRepository";
 import { auditFollowupJob } from "./jobs/auditFollowup";
 import { cwvRefreshJob } from "./jobs/cwvRefresh";
 import { revenueSyncJob } from "./jobs/revenueSync";
+import { docsIndexJob } from "./jobs/docsIndex";
 import { deploymentCheckJob } from "./jobs/deploymentCheck";
 import { measurementRefreshJob } from "./jobs/measurementRefresh";
 import {
@@ -37,4 +38,5 @@ export const GROWTH_JOBS: Partial<Record<GrowthJobKind, Job>> = {
   audit_followup: auditFollowupJob,
   cwv_refresh: cwvRefreshJob,
   revenue_sync: revenueSyncJob,
+  docs_index: docsIndexJob,
 };

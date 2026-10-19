@@ -47,6 +47,10 @@ const JOBS = {
     label: "Revenue sync",
     text: "Reads new paid invoices and refunds from Stripe with the read-only key. Free.",
   },
+  docs_index: {
+    label: "Docs index",
+    text: "Reads the titles and headings of changed docs files in the connected repository. Free.",
+  },
 } as const;
 type Kind = keyof typeof JOBS;
 type Schedule = {
