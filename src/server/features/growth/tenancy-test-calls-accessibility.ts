@@ -2,6 +2,7 @@ import { AccessibilityCheckService } from "@/server/features/accessibility/Acces
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
 import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
+import { PerformanceLabService } from "@/server/features/performance/PerformanceLabService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import type { INTRUDER } from "./tenancy-test-calls";
 
@@ -38,6 +39,12 @@ export function accessibilityCalls(
           ...opportunity,
           fix: "script_strategy",
         }),
+    },
+    PerformanceLabService: {
+      state: () =>
+        PerformanceLabService.state(ctx, { projectId, opportunityId: "x" }),
+      run: () =>
+        PerformanceLabService.run(ctx, { projectId, opportunityId: "x" }),
     },
     // RFC-0014: the field result of a performance item.
     PerformanceResultService: {

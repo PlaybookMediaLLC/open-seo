@@ -1,5 +1,6 @@
 import { PublishingOpportunityPanel } from "@/client/features/publishing/PublishingOpportunityPanel";
 import { PerformanceFieldResult } from "@/client/features/performance/PerformanceFieldResult";
+import { PerformanceLabCheck } from "@/client/features/performance/PerformanceLabCheck";
 import { AnchorDraftCard } from "@/client/features/publishing/AnchorDraftCard";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -250,6 +251,14 @@ function OpportunityDetailPage() {
             projectId={projectId}
             opportunityId={item.id}
             metric={performance.metric}
+          />
+        )}
+        {performance?.scope === "url" && (
+          <PerformanceLabCheck
+            projectId={projectId}
+            opportunityId={item.id}
+            metric={performance.metric}
+            canRun={access.isSuccess && access.data.canReview && !query.isError}
           />
         )}
         {item.type === "declining_page" && (

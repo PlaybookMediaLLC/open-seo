@@ -282,3 +282,32 @@ export const opportunityPerformanceEvidence = pgTable(
     ),
   ],
 );
+
+// RFC-0014 5.6: the medians of one lab check of three Lighthouse runs.
+export const performanceLabChecks = pgTable(
+  "performance_lab_checks",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    ranAt: text("ran_at").notNull(),
+    ranBy: text("ran_by").notNull(),
+    /** Runs that finished, out of three. */
+    runs: integer("runs").notNull(),
+    lcpMs: doublePrecision("lcp_ms"),
+    cls: doublePrecision("cls"),
+    tbtMs: doublePrecision("tbt_ms"),
+    performanceScore: doublePrecision("performance_score"),
+  },
+  (t) => [
+    index("performance_lab_checks_opportunity_idx").on(
+      t.projectId,
+      t.opportunityId,
+    ),
+  ],
+);

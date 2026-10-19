@@ -282,3 +282,32 @@ export const opportunityPerformanceEvidence = sqliteTable(
     ),
   ],
 );
+
+// RFC-0014 5.6: the medians of one lab check of three Lighthouse runs.
+export const performanceLabChecks = sqliteTable(
+  "performance_lab_checks",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    url: text("url").notNull(),
+    ranAt: text("ran_at").notNull(),
+    ranBy: text("ran_by").notNull(),
+    /** Runs that finished, out of three. */
+    runs: integer("runs").notNull(),
+    lcpMs: real("lcp_ms"),
+    cls: real("cls"),
+    tbtMs: real("tbt_ms"),
+    performanceScore: real("performance_score"),
+  },
+  (t) => [
+    index("performance_lab_checks_opportunity_idx").on(
+      t.projectId,
+      t.opportunityId,
+    ),
+  ],
+);
