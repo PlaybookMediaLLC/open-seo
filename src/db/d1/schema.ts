@@ -28,3 +28,4 @@ export * from "../publishing.schema";
 export * from "../proposal-drafts.schema";
 export * from "../experiments.schema";
 export * from "../accessibility.schema";
+export * from "../revenue.schema";

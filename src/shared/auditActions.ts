@@ -33,4 +33,7 @@ export const AUDIT_ACTIONS = [
   "split_test.deployment_confirmed",
   "split_test.ended",
   "conversion.event_changed",
+  // RFC-0016 6.5: the read-only Stripe connection.
+  "integration.stripe_connected",
+  "integration.stripe_disconnected",
 ] as const;

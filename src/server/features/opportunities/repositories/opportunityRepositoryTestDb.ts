@@ -117,6 +117,7 @@ export function createOpportunityTestDatabase(
         "0098_cultured_bruce_banner.sql",
         "0099_serious_rage.sql",
         "0100_overconfident_vector.sql",
+        "0101_nosy_smasher.sql",
       ])
         await sqlite.executeMultiple(
           readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

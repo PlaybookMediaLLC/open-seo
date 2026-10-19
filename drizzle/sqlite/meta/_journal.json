@@ -708,6 +708,13 @@
       "when": 1792403481359,
       "tag": "0100_overconfident_vector",
       "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "6",
+      "when": 1792407636528,
+      "tag": "0101_nosy_smasher",
+      "breakpoints": true
     }
   ]
 }

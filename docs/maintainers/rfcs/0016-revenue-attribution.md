@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules.
+- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -63,6 +63,8 @@ A small open-source package `@relay/attribution`, at most 2 KB, plus a Next.js h
 2. Relay accepts only restricted keys (`rk_live_` or `rk_test_`) and refuses secret keys (`sk_`). Stripe has no API that lists a key's permissions, so Relay probes one write endpoint with an invalid request body and requires a permission error. The invalid body means nothing can be created. Confirm this behavior in Stripe test mode before release.
 3. Store the key encrypted with the RFC-0009 key, in `revenue_connections`: `id`, `project_id` (FK cascade), `provider` (`stripe`), `encrypted_key`, `key_version`, `account_id_hash`, `livemode`, `created_by`, `created_at`, `last_synced_at`, `revoked_at`.
 4. Disconnecting deletes the key and all revenue rows for the project.
+
+**As built (part B).** The connect form is a card in **Project settings > Conversion**, next to the chosen conversion, so no new settings tab is needed. Relay refuses `sk_` keys, requires the `rk_live_` or `rk_test_` pattern, reads one invoice to confirm read access, then probes `POST /v1/customers` with the unknown field `relay_read_only_probe`: a 403 is read-only, anything else is refused. The account id comes from the 403 message and is stored as a salted hash. The key is encrypted with the RFC-0009 publishing key helpers. A connection is one row per project with a random hash salt and the sync cursor; `revoked_at` is not built, because disconnecting deletes the row, and a new key also deletes the old rows, which the new salt could not match. Connecting and disconnecting write the RFC-0009 audit events `integration.stripe_connected` and `integration.stripe_disconnected`. The probe's behavior is unit-tested against Stripe's documented answers; confirming it with a real test-mode key is a follow-up.
 
 ### 5.4 Daily sync
 
@@ -143,12 +145,12 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 - [ ] `@relay/attribution` package with consent hook, first-touch rule and the 90-day cookie (tests).
 - [ ] Next.js helper and Stripe metadata docs for Checkout and sign-up.
 - [ ] Restricted-key check: refuses `sk_` keys, and refuses a restricted key with write access (probe tested in Stripe test mode).
-- [ ] `revenue_connections` and `revenue_events` in D1 and Postgres.
+- [x] `revenue_connections` and `revenue_events` in D1 and Postgres.
 - [ ] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
 - [ ] Test: no personal field reaches the database.
 - [x] Channel rules with one test per channel.
 - [ ] Reports with coverage first, and amounts per currency.
-- [ ] Disconnect deletes the key and all revenue rows (test).
+- [x] Disconnect deletes the key and all revenue rows (test).
 - [ ] Privacy policy and data processing agreement updated.
 - [ ] `content/docs/revenue-attribution.mdx`.
 

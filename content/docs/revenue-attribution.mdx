@@ -61,6 +61,18 @@ await stripe.customers.create({
 });
 ```
 
+## 3. Connect Stripe
+
+In Stripe, create a [restricted key](https://docs.stripe.com/keys#create-restricted-api-secret-key) with **Read** access to Invoices, Subscriptions, Checkout Sessions and Customers, and no write access. Then open **Project settings > Conversion** in Relay and paste it under **Revenue from Stripe**.
+
+Relay checks the key before it saves it:
+
+- It refuses secret keys (`sk_`). Only restricted keys (`rk_live_` or `rk_test_`) are accepted.
+- It reads one invoice, to confirm read access.
+- It sends Stripe a create request with an unknown field. A read-only key gets a permission error, so nothing can be created. If Stripe accepts the key for writing, Relay refuses it.
+
+Relay encrypts the key. **Disconnect** deletes the key and all revenue data of the project.
+
 ## Channels
 
 Relay sorts each first touch into one channel:
