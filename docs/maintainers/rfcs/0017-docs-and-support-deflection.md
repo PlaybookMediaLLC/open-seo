@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources. Part E built: measurement. Phase 2 built for GitHub Issues, behind a server switch.
+- **Status:** Done on 2026-10-19. Built in PRs #157 to #162: the docs settings and index (A), the three detectors (B), the `markdown` change kind (C), drafts from verified sources (D), measurement (E), and phase 2 for GitHub Issues behind a server switch. The owner chose on 2026-10-19 to defer Intercom, Zendesk and phase 3 (Algolia), and to keep the owner items as follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -192,3 +192,14 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 **Outcome**
 
 - At least one shipped docs change has a measured result (directional or inconclusive) after 4 weeks.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) on S3 (`/docs`, `content/docs`) and `conduitt.io/docs`: index both, review every item, and ship one reviewed docs addition on S3. Trigger: the repositories are connected again through the GitHub App (see RFC-0005).
+- [ ] Privacy policy and data processing agreement name support ticket processing; then set `RELAY_SUPPORT_TOPICS=on` in production. Trigger: the owner approves the legal text.
+- [ ] Give the Relay GitHub App the Issues read permission, and grant it on reinstall, for the GitHub Issues support source. Trigger: the GitHub App reinstall.
+- [ ] Phase 2 acceptance: connect one support source with real tickets and review the top 5 topics; a scan of stored excerpts finds no personal data. Trigger: the two items above.
+- [ ] Intercom and Zendesk connectors (read-only OAuth). The owner deferred them on 2026-10-19. Trigger: a customer on one of these help desks asks, and the owner registers the OAuth app.
+- [ ] Algolia zero-result searches (phase 3). The owner deferred it on 2026-10-19. Trigger: a customer who uses Algolia asks.
