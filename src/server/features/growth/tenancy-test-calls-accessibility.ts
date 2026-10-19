@@ -6,6 +6,7 @@ import { PerformanceLabService } from "@/server/features/performance/Performance
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { RevenueConnectionService } from "@/server/features/revenue/RevenueConnectionService";
+import { RevenueReportService } from "@/server/features/revenue/RevenueReportService";
 import type { INTRUDER } from "./tenancy-test-calls";
 
 /** RFC-0013 and RFC-0014: the accessibility and performance services. */
@@ -57,6 +58,9 @@ export function accessibilityCalls(
           key: "rk_test_0123456789abcdef",
         }),
       disconnect: () => RevenueConnectionService.disconnect(ctx, projectId),
+    },
+    RevenueReportService: {
+      report: () => RevenueReportService.report(ctx, { projectId, days: 90 }),
     },
     PerformanceVitalsService: {
       report: () => PerformanceVitalsService.report(ctx, projectId),

@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync.
+- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync. Part D built: the reports.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -112,6 +112,8 @@ The search engine list is one constant with tests.
 2. **Coverage:** the share of new customers with attribution metadata. When coverage is under 80%, show it first: "Only 54% of new customers have attribution data. Check the snippet."
 3. Show amounts in each currency. Do not convert currencies in phase 1.
 
+**As built (part D).** The upstream Results page belongs to upstream, so the report is a "Revenue by first touch" section on the fork's own **Experiments & Results** page, shown only when Stripe is connected. One period select (30, 90 or 365 days) replaces a currency select: each currency gets its own channel and landing-page tables (top 20 by revenue). Coverage is new customers whose first payment has a channel other than unknown; under 80% the warning replaces the coverage line. Revenue nets refunds that fall in the period.
+
 ### 5.7 Phase 2: priority and results
 
 1. **Priority.** When a project has revenue data with at least 80% coverage, the RFC-0002 commercial score for a page = `min(1, first-touch revenue in 90 days / the 90th percentile across pages)`, and at least the role score.
@@ -151,10 +153,10 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 - [x] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
 - [x] Test: no personal field reaches the database.
 - [x] Channel rules with one test per channel.
-- [ ] Reports with coverage first, and amounts per currency.
+- [x] Reports with coverage first, and amounts per currency.
 - [x] Disconnect deletes the key and all revenue rows (test).
 - [ ] Privacy policy and data processing agreement updated.
-- [ ] `content/docs/revenue-attribution.mdx`.
+- [x] `content/docs/revenue-attribution.mdx`.
 
 ### Phase 2
 
