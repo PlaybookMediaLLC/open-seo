@@ -130,6 +130,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 1. **Accessibility statement draft.** From stored facts only: the date of the last audit, the target standard, open clusters as known limitations, and the contact address. The owner edits and publishes it.
 2. **Pull request checks.** RFC-0015 compares axe-core results on the preview and production, and blocks new serious or critical violations.
 
+**As built (statement).** The accessibility trend card has a **Draft a statement** sheet. The server returns the latest audit with accessibility results: its start URL, date, pages checked without an error, and each failing rule with its worst impact and its pages. A shared function writes the Markdown, so the person sees it change as they type the contact address; the address is not stored. The target standard is WCAG 2.2 at level AA, the highest tag set the checks run. Known limitations are grouped by rule, not by cluster, with plain names for the eight common rules. The draft includes the limits text and a placeholder line for the owner's manual testing, because Relay holds no fact about it. Once the person edits the text, the contact field locks, so an edit is never overwritten. A test checks that the draft never says "compliant" or "conform".
+
 ## 6. Security
 
 1. axe-core runs in the isolated audit worker that already parses untrusted HTML.
@@ -170,7 +172,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 ### Phase 3
 
-- [ ] Statement draft from stored facts only.
+- [x] Statement draft from stored facts only.
 - [ ] Pull request checks through RFC-0015.
 
 ## 10. Real-site acceptance test

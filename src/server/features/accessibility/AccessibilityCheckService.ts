@@ -167,4 +167,9 @@ async function trend(context: PublishingContext, projectId: string) {
   return AccessibilityCheckRepository.trend(projectId);
 }
 
-export const AccessibilityCheckService = { check, latest, trend };
+async function statement(context: PublishingContext, projectId: string) {
+  await authorizePublishing(context, projectId);
+  return AccessibilityCheckRepository.statementFacts(projectId);
+}
+
+export const AccessibilityCheckService = { check, latest, trend, statement };

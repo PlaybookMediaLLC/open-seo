@@ -157,3 +157,14 @@ it("counts a fix whose check passed, and each audit's serious violations", async
     fixesPassed: 1,
   });
 });
+
+it("gives the statement the latest audit's pages and failing rules", async () => {
+  const { context, scope } = await deployedFix();
+  expect(
+    await AccessibilityCheckService.statement(context, scope.projectId),
+  ).toMatchObject({
+    site: "https://example.com/",
+    pagesChecked: 2,
+    rules: [{ ruleId: "image-alt", impact: "critical", pages: 2 }],
+  });
+});

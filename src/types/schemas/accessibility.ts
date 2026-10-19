@@ -50,7 +50,7 @@ export type AccessibilityFixCheck = {
   }>;
 };
 
-export const accessibilityTrendInputSchema = z.object({
+export const accessibilityProjectInputSchema = z.object({
   projectId: z.string().min(1),
 });
 

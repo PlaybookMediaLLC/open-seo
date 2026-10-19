@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { getAccessibilityTrend } from "@/serverFunctions/accessibility";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
+import { AccessibilityStatementSheet } from "./AccessibilityStatementSheet";
 
 /** RFC-0013 5.5: violations per audit, and fixes that passed their check. */
 export function AccessibilityTrend({ projectId }: { projectId: string }) {
@@ -42,6 +43,7 @@ export function AccessibilityTrend({ projectId }: { projectId: string }) {
         </table>
       </div>
       <p className="text-xs text-muted-foreground">{ACCESSIBILITY_LIMITS}</p>
+      <AccessibilityStatementSheet projectId={projectId} />
     </section>
   );
 }
