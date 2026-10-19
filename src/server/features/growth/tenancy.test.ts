@@ -40,6 +40,7 @@ import { PerformanceResultService } from "@/server/features/performance/Performa
 import { PerformanceVitalsService } from "@/server/features/performance/PerformanceVitalsService";
 import { RevenueConnectionService } from "@/server/features/revenue/RevenueConnectionService";
 import { RevenueReportService } from "@/server/features/revenue/RevenueReportService";
+import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import * as revenueSchema from "@/db/revenue.schema";
 import * as docsSchema from "@/db/docs.schema";
@@ -178,6 +179,7 @@ const services: Record<string, Record<string, unknown>> = {
   RevenueConnectionService,
   RevenueReportService,
   DocsSettingsService,
+  DocsDetectionService,
 };
 
 async function growthRowCount() {

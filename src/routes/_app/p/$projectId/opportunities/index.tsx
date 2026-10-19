@@ -14,6 +14,7 @@ import { OpportunityRunLog } from "@/client/features/opportunities/OpportunityRu
 import { OpportunitiesList } from "@/client/features/opportunities/OpportunitiesList";
 import { ContentGapSheet } from "@/client/features/opportunities/PaidChecks";
 import { ConversionRunButton } from "@/client/features/conversion/ConversionRunButton";
+import { DocsRunButton } from "@/client/features/docs/DocsRunButton";
 import { AccessibilityTrend } from "@/client/features/accessibility/AccessibilityTrend";
 import { WebVitalsCard } from "@/client/features/performance/WebVitalsCard";
 import {
@@ -97,6 +98,7 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
               {query.data?.connected ? (
                 <>
                   <ConversionRunButton projectId={projectId} />
+                  <DocsRunButton projectId={projectId} />
                   <ContentGapSheet projectId={projectId} />
                 </>
               ) : null}

@@ -62,6 +62,8 @@ export function OpportunityRunLog({ runs }: { runs: OpportunityRun[] }) {
                       <p className="mt-1 text-xs">Content gaps (paid data)</p>
                     ) : run.kind === "conversion" ? (
                       <p className="mt-1 text-xs">Conversion checks (GA4)</p>
+                    ) : run.kind === "docs" ? (
+                      <p className="mt-1 text-xs">Docs checks</p>
                     ) : null}
                     <p className="mt-1 break-all text-xs text-muted-foreground">
                       {run.id}

@@ -24,7 +24,7 @@ import { OpportunitySignalRepository } from "../repositories/opportunitySignals"
 import { withAiCitations } from "./detectOpportunities";
 import { contentGaps } from "./detectors/contentGap";
 import { scoringContext } from "./detectors/scoreCandidate";
-import { usableRow } from "./detectors/shared";
+import { siteRoot, usableRow } from "./detectors/shared";
 import { fetchGa4LandingPages } from "./opportunityGa4";
 import { withIdentityKeys } from "./opportunityIdentity";
 
@@ -368,13 +368,6 @@ async function detect(
       message,
     };
   }
-}
-
-/** The page to improve when no page has impressions for a topic. */
-function siteRoot(siteUrl: string): string {
-  return siteUrl.startsWith("sc-domain:")
-    ? `https://${siteUrl.slice("sc-domain:".length)}/`
-    : siteUrl;
 }
 
 export const ContentGapService = { estimate, detect };

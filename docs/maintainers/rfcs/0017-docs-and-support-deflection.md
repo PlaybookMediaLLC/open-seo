@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index.
+- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -61,6 +61,8 @@ Developer-tool companies lose sign-ups and pay for support when their docs miss 
 | `docs_page_underperforming` | A docs page with ≥ 500 Search Console impressions has an average position worse than 10, or a CTR at or below 50% of the docs median at its position.                                                    |
 | `docs_stale_page`           | A docs page with ≥ 500 views in 28 days (GA4 page path) whose file has not changed for 12 months or more. Read the last commit date with one GitHub request per page, for the 50 most-viewed pages only. |
 
+**As built (part B).** The detectors run as a `docs` opportunity run, like the RFC-0012 conversion run: one free run a day per project, from **Find docs gaps** on the Opportunities page, and the items join the queue under a "Docs" group. The window is the 28 days that end 3 days ago. Search Console gives the page rows that contain the docs path, and GA4 gives `view_search_results` events by `searchTerm` and `screenPageViews` by `pagePath`, 1,000 rows each. A term matches when every word of it, without stop words, is in one title or heading; plurals, `-ing`, `-ed` and a final `e` are removed first, and terms with the same words count together under the most-searched one. The docs median CTR at a rounded position needs 3 docs pages there with 100 or more impressions. A page below position 10 is reported for its position, not also for its CTR. Commit dates come from `GET /commits?path=` on the base branch for the 50 most-viewed indexed pages with 500 or more views. Commercial and difficulty scores are a neutral 0.5, because a docs page has no page role or ranking target. The run message names each skipped check: no GA4, no site search terms, or no repository for commit dates.
+
 ### 5.4 Support topics (phase 2)
 
 1. Connectors: Intercom and Zendesk (read-only OAuth), and GitHub Issues (the RFC-0005 GitHub App with Issues read).
@@ -118,7 +120,7 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 
 - [x] Docs settings, `docs_pages` and `docs_page_headings` in D1 and Postgres.
 - [x] Daily docs index task with the file and size caps.
-- [ ] Three detectors with boundary tests, and skip reasons.
+- [x] Three detectors with boundary tests, and skip reasons.
 - [ ] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
 - [ ] Test: JSX blocks and front matter stay byte-identical.
 - [ ] Drafts with the allowed sources and placeholders. Approval is blocked while placeholders remain (test).
