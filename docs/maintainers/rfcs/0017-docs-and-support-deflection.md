@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind.
+- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind. Part D built: drafts from verified sources.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -91,6 +91,8 @@ Add the change kind `markdown`.
 3. When a needed fact has no source, write a visible placeholder: `[Owner: add the exact command]`. A proposal with placeholders cannot be approved until they are filled.
 4. Code samples come only from the sources. Relay never invents commands, flags or API fields.
 
+**As built (part D).** A docs draft is the RFC-0004 draft kind `docs_markdown`, with the same admission, credits, daily limits and per-project lease. Its sources are the chosen docs file, up to two indexed docs pages that share a topic word in their title or headings, `CHANGELOG.md` and the first of `openapi.yaml`, `openapi.yml` or `openapi.json` at the repository root, and the owner's typed facts. Each file is read to its first 32 KB, so a long changelog gives its newest entries. The draft output allows 4,000 characters and 10 claims. Before a person sees a draft, the checks require: every number in a source (placeholders excluded), every claim's exact quote in its source, every inline code span and fenced block copied verbatim from a source, and Markdown without JSX, imports or HTML. A missing fact is written as `[Owner: …]`. The edit planner refuses any text that still contains a placeholder, so a proposal with one cannot exist and cannot be approved; the sheet also counts open placeholders and disables the button.
+
 ### 5.7 Measurement
 
 For each shipped docs change, compare 4 weeks before and 4 weeks after:
@@ -125,7 +127,7 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 - [x] Three detectors with boundary tests, and skip reasons.
 - [x] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
 - [x] Test: JSX blocks and front matter stay byte-identical.
-- [ ] Drafts with the allowed sources and placeholders. Approval is blocked while placeholders remain (test).
+- [x] Drafts with the allowed sources and placeholders. Approval is blocked while placeholders remain (test).
 - [ ] Measurement with the thresholds.
 - [ ] `content/docs/docs-insights.mdx`.
 

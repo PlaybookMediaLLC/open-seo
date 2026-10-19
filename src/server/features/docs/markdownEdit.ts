@@ -7,6 +7,7 @@ import { parseDoc } from "./docsMarkdown";
 // RFC-0017 5.5: three docs edits, each one exact replacement of a unique
 // span. Front matter, JSX, ESM, expressions and raw HTML stay byte-identical.
 const MAX_TEXT = 5_000;
+export const PLACEHOLDER = /\[Owner:[^\]]*\]/i;
 const isMdx = (path: string) => path.endsWith(".mdx");
 const invalid = (message: string) => new AppError("VALIDATION_ERROR", message);
 const frozen = (node: Nodes) =>
@@ -44,15 +45,20 @@ function plainBlocks(text: string, path: string) {
   const trimmed = text.trim();
   if (!trimmed || trimmed.length > MAX_TEXT)
     throw invalid(`Enter 1 to ${MAX_TEXT} characters.`);
+  // RFC-0017 5.6: a draft's open placeholder never reaches the repository.
+  if (PLACEHOLDER.test(trimmed))
+    throw invalid("Fill every [Owner: …] placeholder first.");
   const { tree } = parse(trimmed, path);
-  const walk = (node: Nodes): boolean =>
-    !frozen(node) && (!("children" in node) || node.children.every(walk));
-  if (!walk(tree))
+  if (!markdownOnly(tree))
     throw invalid(
       "Write Markdown only. Relay does not add JSX, imports or HTML.",
     );
   return { text: trimmed, blocks: tree.children };
 }
+
+/** True when no node is JSX, ESM, an expression or raw HTML. */
+export const markdownOnly = (node: Nodes): boolean =>
+  !frozen(node) && (!("children" in node) || node.children.every(markdownOnly));
 
 const headingText = (node: Nodes) =>
   toString(node)

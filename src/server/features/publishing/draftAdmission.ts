@@ -25,6 +25,7 @@ const WRITE_YOURSELF: Record<ProposalDraft["kind"], string> = {
   internal_link_anchor: "link",
   page_copy: "text",
   alt_text: "alt text",
+  docs_markdown: "docs text",
 };
 
 /** Manage permission, an approved and unchanged item, the limits, credits. */

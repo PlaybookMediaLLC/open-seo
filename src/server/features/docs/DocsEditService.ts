@@ -118,7 +118,7 @@ async function prepare(
           fingerprintVersion: 6,
           changeKind: "markdown",
           revertsProposalId: null,
-          draftId: null,
+          draftId: input.draftId ?? null,
           changeHash: "",
           reason: opportunity.explanation,
           expectedEffect:

@@ -41,6 +41,7 @@ import { PerformanceVitalsService } from "@/server/features/performance/Performa
 import { RevenueConnectionService } from "@/server/features/revenue/RevenueConnectionService";
 import { RevenueReportService } from "@/server/features/revenue/RevenueReportService";
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
+import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import * as revenueSchema from "@/db/revenue.schema";
@@ -181,6 +182,7 @@ const services: Record<string, Record<string, unknown>> = {
   RevenueReportService,
   DocsSettingsService,
   DocsDetectionService,
+  DocsDraftService,
   DocsEditService,
 };
 

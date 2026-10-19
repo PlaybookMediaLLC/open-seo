@@ -1,4 +1,5 @@
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
+import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
@@ -110,6 +111,16 @@ export function accessibilityCalls(
     },
     DocsDetectionService: {
       detect: () => DocsDetectionService.detect(ctx, projectId),
+    },
+    DocsDraftService: {
+      draft: () =>
+        DocsDraftService.draft(ctx, {
+          ...opportunity,
+          filePath: "content/docs/a.mdx",
+          kind: "add_faq_item",
+          target: "FAQ",
+          facts: "",
+        }),
     },
   };
 }

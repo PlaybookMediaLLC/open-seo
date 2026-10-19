@@ -1,9 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
+import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  docsDraftInputSchema,
   docsEditInputSchema,
   docsProjectSchema,
   docsSettingsInputSchema,
@@ -55,6 +57,17 @@ export const prepareDocsEdit = createServerFn({ method: "POST" })
   .validator(docsEditInputSchema)
   .handler(({ context, data }) =>
     DocsEditService.prepare(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
+  );
+
+// RFC-0017 5.6: a checked Markdown draft from verified sources.
+export const draftDocsText = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(docsDraftInputSchema)
+  .handler(({ context, data }) =>
+    DocsDraftService.draft(context, {
       ...data,
       projectId: context.projectId,
     }),

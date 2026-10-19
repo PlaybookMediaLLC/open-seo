@@ -59,3 +59,16 @@ Relay then checks the change:
 - The heading or paragraph must appear exactly once at the top level of the file.
 
 The proposal shows the exact Markdown and the rendered text, before and after. Nothing is written to GitHub until you approve the pull request.
+
+## 5. Draft with AI
+
+In **Edit the docs**, you can ask Relay for a draft. A draft uses usage credits.
+
+- Relay writes only from these sources: the docs file, up to two related docs pages, the `CHANGELOG.md` file and an OpenAPI file (`openapi.yaml`, `openapi.yml` or `openapi.json`) at the repository root, and the facts you type in.
+- Relay reads the first 32 KB of each file.
+- When the text needs a fact that the sources do not give, the draft has a visible placeholder, such as `[Owner: add the exact command]`.
+- Code, commands, options and API fields come only from the sources. Relay refuses a draft with any other code.
+- Every fact in the draft must quote a source exactly, and every number must appear in a source.
+- You cannot prepare the change until you fill every placeholder.
+
+Read every fact before you approve the pull request.
