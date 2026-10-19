@@ -171,3 +171,22 @@ describe("GitHub immutable file reading", () => {
     ).rejects.toMatchObject({ code: "UPSTREAM_UNAVAILABLE" });
   });
 });
+
+// RFC-0014 5.5: an image header read stops at the cap.
+it("reads at most the asked bytes of a raw file", async () => {
+  fetchMock
+    .mockResolvedValueOnce(json(commit()))
+    .mockResolvedValueOnce(json(tree(B, "hero.png", "100644", "blob", D)))
+    .mockResolvedValueOnce(new Response(new Uint8Array(100_000).fill(7)));
+  const bytes = await createGithubClient(connection).readFileHead(
+    "hero.png",
+    A,
+    65_536,
+  );
+  expect(bytes).toHaveLength(65_536);
+  const [route, init] = fetchMock.mock.calls[2];
+  expect(route).toBe(`https://api.github.com/repos/acme/site/git/blobs/${D}`);
+  expect(new Headers(init?.headers).get("Accept")).toBe(
+    "application/vnd.github.raw",
+  );
+});

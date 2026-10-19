@@ -1,6 +1,7 @@
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
+import { PerformanceFixService } from "@/server/features/performance/PerformanceFixService";
 import { PerformanceResultService } from "@/server/features/performance/PerformanceResultService";
 import type { INTRUDER } from "./tenancy-test-calls";
 
@@ -30,6 +31,13 @@ export function accessibilityCalls(
     },
     AltTextDraftService: {
       draft: () => AltTextDraftService.draft(ctx, opportunity),
+    },
+    PerformanceFixService: {
+      prepare: () =>
+        PerformanceFixService.prepare(ctx, {
+          ...opportunity,
+          fix: "script_strategy",
+        }),
     },
     // RFC-0014: the field result of a performance item.
     PerformanceResultService: {

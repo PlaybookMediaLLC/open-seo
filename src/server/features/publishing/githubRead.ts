@@ -5,6 +5,11 @@ export type GithubRequest = <T>(
   schema: z.ZodType<T>,
   options?: { method: "POST" | "PUT" | "DELETE"; body: unknown },
 ) => Promise<T>;
+/** RFC-0014: the first `maxBytes` of a raw response. */
+export type GithubBytesRequest = (
+  route: string,
+  maxBytes: number,
+) => Promise<Uint8Array>;
 export const githubShaSchema = z.string().regex(/^[a-f0-9]{40}$/);
 
 export function validateGithubPath(path: string): string[] {
@@ -42,7 +47,10 @@ export function validateGithubSha(sha: string): string {
   return sha;
 }
 
-export function createGithubReader(request: GithubRequest) {
+export function createGithubReader(
+  request: GithubRequest,
+  requestBytes?: GithubBytesRequest,
+) {
   const commitSchema = z.object({
     sha: githubShaSchema,
     tree: z.object({ sha: githubShaSchema }),
@@ -101,6 +109,39 @@ export function createGithubReader(request: GithubRequest) {
     }
     return tree;
   }
+  /** The regular file at a path of a commit, by walking its trees. */
+  async function blobEntry(path: string, commitSha: string) {
+    const parts = validateGithubPath(path);
+    let treeSha = (await getCommit(commitSha)).treeSha;
+    for (let index = 0; index < parts.length; index++) {
+      const tree = await readTree(treeSha);
+      const entries = tree.tree.filter((entry) => entry.path === parts[index]);
+      if (entries.length === 0)
+        throw new AppError("NOT_FOUND", "GitHub file was not found.");
+      if (entries.length !== 1)
+        throw new AppError(
+          "UPSTREAM_UNAVAILABLE",
+          "GitHub tree cannot be safely read.",
+        );
+      const entry = entries[0];
+      if (index < parts.length - 1) {
+        if (entry.mode !== "040000" || entry.type !== "tree")
+          throw new AppError(
+            "VALIDATION_ERROR",
+            "GitHub path must contain only regular directories.",
+          );
+        treeSha = entry.sha;
+        continue;
+      }
+      if (entry.mode !== "100644" || entry.type !== "blob")
+        throw new AppError(
+          "VALIDATION_ERROR",
+          "GitHub file must be a regular non-executable file.",
+        );
+      return entry;
+    }
+    throw new AppError("VALIDATION_ERROR", "GitHub path is not supported.");
+  }
   return {
     getCommit,
     /** The entries of one directory at a commit. "" is the repository root. */
@@ -139,76 +180,56 @@ export function createGithubReader(request: GithubRequest) {
       }
     },
     async readFile(path: string, commitSha: string) {
-      const parts = validateGithubPath(path);
-      let treeSha = (await getCommit(commitSha)).treeSha;
-      for (let index = 0; index < parts.length; index++) {
-        const tree = await readTree(treeSha);
-        const entries = tree.tree.filter(
-          (entry) => entry.path === parts[index],
+      const entry = await blobEntry(path, commitSha);
+      const blob = await request(
+        `/git/blobs/${entry.sha}`,
+        z.object({
+          sha: githubShaSchema,
+          encoding: z.literal("base64"),
+          content: z.string(),
+          size: z
+            .number()
+            .int()
+            .min(0)
+            .max(32 * 1024),
+        }),
+      );
+      if (blob.sha !== entry.sha)
+        throw new AppError(
+          "UPSTREAM_UNAVAILABLE",
+          "GitHub blob identity did not match.",
         );
-        if (entries.length === 0)
-          throw new AppError("NOT_FOUND", "GitHub file was not found.");
-        if (entries.length !== 1)
-          throw new AppError(
-            "UPSTREAM_UNAVAILABLE",
-            "GitHub tree cannot be safely read.",
-          );
-        const entry = entries[0];
-        if (index < parts.length - 1) {
-          if (entry.mode !== "040000" || entry.type !== "tree")
-            throw new AppError(
-              "VALIDATION_ERROR",
-              "GitHub path must contain only regular directories.",
-            );
-          treeSha = entry.sha;
-          continue;
-        }
-        if (entry.mode !== "100644" || entry.type !== "blob")
-          throw new AppError(
-            "VALIDATION_ERROR",
-            "GitHub file must be a regular non-executable file.",
-          );
-        const blob = await request(
-          `/git/blobs/${entry.sha}`,
-          z.object({
-            sha: githubShaSchema,
-            encoding: z.literal("base64"),
-            content: z.string(),
-            size: z
-              .number()
-              .int()
-              .min(0)
-              .max(32 * 1024),
-          }),
-        );
-        if (blob.sha !== entry.sha)
-          throw new AppError(
-            "UPSTREAM_UNAVAILABLE",
-            "GitHub blob identity did not match.",
-          );
-        try {
-          const encoded = blob.content.replace(/[\r\n]/g, "");
-          if (
-            !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
-              encoded,
-            )
+      try {
+        const encoded = blob.content.replace(/[\r\n]/g, "");
+        if (
+          !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+            encoded,
           )
-            throw new Error();
-          const binary = atob(encoded);
-          if (binary.length !== blob.size || binary.length > 32 * 1024)
-            throw new Error();
-          const source = new TextDecoder("utf-8", { fatal: true }).decode(
-            Uint8Array.from(binary, (char) => char.charCodeAt(0)),
-          );
-          return { source, blobSha: blob.sha };
-        } catch {
-          throw new AppError(
-            "UPSTREAM_UNAVAILABLE",
-            "GitHub file encoding or size is invalid.",
-          );
-        }
+        )
+          throw new Error();
+        const binary = atob(encoded);
+        if (binary.length !== blob.size || binary.length > 32 * 1024)
+          throw new Error();
+        const source = new TextDecoder("utf-8", { fatal: true }).decode(
+          Uint8Array.from(binary, (char) => char.charCodeAt(0)),
+        );
+        return { source, blobSha: blob.sha };
+      } catch {
+        throw new AppError(
+          "UPSTREAM_UNAVAILABLE",
+          "GitHub file encoding or size is invalid.",
+        );
       }
-      throw new AppError("VALIDATION_ERROR", "GitHub path is not supported.");
+    },
+    /**
+     * RFC-0014 5.5: the first bytes of a file, such as an image header.
+     * The raw read stops at `maxBytes`, whatever the file's size.
+     */
+    async readFileHead(path: string, commitSha: string, maxBytes: number) {
+      const entry = await blobEntry(path, commitSha);
+      if (!requestBytes)
+        throw new AppError("UPSTREAM_UNAVAILABLE", "GitHub raw reads are off.");
+      return requestBytes(`/git/blobs/${entry.sha}`, maxBytes);
     },
     /** RFC-0012: every file path under a directory, from one recursive tree read. */
     async listFiles(path: string, commitSha: string) {

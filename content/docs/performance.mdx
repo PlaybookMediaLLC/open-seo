@@ -55,6 +55,16 @@ Relay reads the latest site audit's Lighthouse reports for the pages in the grou
 
 When no audit ran Lighthouse on those pages, the item says so. Run a site audit with **Lighthouse** turned on to find the cause. Approve an item to copy its ticket or create a GitHub issue. The ticket lists the field data, the lab value and each cause with its change.
 
+## Fix in code
+
+If your project has a connected GitHub repository, a page-level item can have a **Fix in code** button for three causes. Each fix changes one attribute of one element:
+
+1. **Load the LCP image first.** Relay finds the image that the Lighthouse report names, in the page file or the components it imports. It removes `loading="lazy"` and adds the priority prop that your Next.js version supports: `priority` in Next.js 13 to 15, `preload` from Next.js 16. It works on `next/image` elements only, and needs Next.js in `package.json`.
+2. **Add the image size.** For an `<img>` element whose file is in `public/`, Relay reads the first 64 KB of the file, finds the width and height in its header, and adds them. It reads PNG, JPEG, WebP and AVIF files. It does not change `fill` images.
+3. **Load analytics or chat scripts later.** Relay sets `strategy="lazyOnload"` on one `next/script` element in the page or the root layout. It changes only scripts from a reviewed list of analytics, chat and tag manager hosts, such as Google Tag Manager, Hotjar and Intercom. Tracking may then start later, so very short visits may not be counted.
+
+If Relay finds no element, or more than one, it stops and tells you to fix it by hand. Nothing is written to GitHub until you approve the change.
+
 ## Field result after a change
 
 Phase 1 changes ship through a ticket, so Relay measures from the day a person marks the item **Implemented**.

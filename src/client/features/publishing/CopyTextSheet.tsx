@@ -19,6 +19,7 @@ import {
   locateCopyText,
   prepareCopyProposal,
 } from "@/serverFunctions/copyText";
+import { PerformanceFixSheet } from "@/client/features/performance/PerformanceFixSheet";
 import { AccessibilityFixSheet } from "@/client/features/accessibility/AccessibilityFixSheet";
 import { useRefreshPublishing } from "./queries";
 
@@ -44,6 +45,7 @@ type SheetOpportunity = {
   projectId: string;
   version: number;
   accessibilityRule?: string;
+  performanceCauses?: string;
 };
 
 /** The code changes a person can prepare on an approved opportunity. */
@@ -59,6 +61,12 @@ export function CodeChangeSheets({
         <AccessibilityFixSheet
           opportunity={opportunity}
           ruleId={opportunity.accessibilityRule}
+        />
+      )}
+      {opportunity.performanceCauses !== undefined && (
+        <PerformanceFixSheet
+          opportunity={opportunity}
+          causeIds={opportunity.performanceCauses}
         />
       )}
     </>

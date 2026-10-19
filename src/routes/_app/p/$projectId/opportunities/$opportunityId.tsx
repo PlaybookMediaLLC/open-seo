@@ -279,6 +279,9 @@ function OpportunityDetailPage() {
             accessibilityRule: query.data.accessibilityEvidence.find(
               (row) => row.runId === item.evidenceRunId,
             )?.ruleId,
+            // Only a page-level item has one page to change.
+            performanceCauses:
+              performance?.scope === "url" ? performance.causeIds : undefined,
           }}
           readOnly={query.isError}
         />

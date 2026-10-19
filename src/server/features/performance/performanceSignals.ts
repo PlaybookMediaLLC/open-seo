@@ -34,6 +34,8 @@ export type LabPage = {
 };
 export type PerformanceSignals = { field: FieldSnapshot[]; lab: LabPage[] };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 const daysBefore = (now: Date, days: number) =>
   new Date(now.getTime() - days * 86_400_000).toISOString();
 
@@ -111,4 +113,43 @@ export async function loadPerformanceSignals(
       }),
   );
   return { field: [...newest.values()], lab };
+}
+
+/**
+ * RFC-0014 5.5: the items of failing Lighthouse audits on one page, from the
+ * newest report, mobile first. Each item is the stored compact JSON object.
+ */
+export async function reportItems(projectId: string, pageUrl: string) {
+  const [report] = await db
+    .select({ r2Key: auditLighthouseResults.r2Key })
+    .from(auditLighthouseResults)
+    .innerJoin(audits, eq(audits.id, auditLighthouseResults.auditId))
+    .innerJoin(auditPages, eq(auditPages.id, auditLighthouseResults.pageId))
+    .where(
+      and(
+        eq(audits.projectId, projectId),
+        eq(auditPages.url, pageUrl),
+        isNotNull(auditLighthouseResults.r2Key),
+      ),
+    )
+    .orderBy(desc(audits.startedAt), desc(auditLighthouseResults.strategy))
+    .limit(1);
+  const items = new Map<string, Array<Record<string, unknown>>>();
+  if (!report?.r2Key) return items;
+  const { storedPayload } = readStoredLighthousePayload(
+    await getJsonFromR2(report.r2Key),
+  );
+  for (const issue of storedPayload?.issues ?? [])
+    items.set(
+      issue.auditKey,
+      issue.items.flatMap((item) => {
+        try {
+          const value: unknown = JSON.parse(item);
+          return isRecord(value) ? [value] : [];
+        } catch {
+          return [];
+        }
+      }),
+    );
+  return items;
 }

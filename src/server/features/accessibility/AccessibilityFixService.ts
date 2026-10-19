@@ -1,13 +1,11 @@
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
-import { applyCopyEdits } from "@/server/features/publishing/copyChange";
-import { pagesSharing } from "@/server/features/publishing/copyLocator";
+import { saveAttributeProposal } from "@/server/features/publishing/attributeProposal";
 import {
   locateElement,
   withAttribute,
   type ElementTarget,
 } from "@/server/features/publishing/elementLocator";
 import { locateMetadataFile } from "@/server/features/publishing/fileLocator";
-import { proposalFingerprint } from "@/server/features/publishing/proposalFingerprint";
 import { proposableOpportunity } from "@/server/features/publishing/proposalEligibility";
 import {
   authorizePublishing,
@@ -21,10 +19,7 @@ import { AppError } from "@/server/lib/errors";
 import { readPages } from "@/server/lib/scrape";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
 import type { AccessibilityFixInput } from "@/types/schemas/accessibility";
-import type {
-  MetadataProposal,
-  PublishingMutationResult,
-} from "@/types/schemas/publishing";
+import type { PublishingMutationResult } from "@/types/schemas/publishing";
 import { NAME_RULES, nameTarget, snippetAttributes } from "./accessibleName";
 import { altTextProblems, snippetSrc } from "./altText";
 
@@ -177,106 +172,33 @@ async function prepare(
               ? `${found.length} elements match: ${found.map((item) => `${item.file.path}:${item.line}`).join(", ")}. Relay changes one element only; fix it by hand.`
               : "Relay did not find the element in the page file or the files it imports. Fix it by hand.",
           );
-        const [{ file, element }] = found;
+        const [match] = found;
         const name = ATTRIBUTES[kind];
-        const { files, textEdits } = await applyCopyEdits(
-          new Map([[file.path, file]]),
-          [
-            {
-              filePath: file.path,
-              beforeText: file.source.slice(element.start, element.end),
-              afterText: withAttribute(file, element, name, value),
-              nodeKind: "jsx_attribute",
-            },
-          ],
-        );
-        const shared =
-          file.path === pageFile
-            ? []
-            : (
-                await pagesSharing({
-                  reader: client,
-                  rootDirectory: root,
-                  sha: base.sha,
-                  pageFile,
-                  modulePath: file.path,
-                  exportName: null,
-                })
-              ).pages;
-        const page = await client.readFile(pageFile, base.sha);
-        const proposal: MetadataProposal = {
-          id: crypto.randomUUID(),
-          projectId: input.projectId,
-          opportunityId: opportunity.id,
-          connectionId: connection.id,
-          evidenceRunId: opportunity.evidenceRunId,
-          opportunityVersion: opportunity.version,
-          targetUrl: evidence.exampleUrl,
-          filePath: pageFile,
+        const proposalId = await saveAttributeProposal({
+          context,
+          claimToken,
+          signal,
+          opportunity,
+          connection,
+          client,
           baseSha: base.sha,
-          beforeBlobSha: page.blobSha,
-          afterBlobSha:
-            files.find((item) => item.path === pageFile)?.blobSha ??
-            page.blobSha,
-          descriptionBefore: "",
-          descriptionAfter: "",
-          beforeSnippet: "",
-          afterSnippet: "",
-          metadataSource: "literal_object",
-          helperPath: null,
-          helperBlobSha: null,
-          titleBefore: null,
-          titleAfter: null,
-          titleBeforeSnippet: null,
-          titleAfterSnippet: null,
-          canonicalBefore: null,
-          canonicalAfter: null,
-          canonicalBeforeSnippet: null,
-          canonicalAfterSnippet: null,
-          robotsBefore: null,
-          robotsAfter: null,
-          robotsBeforeSnippet: null,
-          robotsAfterSnippet: null,
-          adapterId: "app_router_metadata",
-          fingerprintVersion: 6,
-          changeKind: "jsx_attribute",
-          revertsProposalId: null,
+          pageFile,
+          targetUrl: evidence.exampleUrl,
+          found: match,
+          afterTag: withAttribute(match.file, match.element, name, value),
           draftId: input.fix.kind === "alt" ? (input.draftId ?? null) : null,
-          changeHash: "",
-          reason: opportunity.explanation,
+          change: `the ${name} attribute`,
           expectedEffect: `${EFFECTS[kind]} Run a new audit after the change deploys to check it.`,
-          risk: `${shared.length ? `The component also renders on: ${shared.join(", ")}. ` : ""}Only the ${name} attribute of one element changes. ${ACCESSIBILITY_LIMITS} A pull request may trigger repository CI.`,
+          risk: ACCESSIBILITY_LIMITS,
           verificationPlan:
             "Review the exact diff. Run the repository build and tests in CI. After your authorized deployment, Relay checks the affected pages again with axe-core.",
-          validationSummary: `One element in ${file.path} matched, and the file parsed again with the new ${name} attribute. Full repository build and CI were not run.`,
-          createdBy: context.userId,
-          createdAt: new Date().toISOString(),
-        };
-        proposal.changeHash = await proposalFingerprint(proposal, textEdits);
-        signal.throwIfAborted();
-        if (
-          !(await PublishingRepository.saveProposal({
-            proposal,
-            textEdits,
-            claimToken,
-            organizationId: context.organizationId,
-            audit: {
-              organizationId: context.organizationId,
-              projectId: proposal.projectId,
-              actor: context,
-              action: "proposal.prepared",
-              targetType: "proposal",
-              targetId: proposal.id,
-              summary: `Prepared an accessibility fix (${name}) for ${proposal.targetUrl}`,
-            },
-          }))
-        )
-          throw new AppError("CONFLICT");
+          summary: `Prepared an accessibility fix (${name}) for ${evidence.exampleUrl}`,
+        });
         return {
           ok: true,
           message:
             "Accessibility fix prepared. Review the exact change before authorizing a pull request. Nothing was written to GitHub.",
-          proposalId: proposal.id,
+          proposalId,
         };
       },
     );
