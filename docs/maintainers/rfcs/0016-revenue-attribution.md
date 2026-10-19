@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** Draft
+- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -54,6 +54,8 @@ A small open-source package `@relay/attribution`, at most 2 KB, plus a Next.js h
 4. The server helper `relayAttributionMetadata(cookieHeader)` returns Stripe metadata keys: `relay_ft_path`, `relay_ft_source`, `relay_ft_medium`, `relay_ft_campaign`, `relay_ft_at`.
 5. The site passes them into Stripe Checkout `metadata` and `subscription_data.metadata`, or into customer metadata at sign-up.
 6. The docs show both placements with code.
+
+**As built (part A).** The snippet, the server helper and the channel rules are one dependency-free file, `src/shared/attribution.ts`, in this public repository; the whole file is 1.7 KB minified and the browser part 642 bytes. Sites copy it, and the guide shows both Stripe placements. Publishing it as the npm package `@relay/attribution` needs the owner's npm organization, so it is a follow-up. The cookie value is URL-encoded JSON with short keys, written with `Max-Age` 90 days, `Path=/`, `SameSite=Lax` and `Secure`. A referrer on the site's own host is not stored. The helper adds a sixth key, `relay_ft_referrer`, because the channel rules must tell a referring host from a `utm_source`; `relay_ft_source` is the `utm_source`, or the referrer host without one. A UTM source without a referrer or a medium counts as referral, not direct. Search engines are matched by host pattern, so country domains such as `google.co.uk` count.
 
 ### 5.3 Stripe connection
 
@@ -144,7 +146,7 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 - [ ] `revenue_connections` and `revenue_events` in D1 and Postgres.
 - [ ] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
 - [ ] Test: no personal field reaches the database.
-- [ ] Channel rules with one test per channel.
+- [x] Channel rules with one test per channel.
 - [ ] Reports with coverage first, and amounts per currency.
 - [ ] Disconnect deletes the key and all revenue rows (test).
 - [ ] Privacy policy and data processing agreement updated.
