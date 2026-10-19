@@ -15,7 +15,7 @@ import { indexDocs, indexSummary } from "./docsIndex";
 // RFC-0017 5.2: the docs paths, the index size and a manual index run.
 async function get(context: PublishingContext, projectId: string) {
   await authorizePublishing(context, projectId);
-  const [[settings], [pages]] = await Promise.all([
+  const [[settings], [index]] = await Promise.all([
     db
       .select({
         pathPrefix: docsSettings.pathPrefix,
@@ -30,8 +30,8 @@ async function get(context: PublishingContext, projectId: string) {
   ]);
   return {
     settings: settings ?? null,
-    pages: pages?.count ?? 0,
-    lastIndexedAt: pages?.lastIndexedAt ?? null,
+    pages: index?.count ?? 0,
+    lastIndexedAt: index?.lastIndexedAt ?? null,
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
   };
 }
@@ -74,6 +74,38 @@ async function save(
   await ensureDefaultSchedules(input.projectId, context.userId, ["docs_index"]);
 }
 
+/** The indexed pages and their headings, to choose where an edit goes. */
+async function pages(context: PublishingContext, projectId: string) {
+  await authorizePublishing(context, projectId);
+  const [rows, headings] = await Promise.all([
+    db
+      .select({
+        id: docsPages.id,
+        filePath: docsPages.filePath,
+        urlPath: docsPages.urlPath,
+        title: docsPages.title,
+      })
+      .from(docsPages)
+      .where(eq(docsPages.projectId, projectId))
+      .orderBy(docsPages.filePath),
+    db
+      .select({
+        pageId: docsPageHeadings.pageId,
+        level: docsPageHeadings.level,
+        text: docsPageHeadings.text,
+      })
+      .from(docsPageHeadings)
+      .where(eq(docsPageHeadings.projectId, projectId))
+      .orderBy(docsPageHeadings.position),
+  ]);
+  return rows.map(({ id, ...page }) => ({
+    ...page,
+    headings: headings
+      .filter((heading) => heading.pageId === id)
+      .map(({ level, text }) => ({ level, text })),
+  }));
+}
+
 async function indexNow(context: PublishingContext, projectId: string) {
   await authorizePublishing(context, projectId, true);
   const result = await indexDocs(projectId, new Date());
@@ -85,4 +117,4 @@ async function indexNow(context: PublishingContext, projectId: string) {
   return { summary: indexSummary(result) };
 }
 
-export const DocsSettingsService = { get, save, indexNow };
+export const DocsSettingsService = { get, save, pages, indexNow };

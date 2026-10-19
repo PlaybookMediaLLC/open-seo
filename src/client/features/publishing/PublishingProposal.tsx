@@ -13,6 +13,7 @@ import type { ProposalWithHistory } from "@/types/schemas/publishing";
 import { useRefreshPublishing } from "./queries";
 import { ConfirmRevertForm } from "./ConfirmRevertForm";
 import { RepositoryChecks } from "./RepositoryChecks";
+import { ProposalDiffs } from "./ProposalDiffs";
 
 export function PublishingProposal({
   history,
@@ -90,7 +91,9 @@ export function PublishingProposal({
                 ? "Verified page text proposal"
                 : proposal.changeKind === "jsx_attribute"
                   ? "Verified accessibility fix proposal"
-                  : "Verified metadata proposal"}
+                  : proposal.changeKind === "markdown"
+                    ? "Verified docs change proposal"
+                    : "Verified metadata proposal"}
             </h3>
             <p className="text-xs text-muted-foreground">
               Prepared {dateLabel(proposal.createdAt)} · Immutable snapshot
@@ -118,60 +121,7 @@ export function PublishingProposal({
             </div>
           ))}
         </dl>
-        {(
-          [
-            proposal.titleAfter !== null && [
-              "Title",
-              proposal.titleBeforeSnippet,
-              proposal.titleAfterSnippet,
-            ],
-            proposal.descriptionAfter !== proposal.descriptionBefore && [
-              "Description",
-              proposal.beforeSnippet,
-              proposal.afterSnippet,
-            ],
-            proposal.canonicalAfter !== null && [
-              "Canonical URL",
-              proposal.canonicalBeforeSnippet,
-              proposal.canonicalAfterSnippet,
-            ],
-            proposal.robotsAfter !== null && [
-              "Robots",
-              proposal.robotsBeforeSnippet,
-              proposal.robotsAfterSnippet,
-            ],
-            // RFC-0012 5.4: each page text edit, with its file.
-            ...textEdits.map(
-              (edit) =>
-                [
-                  `Text ${edit.ordinal + 1} in ${edit.filePath}`,
-                  edit.beforeSnippet,
-                  edit.afterSnippet,
-                ] as const,
-            ),
-          ] as const
-        )
-          .filter((diff) => diff !== false)
-          .map(([field, before, after]) => (
-            <div key={field} className="grid gap-3 lg:grid-cols-2">
-              <div className="min-w-0 rounded-lg border border-red-500/20 bg-red-500/5">
-                <p className="border-b border-red-500/20 px-3 py-2 text-xs font-medium">
-                  − {field} before
-                </p>
-                <pre className="overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
-                  <code>{before}</code>
-                </pre>
-              </div>
-              <div className="min-w-0 rounded-lg border border-emerald-500/20 bg-emerald-500/5">
-                <p className="border-b border-emerald-500/20 px-3 py-2 text-xs font-medium">
-                  + {field} after
-                </p>
-                <pre className="overflow-auto p-3 text-xs whitespace-pre-wrap break-words">
-                  <code>{after}</code>
-                </pre>
-              </div>
-            </div>
-          ))}
+        <ProposalDiffs proposal={proposal} textEdits={textEdits} />
         <dl className="space-y-3 text-sm">
           {(
             [

@@ -1,3 +1,4 @@
+import { applyMarkdownEdit } from "@/server/features/docs/markdownEdit";
 import { AppError } from "@/server/lib/errors";
 import type { ProposalTextEdit } from "@/types/schemas/publishing";
 import {
@@ -150,12 +151,19 @@ export async function applyCopyEdits(
     const result =
       edit.nodeKind === "jsx_attribute"
         ? applyTagEdit(current, edit.filePath, edit.beforeText, edit.afterText)
-        : applyTextEdit(
-            current,
-            edit.filePath,
-            edit.beforeText,
-            edit.afterText,
-          );
+        : edit.nodeKind === "markdown_block"
+          ? applyMarkdownEdit(
+              current,
+              edit.filePath,
+              edit.beforeText,
+              edit.afterText,
+            )
+          : applyTextEdit(
+              current,
+              edit.filePath,
+              edit.beforeText,
+              edit.afterText,
+            );
     after.set(edit.filePath, result.source);
     return { filePath: edit.filePath, result };
   });

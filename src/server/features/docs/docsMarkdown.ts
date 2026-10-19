@@ -15,7 +15,7 @@ const FRONT_MATTER = /^---\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/;
  * matter extension, so the front matter is cut off first; node offsets in
  * the tree count from `offset`.
  */
-function parseDoc(source: string, mdx: boolean) {
+export function parseDoc(source: string, mdx: boolean) {
   const frontMatter = FRONT_MATTER.exec(source)?.[0] ?? "";
   const tree: Root = fromMarkdown(
     source.slice(frontMatter.length),

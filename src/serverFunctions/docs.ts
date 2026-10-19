@@ -1,8 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
+import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  docsEditInputSchema,
   docsProjectSchema,
   docsSettingsInputSchema,
 } from "@/types/schemas/docs";
@@ -38,4 +40,22 @@ export const findDocsOpportunities = createServerFn({ method: "POST" })
   .validator(docsProjectSchema)
   .handler(({ context }) =>
     DocsDetectionService.detect(context, context.projectId),
+  );
+
+// RFC-0017 5.5: the docs pages to edit, and one docs edit proposal.
+export const getDocsPages = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(docsProjectSchema)
+  .handler(({ context }) =>
+    DocsSettingsService.pages(context, context.projectId),
+  );
+
+export const prepareDocsEdit = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(docsEditInputSchema)
+  .handler(({ context, data }) =>
+    DocsEditService.prepare(context, {
+      ...data,
+      projectId: context.projectId,
+    }),
   );

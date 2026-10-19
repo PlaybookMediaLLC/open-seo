@@ -1,4 +1,5 @@
 import { DocsDetectionService } from "@/server/features/docs/DocsDetectionService";
+import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
@@ -94,7 +95,18 @@ export function accessibilityCalls(
           pathPrefix: "/docs/",
           directory: "content/docs",
         }),
+      pages: () => DocsSettingsService.pages(ctx, projectId),
       indexNow: () => DocsSettingsService.indexNow(ctx, projectId),
+    },
+    DocsEditService: {
+      prepare: () =>
+        DocsEditService.prepare(ctx, {
+          projectId,
+          opportunityId: "x",
+          expectedOpportunityVersion: 1,
+          filePath: "content/docs/a.mdx",
+          edit: { kind: "add_faq_item", heading: "FAQ", item: "x" },
+        }),
     },
     DocsDetectionService: {
       detect: () => DocsDetectionService.detect(ctx, projectId),

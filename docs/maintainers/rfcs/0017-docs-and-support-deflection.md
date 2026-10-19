@@ -1,6 +1,6 @@
 # RFC-0017: Docs improvements and support deflection
 
-- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors.
+- **Status:** In progress. Part A built: the docs settings and the daily docs index. Part B built: the three detectors. Part C built: the `markdown` change kind.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
@@ -82,6 +82,8 @@ Add the change kind `markdown`.
 3. Keep all JSX blocks and front matter unchanged. Reject edits inside JSX blocks.
 4. Show the rendered before and after in the diff view.
 
+**As built (part C).** A docs edit is a `markdown` proposal with one text edit of the new node kind `markdown_block`. It reuses the RFC-0012 copy pipeline: prepare and execution both build the change with `applyCopyEdits`, so execution writes exactly what the person approved. Each of the three edits becomes one exact span: a new section replaces the chosen heading's section with itself plus the new section; a list item replaces the first list under the heading with itself plus the item, in the list's marker style and indentation; a paragraph is a top-level paragraph that matches the pasted text or its source. After the replacement, the file parses again with the same MDX tooling, and the front matter and every JSX, ESM, expression and raw HTML block must be byte-identical, in order, or the edit is refused; this one check also refuses edits inside JSX. New text may not contain JSX, imports or HTML. The proposal view shows the whole Markdown block and its rendering with the app's shared Markdown renderer, before and after; the diff block moved out of `PublishingProposal.tsx` into `ProposalDiffs.tsx`, because the file had reached the 400-line limit. The edit sheet is offered on approved docs opportunities. A test inserts a section into every Relay docs page with an H2 and checks the invariant on each.
+
 ### 5.6 Drafts from verified sources
 
 1. **Allowed sources:** existing docs pages, the project's changelog file, an OpenAPI file in the repository, and facts the owner types in.
@@ -121,8 +123,8 @@ GA4, Search Console and GitHub reads are free. Embeddings and drafts cost model 
 - [x] Docs settings, `docs_pages` and `docs_page_headings` in D1 and Postgres.
 - [x] Daily docs index task with the file and size caps.
 - [x] Three detectors with boundary tests, and skip reasons.
-- [ ] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
-- [ ] Test: JSX blocks and front matter stay byte-identical.
+- [x] `markdown` change kind with the three edit types (tests on real MDX files from Relay's docs).
+- [x] Test: JSX blocks and front matter stay byte-identical.
 - [ ] Drafts with the allowed sources and placeholders. Approval is blocked while placeholders remain (test).
 - [ ] Measurement with the thresholds.
 - [ ] `content/docs/docs-insights.mdx`.
