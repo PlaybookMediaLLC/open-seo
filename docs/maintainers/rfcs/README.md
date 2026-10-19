@@ -68,7 +68,7 @@ The weekly view (RFC-0018) shows all three. It never forces a number of changes.
 | Beyond SEO: release quality gate                                     | Done: follow-ups in its section 12         | [RFC-0015](0015-release-quality-gate.md)                     |
 | Beyond SEO: revenue attribution                                      | Done: follow-ups in its section 12         | [RFC-0016](0016-revenue-attribution.md)                      |
 | Beyond SEO: docs and support deflection                              | Done: follow-ups in its section 12         | [RFC-0017](0017-docs-and-support-deflection.md)              |
-| Retention: weekly execution queue and work report                    | Missing                                    | [RFC-0018](0018-weekly-execution-queue.md)                   |
+| Retention: weekly execution queue and work report                    | In progress: phase 1 and the report built  | [RFC-0018](0018-weekly-execution-queue.md)                   |
 | Retention: release monitoring and regression repair                  | Missing                                    | [RFC-0019](0019-release-monitoring-and-regression-repair.md) |
 | Retention: growth campaigns and decay recovery                       | Missing                                    | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      |
 | Retention: new pages from verified facts                             | Missing                                    | [RFC-0021](0021-new-pages-from-verified-facts.md)            |
@@ -85,20 +85,20 @@ Each step depends on the steps before it.
 
 1. **RFC-0001, configuration blockers (B1 to B4, B6, B7).** No other user can complete the main workflow before this. Done; external follow-ups are in its section 10.
 2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
-3. **RFC-0004, phase 1.** The system finds the file and drafts the description.
+3. **RFC-0004, phase 1.** The system finds the file and drafts the description. Done; the live checks are follow-ups in its section 13.
 4. **RFC-0001, B5.** Run the live acceptance on S1.
 5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this. Done; staging checks and the token key setup are follow-ups in its section 12.
 6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications. Done; the Trigger.dev account and live checks are follow-ups in its section 12.
 7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
-8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it.
-9. **RFC-0002, phase 1.** Low click-through rate, cannibalization, decline diagnosis and the GA4 signal.
-10. **RFC-0006, phase 1, and the RFC-0012 tracking gate and conversion metric.** Outcome tracking for clicks and signups.
+8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it. Done; the 4-week acceptance on S1 and S3 is open.
+9. **RFC-0002, phase 1.** Low click-through rate, cannibalization, decline diagnosis and the GA4 signal. Done; follow-ups are in its section 13.
+10. **RFC-0006, phase 1, and the RFC-0012 tracking gate and conversion metric.** Outcome tracking for clicks and signups. Done.
 11. **RFC-0024, phase 1.** Change history, cool-downs and no-repeat rules. The queue needs them.
 12. **RFC-0019, phase 1.** Production monitoring and metadata restores.
-13. **RFC-0003.** Owners, defer lengths and tickets for the queue.
+13. **RFC-0003.** Owners, defer lengths and tickets for the queue. Done; follow-ups are in its section 11.
 14. **RFC-0020, phase 1.** Snippet and internal-link campaigns, and decay detection.
 15. **RFC-0025, phase 0.** The preview spike: container sizes, outbound controls, Workers for Platforms with OpenNext output, and cost per build.
-16. **RFC-0018, phase 2.** Standing approvals (`open_pr` for restores first), plan limits and the monthly work report. The recurring plan launches here.
+16. **RFC-0018, phase 2.** Standing approvals (`open_pr` for restores first), plan limits and the monthly work report. The recurring plan launches here. The monthly work report and the weekly digest are done; standing approvals wait for RFC-0019, and plan limits wait for the Autumn products.
 
 ### Release 2: growth, launches and revenue
 
@@ -107,7 +107,7 @@ Each step depends on the steps before it.
 19. **RFC-0020, phase 2.** Content refresh steps and JSX link insertion.
 20. **RFC-0021, phase 1.** New pages from verified facts.
 21. **RFC-0023, phase 1.** Launch workflows.
-22. **RFC-0016.** Revenue attribution. Start with Relay's own billing.
+22. **RFC-0016.** Revenue attribution. Start with Relay's own billing. Done through phase 2; phase 3 and the live acceptance are follow-ups in its section 12.
 23. **RFC-0022, phase 1.** Competitor change response.
 24. **RFC-0024, phase 2.** Track records per change class.
 25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
@@ -119,7 +119,7 @@ Each step depends on the steps before it.
 28. **RFC-0013, phase 1.** Accessibility detection and fixes. Done through phase 3; its live acceptance and the RFC-0015 pull request checks are follow-ups in its section 12.
 29. **RFC-0015, phase 1.** The release gate. Done with the trend line; the performance pack, the gate-only plan and the live acceptance are follow-ups in its section 12.
 30. **RFC-0014.** Web performance. Done through phase 3; its live acceptance and the CrUX key are follow-ups in its section 12.
-31. **RFC-0017.** Docs and support.
+31. **RFC-0017.** Docs and support. Done; GitHub Issues topics are built behind a server switch, and the privacy policy, Intercom, Zendesk, Algolia and the live acceptance are follow-ups in its section 12.
 32. **RFC-0007.** Start only when its entry criteria are met.
 
 ## Real-site test sites
