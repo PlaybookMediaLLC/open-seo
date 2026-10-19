@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync. Part D built: the reports. Phase 2 built: revenue in priority and in experiment results.
+- **Status:** Done on 2026-10-19. Built in PRs #151 to #155: the first-touch snippet, the server helper and the channel rules (A), the read-only Stripe connection (B), the daily sync (C), the reports (D) and phase 2, revenue in opportunity priority and experiment results. The owner chose on 2026-10-19 to defer phase 3 (Paddle and Lemon Squeezy) and to keep the owner items as follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -149,7 +149,7 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 ### Phase 1
 
 - [ ] `@relay/attribution` package with consent hook, first-touch rule and the 90-day cookie (tests).
-- [ ] Next.js helper and Stripe metadata docs for Checkout and sign-up.
+- [x] Next.js helper and Stripe metadata docs for Checkout and sign-up.
 - [ ] Restricted-key check: refuses `sk_` keys, and refuses a restricted key with write access (probe tested in Stripe test mode).
 - [x] `revenue_connections` and `revenue_events` in D1 and Postgres.
 - [x] Daily sync with cursor, pagination, refunds and the 5,000 cap (tests with Stripe fixtures).
@@ -209,3 +209,15 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 **Usefulness**
 
 - The owner names at least one landing page decision made from the report within the test month.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Publish `src/shared/attribution.ts` as the npm package `@relay/attribution`. Trigger: the owner creates the npm organization.
+- [ ] Confirm the write probe with a real Stripe test-mode restricted key: a read-only key connects, and a key with write access is refused. Trigger: the owner creates the two test-mode keys.
+- [ ] Privacy policy and data processing agreement name the revenue data that Relay stores. Trigger: the owner approves the legal text. Do this before the snippet runs on a live site.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) on S3: the snippet on `relay.playbookmedia.io` behind consent, three test-mode purchases, a report that matches Stripe, then 30 days in live mode with at least 80% coverage. Check whether Autumn passes checkout metadata to Stripe. Trigger: the privacy policy update above.
+- [ ] Paddle connection (phase 3). Paddle keys can be read-only, with a read permission for each entity, so the RFC's rules can apply. The owner deferred it on 2026-10-19. Trigger: a customer who bills with Paddle asks for it.
+- [ ] Lemon Squeezy connection (phase 3). No read-only key option was found, so the read-only rule cannot apply as written. The owner deferred it on 2026-10-19. Trigger: a customer asks, and the owner decides whether a full-access key is acceptable.
+- [ ] Decision on the Playbook `growth-attribution` app: does Relay send its revenue events there, or read from it? Trigger: the owner reviews the app's scope.
