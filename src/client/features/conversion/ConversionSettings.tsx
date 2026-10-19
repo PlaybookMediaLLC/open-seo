@@ -13,6 +13,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/client/components/ui/sheet";
+import { StripeConnection } from "@/client/features/revenue/StripeConnection";
 import {
   getConversionGate,
   saveConversionEvent,
@@ -137,6 +138,7 @@ export function ConversionSettings({ projectId }: { projectId: string }) {
           onClose={() => setEditing(false)}
         />
       )}
+      <StripeConnection projectId={projectId} />
     </div>
   );
 }
