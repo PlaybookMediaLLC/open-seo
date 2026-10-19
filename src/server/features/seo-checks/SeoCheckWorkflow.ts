@@ -18,6 +18,8 @@ import {
 // Trigger.dev task, so checks run without another account.
 const BATCH_SIZE = 10;
 const LINK_BUDGET = 200;
+// RFC-0015: subresource size requests per run.
+const ASSET_BUDGET = 200;
 const STEP = {
   retries: { limit: 2, delay: "10 seconds" as const },
   timeout: "5 minutes" as const,
@@ -34,13 +36,15 @@ export class SeoCheckWorkflow extends WorkflowEntrypoint<
       const batches: BatchResult[] = [];
       let links = LINK_BUDGET;
       let renders = MAX_RENDERED_PAGES;
+      let assets = ASSET_BUDGET;
       for (let index = 0; index < plan.urls.length; index += BATCH_SIZE) {
-        const budget = { links, renders };
+        const budget = { links, renders, assets };
         const result = await pgStep(step, `check-${index}`, STEP, () =>
           checkBatch(plan, plan.urls.slice(index, index + BATCH_SIZE), budget),
         );
         links -= result.linksChecked;
         renders -= result.pagesRendered;
+        assets -= result.assetsChecked ?? 0;
         batches.push(result);
       }
       await pgStep(step, "finish", STEP, () => finishCheck(plan, batches));

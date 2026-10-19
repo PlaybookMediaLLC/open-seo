@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { ciCheckFindings, ciCheckRuns, ciCheckUrls } from "@/db/schema";
-import { linkStatus, fetchSnapshot } from "./pageSnapshot";
+import { assetSize, linkStatus, fetchSnapshot } from "./pageSnapshot";
+import { assetWeight, mixedContent, WEIGHED } from "./assetRules";
 import { pageUrl, previewAccess, type CheckPlan } from "./seoCheckPlan";
 import { isPlatformHost } from "./previewHosts";
 import { renderPages } from "./seoCheckRender";
@@ -28,6 +29,7 @@ export type BatchResult = {
   findings: Finding[];
   linksChecked: number;
   pagesRendered: number;
+  assetsChecked?: number;
 };
 
 /** 5.13: the raw HTML looks client-rendered, or lost half its text. */
@@ -52,7 +54,7 @@ async function inPool<T, R>(items: T[], work: (item: T) => Promise<R>) {
 export async function checkBatch(
   plan: CheckPlan,
   batch: PlannedUrl[],
-  budget: { links: number; renders: number },
+  budget: { links: number; renders: number; assets?: number },
 ): Promise<BatchResult> {
   const linkBudget = budget.links;
   const access = await previewAccess(plan.projectId, plan.previewOrigin);
@@ -92,6 +94,21 @@ export async function checkBatch(
   const seo = plan.packs.includes("seo");
   // RFC-0015 5.3: with the links pack, a broken new link blocks.
   const links = plan.packs.includes("links");
+  // RFC-0015 5.3: subresource sizes, one HEAD each, within the run budget.
+  const sizes = new Map<string, number | null>();
+  const wanted = links
+    ? [
+        ...new Set(
+          pages.flatMap(({ base, preview }) =>
+            [...(base.page?.assets ?? []), ...(preview.page?.assets ?? [])]
+              .filter((asset) => WEIGHED.has(asset.kind))
+              .map((asset) => asset.url),
+          ),
+        ),
+      ].slice(0, budget.assets ?? 0)
+    : [];
+  const measured = await inPool(wanted, (url) => assetSize(url, access));
+  wanted.forEach((url, index) => sizes.set(url, measured[index]));
   for (const { url, base, preview } of pages) {
     if (seo)
       findings.push(
@@ -107,6 +124,17 @@ export async function checkBatch(
         ...compareSecurity(base, preview, {
           path: url.path,
           platformPreview: isPlatformHost(new URL(plan.previewOrigin).hostname),
+        }),
+      );
+    if (links)
+      findings.push(
+        ...mixedContent(base.page, preview.page, {
+          path: url.path,
+          previewOrigin: plan.previewOrigin,
+        }),
+        ...assetWeight(base.page, preview.page, sizes, {
+          path: url.path,
+          imageMaxKb: plan.budgets.imageMaxKb,
         }),
       );
     if (!seo && !links) continue;
@@ -142,6 +170,7 @@ export async function checkBatch(
     findings,
     linksChecked,
     pagesRendered: toRender.length,
+    assetsChecked: wanted.length,
   };
 }
 

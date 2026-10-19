@@ -7,13 +7,24 @@ The release gate grows the [SEO check](/docs/seo-checks) into one check with rul
 
 ## Rule packs
 
-| Pack              | What it checks                                                                                                                              | Default |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `seo`             | The SEO rules of the SEO check.                                                                                                             | On      |
-| `links`           | A link that is new on the preview and returns 4xx or 5xx blocks the pull request. Without this pack, the SEO check reports it as a warning. | Off     |
-| `securityHeaders` | Security response headers that the preview drops or weakens.                                                                                | Off     |
+| Pack              | What it checks                                                            | Default |
+| ----------------- | ------------------------------------------------------------------------- | ------- |
+| `seo`             | The SEO rules of the SEO check.                                           | On      |
+| `links`           | Broken new links, mixed content, heavy new images and page weight growth. | Off     |
+| `securityHeaders` | Security response headers that the preview drops or weakens.              | Off     |
 
 Turn packs on in **Project settings > SEO checks**, or in `relay-gate.json`. The file wins.
+
+## Links and assets
+
+| Rule                                                          | Severity |
+| ------------------------------------------------------------- | -------- |
+| A link that is new on the preview returns 4xx or 5xx          | Blocking |
+| A new `http:` subresource on an `https:` page (mixed content) | Blocking |
+| A new image over `imageMaxKb` (300 KB by default)             | Warning  |
+| The page's transfer size grows by 25% or more                 | Warning  |
+
+Without this pack, the SEO check still reports a broken new link as a warning. Relay reads each image, script and stylesheet size with one request, at most 200 for each run. It compares a page's weight only when it knows every size on both versions, so a skipped request cannot look like growth. This pack does not read console errors.
 
 ## Security headers
 
