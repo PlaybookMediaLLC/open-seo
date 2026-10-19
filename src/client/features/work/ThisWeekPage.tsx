@@ -9,6 +9,7 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import { getThisWeek } from "@/serverFunctions/work";
 import { CycleSettingsSheet } from "./CycleSettingsSheet";
 import { WorkHistorySheet } from "./WorkHistorySheet";
+import { WorkReportSheet } from "./WorkReportSheet";
 
 type Week = Awaited<ReturnType<typeof getThisWeek>>;
 type Entry = Week["entries"][number];
@@ -104,6 +105,7 @@ export function ThisWeekPage({ projectId }: { projectId: string }) {
             week && (
               <div className="flex flex-wrap gap-2">
                 <WorkHistorySheet projectId={projectId} />
+                <WorkReportSheet projectId={projectId} />
                 {week.canManage && (
                   <CycleSettingsSheet
                     projectId={projectId}

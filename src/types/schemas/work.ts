@@ -10,3 +10,6 @@ export const workSettingsInputSchema = workProjectSchema.extend({
   timeZone: z.string().trim().min(1).max(64),
 });
 export type WorkSettingsInput = z.infer<typeof workSettingsInputSchema>;
+export const workReportInputSchema = workProjectSchema.extend({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+});

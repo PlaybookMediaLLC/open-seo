@@ -45,6 +45,7 @@ import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsResultService } from "@/server/features/docs/DocsResultService";
 import { SupportSourceService } from "@/server/features/support/SupportSourceService";
+import { WorkReportService } from "@/server/features/work/WorkReportService";
 import { WorkService } from "@/server/features/work/WorkService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import * as revenueSchema from "@/db/revenue.schema";
@@ -194,6 +195,7 @@ const services: Record<string, Record<string, unknown>> = {
   DocsResultService,
   SupportSourceService,
   WorkService,
+  WorkReportService,
 };
 
 async function growthRowCount() {

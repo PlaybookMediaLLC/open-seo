@@ -3,6 +3,7 @@ import { DocsDraftService } from "@/server/features/docs/DocsDraftService";
 import { DocsEditService } from "@/server/features/docs/DocsEditService";
 import { DocsResultService } from "@/server/features/docs/DocsResultService";
 import { SupportSourceService } from "@/server/features/support/SupportSourceService";
+import { WorkReportService } from "@/server/features/work/WorkReportService";
 import { WorkService } from "@/server/features/work/WorkService";
 import { DocsSettingsService } from "@/server/features/docs/DocsSettingsService";
 import { AccessibilityCheckService } from "@/server/features/accessibility/AccessibilityCheckService";
@@ -128,6 +129,10 @@ export function accessibilityCalls(
           cycleHour: 6,
           timeZone: "UTC",
         }),
+    },
+    WorkReportService: {
+      monthly: () =>
+        WorkReportService.monthly(ctx, { projectId, month: "2026-10" }),
     },
     SupportSourceService: {
       status: () => SupportSourceService.status(ctx, projectId),
