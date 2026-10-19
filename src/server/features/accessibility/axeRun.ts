@@ -32,6 +32,7 @@ const RESULT_ID = "relay-axe-results";
 const MAX_NODES_PER_RULE = 20;
 const RENDER_TIMEOUT_MS = 20_000;
 const AXE_TIMEOUT_MS = 30_000;
+const MAX_HEADINGS = 40;
 
 const RUNNER = `(function () {
   function cut(value) { return String(value || "").slice(0, 300); }
@@ -42,8 +43,13 @@ const RUNNER = `(function () {
     document.documentElement.appendChild(el);
   }
   axe.run(document, { runOnly: { type: "tag", values: ${JSON.stringify(TAGS)} }, resultTypes: ["violations"] }).then(function (r) {
+    var order = r.violations.some(function (v) { return v.id === "heading-order"; });
+    var headings = order ? Array.prototype.slice.call(document.querySelectorAll("h1, h2, h3, h4, h5, h6"), 0, ${MAX_HEADINGS}) : [];
     done("data-json", JSON.stringify({
       version: r.testEngine.version,
+      headings: headings.map(function (h) {
+        return { level: Number(h.tagName.charAt(1)), text: String(h.textContent || "").replace(/\\s+/g, " ").trim().slice(0, 120) };
+      }),
       violations: r.violations.map(function (v) {
         return {
           id: v.id,
@@ -60,6 +66,16 @@ const RUNNER = `(function () {
 
 const resultSchema = z.object({
   version: z.string().max(40),
+  // RFC-0013 5.4 phase 2: the page's headings, only when heading-order fails.
+  headings: z
+    .array(
+      z.object({
+        level: z.number().int().min(1).max(6),
+        text: z.string().max(120),
+      }),
+    )
+    .max(MAX_HEADINGS)
+    .default([]),
   violations: z.array(
     z.object({
       id: z.string().max(100),

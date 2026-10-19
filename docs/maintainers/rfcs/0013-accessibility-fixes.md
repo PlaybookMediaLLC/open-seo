@@ -107,6 +107,8 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 **As built (part E2).** The alt text sheet has a **Let the model see the image** checkbox. Its text says that a draft that sees the image costs more, and that Relay holds up to 50 credits for a draft and charges the real cost; the draft button stays a text draft until the person ticks it. Relay resolves the image URL against the page, uses the original image of a Next.js optimizer URL, drops the query, checks it with the audit SSRF guard, and sends it to the model as an image part with the same prompt. Only JPEG, PNG, GIF and WebP URLs are accepted: the OpenRouter provider passes those to the model provider, which fetches the image, while the AI SDK would download any other URL in Relay's server, past the guard's redirect checks. The public URL is the only input about the image. The draft uses its own prompt version, `alt-text-vision-v1`, and the same checks as a text draft: a number that the model reads from the image but that is not in the file name, the element or the page text is refused, which is stricter than needed for charts.
 
+**As built (part E3).** Contrast and heading order stay tickets. Every accessibility ticket now lists the rule, impact, pages affected, WCAG tags, the example page and selector, and axe-core's failure summary for the example. A `color-contrast` ticket has a Contrast section with the measured ratio, the foreground and background colors and the required ratio, read from that summary. For a page where `heading-order` fails, the injected script also returns the page's headings, at most 40, with level and text of at most 120 characters, and `audit_accessibility_headings` stores them. The ticket shows them as a flat list, because nested Markdown lists can turn into code blocks when levels skip, and marks each heading that skips a level. Heading text from the page is in code spans, so it cannot mention people in a GitHub issue. The ticket reads only stored rows, so the previewed ticket and the created issue have the same text and hash: all three ticket callers share one function.
+
 ### 5.5 Verification and tracking
 
 1. After the deployment is confirmed, run axe-core again on the affected pages in the cluster (at most 10).
@@ -164,7 +166,7 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 
 - [x] Link, button and field name fixes.
 - [x] Vision alt-text drafts behind a cost confirmation.
-- [ ] Contrast and heading-order tickets.
+- [x] Contrast and heading-order tickets.
 
 ### Phase 3
 

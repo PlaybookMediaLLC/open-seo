@@ -271,4 +271,5 @@ export const {
   auditAccessibilityResults,
   auditAccessibilityViolations,
   auditAccessibilityTargets,
+  auditAccessibilityHeadings,
 } = schema;

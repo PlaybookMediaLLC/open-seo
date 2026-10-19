@@ -8,6 +8,7 @@ import {
 } from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
 import { runAccessibilityStep } from "./accessibilityStep";
+import { accessibilityTicketFacts } from "./accessibilityTicket";
 import { saveAccessibilityTargets } from "./accessibilityTargets";
 
 // RFC-0013 5.2: the pages that matter, axe-core on each, and billed time.
@@ -170,4 +171,56 @@ it("stores each page's violations with cluster keys and bills each browser attem
       usage: { cloudflareAttempts: 2, contextCredits: 0 },
     }),
   );
+});
+
+it("stores the headings of a page where heading-order fails, for the ticket", async () => {
+  const { auditId, projectId } = await audit(["/guide"]);
+  const json = JSON.stringify({
+    version: "4.13.0",
+    headings: [
+      { level: 1, text: "Guide" },
+      { level: 3, text: "Setup" },
+    ],
+    violations: [
+      {
+        id: "heading-order",
+        impact: "moderate",
+        tags: ["wcag2a"],
+        nodes: [{ target: "h3", html: "<h3>Setup</h3>", summary: "Fix order" }],
+      },
+    ],
+  }).replaceAll('"', "&quot;");
+  mocks.quickAction.mockImplementation(async () =>
+    Response.json({
+      result: `<html><template id="relay-axe-results" data-json="${json}"></template></html>`,
+    }),
+  );
+  await checkAudit(auditId, projectId);
+  const [violation] = await db
+    .select({ clusterKey: auditAccessibilityViolations.clusterKey })
+    .from(auditAccessibilityViolations)
+    .innerJoin(
+      auditAccessibilityResults,
+      eq(auditAccessibilityResults.id, auditAccessibilityViolations.resultId),
+    )
+    .where(eq(auditAccessibilityResults.auditId, auditId));
+  expect(
+    await accessibilityTicketFacts(projectId, {
+      auditId,
+      clusterKey: violation.clusterKey,
+      ruleId: "heading-order",
+      impact: "moderate",
+      wcagTags: "wcag2a",
+      pagesAffected: 1,
+      exampleUrl: "https://example.com/guide",
+      exampleSelector: "h3",
+      exampleSnippet: "<h3>Setup</h3>",
+    }),
+  ).toEqual({
+    summary: "Fix order",
+    headings: [
+      { level: 1, text: "Guide" },
+      { level: 3, text: "Setup" },
+    ],
+  });
 });

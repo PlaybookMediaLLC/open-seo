@@ -58,3 +58,19 @@ export const auditAccessibilityTargets = sqliteTable(
   },
   (t) => [index("audit_accessibility_targets_audit_idx").on(t.auditId)],
 );
+
+// RFC-0013 5.4 phase 2: the headings of a page where heading-order fails,
+// in page order, for the heading outline in a ticket. At most 40 headings.
+export const auditAccessibilityHeadings = sqliteTable(
+  "audit_accessibility_headings",
+  {
+    id: text("id").primaryKey(),
+    resultId: text("result_id")
+      .notNull()
+      .references(() => auditAccessibilityResults.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    level: integer("level").notNull(),
+    text: text("text").notNull(),
+  },
+  (t) => [index("audit_accessibility_headings_result_idx").on(t.resultId)],
+);

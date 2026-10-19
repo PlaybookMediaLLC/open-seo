@@ -72,7 +72,7 @@ it("reads the result that the injected script writes into the page", async () =>
       "https://example.com/",
       AXE,
     ),
-  ).toEqual({ result });
+  ).toEqual({ result: { ...result, headings: [] } });
   expect(
     await runAxe(
       page("<html><body></body></html>"),

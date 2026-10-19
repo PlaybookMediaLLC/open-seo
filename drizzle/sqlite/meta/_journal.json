@@ -673,6 +673,13 @@
       "when": 1792342528049,
       "tag": "0095_right_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "6",
+      "when": 1792377323023,
+      "tag": "0096_nebulous_korvac",
+      "breakpoints": true
     }
   ]
 }

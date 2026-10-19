@@ -44,6 +44,13 @@ If your project has a connected GitHub repository, these issues have a **Fix in 
 
 Relay finds the one element in your page file or in the components it imports, and prepares the exact change for review. If it finds no element, or more than one, it stops and tells you to fix it by hand. Nothing is written to GitHub until you approve the change. Relay then opens a pull request for you to review and merge.
 
+## Contrast and heading order
+
+Relay does not change colors or headings in code. Color changes affect your brand and design system, and a heading change can change the page's structure. Approve the item, then copy its ticket or create a GitHub issue:
+
+- A **low-contrast text** ticket states the measured contrast ratio, the text and background colors, and the required ratio.
+- A **heading order** ticket shows the page's headings in order and marks each heading that skips a level.
+
 ## Check a fix after it deploys
 
 After you merge the pull request, track the change and confirm its production deployment on the **Experiments & Results** page. Then open the experiment and select **Check the fix**. Relay runs axe-core again on up to 10 pages where the audit found the issue:
