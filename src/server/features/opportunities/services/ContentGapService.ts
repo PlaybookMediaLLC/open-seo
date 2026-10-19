@@ -326,6 +326,7 @@ async function detect(
             : null,
         keywordDifficulty: new Map(),
         truncated: run.truncated,
+        revenue: null,
       }),
     })
       .slice(0, 50)

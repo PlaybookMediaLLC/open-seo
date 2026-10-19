@@ -1,4 +1,5 @@
 import { loadPerformanceSignals } from "@/server/features/performance/performanceSignals";
+import { loadRevenueScores } from "@/server/features/revenue/RevenueReportService";
 import { Ga4ConnectionRepository } from "@/server/features/ga4/repositories/Ga4ConnectionRepository";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
@@ -48,6 +49,7 @@ export async function loadDetectionSignals(project: {
     aiCitations,
     serpChecks,
     performance,
+    revenue,
   ] = await Promise.all([
     ProjectContextRepository.listKeyPages(projectId),
     BrandTermService.get(projectId),
@@ -77,6 +79,7 @@ export async function loadDetectionSignals(project: {
       daysAgo(SERP_CHECK_HOURS / 24),
     ),
     loadPerformanceSignals(projectId),
+    loadRevenueScores(projectId),
   ]);
   return {
     ga4Connection,
@@ -91,6 +94,7 @@ export async function loadDetectionSignals(project: {
       aiCitations,
       serpChecks,
       performance,
+      revenue,
     },
     // Inspections only check audit issues, so a run without an audit needs none.
     inspectionBudget: audit
@@ -159,12 +163,14 @@ export async function inspectTopBlockers(
 /** Plain notes about signals and types that a run could not use. */
 export function detectionNotes(input: {
   ga4Connected: boolean;
+  revenue: boolean;
   ga4Failed: boolean;
   audit: { inlinks: Map<string, Set<string>> } | null;
   inspectionSkipped: boolean;
 }): string {
   return [
     !input.ga4Connected &&
+      !input.revenue &&
       "GA4 is not connected, so commercial value uses page roles only.",
     input.ga4Failed &&
       "The GA4 report failed, so commercial value uses page roles only.",

@@ -6,6 +6,7 @@ import type {
   RankEvidence,
 } from "@/types/schemas/opportunities";
 import type { PerformanceSignals } from "@/server/features/performance/performanceSignals";
+import type { RevenueScores } from "@/server/features/revenue/revenuePaths";
 
 export type Ga4LandingPageRow = Pick<
   Ga4LandingPageMetrics,
@@ -40,6 +41,8 @@ export type DetectionInput = {
   serpChecks: Map<string, { value: number; reason: string }>;
   /** RFC-0014: recent field data and Lighthouse causes. Null without data. */
   performance: PerformanceSignals | null;
+  /** RFC-0016: first-touch revenue scores. Null under 80% coverage. */
+  revenue: RevenueScores | null;
 };
 
 export type AiCitations = {

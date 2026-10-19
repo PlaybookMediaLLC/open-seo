@@ -34,6 +34,7 @@ export function input(
     aiCitations: null,
     serpChecks: new Map(),
     performance: null,
+    revenue: null,
     truncated: false,
     ...overrides,
   };

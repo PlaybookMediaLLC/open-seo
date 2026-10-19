@@ -1,6 +1,6 @@
 # RFC-0016: Revenue attribution from landing page to payment
 
-- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync. Part D built: the reports.
+- **Status:** In progress. Part A built: the first-touch snippet, the server helper and the channel rules. Part B built: the read-only Stripe connection. Part C built: the daily sync. Part D built: the reports. Phase 2 built: revenue in priority and in experiment results.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
@@ -119,6 +119,8 @@ The search engine list is one constant with tests.
 1. **Priority.** When a project has revenue data with at least 80% coverage, the RFC-0002 commercial score for a page = `min(1, first-touch revenue in 90 days / the 90th percentile across pages)`, and at least the role score.
 2. **Results.** Experiments show new customers and first-touch revenue from the changed page for the baseline and observation windows. Show them only when each window has at least 10 new customers. Always state that payments can come weeks after the first visit.
 
+**As built (phase 2).** Opportunity detection loads the revenue scores with its other first-party signals; they are null under 80% coverage, and then the GA4 rule applies as before. The 90th percentile is per currency, and a page takes its highest score across currencies, so amounts are never converted. Landing paths match page URLs without a trailing slash. Content gaps get no revenue score, because their pages do not exist yet. Experiment revenue is read when the experiment is read, not stored: events whose first-touch path is the experiment's page, by payment date inside each window. The windows are Search Console dates and the payment times are UTC, so a payment near midnight can fall into the next day. Below 10 new customers in either window, the page states the minimum and shows no numbers.
+
 ### 5.8 Phase 3
 
 1. Paddle and Lemon Squeezy connections with the same rules.
@@ -160,8 +162,8 @@ Stripe API reads are free. Sync runs on Trigger.dev compute.
 
 ### Phase 2
 
-- [ ] Revenue-based commercial score with the coverage rule.
-- [ ] Revenue in experiment results with the 10-customer rule.
+- [x] Revenue-based commercial score with the coverage rule.
+- [x] Revenue in experiment results with the 10-customer rule.
 
 ### Phase 3
 

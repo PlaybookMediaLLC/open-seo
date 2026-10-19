@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { getRevenueReport } from "@/serverFunctions/revenue";
+import { formatMinor as money } from "@/shared/money";
 
 const CHANNELS: Record<string, string> = {
   organic_search: "Organic search",
@@ -12,12 +13,6 @@ const CHANNELS: Record<string, string> = {
   unknown: "Unknown",
 };
 const PERIODS = [30, 90, 365] as const;
-
-const money = (minor: number, currency: string) =>
-  new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: currency.toUpperCase(),
-  }).format(minor / 100);
 
 /** RFC-0016 5.6: revenue by first touch, with the coverage first. */
 export function RevenueReport({ projectId }: { projectId: string }) {

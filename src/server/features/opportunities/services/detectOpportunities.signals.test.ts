@@ -315,6 +315,23 @@ describe("commercial and difficulty signals", () => {
     );
   });
 
+  // RFC-0016 5.7: revenue with enough coverage replaces the GA4 score.
+  it("uses the first-touch revenue score instead of GA4", () => {
+    const revenue = new Map([
+      [
+        "/page",
+        { score: 0.5, revenueMinor: 4_900, p90Minor: 9_800, currency: "usd" },
+      ],
+    ]);
+    const [result] = detectOpportunities(
+      strikingInput({ ga4: ga4(10), revenue }),
+    );
+    expect(result.commercialScore).toBe(0.5);
+    expect(result.scoreExplanation).toContain(
+      "min(1, $49.00 first-touch revenue in 90 days / the 90th percentile across pages $98.00)",
+    );
+  });
+
   it("uses cached keyword difficulty for the query when present", () => {
     const [cached] = detectOpportunities(
       strikingInput({ keywordDifficulty: new Map([["query", 40]]) }),

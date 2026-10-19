@@ -45,6 +45,7 @@ function gaps(
       ga4: null,
       keywordDifficulty: new Map(),
       truncated: false,
+      revenue: null,
     }),
   });
 }

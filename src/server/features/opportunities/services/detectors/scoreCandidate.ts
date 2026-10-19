@@ -1,3 +1,8 @@
+import {
+  revenuePathKey,
+  type RevenueScores,
+} from "@/server/features/revenue/revenuePaths";
+import { formatMinor } from "@/shared/money";
 import type { OpportunityCandidate } from "@/types/schemas/opportunities";
 import {
   bounded,
@@ -87,12 +92,13 @@ export type ScoringContext = {
   currency: string | null;
   keywordDifficulty: Map<string, number>;
   truncated: boolean;
+  revenue: RevenueScores | null;
 };
 
 export function scoringContext(
   input: Pick<
     DetectionInput,
-    "keyPages" | "ga4" | "keywordDifficulty" | "truncated"
+    "keyPages" | "ga4" | "keywordDifficulty" | "truncated" | "revenue"
   >,
 ): ScoringContext {
   let ga4: ScoringContext["ga4"] = null;
@@ -109,6 +115,7 @@ export function scoringContext(
     currency: input.ga4?.currency ?? null,
     keywordDifficulty: input.keywordDifficulty,
     truncated: input.truncated,
+    revenue: input.revenue,
   };
 }
 
@@ -126,6 +133,36 @@ type Scored = Pick<
   | "uncertainty"
   | "ga4"
 >;
+
+/** The GA4 part of the commercial score, or the revenue part with enough coverage. */
+function signalScore(
+  context: ScoringContext,
+  url: string,
+  ga4Rows: Ga4LandingPageRow[],
+) {
+  // RFC-0016 5.7: revenue data with enough coverage replaces the GA4 score.
+  if (context.revenue) {
+    const revenue = context.revenue.get(revenuePathKey(url));
+    return revenue
+      ? {
+          score: revenue.score,
+          text: `the revenue score ${revenue.score} = min(1, ${formatMinor(revenue.revenueMinor, revenue.currency, "en-US")} first-touch revenue in 90 days / the 90th percentile across pages ${formatMinor(revenue.p90Minor, revenue.currency, "en-US")})`,
+        }
+      : {
+          score: 0,
+          text: "the revenue score 0, because no first-touch revenue in 90 days starts on this page",
+        };
+  }
+  if (!context.ga4)
+    return { score: 0, text: "no GA4 score, because GA4 is not connected" };
+  const keyEvents =
+    ga4Rows.find((row) => row.period === "current")?.keyEvents ?? 0;
+  const score = keyEvents >= 10 ? 1 : keyEvents >= 1 ? 0.7 : 0;
+  return {
+    score,
+    text: `the GA4 score ${score} from ${keyEvents} organic key events in the current period`,
+  };
+}
 
 export function scoreCandidate(
   context: ScoringContext,
@@ -161,12 +198,8 @@ export function scoreCandidate(
           ? 0.5
           : 0.25;
   const ga4Rows = context.ga4?.get(urlLandingPageKey(input.url)) ?? [];
-  const keyEvents =
-    ga4Rows.find((row) => row.period === "current")?.keyEvents ?? 0;
-  const ga4Score = keyEvents >= 10 ? 1 : keyEvents >= 1 ? 0.7 : 0;
-  const commercialScore = context.ga4
-    ? Math.max(roleScore, ga4Score)
-    : roleScore;
+  const signal = signalScore(context, input.url, ga4Rows);
+  const commercialScore = Math.max(roleScore, signal.score);
   const demandScore = bounded(Math.log10(1 + input.demandImpressions) / 5);
   const cachedDifficulty =
     input.query === null
@@ -197,9 +230,6 @@ export function scoreCandidate(
     difficultyScore,
     effortScore,
   });
-  const ga4Text = context.ga4
-    ? `the GA4 score ${ga4Score} from ${keyEvents} organic key events in the current period`
-    : "no GA4 score, because GA4 is not connected";
   const difficultyText = input.difficulty
     ? input.difficulty.source
     : cachedDifficulty !== undefined
@@ -216,8 +246,8 @@ export function scoreCandidate(
     visibilityScore: input.visibilityScore,
     difficultyScore,
     effortScore,
-    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}${input.confidence === undefined ? `, the default for this type${context.truncated ? " with truncated rows" : ""}` : ", because URL inspection confirms the problem"}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}${input.confidenceDelta ? `, then ${input.confidenceDelta.value > 0 ? "+" : ""}${input.confidenceDelta.value} because ${input.confidenceDelta.reason}` : ""}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${ga4Text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
-    uncertainty: `${input.uncertainty} Priority is a review heuristic, not a traffic or revenue forecast.${context.ga4 ? "" : " GA4 not connected; commercial value uses page roles only."}${context.truncated ? " Source rows are truncated, so coverage and confidence are limited." : " Bounded source rows may omit queries or pages."}`,
+    scoreExplanation: `Priority = round(100 × confidence ${confidence} × (0.30 × commercial ${commercialScore} + 0.25 × demand ${demandScore} + 0.20 × visibility ${input.visibilityScore} + 0.15 × (1 - difficulty ${difficultyScore}) + 0.10 × inverse effort ${effortScore})) = ${priority}. Confidence starts at ${baseConfidence}${input.confidence === undefined ? `, the default for this type${context.truncated ? " with truncated rows" : ""}` : ", because URL inspection confirms the problem"}${input.confidenceFactor === undefined ? "" : `, multiplied by ${input.confidenceFactor}`}${input.confidenceDelta ? `, then ${input.confidenceDelta.value > 0 ? "+" : ""}${input.confidenceDelta.value} because ${input.confidenceDelta.reason}` : ""}. Commercial is the higher of the page role score ${roleScore} (${role ?? "unknown"}) and ${signal.text}. Demand = min(1, log10(1 + ${input.demandImpressions} impressions) / 5). Visibility = ${input.visibilityRule}. Difficulty = ${difficultyText}. Effort is an estimate of ${effortHours} hours.`,
+    uncertainty: `${input.uncertainty} Priority is a review heuristic, not a traffic or revenue forecast.${context.ga4 || context.revenue ? "" : " GA4 not connected; commercial value uses page roles only."}${context.truncated ? " Source rows are truncated, so coverage and confidence are limited." : " Bounded source rows may omit queries or pages."}`,
     ga4: ga4Rows.map(({ hostName: _hostName, ...row }) => ({
       ...row,
       currency: context.currency,
