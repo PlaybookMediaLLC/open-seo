@@ -1,6 +1,6 @@
 # RFC-0014: Web performance fixes and field measurement
 
-- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks.
+- **Status:** In progress. Part A built: the CrUX client, `cwv_snapshots` and the weekly field data refresh. Part B built: `performance_issue` detection, the cause table and tickets. Part C built: the field result over 4 weeks. Part D built: the three phase 2 fixes in code.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
@@ -93,6 +93,8 @@ All fixes use the RFC-0013 `jsx_attribute` change kind and its element matching 
 3. **Script strategy.** Only for script hosts on a reviewed list (analytics, chat, tag managers). The risk text says that tracking may start later.
 4. Every proposal includes a lab verification plan and a field plan.
 
+**As built (part D).** The item's **Fix in code** sheet lists only the fixes whose cause the evidence names, and only for a page-level item; a site-wide item has no single page to change. The element comes from the page's newest Lighthouse report, read again from R2 when the person prepares the fix: the image URL of `prioritize-lcp-image`, `lcp-lazy-loaded` or `lcp-discovery-insight` items (a `url`, or the `src` in the node snippet), and the image URLs of `unsized-images` items. The priority hint goes on `next/image` elements only: `priority` for Next.js 13 to 15 and `preload` from 16, read from `dependencies` or `devDependencies` in the root `package.json`, and refused when the version is unknown or older; `loading="lazy"` is removed in the same edit. Image sizes go on `<img>` elements whose `src` is a path in `public/`; `fill` images are refused, so the rendered-width `sizes` value is not built. The GitHub client reads the file as raw bytes and stops at 64 KB, whatever the file's size. The script fix searches the page file, the files it imports and the root layout for one `next/script` element whose literal `src` host is on the reviewed list and that is not already `lazyOnload`; a match in the root layout says in the risk text that the change applies to every page. All three fixes and the RFC-0013 fixes share one function that builds and saves the attribute proposal.
+
 ### 5.6 Measurement
 
 1. **Lab, at deploy.** Run Lighthouse 3 times on the changed page before and after, with DataForSEO. Use the median. Show the cost first.
@@ -136,9 +138,9 @@ For sites without CrUX data, an optional snippet uses the `web-vitals` library t
 
 ### Phase 2
 
-- [ ] Priority hint by Next.js version (tests for each supported version and the unknown case).
-- [ ] Image size from file headers for 4 formats (tests with real files), with the 64 KB cap.
-- [ ] Script strategy change for listed hosts only (test that other hosts are refused).
+- [x] Priority hint by Next.js version (tests for each supported version and the unknown case).
+- [x] Image size from file headers for 4 formats (tests with real files), with the 64 KB cap.
+- [x] Script strategy change for listed hosts only (test that other hosts are refused).
 - [ ] Lab verification with 3 runs and the median.
 
 ### Phase 3

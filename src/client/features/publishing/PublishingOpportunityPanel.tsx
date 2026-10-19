@@ -26,7 +26,7 @@ export function PublishingOpportunityPanel({
   opportunity: Pick<
     Opportunity,
     "id" | "projectId" | "url" | "status" | "version" | "type"
-  > & { accessibilityRule?: string };
+  > & { accessibilityRule?: string; performanceCauses?: string };
   readOnly?: boolean;
 }) {
   const { projectId, id } = opportunity;

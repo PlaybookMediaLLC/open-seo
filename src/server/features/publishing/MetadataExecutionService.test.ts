@@ -98,6 +98,7 @@ beforeEach(async () => {
       .fn<GithubClient["readFile"]>()
       .mockResolvedValue({ source, blobSha: proposal.beforeBlobSha }),
     listDirectory: vi.fn<GithubClient["listDirectory"]>(),
+    readFileHead: vi.fn<GithubClient["readFileHead"]>(),
     listFiles: vi.fn<GithubClient["listFiles"]>(),
     deleteFile: vi.fn<GithubClient["deleteFile"]>(),
     commitFiles: vi.fn<GithubClient["commitFiles"]>(),

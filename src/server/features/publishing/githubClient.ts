@@ -4,6 +4,7 @@ import { readTextUpTo } from "@/server/lib/audit/html-response";
 import {
   createGithubReader,
   validateGithubBranch,
+  type GithubBytesRequest,
   type GithubRequest,
 } from "./githubRead";
 import { createGithubIssues } from "./githubIssues";
@@ -51,7 +52,12 @@ export function createGithubClient({
   }
   let requestCount = 0;
   let repositoryId: string | undefined;
-  const request: GithubRequest = async (route, schema, options) => {
+  /** One budgeted, authorized request; throws on a non-2xx status. */
+  const send = async (
+    route: string,
+    accept: string,
+    options?: Parameters<GithubRequest>[2],
+  ) => {
     if (requestCount >= maxRequests)
       throw new AppError("RATE_LIMITED", "GitHub request budget exceeded.");
     if (signal?.aborted)
@@ -62,38 +68,46 @@ export function createGithubClient({
     requestCount++;
     const timeout = AbortSignal.timeout(10_000);
     const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
-    try {
-      const response = await fetch(
-        `https://api.github.com/repos/${owner}/${repository}${route}`,
-        {
-          method: options?.method ?? "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2026-03-10",
-            "Content-Type": "application/json",
-            "User-Agent": "OpenSEO",
-          },
-          body: options ? JSON.stringify(options.body) : undefined,
-          signal: requestSignal,
-          // Workers rejects "error". A 3xx response is not ok, so it fails below.
-          redirect: "manual",
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repository}${route}`,
+      {
+        method: options?.method ?? "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: accept,
+          "X-GitHub-Api-Version": "2026-03-10",
+          "Content-Type": "application/json",
+          "User-Agent": "OpenSEO",
         },
+        body: options ? JSON.stringify(options.body) : undefined,
+        signal: requestSignal,
+        // Workers rejects "error". A 3xx response is not ok, so it fails below.
+        redirect: "manual",
+      },
+    );
+    if (!response.ok) {
+      await response.body?.cancel();
+      const code =
+        response.status === 404
+          ? "NOT_FOUND"
+          : response.status === 401 || response.status === 403
+            ? "FORBIDDEN"
+            : response.status === 409 || response.status === 422
+              ? "CONFLICT"
+              : response.status === 429
+                ? "RATE_LIMITED"
+                : "UPSTREAM_UNAVAILABLE";
+      throw new AppError(code, "GitHub request failed.");
+    }
+    return response;
+  };
+  const request: GithubRequest = async (route, schema, options) => {
+    try {
+      const response = await send(
+        route,
+        "application/vnd.github+json",
+        options,
       );
-      if (!response.ok) {
-        await response.body?.cancel();
-        const code =
-          response.status === 404
-            ? "NOT_FOUND"
-            : response.status === 401 || response.status === 403
-              ? "FORBIDDEN"
-              : response.status === 409 || response.status === 422
-                ? "CONFLICT"
-                : response.status === 429
-                  ? "RATE_LIMITED"
-                  : "UPSTREAM_UNAVAILABLE";
-        throw new AppError(code, "GitHub request failed.");
-      }
       // The shared reader truncates. Reject a saturated read rather than parsing a partial body.
       const text = await readTextUpTo(response, 512 * 1024);
       if (new TextEncoder().encode(text).byteLength >= 512 * 1024)
@@ -108,6 +122,28 @@ export function createGithubClient({
           "GitHub returned an invalid response.",
         );
       return result.data;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError("UPSTREAM_UNAVAILABLE", "GitHub request failed.");
+    }
+  };
+  // RFC-0014 5.5: raw bytes, read only up to the cap.
+  const requestBytes: GithubBytesRequest = async (route, maxBytes) => {
+    try {
+      const response = await send(route, "application/vnd.github.raw");
+      const bytes = new Uint8Array(maxBytes);
+      const reader = response.body?.getReader();
+      if (!reader) return bytes.subarray(0, 0);
+      let length = 0;
+      while (length < maxBytes) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const part = value.subarray(0, maxBytes - length);
+        bytes.set(part, length);
+        length += part.length;
+      }
+      await reader.cancel();
+      return bytes.subarray(0, length);
     } catch (error) {
       if (error instanceof AppError) throw error;
       throw new AppError("UPSTREAM_UNAVAILABLE", "GitHub request failed.");
@@ -163,7 +199,7 @@ export function createGithubClient({
         archived: value.archived,
       };
     },
-    ...createGithubReader(request),
+    ...createGithubReader(request, requestBytes),
     ...createGithubSignals(request),
     ...createGithubIssues(request),
     ...createGithubWriter(
