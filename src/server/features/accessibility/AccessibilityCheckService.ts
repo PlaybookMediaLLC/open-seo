@@ -162,4 +162,9 @@ async function latest(context: PublishingContext, input: ExperimentInput) {
   );
 }
 
-export const AccessibilityCheckService = { check, latest };
+async function trend(context: PublishingContext, projectId: string) {
+  await authorizePublishing(context, projectId);
+  return AccessibilityCheckRepository.trend(projectId);
+}
+
+export const AccessibilityCheckService = { check, latest, trend };

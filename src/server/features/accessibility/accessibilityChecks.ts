@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -9,9 +9,13 @@ import {
   auditPages,
   audits,
 } from "@/db/schema";
-import type { AccessibilityFixCheck } from "@/types/schemas/accessibility";
+import type {
+  AccessibilityFixCheck,
+  AccessibilityTrend,
+} from "@/types/schemas/accessibility";
 
 const MAX_PAGES = 10;
+const TREND_AUDITS = 10;
 
 /** At most 10 pages of the project's audit where the cluster was found. */
 async function affectedPages(
@@ -105,4 +109,76 @@ async function latest(
   return { ...check, pages };
 }
 
-export const AccessibilityCheckRepository = { affectedPages, save, latest };
+/**
+ * The serious and critical violations of the last 10 checked audits, and
+ * the fixes whose newest check passed on every page.
+ */
+async function trend(projectId: string): Promise<AccessibilityTrend> {
+  const [rows, checks, pages] = await Promise.all([
+    db
+      .select({
+        auditId: audits.id,
+        startedAt: audits.startedAt,
+        pagesChecked:
+          sql<number>`count(distinct case when ${auditAccessibilityResults.error} is null then ${auditAccessibilityResults.id} end)`.mapWith(
+            Number,
+          ),
+        seriousViolations:
+          sql<number>`count(${auditAccessibilityViolations.id})`.mapWith(
+            Number,
+          ),
+      })
+      .from(audits)
+      .innerJoin(
+        auditAccessibilityResults,
+        eq(auditAccessibilityResults.auditId, audits.id),
+      )
+      .leftJoin(
+        auditAccessibilityViolations,
+        and(
+          eq(
+            auditAccessibilityViolations.resultId,
+            auditAccessibilityResults.id,
+          ),
+          inArray(auditAccessibilityViolations.impact, ["serious", "critical"]),
+        ),
+      )
+      .where(eq(audits.projectId, projectId))
+      .groupBy(audits.id, audits.startedAt)
+      .orderBy(desc(audits.startedAt))
+      .limit(TREND_AUDITS),
+    db
+      .select({
+        id: accessibilityFixChecks.id,
+        experimentId: accessibilityFixChecks.experimentId,
+      })
+      .from(accessibilityFixChecks)
+      .where(eq(accessibilityFixChecks.projectId, projectId))
+      .orderBy(desc(accessibilityFixChecks.checkedAt)),
+    db
+      .select({
+        checkId: accessibilityFixCheckPages.checkId,
+        outcome: accessibilityFixCheckPages.outcome,
+      })
+      .from(accessibilityFixCheckPages)
+      .where(eq(accessibilityFixCheckPages.projectId, projectId)),
+  ]);
+  const newest = new Map<string, string>();
+  for (const check of checks)
+    if (!newest.has(check.experimentId))
+      newest.set(check.experimentId, check.id);
+  const fixesPassed = [...newest.values()].filter((id) => {
+    const outcomes = pages.filter((page) => page.checkId === id);
+    return (
+      outcomes.length > 0 && outcomes.every((page) => page.outcome === "passed")
+    );
+  }).length;
+  return { audits: rows, fixesPassed };
+}
+
+export const AccessibilityCheckRepository = {
+  affectedPages,
+  save,
+  latest,
+  trend,
+};

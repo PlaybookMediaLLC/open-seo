@@ -3,7 +3,10 @@ import { AccessibilityCheckService } from "@/server/features/accessibility/Acces
 import { AccessibilityFixService } from "@/server/features/accessibility/AccessibilityFixService";
 import { AltTextDraftService } from "@/server/features/accessibility/AltTextDraftService";
 import { requireProjectContext } from "@/serverFunctions/middleware";
-import { accessibilityFixInputSchema } from "@/types/schemas/accessibility";
+import {
+  accessibilityFixInputSchema,
+  accessibilityTrendInputSchema,
+} from "@/types/schemas/accessibility";
 import { experimentInputSchema } from "@/types/schemas/experiments";
 import { draftAnchorInputSchema } from "@/types/schemas/proposalDrafts";
 
@@ -47,4 +50,11 @@ export const getAccessibilityFixCheck = createServerFn({ method: "POST" })
       ...data,
       projectId: context.projectId,
     }),
+  );
+
+export const getAccessibilityTrend = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(accessibilityTrendInputSchema)
+  .handler(({ context }) =>
+    AccessibilityCheckService.trend(context, context.projectId),
   );

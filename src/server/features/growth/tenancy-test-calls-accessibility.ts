@@ -30,6 +30,7 @@ export function accessibilityCalls(
         AccessibilityCheckService.check(ctx, { projectId, experimentId }),
       latest: () =>
         AccessibilityCheckService.latest(ctx, { projectId, experimentId }),
+      trend: () => AccessibilityCheckService.trend(ctx, projectId),
     },
   };
 }
