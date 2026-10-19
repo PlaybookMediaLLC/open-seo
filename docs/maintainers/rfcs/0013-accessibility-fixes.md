@@ -1,6 +1,6 @@
 # RFC-0013: Accessibility fixes in code
 
-- **Status:** In progress. Part A built: axe-core in audits, the result tables and the cluster keys. Part B built: `accessibility_issue` opportunities, the evidence table, the wording rule and the user guide.
+- **Status:** Done on 2026-10-19. Built in PRs #127 to #136: axe-core in audits with cluster keys (A), `accessibility_issue` opportunities and the user guide (B), alt text and `lang` fixes through the `jsx_attribute` change kind (C1), checked alt text drafts (C2), the fix check after deployment (D), the accessibility trend, link, button and field names (E1), vision alt text drafts behind a cost confirmation (E2), contrast and heading-order tickets (E3), and the accessibility statement draft (phase 3). The real-site acceptance test, the completion criteria, the RFC-0015 pull request checks and an exact-price browser hold are follow-ups in section 12.
 - **Date:** 2026-10-15
 - **Area:** beyond SEO. Accessibility and legal risk.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules). Phase 3 joins RFC-0015.
@@ -225,3 +225,14 @@ This adds the change kind `jsx_attribute`. RFC-0014 reuses it.
 **Honesty**
 
 - Every accessibility screen shows the limits text.
+
+## 12. Follow-ups that do not block closing
+
+Each follow-up names its trigger. Check it here when it passes.
+
+- [ ] Phase 1 acceptance (section 10) on S1 staging, S1, S3 and S4: the seeded staging page, a hand check of 20 violations, one `image-alt` cluster and the `lang` issue fixed by pull request, and the fix check after deployment. Trigger: the account has credits for the browser hold, the GitHub App is installed again on PlaybookMediaLLC, and the owner seeds the S1 staging page.
+- [ ] Completion criteria (section 11): violation accuracy, clustering on S4, the element locator on 10 real violations, 10 rated alt text drafts, and the step's time on a 50-page audit. Trigger: the acceptance above.
+- [ ] Pull request checks through RFC-0015 (section 5.7): compare axe-core results on the preview and production, and block new serious or critical violations. Trigger: RFC-0015 phase 1 ships its preview comparison.
+- [ ] Exact-price browser hold. The audit step and the fix check hold the rendering estimate's high end, which includes a Context fallback that axe-core never uses: 16 credits for 4 pages, while the most they can use is 3. Hold only the browser attempts, through a marked, generic option on the upstream `lockRenderingCredits`. Trigger: an owner reports skipped checks with a small balance, or the next upstream sync touches rendering billing.
+
+**Production smoke check (2026-10-19, Relay Lab project):** a 4-page audit completed. The accessibility step held no credits, because the account had 1 credit and the 4-page hold is 16, so it checked nothing and stored no results, as designed. The trend card, the statement draft and the opportunities therefore show no accessibility data for that audit, rather than "no issues".
