@@ -46,6 +46,7 @@ export function opportunityDetail(
     ga4Evidence: [],
     auditEvidence: [],
     accessibilityEvidence: [],
+    performanceEvidence: [],
     inspectionEvidence: [],
     linkEvidence: [],
     rankEvidence: [],

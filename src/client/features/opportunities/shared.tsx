@@ -51,6 +51,7 @@ export const typeLabels: Record<OpportunityType, string> = {
   internal_link: "Internal link",
   content_gap: "Content gap",
   accessibility_issue: "Accessibility issue",
+  performance_issue: "Performance issue",
   cro_low_conversion: "Low conversion",
   cro_form_drop_off: "Form drop-off",
   cro_device_gap: "Mobile conversion gap",
@@ -73,6 +74,8 @@ export const typeHelp: Record<OpportunityType, string> = {
     "Competitors rank in the top 10 for these commercial searches, and this site barely appears. Found with paid competitor data.",
   accessibility_issue:
     "Automated checks in the latest audit found the same accessibility problem in one component, on one or more pages.",
+  performance_issue:
+    "Real Chrome users see a Core Web Vitals value above Google's good limit on a group of pages with the same URL pattern.",
   cro_low_conversion:
     "A landing page with 300 or more sessions converts at half or less of the median for pages with the same role, and the gap is 5 or more conversions.",
   cro_form_drop_off:

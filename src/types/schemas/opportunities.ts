@@ -12,6 +12,8 @@ export const OPPORTUNITY_TYPES = [
   "content_gap",
   // RFC-0013: one axe-core cluster of the latest audit.
   "accessibility_issue",
+  // RFC-0014: one route template and Core Web Vitals metric, from CrUX.
+  "performance_issue",
   // RFC-0012: conversion problems, from GA4 data only.
   "cro_low_conversion",
   "cro_form_drop_off",
@@ -203,6 +205,7 @@ export type OpportunityCandidate = {
   // Phase 2 evidence. Only the types that read these sources set them.
   audit?: AuditIssueEvidence;
   accessibility?: AccessibilityEvidence;
+  performance?: PerformanceEvidence;
   inspection?: InspectionEvidence;
   link?: LinkEvidence;
   rank?: RankEvidence[];
@@ -245,6 +248,25 @@ export type SerpCheck = {
   confidenceDelta: number;
   estimatedCredits: number;
   checkedAt: string;
+};
+
+/**
+ * RFC-0014 5.3: one failing metric of one route template, measured on its
+ * most-visited page with field data, or on the origin when no page has any.
+ */
+export type PerformanceEvidence = {
+  template: string;
+  metric: "lcp" | "inp" | "cls";
+  formFactor: "phone" | "desktop";
+  p75Value: number;
+  threshold: number;
+  scope: "url" | "origin";
+  target: string;
+  collectionEnd: string;
+  /** The same metric in the latest Lighthouse run of the page, if any. */
+  labValue: number | null;
+  /** Space-separated cause ids from the Lighthouse report. */
+  causeIds: string;
 };
 
 /** RFC-0013 5.3: one axe-core cluster, with one example of it. */
@@ -307,6 +329,7 @@ export type Opportunity = Omit<
   | "ga4"
   | "audit"
   | "accessibility"
+  | "performance"
   | "inspection"
   | "link"
   | "rank"
@@ -400,6 +423,7 @@ export type OpportunityDetail = {
   ga4Evidence: OpportunityGa4Evidence[];
   auditEvidence: Array<AuditIssueEvidence & RunScoped>;
   accessibilityEvidence: Array<AccessibilityEvidence & RunScoped>;
+  performanceEvidence: Array<PerformanceEvidence & RunScoped>;
   inspectionEvidence: Array<InspectionEvidence & RunScoped>;
   linkEvidence: Array<LinkEvidence & RunScoped>;
   rankEvidence: Array<RankEvidence & RunScoped>;

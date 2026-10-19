@@ -249,3 +249,36 @@ export const cwvSnapshots = pgTable(
     ),
   ],
 );
+
+// RFC-0014 5.3: the field data behind one performance issue.
+export const opportunityPerformanceEvidence = pgTable(
+  "opportunity_performance_evidence",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    opportunityId: text("opportunity_id")
+      .notNull()
+      .references(() => opportunities.id, { onDelete: "cascade" }),
+    runId: text("run_id")
+      .notNull()
+      .references(() => opportunityRuns.id, { onDelete: "cascade" }),
+    template: text("template").notNull(),
+    metric: text("metric", { enum: ["lcp", "inp", "cls"] }).notNull(),
+    formFactor: text("form_factor", { enum: ["phone", "desktop"] }).notNull(),
+    p75Value: doublePrecision("p75_value").notNull(),
+    threshold: doublePrecision("threshold").notNull(),
+    scope: text("scope", { enum: ["url", "origin"] }).notNull(),
+    target: text("target").notNull(),
+    collectionEnd: text("collection_end").notNull(),
+    labValue: doublePrecision("lab_value"),
+    causeIds: text("cause_ids").notNull(),
+  },
+  (t) => [
+    uniqueIndex("opportunity_performance_evidence_opportunity_run_idx").on(
+      t.opportunityId,
+      t.runId,
+    ),
+  ],
+);

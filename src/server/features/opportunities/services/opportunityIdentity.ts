@@ -26,6 +26,12 @@ function identityTuple(
       return [...base, candidate.topic ?? null];
     case "accessibility_issue":
       return [...base, candidate.accessibility?.clusterKey ?? null];
+    case "performance_issue":
+      return [
+        ...base,
+        candidate.performance?.template ?? null,
+        candidate.performance?.metric ?? null,
+      ];
     default:
       return [...base, candidate.url, candidate.query];
   }

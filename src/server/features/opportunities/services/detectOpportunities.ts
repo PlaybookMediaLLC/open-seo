@@ -5,6 +5,7 @@ import { cannibalization } from "./detectors/cannibalization";
 import { decliningPages } from "./detectors/decliningPages";
 import { internalLinks } from "./detectors/internalLink";
 import { lowCtr } from "./detectors/lowCtr";
+import { performanceIssues } from "./detectors/performanceIssue";
 import { scoringContext } from "./detectors/scoreCandidate";
 import {
   brandMatcher,
@@ -60,6 +61,14 @@ export function detectOpportunities(
     ...technicalBlockers(input, context),
     ...(input.audit
       ? accessibilityIssues(input.audit, input.currentPages, context)
+      : []),
+    ...(input.performance
+      ? performanceIssues(
+          input.performance,
+          input.currentPages,
+          input.keyPages,
+          context,
+        )
       : []),
     ...(input.audit?.inlinks.size
       ? internalLinks(

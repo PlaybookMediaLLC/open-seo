@@ -28,6 +28,33 @@ The **Field data refresh** job in **Automation** runs once a week. It reads CrUX
 
 It reads phones and desktops, at most 70 requests for each project. CrUX is free. A page with too few Chrome users has no page-level data. For those pages, Relay uses the origin and says so.
 
+## Performance issues
+
+When you run detection on the **Opportunities** page, Relay groups your pages by URL pattern, for example all pages like `/blog/:slug`. It looks only at pages with organic clicks and at your key pages.
+
+1. Relay measures each group on its most-visited page that has field data. It uses phone data first, because Google indexes the mobile page.
+2. When a metric is above "good", Relay creates one **Performance issue** for that group and metric.
+3. Groups with no page-level data share one item for each metric, measured on your whole site's origin.
+
+Use the **Performance** group of the type filter to see them. Relay orders them by how far the metric is above "good", the organic clicks of the pages, and the role or GA4 conversions of the pages.
+
+## Causes and tickets
+
+Relay reads the latest site audit's Lighthouse reports for the pages in the group, and names the causes that match the failing metric:
+
+| Cause                              | Suggested change                                                                              |
+| ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| The LCP image loads lazily         | Remove `loading="lazy"` from the largest image above the fold, and give it the priority hint. |
+| The LCP image is not prioritized   | Give the largest image above the fold the priority hint.                                      |
+| Images without a size              | Add `width` and `height` to each image.                                                       |
+| Third-party scripts block the page | Load analytics, chat and tag manager scripts after the page.                                  |
+| Render-blocking CSS or JavaScript  | Inline the CSS that the first screen needs, and load the rest without blocking.               |
+| Large or old-format images         | Serve images at the size they are shown, in WebP or AVIF.                                     |
+| Unused JavaScript                  | Split or remove JavaScript that the page does not use.                                        |
+| Slow server response               | Cache the page or make the server respond faster.                                             |
+
+When no audit ran Lighthouse on those pages, the item says so. Run a site audit with **Lighthouse** turned on to find the cause. Approve an item to copy its ticket or create a GitHub issue. The ticket lists the field data, the lab value and each cause with its change.
+
 ## Self-hosting
 
 Set `CRUX_API_KEY` to a Google API key with the Chrome UX Report API turned on. Without the key, the job skips and says that field data access is not configured.

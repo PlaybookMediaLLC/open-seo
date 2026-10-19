@@ -154,25 +154,27 @@ export function OpportunityFilterBar({
           <SelectContent>
             <SelectItem value="all">All types</SelectItem>
             {/* RFC-0012 5.8 and RFC-0013: search, conversion, accessibility. */}
-            {(["Search", "Conversion", "Accessibility"] as const).map(
-              (group) => (
-                <SelectGroup key={group}>
-                  <SelectLabel>{group}</SelectLabel>
-                  {OPPORTUNITY_TYPES.filter(
-                    (type) =>
-                      (type.startsWith("cro_")
-                        ? "Conversion"
-                        : type === "accessibility_issue"
-                          ? "Accessibility"
+            {(
+              ["Search", "Conversion", "Accessibility", "Performance"] as const
+            ).map((group) => (
+              <SelectGroup key={group}>
+                <SelectLabel>{group}</SelectLabel>
+                {OPPORTUNITY_TYPES.filter(
+                  (type) =>
+                    (type.startsWith("cro_")
+                      ? "Conversion"
+                      : type === "accessibility_issue"
+                        ? "Accessibility"
+                        : type === "performance_issue"
+                          ? "Performance"
                           : "Search") === group,
-                  ).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {typeLabels[type]}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ),
-            )}
+                ).map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {typeLabels[type]}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
           </SelectContent>
         </Select>
       </div>

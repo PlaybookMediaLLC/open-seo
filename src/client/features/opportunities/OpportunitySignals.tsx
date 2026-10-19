@@ -16,6 +16,8 @@ import type {
   OpportunityUrl,
 } from "@/types/schemas/opportunities";
 import { ACCESSIBILITY_LIMITS } from "@/shared/accessibility";
+import { FIELD_DATA_LIMITS } from "@/shared/performance";
+import { performanceRows } from "./performanceRows";
 
 export const diagnosisLabels: Record<OpportunityDiagnosis, string> = {
   ranking_drop: "Ranking drop",
@@ -154,6 +156,7 @@ export function AuditAndLinkEvidence({
     | "linkEvidence"
     | "rankEvidence"
     | "accessibilityEvidence"
+    | "performanceEvidence"
   >;
   latestRunId: string;
 }) {
@@ -164,8 +167,18 @@ export function AuditAndLinkEvidence({
   const [link] = latest(detail.linkEvidence);
   const ranks = latest(detail.rankEvidence);
   const [accessibility] = latest(detail.accessibilityEvidence);
+  const [performance] = latest(detail.performanceEvidence);
   return (
     <>
+      {performance ? (
+        <>
+          <Facts
+            title="Field data (Chrome UX Report)"
+            rows={performanceRows(performance)}
+          />
+          <p className="text-sm text-muted-foreground">{FIELD_DATA_LIMITS}</p>
+        </>
+      ) : null}
       {accessibility ? (
         <>
           <Facts
