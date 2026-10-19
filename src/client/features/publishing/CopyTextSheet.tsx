@@ -65,7 +65,8 @@ export function CodeChangeSheets({
           ruleId={opportunity.accessibilityRule}
         />
       )}
-      {opportunity.type?.startsWith("docs_") && (
+      {(opportunity.type?.startsWith("docs_") ||
+        opportunity.type === "support_topic") && (
         <DocsEditSheet opportunity={opportunity} />
       )}
       {opportunity.performanceCauses !== undefined && (

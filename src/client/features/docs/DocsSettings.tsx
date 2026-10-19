@@ -11,6 +11,7 @@ import {
   SheetTitle,
 } from "@/client/components/ui/sheet";
 import { dateLabel } from "@/client/features/opportunities/shared";
+import { SupportSource } from "./SupportSource";
 import {
   getDocsSettings,
   indexDocsNow,
@@ -129,6 +130,9 @@ export function DocsSettings({ projectId }: { projectId: string }) {
         </div>
       )}
       {index.data && <p role="status">{index.data.summary}</p>}
+      {settings && (
+        <SupportSource projectId={projectId} canManage={data.canManage} />
+      )}
       {index.isError && (
         <p role="alert" className="text-destructive">
           {index.error.message}

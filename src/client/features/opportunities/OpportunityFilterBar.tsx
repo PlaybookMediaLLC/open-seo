@@ -173,7 +173,7 @@ export function OpportunityFilterBar({
                         ? "Accessibility"
                         : type === "performance_issue"
                           ? "Performance"
-                          : type.startsWith("docs_")
+                          : type.startsWith("docs_") || type === "support_topic"
                             ? "Docs"
                             : "Search") === group,
                 ).map((type) => (

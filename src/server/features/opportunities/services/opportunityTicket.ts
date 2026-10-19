@@ -58,6 +58,8 @@ const VERIFY: Record<OpportunityType, string> = {
     "After the docs change ships, wait 4 weeks. Then compare the page's position and click-through rate with the evidence above.",
   docs_stale_page:
     "After the docs change ships, check that the page matches the current product. Then compare its views and searches after 4 weeks.",
+  support_topic:
+    "After the docs change ships, wait 4 weeks. Then compare the tickets on this topic with the counts above.",
 };
 
 // axe-core's color-contrast summary: the ratio, both colors, the target.

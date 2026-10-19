@@ -28,6 +28,7 @@ const DEFAULTS: Record<
   cwv_refresh: { interval: "weekly", hourUtc: 5 },
   revenue_sync: { interval: "daily", hourUtc: 4 },
   docs_index: { interval: "daily", hourUtc: 3 },
+  support_topics: { interval: "daily", hourUtc: 2 },
 };
 export const SEARCH_CONSOLE_JOBS: Kind[] = [
   "opportunity_refresh",

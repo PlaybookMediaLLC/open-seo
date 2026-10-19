@@ -35,6 +35,8 @@ export const relayDataEnv = {
   ),
   // Chrome UX Report field data (RFC-0014 5.2). Empty turns it off.
   CRUX_API_KEY: optionalSecret("CRUX_API_KEY"),
+  // Support topics from GitHub Issues (RFC-0017 5.4). Off unless "on".
+  RELAY_SUPPORT_TOPICS: optionalVar("RELAY_SUPPORT_TOPICS"),
 };
 
 // Fork bindings of the app worker, created in the stack's own scope.

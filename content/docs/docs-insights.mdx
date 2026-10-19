@@ -81,3 +81,21 @@ After the docs change deploys, Relay tracks it as an experiment. The experiment 
 - The result is ready 30 days after the deployment.
 - Relay shows **fewer searches** or **more searches** only when each window has 50 or more searches and the change is 25% or more. Otherwise the result is **inconclusive**.
 - Fewer searches can mean that the docs now answer the question. Product changes, launches and seasons also move these numbers, so a result is not proof.
+
+## 7. Support topics from GitHub Issues
+
+Relay can group your GitHub issues into topics and show the topics that the docs do not answer. This is off on a server until its owner sets `RELAY_SUPPORT_TOPICS=on`. Turn it on only when your privacy policy covers ticket text.
+
+1. In the **Docs** section of the GitHub publishing card, select **Use GitHub Issues**.
+2. Give the GitHub App, or the repository token, read access to **Issues**.
+3. The **Support topics** job in **Automation** runs once a day. **Read tickets now** runs it at once. Both use a few credits for embeddings.
+
+What Relay does with the tickets:
+
+- It reads the title and the first message of the issues opened in the last 90 days. It skips pull requests.
+- It removes email addresses, phone numbers, links with tokens and the requester's GitHub name before any other step.
+- It groups similar issues into topics, names each topic by its most common words, and finds the docs page that matches the topic best.
+- It stores only the topic name, the counts for the last 28 days and the 28 days before, the matching docs page, and up to 3 redacted issue titles of 200 characters or less. It does not store the ticket text.
+- A topic with 10 or more issues in 28 days becomes a **Support topic** opportunity when you select **Find docs gaps**.
+
+To stop, select **Disconnect and delete topics**. Relay deletes every topic and excerpt.
