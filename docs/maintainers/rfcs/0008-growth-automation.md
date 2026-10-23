@@ -6,6 +6,12 @@
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
 - **Decision:** the brief said not to add Trigger.dev unless the current system cannot do the work. The owner chose Trigger.dev on 2026-10-15 for its retries, per-project concurrency, idempotency keys, run dashboard and alerts. Section 8 records the trade-offs.
 
+## Current delivery role — October 23, 2026
+
+Implemented scheduling foundation for stage 1. Reuse the Worker cron path recorded below; Trigger.dev is optional. Monitoring must prove its own due-time and confirmation latency.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Every growth action runs only when a person clicks a button. This RFC adds scheduled and event-driven growth jobs on Trigger.dev, a signed internal endpoint in the Relay Worker that runs each job, customer-visible run history, and in-app notifications. All jobs are free and read-only toward external systems.

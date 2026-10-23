@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. Accessibility and legal risk.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules). Phase 3 joins RFC-0015.
 
+## Current delivery role — October 23, 2026
+
+Implemented specialized detection/fix foundation. Reuse only validated adapters/checks in protected scope; broad accessibility acceptance is not a prerequisite for the metadata pilot.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 The EU European Accessibility Act applies to many websites since June 2025, and US ADA lawsuits continue. Most tools either report issues or install an overlay script that claims to fix them. In 2025 the US FTC fined the overlay vendor accessiBe $1 million over misleading claims that its overlay made sites compliant. This RFC finds automatically detectable accessibility issues on the pages that matter, groups them by component, fixes the common ones in code by pull request, and verifies the fix on the live site. Relay never claims compliance.

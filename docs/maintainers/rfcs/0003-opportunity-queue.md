@@ -5,6 +5,12 @@
 - **Brief section:** 4 (Feature B)
 - **Depends on:** RFC-0001.
 
+## Current delivery role — October 23, 2026
+
+Implemented review foundation. Reuse ownership, defer/ticket, and queue behavior in the reviewed pilot.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 The Opportunities queue is mostly complete. It has the full lifecycle, filters, pagination, evidence history, review decisions and a run log. This RFC closes six gaps: owner assignment, hidden deferred items, a fixed defer period, stale items, text search and per-status counts. It also defines the fallback action for opportunity types that have no automated change.

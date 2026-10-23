@@ -5,6 +5,12 @@
 - **Brief section:** 8 (Feature F)
 - **Depends on:** RFC-0001 to RFC-0006 in production, and the entry criteria in section 5.
 
+## Current delivery role — October 23, 2026
+
+Isolation is a stage-0 prerequisite. Portfolio product work remains stage 5 and still requires the entry criteria below; single-site paid validation comes first.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 The brief asks for project isolation now, and portfolio features later. Project isolation exists. This RFC records what exists, the one isolation task to do now, the conditions to start portfolio work, and a first design sketch so later work starts from agreed boundaries.

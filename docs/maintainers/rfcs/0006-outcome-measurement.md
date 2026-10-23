@@ -5,6 +5,12 @@
 - **Brief section:** 7 (Feature E)
 - **Depends on:** RFC-0001. Scheduled refresh depends on RFC-0008. Notifications depend on RFC-0008.
 
+## Current delivery role — October 23, 2026
+
+Implemented measurement foundation. Attach eligible observations after technical verification; positive growth is not required to prove a repair resolved its original rule.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Experiments & Results measures Search Console clicks, impressions, CTR and position for one page, before and after a confirmed deployment. It labels results as encouraging, inconclusive or negative with documented rules. It does not use GA4, and it measures only when a person clicks refresh. This RFC adds GA4 sessions, key events and revenue as supporting metrics, automatic daily refresh, a results summary, CSV export, and an optional long-term check.

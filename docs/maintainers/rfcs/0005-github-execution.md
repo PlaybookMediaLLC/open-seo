@@ -5,6 +5,12 @@
 - **Brief section:** 6 (Feature D)
 - **Depends on:** RFC-0001 configuration. Phase 1a has no other dependency. Phase 1b uses the RFC-0004 file locator.
 
+## Current delivery role — October 23, 2026
+
+Implemented execution foundation for stage 2. RFC-0027 adds incident evidence and source mapping; RFC-0028 extends production verification. Human exact-change approval remains the initial model.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Relay can open a pull request that changes one meta description in a static Next.js App Router page. The connection uses a fine-grained personal access token. A person must state that the change is deployed. The parser rejects route groups and metadata helper calls, which real sites use, including our own `playbookmedia.io`. This RFC adds support for both (phase 1a), then the title change, read-only deployment signals, repository check status and revert proposals (phase 1b), then a GitHub App, a Pages Router adapter, canonical and robots changes, and approved GitHub issues (phase 2).

@@ -5,6 +5,12 @@
 - **Scope:** relay.playbookmedia.io (`AUTH_MODE=hosted`, D1, Google-only sign-in)
 - **Depends on:** nothing. All other RFCs depend on this one.
 
+## Current delivery role — October 23, 2026
+
+Foundation for stage 0. Preserve historical closure; recheck configuration and external acceptance needed by each pilot in RFC-0026. Code completion is not commercial validation.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Relay is public, but a new user cannot yet complete the main workflow reliably. Some blockers are configuration, some are Google review steps, and one is a live test that nobody has run. This RFC lists each blocker, the evidence for it, and the exact steps to close it.

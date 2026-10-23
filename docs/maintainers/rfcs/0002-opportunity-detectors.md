@@ -5,6 +5,12 @@
 - **Brief section:** 3 (Feature A)
 - **Depends on:** RFC-0001. Phase 3 also depends on RFC-0009 (spending limits).
 
+## Current delivery role — October 23, 2026
+
+Implemented detection foundation. Reuse evidence and prioritization in stages 1 and 4; no new detector catalog blocks the release-assurance pilot.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 The engine detects 2 of the 7 opportunity types in the brief, and it reads only Search Console. This RFC adds the 5 missing types, adds free first-party signals (brand terms, year-ago data, GA4, audits, rank history), and adds one paid signal (competitor keywords) behind an explicit, estimated, limited request.

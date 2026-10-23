@@ -2,8 +2,9 @@
 
 - **Status:** Draft
 - **Date:** 2026-10-15
-- **Area:** retention, priority 6.
-- **Depends on:** rank tracking (existing), RFC-0002 (opportunities), RFC-0008 (tasks), RFC-0009 (paid admission), RFC-0020 (refresh steps), RFC-0021 (facts).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 5, demand-driven expansion after existing-page campaigns.
+- **Depends on:** Existing rank tracking, RFC-0002, RFC-0008, RFC-0009, RFC-0020 response steps, and RFC-0021 phase 0 verified facts. It does not require new-page generation.
 
 ## 1. Summary
 

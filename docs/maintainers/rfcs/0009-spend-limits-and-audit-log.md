@@ -5,6 +5,12 @@
 - **Brief section:** 10
 - **Depends on:** RFC-0001 B4 (billing configured).
 
+## Current delivery role — October 23, 2026
+
+Implemented controls for every stage. Recheck relevant key/configuration and billing follow-ups before pilot activation. Included basic monitoring capacity is specified in RFC-0026.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Relay meters paid work against each organization's Autumn credit balance. It has feature caps (AI visibility cost approval, measurement allowance, refresh cooldowns), but no limit that a customer can set per project or per organization, and no durable record that reconciles failed settlements. It also has no cross-feature audit log. This RFC adds project and organization monthly limits, a spend ledger, fixes for three verified billing debts, an audit log for approved actions, a separate key for repository tokens, and per-user rate limits on paid actions.

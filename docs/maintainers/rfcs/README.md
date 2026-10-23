@@ -1,130 +1,113 @@
-# Relay growth platform RFCs
+# Relay RFC delivery plan
 
-These RFCs close the gaps between the current code and the organic growth platform brief, make Relay responsible for keeping each website healthy and growing after the first cleanup, and then extend the same loop beyond SEO. Each RFC states what exists, what to build, a checklist that defines "ready for other users", and a real-site acceptance test that proves the work gives value.
+**Updated:** October 23, 2026
 
-The audit behind them is in `docs/maintainers/organic-growth-audit.md` and `docs/maintainers/organic-growth-handoff.md`. The design records for shipped work are in `docs/maintainers/specs/approved-github-metadata.md` and `docs/maintainers/specs/search-outcome-measurement.md`.
+**Strategy:** [Company](../../../company.md) · [Vision](../../../vision.md)
 
-## Retention program: keep the website healthy and growing
+**Evidence:** [Current codebase audit](../relay-release-assurance-audit.md), baseline `0f09f36a`
 
-Customers keep paying when useful work is left to do and they can see it getting done. The product is a **weekly execution queue**: Relay finds the next worthwhile changes, explains why they matter, ships them within the customer's permissions, and reports the outcome. There is no final "cleanup complete" moment while the product and the website keep changing.
+The north star is accountable organic growth work: identify what matters, prepare an approved change, verify what happened in production, measure what can be measured, and retain the context. **The initial commercial product is release assurance for GitHub-managed Next.js marketing sites.**
 
-**The loop for every feature:** evidence → a change prepared in the customer's code → approval (by a person, or by a standing approval the owner set in advance) → a verified deployment → a measured result → the next step.
+This plan replaces the earlier “retention core” release order. Start with a bounded paid pilot, confirmed production regressions, and human-reviewed repairs. Broader campaigns, content creation, portfolio management, and delegated execution follow repeat paid demand. Research tools and existing integrations remain useful foundations.
 
-### How the retention features map to the RFCs
+RFC IDs and filenames remain stable because code, PRs, and design records already reference them. **Delivery order is the sequence below, not numeric order.** Existing closure and acceptance history is preserved. “Done” in an older RFC may mean its code scope was closed with explicit follow-ups; it does not prove a complete paid customer workflow.
 
-| Priority | Feature                                            | Built from                                                               | New RFC                                                      | Release                          |
-| -------- | -------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------- |
-| First    | Weekly "work completed and next actions" view      | RFC-0002, 0005, 0006, 0008, 0009                                         | [RFC-0018](0018-weekly-execution-queue.md)                   | 1                                |
-| 1        | Release monitoring and automatic regression repair | RFC-0005 adapters and deployment signals, RFC-0008 tasks, RFC-0010 rules | [RFC-0019](0019-release-monitoring-and-regression-repair.md) | 1                                |
-| 2        | Existing-page growth campaigns                     | RFC-0002 detectors, RFC-0004 drafts, RFC-0005 and RFC-0012 change kinds  | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      | 1 (snippets, links), 2 (content) |
-| 3        | Content decay detection and recovery               | RFC-0002 `declining_page`, RFC-0004 investigation                        | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      | 1 (detection), 2 (refresh)       |
-| 4        | New-page opportunity execution                     | RFC-0002 content gaps, RFC-0017 search and support signals               | [RFC-0021](0021-new-pages-from-verified-facts.md)            | 2                                |
-| 5        | Signup and revenue measurement                     | RFC-0006, RFC-0012 conversion metric, RFC-0016 revenue                   | None. RFC-0018 adds the work report.                         | 1 (signups), 2 (revenue)         |
-| 6        | Competitor change response                         | Rank tracking, RFC-0002                                                  | [RFC-0022](0022-competitor-change-response.md)               | 2                                |
-| 7        | Launch workflows                                   | RFC-0019, RFC-0020, RFC-0021                                             | [RFC-0023](0023-launch-workflows.md)                         | 2                                |
-| 8        | Experiment history                                 | RFC-0006, RFC-0011, RFC-0009 audit log                                   | [RFC-0024](0024-change-history-and-learning.md)              | 1 (rules), 2 (track record)      |
+## Ordered delivery backlog
 
-### First release: the retention core
+Stages are gates, not promises of dates. Commercial discovery can run alongside implementation. A later consumer is not a prerequisite for its producer: monitoring does not wait for the weekly report, previews do not wait for autonomy, and facts do not wait for generated pages.
 
-Release 1 combines three reasons to stay:
+| Order | Smallest useful increment                                                           | RFC / prerequisites                                                                                                                     | Exit evidence                                                                                                                                        |
+| ----- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Qualify the buyer, agree scope/price, name a reviewer, and record readiness         | [0026 phase A](0026-protected-site-pilots-and-service.md); recheck relevant 0001/0007/0009 follow-ups                                   | Three paid restricted pilots targeted; actual commitments/payments distinguished. Assisted work disclosed.                                           |
+| 2     | Protected-page scope, durable snapshots, known-good baseline, schedule health       | [0019 phase 1a](0019-release-monitoring-and-regression-repair.md); reuse 0005/0008/0009/0010/0015                                       | Owner can see what is protected, baseline provenance, and last/next successful checks.                                                               |
+| 3     | Confirm and deduplicate production regressions; show cause evidence and tickets     | [0019 phase 1b](0019-release-monitoring-and-regression-repair.md); order 2                                                              | Controlled staging failures detected, transient/unknown states distinguished, quiet periods reviewed, lost coverage visible. No repair prerequisite. |
+| 4     | Prepare source-proven title/description repairs from incident evidence              | [0027 phase A](0027-source-mapped-regression-repairs.md); order 3 and existing publisher                                                | Read-only exact proposal or useful unsupported ticket; no fake GSC opportunity; templated titles restored correctly.                                 |
+| 5     | Execute an explicitly approved PR and check the customer's preview for that commit  | [0027 phase B](0027-source-mapped-regression-repairs.md) + [0025 phase 1a](0025-preview-sandboxes-on-cloudflare.md); order 4            | Authorized write → exact head SHA → build/rule evidence. Failed/missing/stale preview remains explicit. Customer decides merge.                      |
+| 6     | Verify deployment and rerun the original production rule                            | [0028](0028-production-repair-verification.md); orders 3–5; completes 0019 phase 1c                                                     | Two production-verified customer repairs across separate organizations targeted under 0026; staged mechanics and real value evidence kept separate.  |
+| 7     | Complete the weekly protection/work report and validate recurring service economics | [0018 phase 1b](0018-weekly-execution-queue.md) + [0026 phase B](0026-protected-site-pilots-and-service.md); order 6                    | Four-week coverage/repair/cost record, payment and renewals where due; target 8–10 paying sites in the 90-day validation program.                    |
+| 8     | Persistent page history, shared cooldown/no-repeat enforcement, and draft context   | [0024 phases 1a–1b](0024-change-history-and-learning.md); existing records, orders 3/6, paid-service evidence                           | Reuse existing weekly filters; record verified repairs and accepted customer changes, enforce rules beyond selection.                                |
+| 9     | Bounded existing-page snippet/link campaigns and decay recovery planning            | [0020 phase 1](0020-growth-campaigns-and-decay-recovery.md); order 8, existing detectors/edits, checks and verification                 | Useful approved campaign work or honest idle weeks; customer-reviewed decay precision and supported edit checks.                                     |
+| 10    | Verified facts for grounded refreshes, then richer existing-page campaigns          | [0021 phase 0](0021-new-pages-from-verified-facts.md) → [0020 phase 2](0020-growth-campaigns-and-decay-recovery.md); order 9 and demand | Facts have sources/review/expiry; refreshes have no unsupported claims; data sufficiency and consent retained.                                       |
+| 11    | Launch checks for existing customer-created pages                                   | [0023 phase 1](0023-launch-workflows.md); orders 3/6/9, not generated pages                                                             | Existing page gets a checked launch lifecycle with explicit indexing/measurement states.                                                             |
+| 12    | Individually reviewed new pages from verified facts                                 | [0021 phases 1–2](0021-new-pages-from-verified-facts.md); orders 10–11, supported preview/publisher                                     | One useful page at a time, sourced claims, preview and launch checks, customer approval, and observed outcomes.                                      |
+| 13    | Competitor response, track records, and portfolio expansion                         | [0022](0022-competitor-change-response.md), [0024 phase 2](0024-change-history-and-learning.md), [0007](0007-portfolio-operations.md)   | Explicit customer demand and each RFC's entry/data/tenancy gates. These can proceed independently once their actual dependencies are met.            |
 
-1. **Regression protection** (RFC-0019): an immediate maintenance reason.
-2. **Existing-page improvements** (RFC-0002 phase 1, RFC-0004, RFC-0005, RFC-0020 phase 1): a growth reason.
-3. **Outcome tracking** (RFC-0006, the RFC-0012 conversion metric, RFC-0024): proof that the work matters.
+The first paid service is orders 1–7. A detection-and-ticket pilot can operate after order 3 with its limits disclosed. The source proposal, preview, and verification contracts should be reviewed together, but their increments ship in orders 4–6.
 
-The weekly view (RFC-0018) shows all three. It never forces a number of changes. When the right action is to wait, it says so and explains why.
+### Optional later tracks
 
-### Packaging
+- **More repair classes:** RFC-0019 phase 2 reuses existing canonical/robots adapters only after source mapping, preview, and production-verification acceptance for each class. Rendered/performance monitoring needs measured demand and cost.
+- **Delegated execution:** RFC-0018 phases 2–3 are deferred until order 7's paid/reliability evidence and order 8's history rules pass. Require scoped revocable owner policies, current exact-change checks, and customer branch protections. They do not gate the initial service.
+- **Relay-owned preview builds:** RFC-0025 phase 0 is a later go/no-go spike; phases 1b/2 require proven isolation, teardown, affordable costs, and customer need. Customer previews in order 5 ship without this infrastructure.
+- **Existing broader features:** Validate RFC-0011 split tests, RFC-0012 conversion, RFC-0013 accessibility, RFC-0014 performance, RFC-0016 revenue, and RFC-0017 support/docs when demanded and eligible. Reuse shipped code; do not make every deferred connector or live test a global pilot blocker.
 
-1. **Onboarding cleanup**, sold once: a full audit, baselines and a first batch of changes over 30 days.
-2. **Recurring monitoring and execution**, monthly, with explicit limits: monitored pages, executed changes, active campaigns and new pages.
-3. Limits stop execution, never protection. Regression detection always runs, and restores do not count toward the change limit.
-4. The renewal question is "Is this still doing valuable work for us?" The RFC-0018 work report answers it with records: changes completed, regressions caught and repaired, results measured (negative ones included), and signups or revenue where measured.
+## Critical dependency path
 
-### Rules that change with this program
+```mermaid
+flowchart LR
+  A[0026 A: pilot scope] --> B[0019 1a: baseline]
+  B --> C[0019 1b: confirmed incident]
+  C --> D[0027 A: source proposal]
+  D --> E[0027 B + 0025 1a: reviewed PR and preview]
+  E --> F[0028: production verification]
+  F --> G[0018 1b + 0026 B: report and paid service]
+  G --> H[0024: history]
+  H --> I[0020: existing-page campaigns]
+```
 
-1. **Standing approvals (RFC-0018).** An owner can approve a change class in advance, with a weekly limit. Relay may then open pull requests for that class, and, opt-in, merge restores of known-good values. Relay never bypasses branch protection, and it never deploys. Content changes need a passed preview first (RFC-0025).
-2. **New pages (RFC-0021).** Relay may create a page only from verified facts, one at a time, with a person's approval and a monthly cap. RFC-0002 and RFC-0004 now point to this rule.
-3. **No quota.** An empty or short week is a valid result.
+Existing implemented foundations support each node. The arrows do not reopen all historical RFC scopes or require every optional feature to ship.
 
-## Status of the brief on October 15, 2026
+## Complete inventory and audited status
 
-| Brief area                                                           | Status                                     | RFC                                                          |
-| -------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------ |
-| Launch readiness (credentials, Google verification, live acceptance) | Done: follow-ups in its section 10         | [RFC-0001](0001-launch-readiness.md)                         |
-| A. Opportunity engine                                                | Done: follow-ups in its section 13         | [RFC-0002](0002-opportunity-detectors.md)                    |
-| B. Opportunities queue                                               | Done: follow-ups in its section 11         | [RFC-0003](0003-opportunity-queue.md)                        |
-| C. AI SEO engineer                                                   | Done: follow-ups in its section 13         | [RFC-0004](0004-ai-seo-engineer.md)                          |
-| D. GitHub execution                                                  | Done: accepted on 2026-10-16               | [RFC-0005](0005-github-execution.md)                         |
-| E. Experiments and results                                           | Done: follow-ups in its section 13         | [RFC-0006](0006-outcome-measurement.md)                      |
-| F. Portfolio operations                                              | Done: isolation proven; portfolio deferred | [RFC-0007](0007-portfolio-operations.md)                     |
-| 9. Automation and scheduling                                         | Done: follow-ups in its section 12         | [RFC-0008](0008-growth-automation.md)                        |
-| 10. Costs, limits and audit log                                      | Done: follow-ups in its section 12         | [RFC-0009](0009-spend-limits-and-audit-log.md)               |
-| Prevention: SEO checks on pull requests (beyond the brief)           | Done: follow-ups in its section 12         | [RFC-0010](0010-seo-checks-in-ci.md)                         |
-| Controlled page-group split tests (beyond the brief)                 | Done: follow-ups in its section 12         | [RFC-0011](0011-page-group-split-tests.md)                   |
-| Beyond SEO: conversion optimization                                  | Done: follow-ups in its section 12         | [RFC-0012](0012-conversion-optimization.md)                  |
-| Beyond SEO: accessibility fixes in code                              | Done: follow-ups in its section 12         | [RFC-0013](0013-accessibility-fixes.md)                      |
-| Beyond SEO: web performance                                          | Done: follow-ups in its section 12         | [RFC-0014](0014-web-performance.md)                          |
-| Beyond SEO: release quality gate                                     | Done: follow-ups in its section 12         | [RFC-0015](0015-release-quality-gate.md)                     |
-| Beyond SEO: revenue attribution                                      | Done: follow-ups in its section 12         | [RFC-0016](0016-revenue-attribution.md)                      |
-| Beyond SEO: docs and support deflection                              | Done: follow-ups in its section 12         | [RFC-0017](0017-docs-and-support-deflection.md)              |
-| Retention: weekly execution queue and work report                    | In progress: phase 1 and the report built  | [RFC-0018](0018-weekly-execution-queue.md)                   |
-| Retention: release monitoring and regression repair                  | Missing                                    | [RFC-0019](0019-release-monitoring-and-regression-repair.md) |
-| Retention: growth campaigns and decay recovery                       | Missing                                    | [RFC-0020](0020-growth-campaigns-and-decay-recovery.md)      |
-| Retention: new pages from verified facts                             | Missing                                    | [RFC-0021](0021-new-pages-from-verified-facts.md)            |
-| Retention: competitor change response                                | Missing                                    | [RFC-0022](0022-competitor-change-response.md)               |
-| Retention: launch workflows                                          | Missing                                    | [RFC-0023](0023-launch-workflows.md)                         |
-| Retention: change history and learning                               | Missing                                    | [RFC-0024](0024-change-history-and-learning.md)              |
-| Execution safety: preview sandboxes on Cloudflare                    | Missing                                    | [RFC-0025](0025-preview-sandboxes-on-cloudflare.md)          |
+**Implemented** means source exists for the recorded scope. **Partial** identifies reusable code plus an unbuilt contract. **Draft/Proposed** means planned work. **Deferred** is a prioritization decision. Live acceptance must cite its site, date, scope, and evidence separately. No entry here asserts commercial validation.
 
-## Order of work
+| RFC                                                                             | Audited status / next action                                                                      | Delivery role                                              |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [0001 Launch readiness](0001-launch-readiness.md)                               | Historical code/configuration closure; external/live follow-ups remain                            | Recheck relevant readiness per pilot in order 1.           |
+| [0002 Opportunity detectors](0002-opportunity-detectors.md)                     | Implemented; search-data/paid acceptance follow-ups                                               | Reuse signals; later campaigns.                            |
+| [0003 Opportunity queue](0003-opportunity-queue.md)                             | Implemented; real-team acceptance follow-ups                                                      | Review, ownership, defer, tickets.                         |
+| [0004 AI SEO engineer](0004-ai-seo-engineer.md)                                 | Implemented; live/owner-rated draft acceptance follow-ups                                         | Investigation and supported drafts.                        |
+| [0005 GitHub execution](0005-github-execution.md)                               | Implemented; historical S1/lab acceptance recorded, scoped follow-up remains                      | Reuse publisher; extend incident evidence in 0027.         |
+| [0006 Outcome measurement](0006-outcome-measurement.md)                         | Implemented; GA4/GSC/live acceptance follow-ups                                                   | Optional observations after technical verification.        |
+| [0007 Portfolio operations](0007-portfolio-operations.md)                       | Isolation implemented; portfolio product deferred                                                 | Isolation now; portfolio only after entry gate.            |
+| [0008 Scheduling and notifications](0008-growth-automation.md)                  | Implemented with Worker cron; multi-day acceptance pending in historical notes                    | Reuse runner; prove monitoring cadence.                    |
+| [0009 Spend limits and audit log](0009-spend-limits-and-audit-log.md)           | Implemented; historical live check, staging/key follow-ups                                        | Controls throughout.                                       |
+| [0010 SEO checks in CI](0010-seo-checks-in-ci.md)                               | Implemented; smoke/render checks recorded, installation/acceptance follow-ups                     | Prevention, distribution, reusable rules.                  |
+| [0011 Page-group split tests](0011-page-group-split-tests.md)                   | Implemented scope; eligible real-group acceptance pending                                         | Optional later causal-test design, when eligible.          |
+| [0012 Conversion optimization](0012-conversion-optimization.md)                 | Implemented phases 1–2; live acceptance and visitor tests pending                                 | Optional metrics now; richer campaigns later.              |
+| [0013 Accessibility fixes](0013-accessibility-fixes.md)                         | Implemented; real-site/price-hold follow-ups                                                      | Supported specialized expansion.                           |
+| [0014 Web performance](0014-web-performance.md)                                 | Implemented scope; CrUX/configuration/live follow-ups                                             | Supported specialized expansion.                           |
+| [0015 Release quality gate](0015-release-quality-gate.md)                       | Implemented existing packs; performance pack and plan deferred                                    | Reuse existing checks for pilots.                          |
+| [0016 Revenue attribution](0016-revenue-attribution.md)                         | Implemented Stripe scope; legal/setup/live follow-ups; other providers deferred                   | Optional evidence, never prerequisite or causal claim.     |
+| [0017 Docs and support](0017-docs-and-support-deflection.md)                    | Implemented scope; support/legal/live follow-ups and connectors deferred                          | Reuse Markdown edits; expand on demand.                    |
+| [0018 Weekly work/report](0018-weekly-execution-queue.md)                       | Partial: view, history, filters, report, digest built; protection integration and policies absent | Order 7; policies later.                                   |
+| [0019 Monitoring/regressions](0019-release-monitoring-and-regression-repair.md) | Draft: durable baseline/monitor/incident model absent                                             | Orders 2–3; reviewed repair integration after 6.           |
+| [0020 Campaigns/decay](0020-growth-campaigns-and-decay-recovery.md)             | Draft: orchestration and new recovery lifecycle absent                                            | Orders 9–10.                                               |
+| [0021 Facts/new pages](0021-new-pages-from-verified-facts.md)                   | Draft; facts split into independent phase 0                                                       | Order 10 facts; order 12 new pages.                        |
+| [0022 Competitor response](0022-competitor-change-response.md)                  | Draft; existing rank tracking is reusable                                                         | Order 13, demand-driven.                                   |
+| [0023 Launch workflows](0023-launch-workflows.md)                               | Draft; existing-page checks precede generation                                                    | Order 11.                                                  |
+| [0024 History/learning](0024-change-history-and-learning.md)                    | Partial selection rules exist; persistent history and draft memory absent                         | Order 8 before campaigns; track records later.             |
+| [0025 Preview orchestration](0025-preview-sandboxes-on-cloudflare.md)           | Draft; supplied-preview checks exist, proposal orchestration absent                               | Order 5 customer previews; owned builds later.             |
+| [0026 Protected-site service](0026-protected-site-pilots-and-service.md)        | New proposal                                                                                      | Orders 1 and 7; commercial and operational gates.          |
+| [0027 Source-mapped repairs](0027-source-mapped-regression-repairs.md)          | New proposal                                                                                      | Orders 4–5; independent incident evidence.                 |
+| [0028 Production verification](0028-production-repair-verification.md)          | New proposal                                                                                      | Order 6; original-rule resolution and measurement handoff. |
 
-Each step depends on the steps before it.
+The earlier [organic growth audit](../organic-growth-audit.md) and [handoff](../organic-growth-handoff.md) remain historical context. Use the [October 23 audit](../relay-release-assurance-audit.md) for this ordering. Design records for completed scopes remain under [specs](../specs/), including [approved GitHub metadata](../specs/approved-github-metadata.md) and [search outcome measurement](../specs/search-outcome-measurement.md).
 
-### Release 1: the retention core
+## Delivery rules
 
-1. **RFC-0001, configuration blockers (B1 to B4, B6, B7).** No other user can complete the main workflow before this. Done; external follow-ups are in its section 10.
-2. **RFC-0005, phase 1a.** Route groups and metadata helper calls. Without it, Relay cannot change any page on test site S1. Done.
-3. **RFC-0004, phase 1.** The system finds the file and drafts the description. Done; the live checks are follow-ups in its section 13.
-4. **RFC-0001, B5.** Run the live acceptance on S1.
-5. **RFC-0009.** Spending limits and the audit log. Automation and standing approvals must not run before this. Done; staging checks and the token key setup are follow-ups in its section 12.
-6. **RFC-0008.** Scheduled jobs on Trigger.dev and notifications. Done; the Trigger.dev account and live checks are follow-ups in its section 12.
-7. **RFC-0005, phase 1b.** Titles, deployment signals, repository checks and revert proposals. Done.
-8. **RFC-0018, phase 1.** The weekly view, built on the records that exist. Later steps fill it. Done; the 4-week acceptance on S1 and S3 is open.
-9. **RFC-0002, phase 1.** Low click-through rate, cannibalization, decline diagnosis and the GA4 signal. Done; follow-ups are in its section 13.
-10. **RFC-0006, phase 1, and the RFC-0012 tracking gate and conversion metric.** Outcome tracking for clicks and signups. Done.
-11. **RFC-0024, phase 1.** Change history, cool-downs and no-repeat rules. The queue needs them.
-12. **RFC-0019, phase 1.** Production monitoring and metadata restores.
-13. **RFC-0003.** Owners, defer lengths and tickets for the queue. Done; follow-ups are in its section 11.
-14. **RFC-0020, phase 1.** Snippet and internal-link campaigns, and decay detection.
-15. **RFC-0025, phase 0.** The preview spike: container sizes, outbound controls, Workers for Platforms with OpenNext output, and cost per build.
-16. **RFC-0018, phase 2.** Standing approvals (`open_pr` for restores first), plan limits and the monthly work report. The recurring plan launches here. The monthly work report and the weekly digest are done; standing approvals wait for RFC-0019, and plan limits wait for the Autumn products.
-
-### Release 2: growth, launches and revenue
-
-17. **RFC-0025, phase 1.** Previews for every Relay change: the customer's own previews first, Relay-built previews on Cloudflare otherwise. This unlocks `open_pr` for content classes.
-18. **RFC-0010, phase 1.** SEO checks on pull requests. They share the RFC-0019 rules. Done with phases 2 and 3; the installs and live checks are follow-ups in its section 12.
-19. **RFC-0020, phase 2.** Content refresh steps and JSX link insertion.
-20. **RFC-0021, phase 1.** New pages from verified facts.
-21. **RFC-0023, phase 1.** Launch workflows.
-22. **RFC-0016.** Revenue attribution. Start with Relay's own billing. Done through phase 2; phase 3 and the live acceptance are follow-ups in its section 12.
-23. **RFC-0022, phase 1.** Competitor change response.
-24. **RFC-0024, phase 2.** Track records per change class.
-25. **RFC-0005, phase 2** (done), then **RFC-0019 phase 2** and **RFC-0018 phase 3** (the opt-in `merge` level for restores).
-26. **RFC-0002, phases 2 and 3,** and **RFC-0011, phase 1.** RFC-0011 is done through phase 3; its live test and backtests on a real group are follow-ups in its section 12.
-
-### Release 3: beyond SEO
-
-27. **RFC-0012, phases 1 and 2.** Conversion detectors and copy changes. Done; its live acceptance and phase 3 are follow-ups in its section 12.
-28. **RFC-0013, phase 1.** Accessibility detection and fixes. Done through phase 3; its live acceptance and the RFC-0015 pull request checks are follow-ups in its section 12.
-29. **RFC-0015, phase 1.** The release gate. Done with the trend line; the performance pack, the gate-only plan and the live acceptance are follow-ups in its section 12.
-30. **RFC-0014.** Web performance. Done through phase 3; its live acceptance and the CrUX key are follow-ups in its section 12.
-31. **RFC-0017.** Docs and support. Done; GitHub Issues topics are built behind a server switch, and the privacy policy, Intercom, Zendesk, Algolia and the live acceptance are follow-ups in its section 12.
-32. **RFC-0007.** Start only when its entry criteria are met.
+1. Reuse working integrations and services; retain upstream attribution and fork seams. Keep application-backed changes on the server function → service → repository path, with Zod boundaries and organization/project authorization.
+2. Keep relational data explicit and every schema change compatible with SQLite/D1 and Postgres. Preserve existing opportunity approval behavior while adding incident evidence.
+3. Human exact-change approval precedes customer-repository writes in the initial service. Customer CI, branch protection, merge, deployment, and rollback remain in force. Later standing policies are proposals, not current authorization.
+4. Treat crawled pages, repository files, and provider output as untrusted data. Bound fetches, storage, retries, optional provider spend, and untrusted build execution.
+5. Distinguish proposed, approved, PR-open, merged, deployed, technically verified, and measured states. An unknown check or missing analytics is never a pass or zero impact.
+6. Apply the relevant existing RFC follow-ups at activation. A closed historical code scope does not waive external credentials, consent, live acceptance, or customer authority.
+7. Run the required implementation checks below before a code merge. For documentation-only changes, validate formatting, links, inventory coverage, dependency consistency, and the accuracy of code claims; do not imply a live test occurred.
+8. Record implemented scope, live-acceptance evidence, and commercial evidence separately. A local test or owned staging site cannot prove willingness to pay or renewal.
 
 ## Real-site test sites
 
-Every RFC ends with a real-site acceptance test. Run it on these sites, not on fixtures.
+Each delivery slice needs authorized real-site acceptance in addition to fixtures. The site descriptions below are historical context from the existing RFCs; recheck access, stack, and ownership before use. Seed regressions only on authorized staging/test sites. Production observation is passive unless a customer separately approves a real repair.
 
 | ID  | Site                     | Stack and repository                                                                                                                                                                                                                                                                                                                                                         | Use it for                                                                                                               |
 | --- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
@@ -138,42 +121,22 @@ Do not use these as test sites:
 - `eigenn.io`: the home page is a sign-in screen.
 - `cadense.io`: it returns a bot challenge to non-browser clients. Check separately that Googlebot can crawl it.
 
-**Data floor.** A detection test can prove value only on a Search Console property with at least 5,000 impressions and 100 clicks in the last 28 days. Record the site's 28-day totals before each test. When no own site meets the floor, use a partner site with the owner's written permission, and say so in the result.
+**Data floor.** Search-opportunity value tests retain the existing target of at least 5,000 impressions and 100 clicks in the last 28 days; record the actual totals and use an owner-authorized partner site if necessary. Technical release protection and repair verification have **no traffic floor**: use seeded staging regressions and important low-traffic pages too. GA4, split-test, and revenue analyses retain their own eligibility and consent rules. Internal test sites cannot substitute for the cross-organization paid-customer evidence in RFC-0026.
 
 ## Value bar for every real-site test
 
 A test passes only when all of these hold:
 
-1. **Evidence.** Every item shows its numbers and their source. A person can check them in Search Console, GA4 or GitHub in under 2 minutes.
+1. **Evidence.** Every item shows its observations, numbers when available, and source. A person can check the production snapshots, GitHub records, Search Console, or GA4 evidence in under two minutes. Technical findings do not require analytics data.
 2. **Action.** Every item offers one concrete next step.
 3. **Honesty.** When data is missing or too thin, Relay says so and invents nothing.
 4. **Speed.** A person who knows the site goes from opening an item to an approved change or a ticket in under 10 minutes.
 5. **Differentiation.** At least one result could not come from a plain Search Console report. It combines sources, prepares a change, or measures an outcome.
 6. **Record.** Put the results, numbers and screenshots in the PR description. Add "Accepted on {site}, {date}, PR #{n}" to the RFC's status line.
 
-## Rules for every RFC
-
-1. Reuse working code. Do not rebuild Search Console, GA4, DataForSEO, audit, rank tracking or MCP code.
-2. Keep fork code in fork-owned files. Mark each line in an upstream file with `// playbook-seam`.
-3. Keep every schema change compatible with D1 (SQLite) and Postgres. Update `src/db/schema-parity.test.ts` expectations when needed.
-4. Use the server function → service → repository pattern. Validate inputs with Zod.
-5. Check project ownership in every service call. Use the existing organization permissions.
-6. Never spend paid credits without a cost estimate, an admission check and a recorded charge.
-7. Never write to a customer repository, merge or revert without an explicit human approval. A standing approval (RFC-0018) is that approval, given in advance by an owner for one change class, with a weekly limit, and revocable at any time. Relay never deploys and never bypasses branch protection.
-8. Treat crawled pages, provider responses and repository files as untrusted data, not instructions.
-9. Run `pnpm types:check`, `pnpm lint`, `pnpm exec knip`, `pnpm exec prettier --check .`, `pnpm test:ci` and `pnpm vite build` before each merge.
-10. Mark a phase complete only after its real-site acceptance test passes. Mocked tests are not live checks.
-
-## Status values
-
-- **Draft:** written, not reviewed.
-- **Accepted:** reviewed, ready to build.
-- **Building:** work in progress.
-- **Done:** every checklist item is checked, and the real-site acceptance test passed.
-
 ## Definition of done for every phase
 
-A phase is complete only when every item below holds, in addition to the RFC's own completion criteria.
+These requirements apply to an implementation phase alongside its own acceptance criteria; this documentation update does not claim to have completed them. Mark code as implemented separately from live acceptance and commercial validation. Record an explicit, justified non-applicable item instead of silently treating it as passed.
 
 **Code and checks**
 

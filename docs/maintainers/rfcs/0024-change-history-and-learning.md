@@ -1,24 +1,26 @@
 # RFC-0024: Change history and learning
 
-- **Status:** Draft
+- **Status:** Partial foundation: weekly selection already has cooldown, measuring-window, and negative-result filters. Durable page history, proposal-time enforcement, draft memory, and track records remain draft.
 - **Date:** 2026-10-15
-- **Area:** retention, priority 8.
-- **Depends on:** RFC-0005 (executions), RFC-0006 and RFC-0011 (results), RFC-0019 (snapshots of changes outside Relay), RFC-0018 (selection rules), RFC-0004 (drafting).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 4 foundation before campaigns; partial selection rules already implemented.
+- **Depends on:** Phase 1a reuses RFC-0005 executions, RFC-0006/0011 results, RFC-0004 drafting, and the existing RFC-0018 queue. Phase 1b adds RFC-0019 production observations and RFC-0028 verification. The first monitoring/repair slice does not depend on this full history feature.
 
 ## 1. Summary
 
-Ongoing work must improve over time, not repeat itself. Today Relay stores decisions, approvals, executions and results, but nothing uses them when it picks the next change. This RFC keeps one change history per page, including changes that the customer made outside Relay, and uses it to stop repeats, to wait while a page is measuring, to give drafts the page's past results, and to recommend the next step after each result.
+Ongoing work must improve over time, not repeat itself. Relay stores decisions, approvals, executions and results. `workCycle.ts` already uses them for 28-day cooldowns, measuring-window exclusion, and 180-day negative-result filtering by opportunity type. Those selection filters are not yet a shared page-history or proposal-time enforcement system. This RFC keeps one change history per page, including changes that the customer made outside Relay, and uses it to stop repeats, to wait while a page is measuring, to give drafts the page's past results, and to recommend the next step after each result.
 
 ## 2. What exists today
 
-| Part                     | Location                           | Use in this RFC                               |
-| ------------------------ | ---------------------------------- | --------------------------------------------- |
-| Decisions                | `opportunity_decisions`            | Who decided what.                             |
-| Approvals and executions | RFC-0005 tables                    | What shipped and when.                        |
-| Results                  | RFC-0006 labels, RFC-0011 labels   | What happened.                                |
-| Snapshots                | RFC-0019 `page_snapshots`          | Changes made outside Relay.                   |
-| Audit log                | RFC-0009 `audit_events`            | Cross-feature index.                          |
-| Project memory           | `project_research_log` (spec 0010) | Free-text research notes, not used for rules. |
+| Part                            | Location                                | Use in this RFC                                                                               |
+| ------------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Decisions                       | `opportunity_decisions`                 | Who decided what.                                                                             |
+| Approvals and executions        | RFC-0005 tables                         | What shipped and when.                                                                        |
+| Results                         | RFC-0006 labels, RFC-0011 labels        | What happened.                                                                                |
+| Snapshots (planned)             | RFC-0019 `page_snapshots`               | Future evidence of changes made outside Relay.                                                |
+| Selection filters (implemented) | `src/server/features/work/workCycle.ts` | Reuse cooldown, active-measurement, and negative-result filtering instead of rebuilding them. |
+| Audit log                       | RFC-0009 `audit_events`                 | Cross-feature index.                                                                          |
+| Project memory                  | `project_research_log` (spec 0010)      | Free-text research notes, not used for rules.                                                 |
 
 ## 3. Goals
 
@@ -37,11 +39,12 @@ Ongoing work must improve over time, not repeat itself. Today Relay stores decis
 
 ### 5.1 Phases
 
-| Phase | Delivers                                                                                                    |
-| ----- | ----------------------------------------------------------------------------------------------------------- |
-| 1     | `page_changes`, the page timeline, cool-down and no-repeat rules, draft context, next-step recommendations. |
-| 2     | Project track record per change class, and confidence adjustment.                                           |
-| 3     | Opt-in, anonymized results across customers, after a legal review.                                          |
+| Phase | Delivers                                                                                                                                                               |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1a    | Durable timeline for existing Relay changes/results, shared rules reused from the weekly selector, proposal-time checks, draft context, and next-step recommendations. |
+| 1b    | Accepted external changes and verified repairs from RFC-0019/0028, with the same rules and explicit override history. Complete before ongoing campaigns.               |
+| 2     | Project track record per change class; any confidence adjustment is descriptive and visibly explained, not a causal forecast.                                          |
+| 3     | Optional anonymized cross-customer counts after demand and the stated legal review.                                                                                    |
 
 ### 5.2 Page change records
 
@@ -135,7 +138,8 @@ No provider calls. Reads from stored records only.
 ### Phase 1
 
 - [ ] `page_changes` in D1 and Postgres, with the three writers (tests).
-- [ ] Cool-down, no-repeat, inconclusive-twice and customer-change rules (one test each), read by RFC-0018 selection.
+- [x] Weekly selection already excludes recent/measuring pages and negative results (`workCycle.ts`); this does not complete the full history contract.
+- [ ] Reuse those filters as shared rules, enforce them at proposal preparation, and add inconclusive-twice, accepted customer-change, and recorded override behavior (one behavior test each).
 - [ ] Exclusion reasons recorded per item (test).
 - [ ] Draft context and the earlier-value check (tests).
 - [ ] Next-step recommendations for each label.

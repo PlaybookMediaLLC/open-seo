@@ -1,15 +1,22 @@
 # RFC-0018: Weekly execution queue and work report
 
-- **Status:** In progress. Phase 1 built: the weekly cycle, the view, selection, empty-week reasons, the notification and history. Phase 2 in part: the monthly work report and the weekly digest.
+- **Status:** Partial. Weekly cycle, view, selection, empty-week reasons, notification/history, monthly report, and digest are built. Release-assurance reporting integration is next; standing approvals and automatic merge are deferred. Earlier phase labels in the as-built notes preserve the original delivery history.
 - **Date:** 2026-10-15
-- **Area:** retention. Build this first.
-- **Depends on:** RFC-0001, RFC-0005 (execution and deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled tasks and notifications), RFC-0009 (audit log and limits). Standing approvals for content classes depend on RFC-0025 (previews). It reads work from RFC-0002, RFC-0019, RFC-0020, RFC-0023 and RFC-0024 as they ship.
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 3 reporting integration; optional delegated execution after paid validation.
+- **Depends on:** RFC-0001, RFC-0005, RFC-0006, RFC-0008, and RFC-0009 underpin the implemented view/report. Incident reporting consumes RFC-0019 and RFC-0028. Service limits come from RFC-0026. Later standing approvals require the validated repair loop, RFC-0024 history, and RFC-0025 previews; none of those requires standing approvals first.
+
+## Current delivery scope — October 23, 2026
+
+The cycle, view, report, digest, and basic cooldown/negative-result filters are implemented. The first release-assurance work here is **phase 1b: integrate coverage, incidents, and verified repairs** from RFC-0019/0028 into those surfaces. This does not require standing approvals or new campaign features.
+
+The recurring offer is validated under RFC-0026. Standing approvals and automatic merge remain proposed later phases, gated by paid customer evidence, reliable source mapping, preview checks, production verification, and an owner-defined policy. The current code does not implement `execution_policies`; a `merge` label in the work view asks the customer to act.
 
 ## 1. Summary
 
-Customers keep paying when useful work is left to do and they can see it getting done. Today Relay has the parts: opportunities, drafts, pull requests, deployment signals and measurements. It has no single place that answers "What did Relay do for us this week, what is it still measuring, and what is next?"
+Customers keep paying when useful work is left to do and they can see it getting done. The original design brought together opportunities, drafts, pull requests, deployment signals and measurements to answer "What did Relay do for us this week, what is it still measuring, and what is next?"
 
-This RFC makes that answer the project's home: a weekly cycle with three sections, **Completed**, **Measuring** and **Next**, backed only by real records. It adds standing approvals, so Relay can act within limits the customer sets. It adds plan limits for the recurring service, and a work report that makes the renewal decision easy.
+This RFC makes that answer the project's home: a weekly cycle with three sections, **Completed**, **Measuring** and **Next**, backed only by real records. The view and report are now built in part. It next adds release coverage and verified repair results. Later phases may add standing approvals after the service and its limits are validated through RFC-0026.
 
 The queue never invents work. When nothing is worth changing, it says so and explains why.
 
@@ -30,8 +37,8 @@ The queue never invents work. When nothing is worth changing, it says so and exp
 1. One weekly view per project: Completed, Measuring and Next, plus Waiting on you.
 2. Every item links to its evidence and its records. Nothing is a summary without a source.
 3. Next holds only items that pass a quality bar. There is no weekly quota.
-4. Customers can let Relay act on some change classes without a click, within limits they set.
-5. Plan limits are visible, and they limit execution, never protection.
+4. After validation, customers may opt into a separately delivered policy for limited change classes; the initial service uses human approval.
+5. Plan limits and actual protection coverage are visible; exhausted growth allowances do not silently stop included checks on an active plan.
 6. A work report shows the value delivered per month and per quarter, including negative results.
 
 ## 4. Non-goals
@@ -44,15 +51,16 @@ The queue never invents work. When nothing is worth changing, it says so and exp
 
 ### 5.1 Phases
 
-| Phase | Delivers                                                                      |
-| ----- | ----------------------------------------------------------------------------- |
-| 1     | Weekly cycle, the view, selection rules, empty-week reasons, digest, history. |
-| 2     | Standing approvals (`open_pr` level), plan limits, monthly work report.       |
-| 3     | Opt-in `merge` level for regression restores, quarterly review export.        |
+| Phase | Delivers                                                                                                                         |
+| ----- | -------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Implemented weekly cycle, view, selection, history, digest, and monthly report foundation.                                       |
+| 1b    | Coverage, incidents, pending repairs, verified resolutions, and lost-coverage states; customer acceptance over four weeks.       |
+| 2     | Optional `open_pr` policies after paid validation, with scoped authority and limits. Service entitlements are owned by RFC-0026. |
+| 3     | Optional `merge` policy for validated restore classes and quarterly export; separate demand and reliability decision.            |
 
 ### 5.2 Weekly cycle
 
-1. A Trigger.dev task `weekly-cycle` runs per project, on Monday at 06:00 in the project's time zone. The time zone is the GA4 property's time zone when GA4 is connected, otherwise UTC. Owners can change the day, the hour and the time zone.
+1. The `weekly_cycle` job runs through the existing Worker cron (or configured Trigger.dev path), by default on Monday at 06:00 in the project's time zone. The time zone is the GA4 property's time zone when GA4 is connected, otherwise UTC. Owners can change the day, the hour and the time zone.
 2. It is idempotent per project and week start.
 3. Steps:
    1. Close the previous cycle. Compute its Completed list from the records of that week.
@@ -100,7 +108,9 @@ The queue never invents work. When nothing is worth changing, it says so and exp
 
 **As built (phase 1, selection).** Open means discovered, reviewed or approved. "The page changed" means an experiment on the same URL join key deployed in the last 28 days or still measuring; "the same change class" is the same opportunity type, with a negative primary result in the last 180 days. A missing GitHub connection excludes items and gives the setup reason "Connect GitHub to prepare N changes." instead of a Next entry, because an entry must link to exactly one record. At the open pull request limit, the items stay in Next with the reason "Ready after current changes merge". Every filter outcome adds its own empty-week reason when Next holds fewer than 5 items, and the reasons carry codes for analytics.
 
-### 5.5 Standing approvals
+### 5.5 Standing approvals (deferred)
+
+Entry requires the RFC-0026 paid-service gate, validated RFC-0027 mappings and RFC-0028 verification, RFC-0025 previews for the enabled class, and RFC-0024 history controls. These are future product requirements, not current permission grants. The initial service continues to use a person's exact-change approval and customer merge.
 
 A standing approval is an explicit human approval given in advance, for one change class, with a weekly limit. It can be revoked at any time.
 
@@ -137,31 +147,17 @@ Partial unique index on (`project_id`, `change_class`) where `revoked_at IS NULL
 5. Every policy action sends a notification within 1 hour and appears in the weekly report.
 6. New pages (RFC-0021) and content refreshes (RFC-0020) are never above `prepare`.
 7. When a verification fails after a policy action, Relay pauses that policy, notifies the owner, and prepares a revert.
-8. Content classes (`meta_description`, `meta_title`, `alt_text`, `html_lang`, `internal_link`) can use `open_pr` only after the change passed a preview (RFC-0025). Until RFC-0025 phase 1 ships, only `restore_regression` can use `open_pr`. `merge` always needs a passed preview when the project supports previews.
+8. Every enabled class, including `restore_regression`, needs preview/check evidence tied to its exact commit before delegated completion. If a platform only builds previews after PR creation, the policy must explicitly authorize that preliminary write; otherwise retain the human-approved PR path. An automatic merge always requires a passed preview and the repository's required checks. Missing or stale evidence blocks the delegated action.
 
-This changes the earlier rule "never write, merge or revert without an explicit human approval". A standing approval is that explicit approval, given in advance, scoped and limited. The README rule is updated with this RFC.
+This is a proposed future authority model. It does not change the current human-approval contract in the README. Update shipped instructions only when the policy feature and its acceptance are complete.
 
 ### 5.6 Plans and limits
 
-The product sells as two parts:
+RFC-0026 owns the initial protected-site scope, pricing experiments, entitlements, costs, and pause/cancellation behavior. A one-time onboarding cleanup is an optional hypothesis, not a mandatory product tier.
 
-1. **Onboarding cleanup**, one time: a full audit, baselines, and a first batch of changes over 30 days.
-2. **Recurring monitoring and execution**, monthly, with explicit limits.
+The view shows the agreed monitored-page/check capacity and actual usage. Later campaigns and new-page features may add explicit limits after demand is validated. Paid research retains RFC-0009 admission and credits.
 
-| Limit                      | Applies to                                     |
-| -------------------------- | ---------------------------------------------- |
-| Monitored pages            | RFC-0019 production monitoring.                |
-| Executed changes per month | Pull requests that Relay opens, by any level.  |
-| Active campaigns           | RFC-0020.                                      |
-| New pages per month        | RFC-0021.                                      |
-| Credits                    | Paid data and AI drafts (RFC-0009, unchanged). |
-
-Rules:
-
-1. Model the limits as Autumn products and features. Verify Autumn's feature types and the one-time product support before building.
-2. Show usage in the view: "This month: 7 of 15 changes used."
-3. At a limit, Next items stay visible and are marked "Over the plan limit". Execution stops. Monitoring and regression detection never stop.
-4. Regression restores do not count toward the change limit, so protection never depends on the plan.
+Reaching a growth-change allowance must not silently stop included basic monitoring on an active plan. Restores can be excluded from that allowance while still obeying request, concurrency, verification, and operational budgets. Degraded or paused protection is explicit when the plan, permissions, or service capacity no longer permits checks. Do not promise monitoring that can never stop.
 
 ### 5.7 Work report
 
@@ -268,15 +264,23 @@ No paid providers. One cycle task per project per week. Detection refreshes stay
 - [x] Product analytics events for the success metrics.
 - [x] `content/docs/this-week.mdx` explains the sections, the bar and empty weeks.
 
-### Phase 2
+### Phase 1b: release-assurance report
+
+- [ ] Protected set, last successful checks, overdue/failed coverage, and incident records appear without new autonomy settings.
+- [ ] Display RFC-0026 service entitlements and actual degraded/paused coverage; later change allowances do not silently stop included monitoring.
+- [ ] Verified Relay repairs, customer/observed resolutions, intentional changes, attestation, and unresolved work are distinguished using RFC-0028.
+- [ ] Coverage and repair counts reconcile to underlying records; merge alone never counts as a verified repair.
+- [ ] Quiet weeks show checks actually completed and any gaps, without inventing work or money saved.
+- [ ] Four-week pilot acceptance includes an unresolved incident, a lost-coverage period, and a verified resolution.
+
+### Phase 2 (deferred)
 
 - [ ] `execution_policies` and `proposal_approvals.policy_id`.
-- [ ] `open_pr` level with weekly limits (tests at the limit): `restore_regression` first, content classes only with a passed RFC-0025 preview (test).
+- [ ] `open_pr` level with weekly limits and exact-commit preview rules for every enabled class, including restores; unsupported preview paths retain human approval (tests).
 - [ ] Policy pause and revert preparation after a failed verification (test).
-- [ ] Plan limits through Autumn, the usage line, and "Over the plan limit" (tests).
 - [ ] Regression restores excluded from the change limit (test).
 - [x] Monthly work report with negative results included.
-- [x] Weekly email digest when Loops is configured. Built on the RFC-0008 email digest, which uses the Cloudflare Email binding.
+- [x] Weekly email digest through the configured RFC-0008 Cloudflare Email binding (historically part of phase 2).
 
 ### Phase 3
 
@@ -307,7 +311,11 @@ No paid providers. One cycle task per project per week. Detection refreshes stay
 
 **Value check:** the owner sees ongoing, verified work and a short, honest list of what comes next.
 
-### Phase 2
+### Phase 1b
+
+On two authorized pilot sites over four weeks, reconcile coverage and every incident disposition with the monitor and verification records. Include a quiet week and a failed/stale run. The owner must distinguish a merged PR, an attested deployment, an observed customer fix, and a verified Relay repair from the report. Do not require new changes every week.
+
+### Phase 2 (deferred)
 
 **Site:** S1, with `open_pr` for `restore_regression` and `meta_description`.
 
@@ -322,13 +330,13 @@ No paid providers. One cycle task per project per week. Detection refreshes stay
 
 **Correctness**
 
-- For 4 cycles on 2 projects, Completed equals the set of merged and verified changes in each week, checked against GitHub and the audit log.
+- For 4 cycles on 2 projects, Completed reconciles with the deployed changes, preserving verified versus attested basis; incident resolution counts separately reconcile with RFC-0028. No merge-only item is presented as a verified repair.
 - 0 duplicate cycles, and 0 items that break a hard filter.
 
 **Usefulness**
 
 - At least 80% of Next items rated worth doing across the test.
-- At least 1 Completed item per project in at least 3 of the 4 weeks, or a recorded reason when not.
+- Each week shows current coverage and useful work or an honest reason to wait. There is no completed-change quota; quiet protection can be valuable.
 
 **Honesty**
 

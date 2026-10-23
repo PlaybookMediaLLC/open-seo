@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. One pull request check for website quality.
 - **Depends on:** RFC-0010 (SEO checks on pull requests). Uses rules from RFC-0013 (accessibility) and RFC-0014 (performance).
 
+## Current delivery role — October 23, 2026
+
+Implemented release-gate foundation for stages 1–2. Reuse existing packs; the unimplemented performance pack and separate gate-only plan do not block the metadata pilot.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 RFC-0010 stops SEO regressions before merge. The same preview-versus-production comparison can stop accessibility, performance, link, security-header and asset-weight regressions. This RFC grows the SEO check into one release gate with rule packs, budgets set in the repository, and stable results. It can be sold alone to developer teams, so it also brings new customers to Relay.
