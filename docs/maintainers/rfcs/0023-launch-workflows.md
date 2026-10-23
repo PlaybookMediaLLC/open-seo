@@ -2,8 +2,9 @@
 
 - **Status:** Draft
 - **Date:** 2026-10-15
-- **Area:** retention, priority 7.
-- **Depends on:** RFC-0005 (GitHub reads and deployment signals), RFC-0018 (weekly queue), RFC-0019 (monitoring and snapshots), RFC-0020 (link insertion and refresh), RFC-0021 (new pages and measurement).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 5; start with checks for an existing customer-created page.
+- **Depends on:** Phase 1 uses RFC-0005 reads, RFC-0019 monitoring, RFC-0028 verification, RFC-0018 reporting, and RFC-0020 link steps. RFC-0021 new-page creation is an optional later producer of launches, not a phase-1 prerequisite.
 
 ## 1. Summary
 
@@ -11,16 +12,18 @@ A SaaS company launches features, integrations and products all the time. Each l
 
 There is no final "cleanup complete" moment while the product keeps changing.
 
-## 2. What exists today
+## 2. Reusable foundation and planned dependencies
 
-| Part                | Location                                | Use in this RFC                                                        |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------------- |
-| GitHub reads        | RFC-0005 reader, compare API (RFC-0019) | Detect new route and content files in a deployment.                    |
-| Snapshots and rules | RFC-0019                                | Indexability, canonical, title and description checks on the new page. |
-| URL Inspection      | Existing Search Console service         | Index status after launch.                                             |
-| Link insertion      | RFC-0020                                | Links from related pages.                                              |
-| New pages           | RFC-0021                                | Create the page when it does not exist yet, and measure it.            |
-| Docs index          | RFC-0017                                | Find the related docs page.                                            |
+The GitHub, Search Console, and docs services exist. Production snapshots, campaign link insertion, and generated-page integration below are planned dependencies, not implemented launch features.
+
+| Part                          | Location                                | Use in this RFC                                                                     |
+| ----------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |
+| GitHub reads                  | RFC-0005 reader, compare API (RFC-0019) | Detect new route and content files in a deployment.                                 |
+| Snapshots and rules           | RFC-0019                                | Indexability, canonical, title and description checks on the new page.              |
+| URL Inspection                | Existing Search Console service         | Index status after launch.                                                          |
+| Link insertion                | RFC-0020                                | Links from related pages.                                                           |
+| New pages (later integration) | RFC-0021                                | Optional producer of launches after phase 1 checks work for customer-created pages. |
+| Docs index                    | RFC-0017                                | Find the related docs page.                                                         |
 
 ## 3. Goals
 
@@ -50,7 +53,7 @@ There is no final "cleanup complete" moment while the product keeps changing.
 2. **Detected (phase 1):** after each production deployment (RFC-0019 `deployment-watch`), compare the files with the previous deployment. A new App Router `page.*` file, or a new file in a configured content collection, creates a suggested launch: "A new page `/integrations/hubspot` went live. Track it as a launch?"
 3. **Detected (phase 2):** a published GitHub release, or a new entry in the changelog file.
 4. A suggested launch starts only after a person confirms it. Suggestions expire after 14 days.
-5. When the main page does not exist yet, the launch offers the RFC-0021 page flow.
+5. In phase 1, a planned page waits for the customer to create it; Relay does not generate it. Add the RFC-0021 page flow only after its later publishing acceptance.
 
 ### 5.3 Checklist
 
@@ -69,7 +72,7 @@ Each step stores its status and evidence. Failed steps appear in the RFC-0018 Ne
 
 ### 5.4 After launch
 
-1. Measure the page as a new page (RFC-0021): first impression date, then impressions, clicks, queries and conversions at weeks 4, 8 and 12.
+1. Reuse the GSC/GA4 read services and RFC-0006 sufficiency rules to observe first impression date, then impressions, clicks, queries, and conversions at weeks 4, 8, and 12. No prior-page baseline or causal lift is invented. RFC-0021 can consume this same observation contract later; it is not a prerequisite.
 2. At week 8 (phase 2), list the queries that land on the page and are not answered on it. Offer them as RFC-0020 refresh steps, using verified facts.
 3. Close the launch at week 12 with a short summary in the work report.
 

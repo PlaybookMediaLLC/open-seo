@@ -2,8 +2,9 @@
 
 - **Status:** Draft
 - **Date:** 2026-10-15
-- **Area:** retention, priority 4.
-- **Depends on:** RFC-0002 (content gaps), RFC-0004 (drafting checks), RFC-0005 and RFC-0017 (publishing and Markdown edits), RFC-0018 (weekly queue), RFC-0023 (launch checks).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 4 facts registry when required; stage 5 new-page execution after validated demand.
+- **Depends on:** Phase 0 facts uses project context and RFC-0004 grounding; it does not require launch workflows. New-page execution uses RFC-0002 gaps, RFC-0005/0017 publishing, RFC-0018 reporting, RFC-0023 phase 1 checks for existing pages, RFC-0025 phase 1a, and RFC-0028 verification.
 - **Changes earlier rules:** RFC-0002 and RFC-0004 say "never generate pages". This RFC allows new pages only from verified facts, one at a time, with a person's approval and a monthly cap.
 
 ## 1. Summary
@@ -39,11 +40,14 @@ SaaS sites miss pages that buyers search for: answers to buying questions, use c
 
 ### 5.1 Phases
 
-| Phase | Delivers                                                                                                            |
-| ----- | ------------------------------------------------------------------------------------------------------------------- |
-| 1     | Facts registry, page gap detection, pages as new records in data-driven templates and as new Markdown or MDX files. |
-| 2     | Pages as copies of a sibling static page. Comparison pages with dated sources.                                      |
-| 3     | Fact suggestions from the repository (changelog, OpenAPI) and from docs, for a person to verify.                    |
+| Phase | Delivers                                                                                                                                       |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Verified facts registry, expiry, sources, review, and citations; independently usable by RFC-0020 content refreshes, without generating pages. |
+| 1     | Page-gap detection and reviewed new records in existing data templates or Markdown/MDX files, using the phase 0 facts and RFC-0023 checks.     |
+| 2     | Copies of a supported sibling static page and comparison pages with dated sources.                                                             |
+| 3     | Suggestions from changelog, OpenAPI, and docs, unverified until a person confirms them.                                                        |
+
+New-page publishing stays deferred until repeat paid release-assurance demand and existing-page growth justify expansion. The facts-only slice can ship earlier when a validated refresh use case requires it.
 
 ### 5.2 Facts registry
 
@@ -152,11 +156,14 @@ Drafts cost model credits. Detection uses free data, plus RFC-0002 paid content 
 
 ## 9. Ready-for-other-users checklist
 
-### Phase 1
+### Phase 0
 
-- [ ] `business_facts` and `page_fact_citations` in D1 and Postgres.
+- [ ] `business_facts` and normalized citations in D1 and Postgres; citations support existing content as well as later new pages.
 - [ ] Facts editor with expiry, `customer_proof` and `comparison` rules (tests).
 - [ ] MCP context tools expose facts.
+
+### Phase 1
+
 - [ ] `missing_page` detector for buying questions, use cases and integrations (tests per signal).
 - [ ] Quality bar with the reason for each failed condition (tests).
 - [ ] Pattern A: data source discovery, field derivation, literal append, rejection cases (tests).
@@ -177,6 +184,8 @@ Drafts cost model credits. Detection uses free data, plus RFC-0002 paid content 
 - [ ] Fact suggestions from the changelog, OpenAPI and docs, unverified until a person confirms them.
 
 ## 10. Real-site acceptance test
+
+**Phase 0:** On an authorized project, verify ten sourced facts, then expire and retire selected facts. Validate a supplied draft through the fact/citation checks: unsourced, expired, or retired claims must fail. This acceptance requires no campaign executor, generated page, repository write, or launch feature. The remaining steps cover phase 1.
 
 **Sites:** S3 (Relay docs, a content collection) and S2 (integration pages, when they use a data-driven template).
 

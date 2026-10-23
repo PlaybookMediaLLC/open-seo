@@ -5,6 +5,12 @@
 - **Brief section:** 7 (Feature E), extended from before-and-after comparison to controlled tests
 - **Depends on:** RFC-0005 (publishing, deployment signals), RFC-0006 (measurement), RFC-0008 (scheduled refresh). Phase 2 drafting depends on RFC-0004.
 
+## Current delivery role — October 23, 2026
+
+Implemented optional growth measurement. Use in stage 4 or later only when page-group/data eligibility holds; it does not block release assurance.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 RFC-0006 compares one page before and after a change. That shows what happened, but not what the change caused, because seasonality, algorithm updates and demand move at the same time. Controlled SEO tests solve this by changing a random half of similar pages and comparing them with the other half. Today this costs enterprise money (SearchPilot, SplitSignal).

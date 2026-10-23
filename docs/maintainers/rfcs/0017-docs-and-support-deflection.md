@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. For developer-tool and SaaS companies, docs are a growth and support channel.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0012 (file reading rules), RFC-0008 (scheduled sync).
 
+## Current delivery role — October 23, 2026
+
+Implemented docs/support foundation with deferred connectors. Reuse supported Markdown edits later; new help-desk integrations are demand-driven expansion, not pilot prerequisites.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Developer-tool companies lose sign-ups and pay for support when their docs miss the questions users ask. The signals exist: docs search terms, search queries that land on docs, and support tickets. This RFC finds docs gaps from these signals, drafts docs changes as Markdown or MDX pull requests from verified sources only, and measures whether searches and tickets on the topic go down.

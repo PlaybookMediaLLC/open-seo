@@ -1,261 +1,140 @@
-# RFC-0019: Release monitoring and regression repair
+# RFC-0019: Production monitoring and confirmed release regressions
 
-- **Status:** Draft
+- **Status:** Draft; durable monitoring and regression records are not implemented as of the October 23 audit.
 - **Date:** 2026-10-15
-- **Area:** retention, priority 1.
-- **Depends on:** RFC-0005 (adapters, deployment signals, publishing), RFC-0008 (tasks), RFC-0018 (standing approvals and the weekly view). Shares its comparison rules with RFC-0010.
+- **Updated:** 2026-10-23
+- **Delivery:** Stage 1 for observation/detection; stage 2 for reviewed repair integration.
+- **Depends on:** Phase 1a uses RFC-0005 repository/deployment reads, RFC-0008 jobs, RFC-0009 controls, RFC-0010/0015 rules, and the pilot scope from RFC-0026 phase A. Phase 1b adds confirmed incidents. Phase 1c uses RFC-0027, RFC-0025 phase 1a, and RFC-0028. The RFC-0018 report consumes results; standing approvals are not a prerequisite.
 
 ## 1. Summary
 
-Every deployment, plugin update, CMS edit or hosting change can break a page that brings traffic. RFC-0010 checks pull requests before merge, but only when the customer installs it, and it cannot see changes that do not come through Git. This RFC watches the production pages that matter, after every deployment and every day. It compares each page with its last known-good state, confirms each problem before it opens one, finds the likely cause, and repairs supported problems by restoring the known-good value through a pull request, within the customer's standing approvals.
+Monitor the production pages a customer has agreed to protect, retain their known-good state, and confirm consequential regressions before alerting. Explain the before/after evidence, affected pages, suspected source, and next action. Detection and actionable tickets are the first useful increment. Source-proven, human-reviewed repairs and production verification follow through separate RFCs.
+
+This is the initial release-assurance product in [company.md](../../../company.md). Ongoing campaigns and autonomous execution follow customer validation, not the other way around.
 
 ## 2. What exists today
 
-| Part                    | Location                                                  | Use in this RFC                                  |
-| ----------------------- | --------------------------------------------------------- | ------------------------------------------------ |
-| Pull request checks     | RFC-0010, `analyzeHtml`, rules in 5.6                     | The same rules, applied to production over time. |
-| Deployment signals      | RFC-0005 (`GET /deployments`, statuses)                   | Trigger checks after each production deployment. |
-| Publishing adapters     | RFC-0005 (App Router, helper calls, Pages Router)         | Locate and restore literal values.               |
-| Safe fetch              | `readPages`, `normalizeAndValidateStartUrl`               | Every production fetch.                          |
-| Tasks and notifications | RFC-0008                                                  | Scheduling, retries, alerts.                     |
-| Standing approvals      | RFC-0018 `execution_policies`, class `restore_regression` | How far Relay acts without a click.              |
-| Audit alerts today      | RFC-0008 `audit_followup`, `traffic_watch`                | Alerts only. No repair, no known-good state.     |
+| Foundation               | Evidence                                                                                    | Boundary                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI checks and page facts | `src/server/features/seo-checks/pageSnapshot.ts`, `seoRules.ts`, `seoCheckRun.ts`           | Compare production/preview during a check; no durable known-good production history.                                                         |
+| Deployment reads         | `src/server/features/publishing/githubSignals.ts`, `experiments/DeploymentSignalService.ts` | Existing checks cover registered experiments. Monitoring must discover all relevant production deployments, including changes outside Relay. |
+| Jobs and notifications   | `src/server/features/growth/growthJobs.ts`, `cronScheduler.ts`                              | Worker cron dispatches at quarter-hour ticks; there is no release-monitor job. Trigger.dev is an optional existing path, not a prerequisite. |
+| Publishing               | RFC-0005, `MetadataExecutionService`                                                        | Exact-change approval exists; incident evidence and restoration from a snapshot require RFC-0027.                                            |
+| Work report              | RFC-0018                                                                                    | Existing weekly/report surfaces can consume incidents and verified resolutions.                                                              |
 
-## 3. Goals
+The proposed `monitored_pages`, `page_snapshots`, `site_snapshots`, and `site_regressions` below are new work. Standing-approval policies are also future work, owned by RFC-0018.
 
-1. Check the pages that matter after every production deployment and once a day.
-2. Keep a known-good state per page, and compare each new check with it.
-3. Open a regression only after a second check confirms it.
-4. Name the likely cause: the commits in the deployment, or "a change outside Git".
-5. Repair supported regressions by restoring the known-good value in a pull request.
-6. Let the owner accept an intentional change as the new known-good state in one click.
-
-## 4. Non-goals
+## 3. Phases and independently useful exits
 
-1. No full-site crawl. The site audit covers it.
-2. No repair of content, layout or design. Those become tickets.
-3. No CMS writes. Non-Git sites get detection and tickets only.
-4. No deployment by Relay.
-
-## 5. Design
+| Phase | Delivers                                                                                                                          | Exit                                                                                                  |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1a    | Enrolled scope, durable observations, known-good baseline, schedule and health view                                               | Customer can see which pages are protected and when checks succeeded; no alert or repair promise yet. |
+| 1b    | Deployment/daily checks, shared comparison rules, confirmations, deduplicated incidents, cause evidence, notification and tickets | A confirmed regression is actionable even without an automatic repair.                                |
+| 1c    | RFC-0027 reviewed metadata repairs, RFC-0025 customer previews, RFC-0028 verification                                             | Approved repair reaches production and the original failure is verified resolved.                     |
+| 2     | Verified adapters for canonical/robots literals and static `robots.txt`; webhook improvements where needed                        | Each new repair class passes its own source, preview, and verification acceptance.                    |
+| 3     | Rendered production checks and response-time signals                                                                              | Validated demand, affordable runtime, and explicit unknown states.                                    |
 
-### 5.1 Phases
+No full-site crawl, CMS writes, whole-commit rollback, autonomous merge, or Relay-controlled production deployment. The site audit and customer's release process retain those roles.
 
-| Phase | Delivers                                                                                                                                                          |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Monitored pages, snapshots, known-good states, daily and deployment triggers, confirmed regressions, cause analysis, tickets, restore pull requests for metadata. |
-| 2     | Restores for literal robots meta and canonical values, and for static `robots.txt` files. GitHub App webhooks as the deployment trigger.                          |
-| 3     | Rendered checks for client-rendered pages, and response-time regressions.                                                                                         |
+## 4. Protected set and baseline
 
-### 5.2 Monitored pages
-
-1. The set: key pages, the top pages by organic clicks up to the plan limit, one page per route template, `robots.txt` and the sitemaps.
-2. Plan limits: for example 20 pages (free), 200 and 1,000 (paid). The exact numbers are set with RFC-0018 plans.
-3. `monitored_pages`: `id`, `project_id` (FK cascade), `url_path`, `reason` (`key_page`, `top_traffic`, `template`, `owner_added`), `known_good_snapshot_id` (nullable), `added_at`, `removed_at`.
-4. Refresh the top-traffic part weekly from Search Console data that is already stored.
+Use explicit owner-selected key pages first, normally 5–20 in a pilot, bounded by RFC-0026's agreed entitlement. Suggest top organic landing pages from existing Search Console data when available; missing history does not prevent protection. Include relevant `robots.txt` and sitemap checks, accounted for in capacity. Show excluded or unsupported pages and why. Changes to the protected set are visible and auditable.
 
-### 5.3 Snapshots
+`monitored_pages` stores project, normalized URL path, selection reason, scope version, added/removed times, and a nullable known-good snapshot reference. Enforce one active row per project/path. Record site resources separately where appropriate. Keep all relations normalized and compatible with SQLite and Postgres.
 
-`page_snapshots`:
+Known-good is a guarded baseline, not simply the latest fetched page:
 
-| Column                                                                        | Type                                                         |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `id`                                                                          | text primary key                                             |
-| `project_id`                                                                  | text, FK cascade                                             |
-| `url_path`                                                                    | text                                                         |
-| `fetched_at`                                                                  | text                                                         |
-| `trigger`                                                                     | text enum `schedule`, `deployment`, `confirmation`, `manual` |
-| `deployment_sha`                                                              | text, nullable                                               |
-| `status_code`                                                                 | integer                                                      |
-| `final_path`                                                                  | text, nullable (after redirects)                             |
-| `title`, `meta_description`, `canonical`, `robots_meta`, `x_robots_tag`, `h1` | text, nullable, each at most 300 characters                  |
-| `json_ld_types`                                                               | text, nullable, sorted and comma-separated                   |
-| `json_ld_valid`                                                               | boolean                                                      |
-| `hreflang_hash`, `content_hash`                                               | text, nullable                                               |
-| `internal_link_count`, `word_count`                                           | integer                                                      |
-| `response_ms`                                                                 | integer                                                      |
+1. The first candidate must be readable, have the expected status, and pass applicable absolute checks. Review existing defects and intentional exclusions with the owner; a successful HTTP request alone cannot certify a healthy page.
+2. For initial activation, require a matching confirmation and explicit acceptance of the baseline/scope. Preserve who accepted it and its provenance.
+3. Later candidates can promote only after at least 24 hours with a matching confirmation, no unresolved material finding, and applicable rule checks passing. An intentional change can instead be explicitly accepted by an authorized manager.
+4. A verified repair can promote only through RFC-0028's conditional verification path. Old jobs cannot overwrite a newer baseline or incident.
+5. Material warnings about changed values remain available for review; do not silently overwrite the prior baseline while those findings are unresolved.
 
-`site_snapshots`: `id`, `project_id`, `fetched_at`, `robots_txt_hash`, `googlebot_disallow_rules` (at most 2,000 characters), `sitemap_url_count`, `sitemap_hash`.
+A production deployment SHA is nullable. It is verified source provenance only when evidence establishes that association; observing an event near a fetch is not sufficient. RFC-0027 owns the source mapping needed for repair.
 
-Keep the last 30 snapshots per page and every known-good snapshot. Delete the rest after 90 days in the retention task.
+## 5. Observations, runs, and retention
 
-### 5.4 Known-good state
+`monitor_runs` records project/scope version, trigger (`schedule`, `deployment`, `confirmation`, `manual`, `verification`), scheduled/start/finish times, status, required/checked/unknown page counts, and a bounded error. A missing or overdue run is visible coverage loss.
 
-1. The first snapshot of a page becomes known-good when it has status 200 and no blocking rule fails on its own.
-2. A later snapshot becomes known-good when it shows no blocking change against the current known-good state, and it is at least 24 hours old with a matching confirmation.
-3. After Relay ships and verifies its own change, the verified snapshot becomes known-good.
-4. "Accept as known-good" lets a member accept an intentional change. It closes the open regression as `accepted` and writes an audit event.
+`page_snapshots` records the monitored-page/run references, fetch time, URL/final path, HTTP status when received, title/description/canonical/robots/header/H1 facts, JSON-LD validity/types, content/hreflang hashes, link and word counts, response time, and fetch/render completeness. Use normalized child rows for repeated structured facts; keep scalar values bounded, never full pages. Timeouts are `unknown`, not invented status codes. Preserve enough evidence for the comparison and repair decision; truncation of a required value must make that rule uncheckable rather than silently change it.
 
-### 5.5 Triggers
+`site_snapshots` records robot-policy and sitemap observations, their completeness, counts/hashes, and bounded rule evidence. A discovery failure or truncated sitemap cannot be treated as a real disappearance.
 
-1. **After deployment.** A task `deployment-watch` polls GitHub deployments for the production environment every 15 minutes (RFC-0005). Phase 2 uses App webhooks. A new successful deployment starts a check of all monitored pages within 10 minutes.
-2. **Daily.** A daily check catches changes outside Git: CMS edits, plugin updates, hosting and CDN rules.
-3. **Manual.** "Check now", at most 4 times per day per project.
+Retain the most recent 30 observations per page within 90 days plus all active baselines and observations referenced by open incidents, repair proposals, or retained verification records. Cleanup must not break evidence foreign keys. Define longer closed-incident retention and project deletion through RFC-0026's service terms and existing deletion flows.
 
-### 5.6 Rules
+## 6. Triggers, capacity, and service health
 
-Use one shared function with RFC-0010: `compareSnapshots(knownGood, candidate)`. RFC-0010 compares production with a preview. This RFC compares known-good with current production.
+- Poll successful deployments for the configured production environment, with a durable cursor and deduplication. Include deployments unrelated to Relay proposals. Add an authenticated webhook path when it improves pilot latency.
+- Run a daily scheduled check for changes with no available Git event, plus bounded manual checks (initially four per day).
+- Use the existing job/lease/notification infrastructure. Monitoring and confirmations require due-time scheduling suited to their promised cadence; do not assume the existing quarter-hour dispatcher can satisfy a shorter target.
+- For the initial polling pilot, target an initial check within 30 minutes of a successful deployment and confirmed findings within 60 minutes, measured from the deployment timestamp. Schedule ordinary confirmations 5–10 minutes after the initial check; HTTP-status regressions need two confirmations ten minutes apart. A faster 15-minute confirmed-alert objective requires separately proven webhook/scheduling behavior.
+- Show last successful check, next due check, queued/failed/skipped work, coverage completeness, and reason. Persistent monitor failure sends a deduplicated operational notification, not “no regressions”.
 
-**Blocking:** `newly-noindex` (meta or header), `canonical-changed`, `status-regressed`, `newly-redirected`, `robots-txt-blocks`, `title-removed`, `description-removed`, `json-ld-invalid`, `sitemap-shrunk`.
+Use at most two concurrent requests per origin, a ten-second request timeout, two MB maximum HTML, and the shared URL policy on every hop. Bounded page/deployment/confirmation budgets follow RFC-0026. Deployment bursts may coalesce pending checks to the newest release, but must record skipped release coverage and must not mix confirmation evidence from different site versions.
 
-**Warning:** `title-changed`, `description-changed`, `h1-changed`, `internal-links-dropped`, `content-shrunk`, and (phase 3) response time 3 times slower than known-good.
+Paid research is not required for basic HTTP checks. Optional rendering/enrichment has explicit admission and spend limits. Worker, storage, notifications, and support still have costs.
 
-Production compares with production, so `X-Robots-Tag` is always checked.
+## 7. Shared rules and confirmation
 
-### 5.7 Confirmation
+Reuse and extend `comparePage`/`compareSite` from RFC-0010 rather than introduce a second drifting rule catalog. Make production-versus-preview policy explicit: production monitoring always checks `X-Robots-Tag`; preview platform exemptions do not apply to production.
 
-1. A blocking finding schedules a confirmation snapshot 5 to 10 minutes later.
-2. Open a regression only when the confirmation shows the same finding.
-3. A `status-regressed` finding needs 2 failed confirmations, 10 minutes apart.
-4. A finding that does not confirm is logged as "transient" and opens nothing.
+First rules cover new noindex/robots restrictions, changed canonical, regressed HTTP status/redirects, missing title/description, invalid JSON-LD, and meaningful sitemap loss. Warnings cover changed title/description/H1, dropped internal links, and content shrinkage. Separate pre-existing problems from newly introduced regressions.
 
-### 5.8 Regressions
+1. A blocking candidate schedules a fresh confirmation 5–10 minutes later; open an incident only if the same finding persists.
+2. An HTTP-status regression requires two failed HTTP confirmations ten minutes apart. A timeout, bot challenge, or unavailable renderer is an unknown check, not proof of a content regression.
+3. A transient candidate records its disposition and opens no incident. A warning can enter review without an urgent alert; changed text is not automatically harmful.
+4. Define a stable fingerprint from project, page/resource, rule, and relevant baseline/evidence version. One active incident per page/resource and rule; new observations update its evidence without repeated alerts.
+5. Intentional non-indexable pages and authorized ignores are scoped, explained, auditable, and expire where appropriate.
 
-`site_regressions`:
+## 8. Incident and cause model
 
-| Column                                           | Type                                                                                              |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| `id`                                             | text primary key                                                                                  |
-| `project_id`                                     | text, FK cascade                                                                                  |
-| `url_path`                                       | text, nullable (null for site-level rules)                                                        |
-| `rule`                                           | text                                                                                              |
-| `severity`                                       | text enum `blocking`, `warning`                                                                   |
-| `detected_at`                                    | text                                                                                              |
-| `last_good_snapshot_id`, `first_bad_snapshot_id` | text, FKs                                                                                         |
-| `suspect_from_sha`, `suspect_to_sha`             | text, nullable                                                                                    |
-| `impact_clicks_28d`                              | integer                                                                                           |
-| `status`                                         | text enum `open`, `repairing`, `repaired`, `accepted`, `dismissed`                                |
-| `resolution`                                     | text enum `restored_by_relay`, `fixed_by_customer`, `accepted_change`, `false_positive`, nullable |
-| `resolved_at`                                    | text, nullable                                                                                    |
+`site_regressions` links project, monitored page/resource, rule/version, last-good and first-bad snapshots, confirmations, severity, detection time, evidence version, optional suspect commits, and nullable analytics exposure. Keep missing click data distinct from zero.
 
-One open regression per page and rule. Blocking regressions on pages with clicks send a notification at once, and appear first in RFC-0018 Next.
+States: `open`, `repairing`, `resolved`, `accepted`, `dismissed`. A resolution records `restored_by_relay`, `fixed_by_customer`, `observed_resolution`, `accepted_change`, or `false_positive`, the evidence, actor when known, and time. RFC-0028 defines verified closure. Keep recurrence as a new incident linked to the previous one.
 
-### 5.9 Cause analysis
+Notify for confirmed blocking incidents on the agreed important pages even when no click count is available. Include evidence, affected scope, priority rationale, and one next action. Analytics informs priority; it does not gate technical truth.
 
-1. When both snapshots carry deployment SHAs and they differ, call the GitHub compare API for the two SHAs.
-2. List the commits and the changed files. Mark files that map to the page (RFC-0004 locator), shared layouts, metadata helpers, `robots` files, `next.config.*` and middleware.
-3. Show the suspect commits with their authors and pull requests.
-4. When no deployment happened between the two snapshots, say: "No deployment happened between the checks. The change likely came from a CMS, a plugin, or a hosting or CDN setting."
+When verified before/after source SHAs exist, compare commits and show mapped page files, layouts/helpers, middleware, robots, and routing configuration as possible causes. Label the attribution as suspected until proven. When no matching deployment is available, say **“No matching deployment was observed; the cause is unconfirmed.”** Do not claim a change happened outside Git merely because a deployment event is missing.
 
-### 5.10 Repair
+## 9. Review, repair, and reporting
 
-**Supported restores:**
+The incident page shows baseline/current/confirmation evidence, coverage freshness, source confidence, and actions: prepare a supported repair, create/copy a ticket, accept an intentional change as baseline, or dismiss with a reason. Existing ticket creation still requires explicit authorization.
 
-| Rule                                                      | Phase | Restore                                                                                         |
-| --------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------- |
-| `title-removed`, `title-changed`                          | 1     | Set the title literal back to the known-good value (RFC-0005 adapters, including helper calls). |
-| `description-removed`, `description-changed`              | 1     | The same for the description.                                                                   |
-| `newly-noindex` from a literal `robots` metadata value    | 2     | Restore the known-good `robots` literal.                                                        |
-| `canonical-changed` from a literal `alternates.canonical` | 2     | Restore the known-good literal.                                                                 |
-| `robots-txt-blocks` from a static `public/robots.txt`     | 2     | Remove only the added disallow line that blocks the page.                                       |
+RFC-0027 supplies the exact source restore and human write approval; RFC-0025 phase 1a supplies customer CI/preview evidence; RFC-0028 verifies the production rule and attributes the resolution. A merge, title substring, or customer attestation alone does not close the incident as a verified Relay repair.
 
-Everything else becomes a ticket with the evidence and the suspect commits.
+RFC-0018 later integrates open incidents, pending repairs, verified resolutions, and quiet-week coverage into its existing view/report. Monitoring can ship with its own page before that integration. Future standing approvals require a separate validated policy rollout and do not change this initial authority model.
 
-**Flow:**
+## 10. Ready-for-other-users checklist
 
-1. Relay prepares a restore proposal of change class `restore_regression`. The diff shows the known-good snapshot as the source of the value.
-2. The RFC-0018 standing approval for this class decides the next step: `prepare` waits for a person, `open_pr` opens the pull request, and `merge` also merges it when branch protection and checks allow.
-3. When the file no longer contains a literal (for example the value is now computed), Relay stops and opens a ticket.
-4. After the deployment, the next snapshot must match the known-good value for the rule. Then the regression becomes `repaired`.
-5. When a customer fixes it first, the next snapshot closes it as `fixed_by_customer`.
+### Phases 1a–1b
 
-### 5.11 Limits and politeness
+- [ ] Protected scope, runs, snapshots, baselines, incident evidence, and conditional version updates exist in both dialects with tenant isolation.
+- [ ] Known-good promotion refuses unhealthy, partial, stale, or unresolved candidates.
+- [ ] Deployment discovery works independently of experiments; daily/manual checks and deduplication work.
+- [ ] Confirmation, transient, unknown, intentional-change, recurrence, and duplicate-event cases behave as specified.
+- [ ] Shared rules distinguish production from preview and pre-existing problems from regressions.
+- [ ] Monitoring/incident views expose coverage and lost coverage; alerts and tickets contain reproducible evidence.
+- [ ] Polling/confirmation latency and request/storage budgets are measured under deployment bursts.
+- [ ] Source causes are qualified; unknown GSC data is not zero and does not suppress important incidents.
+- [ ] User documentation explains protected scope, cadence, supported rules, limits, and permission requirements.
 
-1. At most 2 parallel requests to the site. A 10-second timeout. HTML only, at most 2 MB.
-2. User agent `RelayMonitor/1.0 (+https://relay.playbookmedia.io/docs/monitoring)`.
-3. A per-project daily fetch budget: monitored pages × (1 daily + up to 3 deployments + confirmations).
-4. The checks run in a Trigger.dev task, which posts results to a signed internal endpoint (RFC-0008).
+### Phase 1c and later
 
-### 5.12 User interface
+- [ ] RFC-0027 source-proven title/description repairs pass.
+- [ ] RFC-0025 phase 1a and RFC-0028 acceptance pass before claiming the reviewed repair loop.
+- [ ] Additional canonical/robots/static-file repairs pass adapter-specific acceptance before enablement.
+- [ ] Rendered checks expose unsupported and budget-blocked states and pass their own economics test.
 
-1. Project → **Monitoring**: monitored pages, last check, known-good date, open regressions.
-2. A regression page: the rule, the before and after values, the clicks at risk, the suspect commits, and the actions Restore, Accept as known-good, and Dismiss.
-3. Each page gets a snapshot history (RFC-0024 timeline).
+## 11. Acceptance and completion
 
-## 6. Security
+Use S1 staging or another owner-authorized Next.js staging site for seeded failures; use authorized production sites for passive observation only. Do not introduce noindex headers or other harmful changes on customer production to prove detection.
 
-1. Fetches use the URL policy on every hop, and only the project's own domain.
-2. Restore proposals use the exact-change approval path. Policy actions follow RFC-0018 rules.
-3. Snapshots keep short values and hashes, never full pages.
+Observe the agreed pages for 14 days and review every confirmed finding, recording the sample and false positives. On staging, seed removed metadata, a templated title change, a robots header, canonical/status changes, a transient HTTP failure, an unavailable fetch, and an intentional accepted change. Include a low-traffic/no-analytics page. Confirm the actual polling and confirmation timing rather than asserting a faster SLA.
 
-## 7. Cost
+Pass when every seeded blocking regression is found within the agreed target, transient/unknown cases do not falsely assert a content regression, repeated events produce one incident, accepted changes stay quiet, and lost monitoring coverage is visible. The initial alert-quality target is zero confirmed false blocking findings over the 14-day sample; report counts and exposure, not a generalized guarantee.
 
-No paid providers. Trigger.dev compute per check run, and free GitHub reads.
+For phase 1c, a reviewer authorizes a source-proven metadata repair, the customer's checks pass, the customer merges/deploys, and RFC-0028 verifies resolution. Demonstrate a customer fix arriving first and an unsupported source becoming a useful ticket.
 
-## 8. Alternatives considered
+## 12. Alternatives
 
-1. **Run a full site audit after every deployment.** Too slow and costly. The monitored set covers the pages that bring traffic.
-2. **Alert without repair.** Rejected. Alerts that the customer must handle are easy to cancel.
-3. **Revert the whole suspect commit.** Rejected. A commit usually carries wanted changes too. Restoring one value is safer.
-
-## 9. Ready-for-other-users checklist
-
-### Phase 1
-
-- [ ] `monitored_pages`, `page_snapshots`, `site_snapshots` and `site_regressions` in D1 and Postgres, with the parity test.
-- [ ] Monitored set selection with the plan limit (tests).
-- [ ] Shared `compareSnapshots` used by RFC-0010 and this RFC (one test per rule).
-- [ ] Known-good rules, including the 24-hour rule and "Accept as known-good" (tests).
-- [ ] `deployment-watch` and daily tasks, with the 10-minute start target.
-- [ ] Confirmation rules (tests for transient and confirmed findings).
-- [ ] Cause analysis with the compare API, and the "outside Git" message (tests).
-- [ ] Title and description restores through the RFC-0005 adapters (tests, including helper calls).
-- [ ] Repair flow under each RFC-0018 level (tests).
-- [ ] Monitoring page and regression page.
-- [ ] Immediate notification for blocking regressions on pages with clicks.
-- [ ] `content/docs/monitoring.mdx`.
-
-### Phase 2
-
-- [ ] Robots meta, canonical and static `robots.txt` restores (tests).
-- [ ] App webhooks for deployments.
-
-### Phase 3
-
-- [ ] Rendered checks for flagged pages, and the response-time rule.
-
-## 10. Real-site acceptance test
-
-### Phase 1
-
-**Sites:** S1 (the staging deployment as a monitored site, deployed by the monorepo pipeline) and S3 (Relay production, for a change outside Git).
-
-**Steps:**
-
-1. Monitor S1 staging and S3 production for 14 days with no seeded change. Record every regression.
-2. On S1 staging, deploy a commit that removes one page's meta description and changes another page's title.
-3. On S3, add a Cloudflare response header rule that sends `X-Robots-Tag: noindex` on one test path. Remove it after the check.
-4. Set `open_pr` for `restore_regression` on S1. Let Relay restore the description.
-5. Accept the title change as known-good.
-
-**Pass when:**
-
-- The 14 quiet days produce 0 confirmed blocking regressions.
-- The S1 regressions open within 15 minutes of the staging deployment, with the right suspect commit.
-- The S3 regression opens at the next daily or manual check, with the "outside Git" cause.
-- The restore pull request changes only the description literal back to the known-good value.
-- After deployment, the regression becomes `repaired` with no click.
-- The accepted title closes as `accepted`, and later checks stay quiet.
-
-**Value check:** a release breaks a page, and Relay repairs it before the customer notices.
-
-## 11. Completion criteria
-
-**Detection**
-
-- 100% of seeded blocking regressions are found within 15 minutes of a deployment, or at the next daily check for changes outside Git.
-- 0 confirmed false blocking regressions over 14 days on S1 and S3.
-- At least 90% of transient errors (seeded timeouts and one-off 5xx responses) close without a regression.
-
-**Cause**
-
-- The suspect commit list contains the real commit for every seeded Git regression.
-
-**Repair**
-
-- Every supported restore changes only the regressed literal, and passes the repository's own checks.
-- Every repaired regression is verified by a snapshot that matches known-good.
-
-**Load**
-
-- Fetches stay inside the daily budget, with at most 2 parallel requests to the site.
+Full audits after every release are too broad for bounded protection. Alert-and-ticket delivery is accepted as an initial useful pilot, while reviewed repair is the next value gate. Whole-commit rollback and guesses at rendered-to-source mapping are rejected. Building standing approvals first would add risk and dependencies before validating demand.

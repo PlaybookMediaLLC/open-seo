@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. Speed affects rankings, engagement and conversion.
 - **Depends on:** RFC-0005 (publishing), RFC-0013 (`jsx_attribute` change kind), RFC-0008 (scheduled refresh).
 
+## Current delivery role — October 23, 2026
+
+Implemented specialized performance foundation. Keep field/lab prerequisites explicit; performance expansion follows pilot demand and measured costs.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 The audit stores Lighthouse scores and lab metrics, but Relay does not find the cause of a slow template, does not fix it, and does not measure real users. This RFC adds real-user data from the Chrome UX Report (CrUX), finds templates that fail Core Web Vitals on pages that matter, maps the cause from the stored Lighthouse report, fixes common causes by pull request, and measures the effect in lab and field data.

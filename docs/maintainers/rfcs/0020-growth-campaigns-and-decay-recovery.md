@@ -2,8 +2,9 @@
 
 - **Status:** Draft
 - **Date:** 2026-10-15
-- **Area:** retention, priorities 2 and 3.
-- **Depends on:** RFC-0002 (detectors), RFC-0004 (drafting and investigation), RFC-0005 and RFC-0012 (change kinds), RFC-0017 (Markdown edits), RFC-0018 (weekly queue), RFC-0021 (verified facts), RFC-0024 (history and cool-downs).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 4, after repeat paid demand for release assurance.
+- **Depends on:** Phase 1 uses RFC-0002, RFC-0004, RFC-0005/0012/0017 supported edits, the implemented RFC-0018 queue, RFC-0024 phase 1 history, RFC-0025 phase 1a previews, and RFC-0028 verification. Phase 2 additionally requires RFC-0021 phase 0 (verified facts), not its new-page publisher.
 
 ## 1. Summary
 
@@ -11,17 +12,17 @@ Single opportunities come and go. Growth on existing pages comes from steady wor
 
 ## 2. What exists today
 
-| Part          | Location                                                                     | Use in this RFC                                      |
-| ------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Detectors     | RFC-0002 (`striking_distance`, `low_ctr`, `internal_link`, `declining_page`) | Campaign candidates.                                 |
-| Investigation | RFC-0004 phase 3                                                             | Cause of a decline.                                  |
-| Change kinds  | RFC-0005 (metadata), RFC-0012 (`copy_text`), RFC-0017 (`markdown`)           | How campaign steps ship.                             |
-| Conversion    | RFC-0012                                                                     | Conversion path steps.                               |
-| Weekly queue  | RFC-0018                                                                     | Where campaign steps appear.                         |
-| Facts         | RFC-0021 `business_facts`                                                    | The only source for new claims in refreshed content. |
-| History       | RFC-0024                                                                     | Cool-downs and no-repeat rules.                      |
+| Part                                                  | Location                                                                     | Use in this RFC                                      |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Detectors                                             | RFC-0002 (`striking_distance`, `low_ctr`, `internal_link`, `declining_page`) | Campaign candidates.                                 |
+| Investigation                                         | RFC-0004 phase 3                                                             | Cause of a decline.                                  |
+| Change kinds                                          | RFC-0005 (metadata), RFC-0012 (`copy_text`), RFC-0017 (`markdown`)           | How campaign steps ship.                             |
+| Conversion                                            | RFC-0012                                                                     | Conversion path steps.                               |
+| Weekly queue                                          | RFC-0018                                                                     | Where campaign steps appear.                         |
+| Facts (phase 2 prerequisite, planned)                 | RFC-0021 phase 0 `business_facts`                                            | The only source for new claims in refreshed content. |
+| History (partial foundation; extend before campaigns) | RFC-0024                                                                     | Cool-downs and no-repeat rules.                      |
 
-Today, internal links and content refreshes end as tickets or briefs. They do not ship.
+Individual supported copy/Markdown edits exist, but campaign orchestration, new-link insertion, and the decay recovery lifecycle in this RFC are not implemented. Phase 1 can use existing factual content without a facts registry; phase 2 factual refreshes require RFC-0021 phase 0.
 
 ## 3. Goals
 
@@ -101,7 +102,7 @@ For each `content_decay` item, Relay builds an ordered plan. It ships each step 
 
 1. **Check for a technical cause first.** Read the page's snapshot history (RFC-0019) for changes near the start of the decline. When one exists, propose a restore or a ticket, and stop the plan.
 2. **Query coverage.** Compare the page's queries now and at the peak (2 free requests). List queries that lost clicks and whose terms do not appear in the page text.
-3. **Content refresh step.** Draft one new or updated section that answers the lost queries:
+3. **Content refresh step (phase 2).** Draft one new or updated section that answers the lost queries:
    - Sources: the page's own text, project context, and verified facts (RFC-0021).
    - Every claim needs a source. A missing fact becomes a placeholder that blocks approval.
    - Ship it as a `markdown` or `copy_text` edit.
@@ -170,14 +171,14 @@ Search Console requests are free. Drafts cost model credits.
 1. Run decay detection on S2 with 16 months of data. The owner reviews every decaying page against the Search Console chart.
 2. Start a `search_snippets` campaign on S2 with a limit of 2 open changes. Run it for 4 weekly cycles.
 3. Start an `internal_links` campaign on S3 docs. Ship 3 link insertions.
-4. Run a recovery plan on one decaying page, through the coverage step and one refresh step.
+4. In phase 1, run a recovery plan through technical diagnosis, query coverage, and an eligible snippet/link step. In phase 2, extend it through one facts-backed refresh step.
 
 **Pass when:**
 
 - The owner agrees that at least 4 of 5 decaying pages really decayed, and the seasonal skip is right where it applies.
 - The campaign never has more than 2 open changes, and it reports idle weeks with reasons.
 - Each link insertion changes one sentence, and the MDX builds.
-- The refresh step uses only sourced claims, and it cannot be approved while a placeholder remains.
+- In phase 2, the refresh step uses only sourced claims and cannot be approved while a placeholder remains.
 - The campaign page shows changed and unchanged pages over the same weeks.
 
 **Value check:** the owner sees steady, limited work on the pages that matter, and a concrete plan for pages that slowly lose traffic.
@@ -186,6 +187,6 @@ Search Console requests are free. Drafts cost model credits.
 
 - Decay precision: at least 80% of flagged pages confirmed by the owner. 0 flagged pages with a matching year-earlier drop.
 - Link insertion: 10 of 10 edits change only the target sentence. 0 links inside headings, code or existing links.
-- Refresh drafts: 0 unsourced claims across 10 drafts.
+- Phase 2 refresh drafts: 0 unsourced claims across 10 drafts.
 - Campaign limits: 0 weeks above the open-change limit.
 - At least 1 campaign step ships each week on S2 or S3 during the 4-week test, or the idle reason is recorded.

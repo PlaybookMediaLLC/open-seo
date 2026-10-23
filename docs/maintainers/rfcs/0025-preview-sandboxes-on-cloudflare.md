@@ -1,18 +1,21 @@
 # RFC-0025: Preview sandboxes on Cloudflare
 
-- **Status:** Draft
+- **Status:** Draft. Existing CI checks can inspect a supplied preview; proposal-bound customer-preview orchestration and Relay-owned builds are not implemented.
 - **Date:** 2026-10-15
-- **Area:** execution safety. Every change that Relay proposes should build and render before anyone approves it.
-- **Depends on:** RFC-0005 (GitHub App tokens and proposals), RFC-0008 (tasks), RFC-0009 (encryption key, audit log, limits), RFC-0010 and RFC-0015 (checks against a preview), RFC-0018 (standing approvals).
+- **Delivery order updated:** 2026-10-23
+- **Area:** stage 2 customer-preview checks first; Relay-owned builds deferred until demand and isolation are proven.
+- **Depends on:** RFC-0005 proposal/execution and GitHub access, RFC-0008 jobs, RFC-0009 controls, RFC-0010/0015 checks. RFC-0027 supplies incident proposals. No dependency on RFC-0018 standing approvals; those later consume passed previews.
 
 ## 1. Summary
 
-Relay opens pull requests against customer code. Today it validates a change only statically: it parses the file and checks the literal it changed. It never builds the site, so a change can still break the build or render differently than expected. Standing approvals (RFC-0018) and automatic restores (RFC-0019) make this gap more important.
+Relay opens pull requests against customer code. Today it validates a change only statically: it parses the file and checks the literal it changed. It never builds the site, so a change can still break the build or render differently than expected. The proposed release-assurance repair loop needs this evidence even while every write and merge remains human reviewed.
 
-This RFC adds a preview for every Relay change, on Cloudflare:
+This RFC first connects a Relay proposal to checks on the customer's own preview for the exact commit. A later slice may build and serve previews on Cloudflare:
 
 - **Path A:** when the customer's platform already builds previews (Vercel, Netlify, Cloudflare Pages or Workers Builds), Relay uses them.
 - **Path B:** otherwise Relay builds the change itself in an isolated Cloudflare Container, serves the result from Workers for Platforms or from the container, checks it against production, and removes it afterwards.
+
+The initial service uses **phase 1a, Path A only**. Phase 0 is a later feasibility gate for Relay-owned builds, not a prerequisite for customer previews. A person authorizes the exact branch/PR write before it triggers customer CI. Preview success then informs the separate customer merge decision. No standing approval or automatic merge is required.
 
 ## 2. What exists today
 
@@ -35,7 +38,7 @@ This RFC adds a preview for every Relay change, on Cloudflare:
 
 ## 3. Goals
 
-1. Show "Verified on a preview" on a proposal before a person approves it.
+1. Show "Verified on a preview" only for the exact tested proposal/commit, before the customer approves merge. Initial branch/PR write approval is a separate preceding action.
 2. Use the customer's own previews when they exist. Build only when they do not.
 3. Run customer code only in containers, with no secrets inside.
 4. Serve previews on a separate domain, never indexed, behind a signed link.
@@ -53,30 +56,34 @@ This RFC adds a preview for every Relay change, on Cloudflare:
 
 ### 5.1 Phases
 
-| Phase | Delivers                                                                                                                                                      |
-| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | A spike that confirms the open questions in 5.12.                                                                                                             |
-| 1     | Path A detection and use. Path B for Cloudflare-ready output (static sites and OpenNext builds) served from Workers for Platforms. Verification and teardown. |
-| 2     | Path B for Node server output, served from the container. A per-project dependency cache.                                                                     |
-| 3     | Previews for any pull request, as part of the RFC-0015 release gate.                                                                                          |
+| Delivery order / phase | Delivers                                                                                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| First: 1a              | Path A only: approved branch/PR, customer preview bound to its head commit, required CI checks, rendered postcondition, explicit failed/unavailable/stale states. No Relay build infrastructure. |
+| Later: 0               | Isolation, framework, runtime, outbound control, teardown, and cost spike from 5.12, only if customer demand warrants Path B.                                                                    |
+| After 0: 1b            | Path B for static/OpenNext output, verification, access controls, and teardown.                                                                                                                  |
+| 2                      | Path B Node-server output and per-project dependency cache.                                                                                                                                      |
+| 3                      | Broader pull-request preview hosting through the release gate, if demand justifies it.                                                                                                           |
 
 ### 5.2 Choosing the path
 
 Store `preview_mode` per publishing connection: `customer_platform`, `relay_build` or `none`.
 
 1. **Detect.** Read the deployments of the last 10 pull requests in the repository. When pull request head commits have successful deployments with an `environment_url` in a non-production environment, set `customer_platform`.
-2. Otherwise, when the build checks in 5.4 pass in a trial build, set `relay_build`.
+2. Only after phase 0/1b acceptance and owner opt-in, when the build checks in 5.4 pass, offer `relay_build`. Phase 1a never falls back to Relay-owned execution.
 3. Otherwise set `none`, with the reason (for example "The app needs bindings that a preview cannot provide").
 4. Owners can change the mode. Every change writes an audit event.
 
 ### 5.3 Path A: the customer's previews
 
-1. After Relay pushes its branch, wait for a successful deployment status for the head commit with an `environment_url`.
-2. Wait at most 30 minutes. Then mark the preview "not available" and, when allowed, fall back to Path B.
-3. Use the RFC-0010 protected-preview access methods (a bypass header or a Cloudflare Access service token).
-4. For checks before a pull request exists, Path A needs a branch. Relay pushes its branch, but opens the pull request only after the preview passes. The branch name stays the deterministic RFC-0005 name.
+1. After explicit approval of the exact proposal's branch/PR write, use the existing publisher to create that branch and PR. This is compatible with platforms that only build after a PR opens. Do not push a branch before authorization merely to obtain a preview.
+2. Wait at most 30 minutes for the customer's successful deployment status for the exact head SHA and a non-production preview URL. Validate repository/environment ownership and allowed URL targets; never trust an arbitrary status URL as production or as authorization to send credentials.
+3. Reuse RFC-0010 protected-preview access, required CI checks, and RFC-0010/0015 rules. Verify the proposed rendered field, accounting for supported templates/helpers and preview-specific noindex policy. A build status alone is not a rendered verification.
+4. Store proposal fingerprint, repository, source/head SHA, deployment identity/URL, CI check references, rule result, observed time, and expiry. Extend normalized preview records for external builds without requiring sandbox configuration or R2 logs.
+5. Any changed proposal/base/head, newer preview, expired result, revoked connection, failed required check, or unavailable render invalidates readiness. Show `pending`, `passed`, `failed`, `unavailable`, or `stale` with evidence and the next action. Never present unknown as passed.
+6. If no customer preview is available, keep the finding/PR and explain the unsupported verification path. The customer retains GitHub authority, but Relay does not label it preview-verified or count it as an accepted preview-gated repair. An explicitly supported manual evidence path must be labeled separately.
+7. The customer reviews and merges; production verification is RFC-0028. Customer-hosted preview cleanup remains with that platform. Relay expires its references and revokes any access material it owns.
 
-### 5.4 Path B: the build pipeline
+### 5.4 Path B: the build pipeline (deferred phase 1b)
 
 A separate Worker, `relay-preview`, owns the pipeline. Like the audit Worker, it gets only the secrets it needs: the GitHub App key for read tokens, the R2 binding, the Sandbox binding and the Workers for Platforms API token. It runs each build as a Cloudflare Workflow.
 
@@ -108,7 +115,7 @@ A separate Worker, `relay-preview`, owns the pipeline. Like the audit Worker, it
 8. Limits: 15 minutes per build, and the instance size chosen in the spike. Stop the container at the limit.
 9. Keep the last 200 log lines in R2 for 7 days. Mask every preview value in them. Store a short error summary on the build row.
 
-**Step 3: publish (phase 1).**
+**Step 3: publish (phase 1b).**
 
 1. Upload the output as a user Worker in the dispatch namespace `relay-previews`, named `p-{project}-{build}`, with static assets.
 2. Give it no bindings except its assets. Use the compatibility date and flags from the customer's Wrangler file when one exists.
@@ -169,11 +176,11 @@ Add `preview_mode` and `preview_mode_reason` to `publishing_connections`.
 
 ### 5.9 Changes to other RFCs
 
-1. **RFC-0005:** the proposal panel offers "Build preview" before approval, and the approval view shows the result. When previews are not available, a person can still approve, with a warning.
-2. **RFC-0018:** standing approvals at `open_pr` for content classes (`meta_description`, `meta_title`, `alt_text`, `html_lang`, `internal_link`) need a passed preview. `restore_regression` can open a pull request without one, because it restores a value that was live before. `merge` always needs a passed preview when the project supports previews.
-3. **RFC-0010 and RFC-0015:** Relay-built previews are valid targets for the checks.
-4. **RFC-0019:** restores build a preview before the pull request opens, when the mode allows it.
-5. **RFC-0021:** a new page must render on a preview before approval.
+1. **RFC-0005/0027:** preserve explicit authorization for the initial branch/PR write. Show exact-commit preview status before the customer's merge decision. Missing previews remain explicit.
+2. **RFC-0018:** deferred policies consume preview evidence; previews do not depend on policies. No restore exception permits automatic merging without current passed evidence.
+3. **RFC-0010/0015:** reuse existing check runners and rule packs, with exact proposal/commit linkage.
+4. **RFC-0019/0028:** preview checks establish readiness; only subsequent production checks establish repair resolution.
+5. **RFC-0021:** later new pages must render before approval to merge; preliminary repository writes still require authorization.
 
 ### 5.10 Limits and plans
 
@@ -199,13 +206,15 @@ Builds use RFC-0009 admission, so a project limit stops them before they start.
 Confirm, and record in the PR:
 
 1. The current Container instance sizes and prices. A Next.js build needs about 2 to 4 GB of memory.
-2. Whether Containers can limit outbound network access. When they cannot, keep the sandbox free of secrets and accept open outbound access during builds.
+2. Whether Containers can enforce the required isolation and outbound controls. If trusted-network isolation or abuse/cost bounds cannot be demonstrated, do not enable Path B; retain customer previews. An absence of injected secrets alone does not prove safe execution.
 3. The Sandbox SDK methods for files, commands and ports, and the sleep setting.
 4. That an OpenNext build deploys to Workers for Platforms with static assets, and that a static site does too.
 5. Build time and cost for S1 (`PlaybookMediaLLC/monorepo`, root `apps/www`).
 6. The Workers for Platforms plan needed, and its limits on user Workers.
 
 ## 6. Security
+
+For phase 1a, validate the preview URL and redirects, scope bypass credentials to the configured host, recheck tenant/repository authorization, and bind results to the exact head commit. The following container/serving requirements apply when Path B is enabled.
 
 1. Customer code and its install scripts run only in containers, never in Relay's Workers.
 2. No Relay secret, GitHub token or production value enters a container. The source arrives through expiring R2 links.
@@ -216,6 +225,8 @@ Confirm, and record in the PR:
 
 ## 7. Cost
 
+Phase 1a uses customer CI compute plus bounded GitHub reads and Relay check/render costs. Paid checks retain RFC-0009 admission; disclose the cost and unavailable states. There is no Relay container/build cost in that slice.
+
 Container time per build, Workers for Platforms requests for previews, and small R2 storage. The spike records the median and 95th-percentile cost per build. Plans set their build allowance from it.
 
 ## 8. Alternatives considered
@@ -224,31 +235,35 @@ Container time per build, Workers for Platforms requests for previews, and small
 2. **Build on Trigger.dev machines.** Possible, but the serving side would still need Cloudflare, and the owner prefers one platform.
 3. **One Cloudflare Pages project per customer.** Simple for static sites, but Pages projects per account are limited, and the URLs share `pages.dev`. Workers for Platforms fits many tenants better.
 4. **Serve previews from Relay's main Worker or domain.** Rejected. Untrusted code must not run on Relay's domain.
-5. **Only static validation.** Rejected now that standing approvals and restores can act without a click.
+5. **Only static validation.** Insufficient for a preview-verified repair: a parsed edit may still fail the build or render differently. Initial repairs remain human reviewed.
 
 ## 9. Ready-for-other-users checklist
 
-### Phase 0
+### Phase 1a: customer previews first
 
-- [ ] Spike results for every item in 5.12, recorded in the PR.
-- [ ] Preview domain registered on Cloudflare.
+- [ ] Normalize external preview identity, proposal fingerprint, exact commit, check references, result, and expiry in both database dialects.
+- [ ] Explicit approval precedes branch/PR creation; no preview discovery bypasses write authorization.
+- [ ] Detect the correct repository, head SHA, non-production deployment, and allowed URL; support the existing protected-preview access method.
+- [ ] Required build/CI and rendered/rule checks show passed, failed, unavailable, or stale results accurately.
+- [ ] Changes to proposal/head/base, revoked permissions, expired checks, and duplicate events invalidate or deduplicate correctly.
+- [ ] The review surface links exact evidence and distinguishes preview readiness from production verification.
+- [ ] No-preview sites receive a useful finding and explicit unsupported/manual status; no automatic sandbox fallback.
+- [ ] Phase 1a acceptance and user documentation complete without a container, preview domain, or standing-approval setting.
 
-### Phase 1
+### Phase 0: later Path B feasibility gate
 
-- [ ] `preview_builds`, `preview_verifications`, `preview_env_vars` and the connection columns in D1 and Postgres.
-- [ ] Mode detection from recent pull request deployments (tests).
-- [ ] Path A wait, timeout and fallback (tests).
-- [ ] `relay-preview` Worker with only its listed secrets.
-- [ ] Source step with a read-only, one-repository token that never reaches the container (test).
-- [ ] Builder image, lockfile rules, framework detection and the 15-minute limit (tests with fixture repositories).
-- [ ] Publish to Workers for Platforms with assets and no bindings, and the refusal for apps that need bindings (tests).
-- [ ] Dispatch Worker with signed access, `noindex`, `no-store` and the outbound Worker (tests).
-- [ ] Verification with the RFC-0010 rules and the render check.
-- [ ] Teardown on close, merge and expiry, and the daily sweep (tests).
-- [ ] Proposal panel and approval view show the preview result.
-- [ ] RFC-0018 policy rule for content classes enforced (test).
-- [ ] Canary security test passes.
-- [ ] `content/docs/previews.mdx`.
+- [ ] Spike results for every item in 5.12, including bounded cost, isolation, and the go/no-go decision.
+- [ ] Preview domain and access design verified before enabling hosted customer code.
+
+### Phase 1b: Relay-owned builds (deferred)
+
+- [ ] `preview_builds`, `preview_verifications`, `preview_env_vars`, and connection columns complete for hosted builds in D1 and Postgres.
+- [ ] Separate preview Worker with minimal secrets; no GitHub credential reaches the build container.
+- [ ] Pinned builder, lockfile/framework limits, request/compute bounds, and refusal of unsupported bindings.
+- [ ] Separate-domain serving, signed access, `noindex`, `no-store`, outbound controls, and canary test pass.
+- [ ] Exact-overlay/commit verification and explicit authorization before any repository write.
+- [ ] Teardown on merge, close, expiry, cancellation, and failure; reconciliation sweep and cost reporting.
+- [ ] Proposal view and hosted-preview documentation match actual supported frameworks and limits.
 
 ### Phase 2
 
@@ -261,13 +276,19 @@ Container time per build, Workers for Platforms requests for previews, and small
 
 ## 10. Real-site acceptance test
 
-### Phase 1
+### Phase 1a
+
+Use an authorized Next.js repository whose customer platform builds PR previews. Prepare a source-mapped repair, approve the exact branch/PR write, and confirm Relay finds the preview for that head SHA. Run the repository's required checks and verify the intended rendered value. Change the PR head and ensure the old result becomes stale. Test a failed build, missing preview, wrong SHA/environment, revoked access, and protected-preview access; none may appear passed or leak a bypass credential. No Relay-owned build or standing policy is required.
+
+Pass when the reviewer can trace proposal → approved write → exact commit → preview/check result, and only a current passing result is labeled verified on preview. After the customer merges, RFC-0028 independently establishes production resolution.
+
+### Phase 1b (deferred)
 
 **Sites:** S1 for Path B (OpenNext on Cloudflare), a Vercel test repository for Path A, and S3 for the refusal and the protected Path A.
 
 **Steps:**
 
-1. On S1, prepare a description proposal. Build its preview before opening the pull request.
+1. On S1 staging, prepare a description proposal and build its overlay preview without a repository write. Obtain exact-change authorization before any later branch/PR creation.
 2. Open the preview link. Check the page and its headers.
 3. Seed a second S1 proposal that breaks the build (an invalid literal in a copied file on a test branch). Build it.
 4. On the Vercel test repository, let Relay open a pull request and use the platform preview.
@@ -279,15 +300,24 @@ Container time per build, Workers for Platforms requests for previews, and small
 
 - The S1 preview builds, renders the new description, and passes the RFC-0010 rules.
 - The preview responds with `noindex` and `no-store`, and returns 404 without the signed link.
-- The broken proposal fails with a clear build error, and no pull request opens under a standing approval.
+- The broken proposal fails with a clear build error and cannot be presented as ready for merge. Any later policy feature must obey the same failure result.
 - Relay uses the Vercel preview with no build of its own.
 - S3 reports that its previews come from its own platform, or that a Relay build is not possible, with the reason.
 - The canary finds no secret.
 - The S1 preview disappears within 1 hour of closing the pull request.
 
-**Value check:** the customer sees their own site, with Relay's change applied and checked, before anyone approves it.
+**Value check:** the customer sees their site with the exact change applied and checked before deciding to merge it. Authorization for preliminary branch/PR writes remains explicit.
 
 ## 11. Completion criteria
+
+**Phase 1a**
+
+- Every passed result names the exact tested proposal/commit, build/check evidence, and rendered postcondition.
+- Failed, unavailable, stale, and unauthorized cases never display as passed; no repository write precedes authorization.
+- A broken change is caught before merge on an authorized test repository.
+- Customer-preview wait/check latency and paid check cost are measured; timeout is visible and bounded.
+
+The hosted-build reliability, speed, isolation, and teardown criteria below apply to phase 1b/2 and are not phase-1a prerequisites. Policy criteria apply only if the deferred RFC-0018 feature is enabled.
 
 **Reliability**
 
@@ -307,5 +337,5 @@ Container time per build, Workers for Platforms requests for previews, and small
 
 **Effect**
 
-- 0 pull requests opened under a standing approval for content classes without a passed preview.
-- At least 1 broken change is caught by a preview build before it reaches a pull request during the test.
+- 0 policy-driven merges without current passed preview and required checks; any preliminary policy-authorized branch/PR write is explicitly scoped and never labeled verified before the checks pass.
+- At least 1 broken change is caught by a preview build before merge during the test.

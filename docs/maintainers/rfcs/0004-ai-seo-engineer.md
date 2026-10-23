@@ -5,6 +5,12 @@
 - **Brief section:** 5 (Feature C)
 - **Depends on:** RFC-0001 (B2, the model key) and RFC-0005 phase 1a (route groups and metadata helper calls, needed to read the current description on real sites). Phase 3 briefs use RFC-0002 content gaps.
 
+## Current delivery role — October 23, 2026
+
+Implemented investigation/drafting foundation. Use deterministic known-good restoration first; broader generated content remains stage 5.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Today the user finds the page file and writes the new description by hand. The AI assistant and the MCP server cannot see saved opportunities, proposals or results. This RFC makes the system draft the change, find the file, and expose the growth workflow to agents, without giving agents approval or write power.

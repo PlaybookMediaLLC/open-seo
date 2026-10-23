@@ -1,91 +1,73 @@
-# OpenSEO
+# Relay
 
-> Open source alternative to Semrush and Ahrefs
+**Website release assurance and organic growth automation by Playbook Media LLC.**
 
-OpenSEO is an SEO tool for _the people_. If tools like Semrush or Ahrefs are too expensive or bloated, OpenSEO is a pay-as-you-go alternative that you actually control.
+Relay is being built to protect and grow organic acquisition for developer-led B2B SaaS teams. It connects website evidence, reviewable GitHub changes, production verification, and outcome measurement through the tools a team already uses.
 
-> All-in-one SEO tool for you and your AI agent.
+[Hosted Relay](https://relay.playbookmedia.io) · [Company](company.md) · [Vision](vision.md) · [RFC delivery plan](docs/maintainers/rfcs/README.md)
 
-Connect with any agent like Claude Code, OpenClaw or Hermes. We have pre-built skills, but you can build your own to tailor OpenSEO to your needs.
+Relay is an MIT-licensed, upstream-tracking fork of [OpenSEO](https://github.com/every-app/open-seo). We retain its SEO research foundation and attribution while building the release-assurance workflow. Internal package names, plugin directories, and upstream setup guides may still use OpenSEO.
 
-<img width="100%" alt="openseo-keyword-research" src="https://github.com/user-attachments/assets/8ebdc439-3e72-41ab-8bde-8cda771ef2e8" />
+## Current capabilities
 
-## Hosted Version
+The repository includes:
 
-Try OpenSEO for free on our website. If you want to support the project, a hosted subscription is $10/month.
+- Keyword research, rank tracking, backlink analysis, technical site audits, AI visibility, and DataForSEO integration.
+- Search Console and GA4 connections, evidence-backed opportunities, investigations, and draft preparation.
+- [Reviewed GitHub proposals](docs/GITHUB_PUBLISHING.md) for supported Next.js metadata and other narrowly supported edits. A person authorizes the exact change; Relay opens a pull request. Customer review, merge, and deployment remain under their control.
+- [Experiments and results](docs/EXPERIMENTS.md), deployment signals, scheduled measurement, and before/after search and conversion observations.
+- SEO and release-quality checks against supplied previews, accessibility and performance workflows, page-group tests, and Stripe attribution subject to their setup and data requirements.
+- Scheduled jobs, notifications, spending limits, activity records, and a weekly work view and monthly report.
 
-[openseo.so](https://openseo.so)
+See [Opportunities](docs/OPPORTUNITIES.md) for the existing review workflow. Implementation and historical smoke tests do not establish a fully validated paid release-assurance service. The [codebase audit](docs/maintainers/relay-release-assurance-audit.md) records the current boundaries.
 
-## Why use OpenSEO?
+## What we are building next
 
-- Best in class MCP and AI Skills.
-- Modern, simple UI.
-  - Focused workflows instead of a bloated, complex SEO suite.
-- No subscriptions.
-  - Bring your own DataForSEO API key and pay only for what you use.
-- Fork and vibe code your own custom tool.
+The first product protects a small set of important pages on GitHub-managed Next.js websites:
 
-## Main SEO Workflows
+1. Establish known-good production snapshots and confirm release regressions.
+2. Map a confirmed problem to a supported source edit and prepare a narrow repair.
+3. Check the proposed commit through the customer's preview and CI process.
+4. After customer approval, merge, and deployment, rerun the original production check.
+5. Report coverage, verified resolutions, approvals, and subsequent outcomes.
 
-- [Opportunities](docs/OPPORTUNITIES.md): review evidence-backed Search Console opportunities before preparing changes.
-- [GitHub metadata proposals](docs/GITHUB_PUBLISHING.md): review a static Next.js description change and explicitly authorize its pull request. No auto-merge or deployment.
-- [Experiments and results](docs/EXPERIMENTS.md): confirm a merged change reached production and compare Search Console results before and after it.
-- Keyword research
-- Rank tracking
-- Competitor Insights
-- Backlinks
-- Site Audits
-- AI Visibility
+Persistent production monitoring, incident-based repair proposals, proposal-bound previews, and general repair verification are planned work. Current deployment checks compare titles and descriptions; broader edits may require human deployment attestation and feature-specific checks. Static route and literal-edit limits apply; dynamic routes, arbitrary CMS writes, and universal framework support are not implied.
 
-## OpenSEO MCP & Agent Skills
+The [ordered RFC plan](docs/maintainers/rfcs/README.md) delivers this in useful increments. Standing approvals, automatic merging, broad content generation, and portfolios are deferred until customer demand and reliability justify them.
 
-OpenSEO exposes an MCP server so AI agents like Claude Code, OpenClaw, and Hermes can use your SEO data directly. Agent Skills are reusable workflows that guide your agent through SEO tasks using the MCP.
+## Hosted plans and usage
 
-- [Set up ChatGPT web or desktop](https://openseo.so/docs/chatgpt) (works on Free and paid ChatGPT plans)
-- [Set up Codex](https://openseo.so/docs/codex-plugin)
-- [Set up OpenSEO MCP](https://openseo.so/docs/mcp)
-- [Set up OpenSEO Agent Skills](https://openseo.so/docs/skills/setup)
+Use [Relay](https://relay.playbookmedia.io). Repository configuration defines a free research tier with $1 in monthly usage credits and a $10/month Base Plan with $10 in monthly credits, plus paid top-ups. Paid research consumes credits.
 
-## Self-Hosting
+Release-assurance pricing of **$79–$149 per protected website per month** is a pilot hypothesis, not an available plan promised by this README. Scope and economics are defined in [company.md](company.md) and [RFC-0026](docs/maintainers/rfcs/0026-protected-site-pilots-and-service.md).
 
-OpenSEO supports two self-hosting paths:
+Self-hosted users supply their own provider credentials and pay their providers and hosting directly. See the [DataForSEO API key guide](docs/DATAFORSEO_API_KEY.md).
 
-- **Simple: Docker (Best for testing it out)** - For personal use on your own machine. See [`docs/SELF_HOSTING_DOCKER.md`](./docs/SELF_HOSTING_DOCKER.md).
-  - Unless you already are self-hosting other apps and are confident doing so, we recommend self-hosting with Cloudflare as opposed to Railway, Coolify or Dokploy.
-  - We plan to make it simpler to host on those platforms in the next few months.
-- **Recommended: Cloudflare** - For internet-facing self-hosting across multiple devices or with your team (works on the free plan). See [`docs/SELF_HOSTING_CLOUDFLARE.md`](./docs/SELF_HOSTING_CLOUDFLARE.md).
+## MCP and agent skills
 
-Either way, you need a DataForSEO API key to get SEO data. See [`docs/DATAFORSEO_API_KEY.md`](./docs/DATAFORSEO_API_KEY.md).
+The inherited MCP server and skills expose SEO research and supported growth workflows to agents. Growth tools can read evidence and draft within their permissions; they do not grant approval, merge, or deployment authority.
 
-## Costs
+This fork's [bundled MCP configuration](plugins/openseo/.mcp.json) points to `https://relay.playbookmedia.io/mcp`. Plugin branding and parts of the [plugin README](plugins/openseo/README.md) still use OpenSEO. The [upstream MCP setup guide](https://openseo.so/docs/mcp) explains client setup; use the Relay endpoint above, or your self-hosted endpoint and its supported authentication.
 
-OpenSEO needs a [DataForSEO](https://dataforseo.com/?aff=255379) API key so that you can get SEO data. You pay them directly when self hosting.
+## Self-hosting
 
-See [openseo.so/pricing](https://openseo.so/pricing)
+- [Docker](docs/SELF_HOSTING_DOCKER.md): try the application on your own machine.
+- [Cloudflare](docs/SELF_HOSTING_CLOUDFLARE.md): internet-facing deployment for a team or multiple devices.
+- [Local Postgres](docs/LOCAL_POSTGRES.md): the optional database backend; D1/SQLite remains supported.
 
-When you self host, your costs will be slightly lower than the estimates on our website. The way the hosted service makes money is by charging 28% extra for every request we make to DataForSEO.
+Feature availability depends on configured integrations, credentials, and deployment bindings. Read the guides before exposing a local instance to the internet.
 
-## Local Development
+## Development and contributing
 
-See [`docs/LOCAL_DEVELOPMENT.md`](./docs/LOCAL_DEVELOPMENT.md).
-
-## Contributing
-
-Creating clear issues is the best way to contribute.
-
-Read more here: [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md)
-
-We have this skill: `/simple-issue-description` which helps.
+Follow [Local Development](docs/LOCAL_DEVELOPMENT.md) for Node, the pinned pnpm version, environment configuration, and local database migrations. Common commands after setup:
 
 ```sh
-npx skills add every-app/open-seo --skill simple-issue-description
+pnpm dev
+pnpm test
+pnpm types:check
+pnpm format:check
 ```
 
-## Community
+Read [AGENTS.md](AGENTS.md), the [contribution guide](docs/CONTRIBUTING.md), and the [maintainer documentation](docs/maintainers/README.md). The [RFC index](docs/maintainers/rfcs/README.md) separates implemented foundations, live acceptance work, and future product increments.
 
-Join Discord to chat: [Discord](https://discord.gg/c9uGs3cFXr)
-
-Follow along for updates:
-
-- Follow on X: https://x.com/bensenescu
-- Sign up for the mailing list on our website: [openseo.so](https://openseo.so)
+Keep upstream core improvements and Playbook UI seams compatible with the fork's sync policy. See [LICENSE](LICENSE) for the MIT license and upstream copyright.

@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. Close the loop from search click to revenue.
 - **Depends on:** RFC-0008 (scheduled sync), RFC-0009 (encryption key, audit log). Uses RFC-0002 scoring and RFC-0006 results.
 
+## Current delivery role — October 23, 2026
+
+Implemented optional revenue foundation. Legal, consent, key, and live acceptance follow-ups still apply. Revenue attribution is not a prerequisite for technical protection or proof of causal lift.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Relay measures clicks, sessions and GA4 key events. It cannot say which landing pages and which changes produced paying customers. This RFC adds a small first-party attribution snippet, a read-only Stripe connection, and revenue by first-touch landing page and channel. Revenue then feeds opportunity priority and experiment results, with clear limits. Relay stores no customer names or emails.

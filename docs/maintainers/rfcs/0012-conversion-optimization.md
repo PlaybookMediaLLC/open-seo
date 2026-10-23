@@ -5,6 +5,12 @@
 - **Area:** beyond SEO. Visitors that search brings must become customers.
 - **Depends on:** RFC-0004 (drafting), RFC-0005 (publishing), RFC-0006 (measurement), RFC-0011 (split tests, phase 2).
 
+## Current delivery role — October 23, 2026
+
+Implemented conversion foundation. GA4 conversion evidence is optional pilot context; broader copy campaigns and visitor-level tests follow validated demand in stage 4 or later.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 Relay brings organic visitors, but it cannot see whether they convert or fix pages that do not. GA4 is already connected for many projects, and Relay already writes reviewed changes as code. This RFC adds conversion opportunities from GA4, copy and call-to-action changes by pull request, and measurement with GA4 key events, first before and after, then with page-group split tests.

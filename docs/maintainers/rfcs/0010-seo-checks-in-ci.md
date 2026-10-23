@@ -6,6 +6,12 @@
 - **Brief sections:** 5 and 6 (agent and execution), extended to prevention
 - **Depends on:** RFC-0008 (Trigger.dev tasks and signed internal endpoints) and RFC-0009 (audit log, rate limits). Phase 2 depends on the RFC-0005 GitHub App.
 
+## Current delivery role — October 23, 2026
+
+Implemented prevention foundation for stages 1–2 and the developer acquisition channel. Reuse checks in RFC-0019 and RFC-0025; validate the customer install and preview binding.
+
+The historical status and acceptance notes below are retained. The [delivery plan](README.md) and [current audit](../relay-release-assurance-audit.md) distinguish implementation, live acceptance, and commercial evidence.
+
 ## 1. Summary
 
 SEO damage usually ships in an ordinary pull request: a stray `noindex`, a changed canonical tag, a removed title, a broken link or invalid structured data. Crawlers and monitoring tools find it after release, and auto-fix tools patch it after the damage. This RFC adds a check that compares a pull request's preview deployment with production before merge, ranks each finding by the page's real Search Console traffic, and fails the build on blocking regressions.
