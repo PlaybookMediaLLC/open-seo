@@ -10,6 +10,8 @@ import type { Plugin } from "vite";
  *
  * Fork seams that keep the rename complete (audit: `grep -rn playbook-seam`):
  * - vite.config.ts: mounts this plugin and the docs plugin.
+ * - src/client/features/ai-mcp/agentInstalls.ts: agent setup links use Relay
+ *   guides instead of marketplace listings connected to upstream.
  * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
  * - src/routes/__root.tsx: public pages render on the server too

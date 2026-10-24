@@ -83,7 +83,7 @@ export function createOpportunityTestDatabase(
       await sqlite.executeMultiple(`
         PRAGMA foreign_keys = ON;
         CREATE TABLE organization (id TEXT PRIMARY KEY, name TEXT, slug TEXT, created_at TEXT);
-        CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, name TEXT, archived_at TEXT);
+        CREATE TABLE projects (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, name TEXT, archived_at TEXT, indexnow_key TEXT);
         CREATE TABLE data_refresh_claims (key TEXT PRIMARY KEY, organization_id TEXT NOT NULL, token TEXT NOT NULL, next_attempt_at INTEGER NOT NULL);
         CREATE TABLE gsc_connections (id TEXT PRIMARY KEY, project_id TEXT NOT NULL UNIQUE, site_url TEXT NOT NULL, organization_id TEXT, connected_by_user_id TEXT);
         CREATE TABLE audits (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, started_by_user_id TEXT NOT NULL, start_url TEXT NOT NULL, status TEXT NOT NULL, completed_at TEXT);

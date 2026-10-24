@@ -5,6 +5,7 @@ import { Button } from "@/client/components/ui/button";
 import {
   AuthPageCard,
   AuthMethodChooser,
+  TermsAgreementNotice,
   authInputClassName,
   authSubmitClassName,
   authRedirectSearchSchema,
@@ -151,6 +152,9 @@ function SignInPage() {
                   }
             }
           />
+          {isHostedMode ? (
+            <TermsAgreementNotice action="By continuing with Google" />
+          ) : null}
           {google.error ? (
             <p className="text-sm text-destructive">{google.error}</p>
           ) : null}

@@ -1,7 +1,7 @@
 /** Where signed-in users land. "/" is the public landing page. */
 export const APP_HOME = "/app";
 
-const OAUTH_AUTHORIZE_PATH = "/api/auth/oauth2/authorize";
+export const OAUTH_AUTHORIZE_PATH = "/api/auth/oauth2/authorize";
 const OAUTH_SIGNED_QUERY_END = "sig";
 const OAUTH_AUTHORIZE_MARKERS = ["response_type", "client_id", "redirect_uri"];
 

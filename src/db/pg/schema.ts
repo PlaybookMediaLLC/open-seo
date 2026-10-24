@@ -29,3 +29,4 @@ export * from "./revenue.schema";
 export * from "./docs.schema";
 export * from "./support.schema";
 export * from "./work.schema";
+export * from "./local-seo.schema";

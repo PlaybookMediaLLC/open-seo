@@ -143,6 +143,9 @@ function inventory(userId: string) {
     activeAiVisibilityWorkflowIds: inProjects(
       `SELECT id FROM ai_runs WHERE project_id IN ($PROJECTS) AND status IN ('queued', 'running')`,
     ),
+    activeLocalRankWorkflowIds: inProjects(
+      `SELECT id FROM local_rank_checks WHERE project_id IN ($PROJECTS) AND status IN ('queued', 'running')`,
+    ),
     aiVisibilityProjectIds: projectIds,
     // R2 keys are paths, so they skip the id check and stay out of SQL.
     r2Keys: projectIds.length
