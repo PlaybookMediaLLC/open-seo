@@ -13,6 +13,8 @@ import type { Plugin } from "vite";
  * - src/client/features/ai-mcp/agentInstalls.ts: agent setup links use Relay
  *   guides instead of marketplace listings connected to upstream.
  * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
+ * - src/shared/terms.ts: acceptance links open Relay's /terms and /privacy
+ *   pages, which identify Playbook Media LLC as the operator.
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
  * - src/routes/__root.tsx: public pages render on the server too
  *   (src/client/components/RelayClientOnly.tsx).
