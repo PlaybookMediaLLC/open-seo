@@ -50,6 +50,9 @@ import type { Plugin } from "vite";
  * - src/server/mcp/server.ts and src/server/features/sam/samChatTools.ts:
  *   register the growth tools for agents (RFC-0004;
  *   src/server/mcp/tools/growth-tools.ts).
+ * - src/server/mcp/tools/google-connection-tools.ts: successful Google
+ *   property changes record audit events with the verified project and
+ *   MCP actor, matching the dashboard integration setters.
  * - src/server/features/sam/samSystemPrompt.ts: adds the growth workflow rules
  *   (src/server/features/sam/growthPrompt.ts).
  * - knip.jsonc: lists the Trigger.dev config and tasks (trigger.config.ts,

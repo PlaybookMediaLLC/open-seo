@@ -1,6 +1,7 @@
 import { waitUntil } from "cloudflare:workers";
 import { z } from "zod";
 import { requireOrgPermission } from "@/server/auth/org-gate";
+import { auditAfter } from "@/server/features/activity/auditLog"; // playbook-seam
 import { markOnboardingMilestone } from "@/server/email/onboarding-drip";
 import { Ga4Service } from "@/server/features/ga4/services/Ga4Service";
 import { GscService } from "@/server/features/gsc/services/GscService";
@@ -175,6 +176,10 @@ export const setSearchConsoleSiteTool = {
       accountId: args.gscAccountId,
       userId: context.auth.userId,
     });
+    await auditAfter(
+      { ...context.auth, projectId: context.project.id },
+      "integration.gsc_connected",
+    ); // playbook-seam
     // Same activation signals as the dashboard's setGscSite.
     await markOnboardingMilestone(context.auth, "gscConnected");
     waitUntil(
@@ -310,6 +315,10 @@ export const setGoogleAnalyticsPropertyTool = {
       accountId: args.ga4AccountId,
       userId: context.auth.userId,
     });
+    await auditAfter(
+      { ...context.auth, projectId: context.project.id },
+      "integration.ga4_connected",
+    ); // playbook-seam
     waitUntil(
       captureServerEvent({
         distinctId: context.auth.userId,
