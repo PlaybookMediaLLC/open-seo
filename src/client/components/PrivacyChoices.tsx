@@ -60,6 +60,7 @@ export function usePrivacyChoices() {
   const cookies = React.useSyncExternalStore(
     subscribeToPrivacyCookie,
     readCookies,
+    () => "",
   );
   const saved = React.useMemo(() => readPrivacyCookie(cookies), [cookies]);
   // Choices not saved yet follow the region. That includes the Meta choice in
