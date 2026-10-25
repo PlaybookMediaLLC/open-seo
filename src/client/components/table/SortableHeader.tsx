@@ -32,8 +32,7 @@ export function SortableHeader({
       className={`inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground ${className ?? ""}`}
       onClick={column.getToggleSortingHandler()}
       title={title}
-      aria-label={`Sort by ${label}`}
-      aria-pressed={!!sorted}
+      aria-label={`Sort by ${label}${sorted ? `, currently ${sorted === "asc" ? "ascending" : "descending"}` : ""}`}
     >
       {helpText ? <HelpLabel label={label} helpText={helpText} /> : label}
       {sorted === "asc" ? (

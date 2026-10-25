@@ -131,6 +131,7 @@ export function BacklinksPage({
         />
 
         <BacklinksSearchCard
+          projectId={projectId}
           initialValues={data.searchCardInitialValues}
           onSubmit={(values) => {
             searchTabs.openTab({ type: "backlinks", ...values });

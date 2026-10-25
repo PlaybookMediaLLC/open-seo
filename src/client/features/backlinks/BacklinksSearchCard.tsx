@@ -5,6 +5,7 @@ import {
   getFieldError,
   shouldValidateFieldOnChange,
 } from "@/client/lib/forms";
+import { ProjectResearchTarget } from "@/client/components/ProjectResearchTarget";
 import { ResearchScopeSelect } from "@/client/components/ResearchScopeSelect";
 import { SearchCard, SearchInput } from "@/client/components/SearchCard";
 import {
@@ -45,9 +46,11 @@ function getBacklinksValidationErrors(
 }
 
 export function BacklinksSearchCard({
+  projectId,
   initialValues,
   onSubmit,
 }: {
+  projectId: string;
   initialValues: SearchDraft;
   onSubmit: (values: SearchDraft) => void;
 }) {
@@ -84,6 +87,16 @@ export function BacklinksSearchCard({
       }}
       error={targetError}
       errorId="backlinks-target-error"
+      secondRow={
+        <ProjectResearchTarget
+          projectId={projectId}
+          onSelect={(target) => {
+            form.setFieldValue("target", target);
+            form.setFieldValue("scope", defaultScopeForInput(target));
+            setUserSelectedScope(false);
+          }}
+        />
+      }
     >
       <form.Field name="target">
         {(field) => (

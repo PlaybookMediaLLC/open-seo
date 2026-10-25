@@ -280,7 +280,12 @@ export function buildCycle(input: CycleInput) {
   };
   if (next.length < NEXT_LIMIT) {
     if (!candidates.length)
-      because("no_items", "The latest detection found no open items.");
+      because(
+        "no_items",
+        input.latestDetectionAt
+          ? "The latest detection found no open items."
+          : "No detection has completed yet. Connect Search Console and analyze your search data in Opportunities.",
+      );
     if (excluded.stale)
       because(
         "stale",

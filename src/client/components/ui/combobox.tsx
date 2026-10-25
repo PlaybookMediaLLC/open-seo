@@ -81,6 +81,7 @@ function ComboboxInput({
           <InputGroupButton
             size="icon-xs"
             variant="ghost"
+            aria-label={`Show ${props["aria-label"]?.toLowerCase() ?? "available options"}`}
             render={<ComboboxTrigger />}
             // The input opens the list, so the chevron is not a Tab stop.
             tabIndex={-1}
@@ -89,7 +90,9 @@ function ComboboxInput({
             disabled={disabled}
           />
         )}
-        {showClear && <ComboboxClear disabled={disabled} />}
+        {showClear && (
+          <ComboboxClear aria-label="Clear selection" disabled={disabled} />
+        )}
       </InputGroupAddon>
       {children}
     </InputGroup>

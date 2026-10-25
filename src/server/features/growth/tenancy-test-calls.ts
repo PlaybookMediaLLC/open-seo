@@ -330,6 +330,8 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
 function splitTestCalls(projectId: string, ctx: typeof INTRUDER): Calls {
   return {
     SplitTestService: {
+      previewPattern: () =>
+        splitTests.previewPattern(ctx, { projectId, pagePattern: "^/x$" }),
       list: () => splitTests.list(ctx, projectId),
       get: () => splitTests.get(ctx, { projectId, testId: "x" }),
       refresh: () => splitTests.refresh(ctx, { projectId, testId: "x" }),

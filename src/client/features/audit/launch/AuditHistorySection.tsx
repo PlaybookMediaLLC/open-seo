@@ -124,7 +124,7 @@ function HistoryActions({
   onDelete: (auditId: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-end gap-2 reveal-on-hover">
+    <div className="flex items-center justify-end gap-2">
       <Button
         size="xs"
         nativeButton={false}
@@ -132,11 +132,11 @@ function HistoryActions({
           <Link
             to="/p/$projectId/audit"
             params={{ projectId }}
-            search={{ auditId, tab: "pages" }}
+            search={{ auditId, tab: "issues" }}
           />
         }
       >
-        View
+        Review issues
       </Button>
       <RowActionsMenu label="Audit actions">
         <DropdownMenuItem

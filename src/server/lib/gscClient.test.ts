@@ -173,6 +173,20 @@ describe("gscClient", () => {
     expect(mocks.fetch).not.toHaveBeenCalled();
   });
 
+  it("mints the access token once for concurrent requests on one client", async () => {
+    mocks.fetch.mockImplementation(async () =>
+      jsonResponse({ inspectionResult: {} }),
+    );
+    const client = createGscClient({ userId: "u1" });
+
+    await Promise.all([
+      client.inspectUrl("sc-domain:example.com", "https://example.com/a"),
+      client.inspectUrl("sc-domain:example.com", "https://example.com/b"),
+    ]);
+
+    expect(mocks.getAccessToken).toHaveBeenCalledTimes(1);
+  });
+
   it("throws GscTokenError when no access token can be minted", async () => {
     mocks.getAccessToken.mockRejectedValue(new Error("revoked"));
     await expect(

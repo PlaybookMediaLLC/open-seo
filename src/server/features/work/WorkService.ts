@@ -57,7 +57,10 @@ async function thisWeek(context: PublishingContext, projectId: string) {
         ),
       ),
     db
-      .select({ enabled: growthSchedules.enabled })
+      .select({
+        enabled: growthSchedules.enabled,
+        nextRunAt: growthSchedules.nextRunAt,
+      })
       .from(growthSchedules)
       .where(
         and(
@@ -74,6 +77,7 @@ async function thisWeek(context: PublishingContext, projectId: string) {
     weekStart: week.startDate,
     snapshotAt: snapshot?.generatedAt ?? null,
     scheduled: schedule?.enabled ?? false,
+    nextRunAt: schedule?.enabled ? schedule.nextRunAt : week.nextRunAt,
     emptyReasons: built.emptyReasons,
     entries: built.entries.map(({ link, ...entry }) => ({
       ...entry,
@@ -129,11 +133,11 @@ async function saveSettings(
       "Enter a valid time zone, such as Europe/Berlin.",
     );
   }
-  const { projectId, ...values } = input;
+  const { projectId, enabled, ...values } = input;
   const now = new Date().toISOString();
   const week = weekOf(new Date(), values);
   const schedule = {
-    enabled: true,
+    ...(enabled === undefined ? {} : { enabled }),
     interval: "weekly" as const,
     hourUtc: new Date(week.nextRunAt).getUTCHours(),
     nextRunAt: week.nextRunAt,
@@ -162,6 +166,7 @@ async function saveSettings(
         projectId,
         kind: "weekly_cycle",
         ...schedule,
+        enabled: enabled ?? false,
       })
       .onConflictDoUpdate({
         target: [growthSchedules.projectId, growthSchedules.kind],

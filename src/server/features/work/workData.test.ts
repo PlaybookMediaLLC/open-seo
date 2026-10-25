@@ -1,11 +1,17 @@
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { db } from "@/db";
-import { splitTests, workCycleEntries, workCycles } from "@/db/schema";
+import {
+  growthSchedules,
+  splitTests,
+  workCycleEntries,
+  workCycles,
+} from "@/db/schema";
 import {
   finishRun,
   setupRun,
 } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
+import { WorkService } from "./WorkService";
 import { WORK_DEFAULTS, weekOf, writeCycle } from "./workData";
 
 // RFC-0018 5.2 and 5.8: one cycle per project and week, the last week
@@ -25,6 +31,11 @@ vi.mock(
   "@/server/features/publishing/repositories/PublishingRepository",
   () => ({ PublishingRepository: { getConnection: async () => ({}) } }),
 );
+
+// Tenant and owner authorization have separate service boundary coverage.
+vi.mock("@/server/features/publishing/publishingAccess", () => ({
+  authorizePublishing: vi.fn(),
+}));
 
 const settings = { ...WORK_DEFAULTS, timeZone: "UTC" };
 beforeAll(() => database.prepare());
@@ -111,4 +122,29 @@ it("refuses an entry with two record links", async () => {
   expect(error instanceof Error ? String(error.cause) : "").toMatch(
     /work_cycle_entries_one_link|CHECK constraint failed/i,
   );
+});
+
+it("changes weekly activation only when explicitly requested", async () => {
+  const projectId = await project();
+  const context = {
+    organizationId: projectId,
+    userId: "owner",
+    role: "owner" as const,
+  };
+  const input = { projectId, ...settings };
+  const enabled = async () =>
+    (
+      await db
+        .select({ enabled: growthSchedules.enabled })
+        .from(growthSchedules)
+        .where(eq(growthSchedules.projectId, projectId))
+    )[0]?.enabled;
+  await WorkService.saveSettings(context, input);
+  expect(await enabled()).toBe(false);
+  await WorkService.saveSettings(context, { ...input, enabled: true });
+  expect(await enabled()).toBe(true);
+  await WorkService.saveSettings(context, { ...input, cycleHour: 9 });
+  expect(await enabled()).toBe(true);
+  await WorkService.saveSettings(context, { ...input, enabled: false });
+  expect(await enabled()).toBe(false);
 });

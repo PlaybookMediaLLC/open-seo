@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/client/components/PageHeader";
 import { QueryError } from "@/client/components/QueryState";
@@ -6,7 +6,7 @@ import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import { captureClientEvent } from "@/client/lib/posthog";
-import { getThisWeek } from "@/serverFunctions/work";
+import { getThisWeek, saveWorkSettings } from "@/serverFunctions/work";
 import { CycleSettingsSheet } from "./CycleSettingsSheet";
 import { WorkHistorySheet } from "./WorkHistorySheet";
 import { WorkReportSheet } from "./WorkReportSheet";
@@ -16,7 +16,7 @@ type Entry = Week["entries"][number];
 
 const SECTIONS = [
   ["waiting", "Waiting on you", "Nothing is waiting on you."],
-  ["next", "Next", "Nothing worth changing this week."],
+  ["next", "Next", "No new work is ready."],
   ["measuring", "Measuring", "No change is measuring now."],
   [
     "completed",
@@ -91,11 +91,23 @@ export function ThisWeekPage({ projectId }: { projectId: string }) {
     queryFn: () => getThisWeek({ data: { projectId } }),
   });
   const week = query.data;
+  const client = useQueryClient();
+  const toggleSchedule = useMutation({
+    mutationFn: () => {
+      if (!week)
+        throw new Error("Load weekly settings before changing the schedule.");
+      return saveWorkSettings({
+        data: { ...week.settings, projectId, enabled: !week.scheduled },
+      });
+    },
+    onSuccess: () =>
+      client.invalidateQueries({ queryKey: thisWeekKey(projectId) }),
+  });
   return (
     <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-5xl space-y-5">
         <PageHeader
-          title="This week"
+          title="Work"
           description={
             week
               ? `Week of ${dateLabel(week.weekStart)}. ${week.snapshotAt ? `Weekly snapshot written ${dateLabel(week.snapshotAt)}; the lists below are live.` : "The lists below are live; no weekly snapshot yet."}`
@@ -123,13 +135,46 @@ export function ThisWeekPage({ projectId }: { projectId: string }) {
           />
         )}
         {query.isPending && <p role="status">Loading this week…</p>}
-        {week && !week.scheduled && (
-          <p className="rounded-lg bg-muted p-3 text-sm">
-            The weekly cycle is off, so Relay keeps no weekly history.{" "}
-            {week.canManage
-              ? "Save the cycle settings to start it."
-              : "Ask an owner to start it."}
-          </p>
+        {week && (
+          <section
+            aria-label="Weekly review schedule"
+            className="space-y-3 rounded-lg bg-muted p-4 text-sm"
+          >
+            <p className="font-medium">
+              Weekly review is {week.scheduled ? "on" : "off"}.
+            </p>
+            <p>
+              {week.scheduled ? "Next review" : "First review if enabled"}:{" "}
+              {new Date(week.nextRunAt).toLocaleString(undefined, {
+                timeZone: week.settings.timeZone,
+              })}{" "}
+              ({week.settings.timeZone}).
+            </p>
+            <p>
+              The review refreshes older Search Console detections and saves a
+              weekly snapshot of work. It does not run paid research, create
+              pull requests, or deploy changes.
+            </p>
+            {week.canManage ? (
+              <Button
+                variant="outline"
+                pending={toggleSchedule.isPending}
+                onClick={() => toggleSchedule.mutate()}
+              >
+                {week.scheduled
+                  ? "Pause weekly review"
+                  : "Enable weekly review"}
+              </Button>
+            ) : (
+              <p>Ask an owner to change the schedule.</p>
+            )}
+            {toggleSchedule.isError && (
+              <QueryError
+                error={toggleSchedule.error}
+                fallback="Could not update the weekly review schedule"
+              />
+            )}
+          </section>
         )}
         {week &&
           SECTIONS.map(([section, label, empty]) => {

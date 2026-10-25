@@ -17,7 +17,6 @@ dist-sourcemaps/
 .env.*
 !.env.example
 !.env.preview.example
-!.env.production.example
 !.env.selfhost.example
 !.env.playbook.example
 .vercel
@@ -49,3 +48,5 @@ dist-sourcemaps/
 
 # Fumadocs MDX output for the /docs pages (generated on install and dev)
 .source
+# built by `pnpm build:report-widgets` (predev/build)
+/src/public/report-widgets/

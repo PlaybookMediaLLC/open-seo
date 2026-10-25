@@ -7,6 +7,8 @@
     "autumn.config.ts",
     // Site-audit aux worker entry (wrangler.audit.jsonc)
     "src/audit-worker.ts",
+    // Separately bundled MCP App, served as an inline HTML resource.
+    "src/client/mcp-widgets/main.tsx",
     // Detect Tanstack Start Routes
     "src/start.ts",
     "src/router.tsx",
@@ -24,6 +26,7 @@
     // Standalone CLI/dev scripts, invoked via package.json scripts
     "scripts/**",
     "tests/*.e2e.ts", // playbook-seam: growth E2E spec, run by tests/playwright.growth.config.ts
+    "tests/playwright.growth.config.ts", // invoked by the growth E2E workflow
     "trigger.config.ts", // playbook-seam: Trigger.dev config, read by its CLI (RFC-0008)
     "trigger/**", // playbook-seam: Trigger.dev tasks, deployed by its CLI (RFC-0008)
     // shadcn components are copied in whole; pages use only some exports
@@ -45,6 +48,8 @@
     "!.source/**",
   ],
   "ignore": ["drizzle/remote-d1.config.ts"],
+  // GitHub CLI, used by deploy:prod; installed system-wide, not via npm
+  "ignoreBinaries": ["gh"],
   // Disable Drizzle plugin - it tries to load drizzle/sqlite.config.ts which imports cloudflare:workers
   "drizzle": false,
   "ignoreDependencies": [

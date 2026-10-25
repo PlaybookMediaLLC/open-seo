@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_app/p/$projectId/audit/")({
 
 function SiteAuditPage() {
   const { projectId } = Route.useParams();
-  const { auditId, tab, url } = Route.useSearch();
+  const { auditId, tab, url, view } = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
 
   const setSearchParams = useCallback(
@@ -24,13 +24,18 @@ function SiteAuditPage() {
     [navigate],
   );
 
+  const showHistory = () =>
+    setSearchParams({ auditId: undefined, url: undefined, view: "history" });
+
   if (!auditId) {
     return (
       <LaunchView
         projectId={projectId}
         initialUrl={url ?? ""}
+        showHistory={view === "history"}
+        onShowHistory={showHistory}
         onAuditStarted={(id) =>
-          setSearchParams({ auditId: id, url: undefined })
+          setSearchParams({ auditId: id, url: undefined, view: undefined })
         }
       />
     );
@@ -41,7 +46,7 @@ function SiteAuditPage() {
       projectId={projectId}
       auditId={auditId}
       tab={tab}
-      onBack={() => setSearchParams({ auditId: undefined })}
+      onBack={showHistory}
       onTabChange={(nextTab) => setSearchParams({ tab: nextTab })}
     />
   );

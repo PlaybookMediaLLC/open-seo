@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+import { EmptyState } from "@/client/components/EmptyState";
 import { useState } from "react";
 import { IconRefresh as RefreshCw } from "@tabler/icons-react";
 import { ConfirmDialog } from "@/client/components/ConfirmDialog";
@@ -29,30 +31,32 @@ export function SavedKeywordsHeader({
         title="Saved Keywords"
         description="Save keyword ideas from research, organize them with tags, and revisit when you're ready to act."
         actions={
-          <>
-            <Button
-              variant="outline"
-              size="sm"
-              title="Fetch new volume, difficulty, and CPC"
-              disabled={disabled || metricsRefreshing}
-              onClick={() => setConfirmingRefresh(true)}
-            >
-              <RefreshCw
-                data-icon="inline-start"
-                className={metricsRefreshing ? "animate-spin" : ""}
-              />
-              {metricsRefreshing ? "Updating..." : "Update keyword stats"}
-            </Button>
+          totalCount > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                title="Fetch new volume, difficulty, and CPC"
+                disabled={disabled || metricsRefreshing}
+                onClick={() => setConfirmingRefresh(true)}
+              >
+                <RefreshCw
+                  data-icon="inline-start"
+                  className={metricsRefreshing ? "animate-spin" : ""}
+                />
+                {metricsRefreshing ? "Updating..." : "Update keyword stats"}
+              </Button>
 
-            <ExportMenu
-              actions={["sheets", "csv"]}
-              busy={exporting != null}
-              disabled={disabled}
-              onExport={(action) =>
-                action === "sheets" ? onExportSheets() : onExportCsv()
-              }
-            />
-          </>
+              <ExportMenu
+                actions={["sheets", "csv"]}
+                busy={exporting != null}
+                disabled={disabled}
+                onExport={(action) =>
+                  action === "sheets" ? onExportSheets() : onExportCsv()
+                }
+              />
+            </>
+          )
         }
       />
 
@@ -71,5 +75,22 @@ export function SavedKeywordsHeader({
         </ConfirmDialog>
       ) : null}
     </>
+  );
+}
+
+export function SavedKeywordsEmptyState({ projectId }: { projectId: string }) {
+  return (
+    <EmptyState
+      title="Build your keyword collection"
+      description="Save useful keywords from research, then compare and organize them here."
+      action={
+        <Button
+          nativeButton={false}
+          render={<Link to="/p/$projectId/keywords" params={{ projectId }} />}
+        >
+          Find keywords to save
+        </Button>
+      }
+    />
   );
 }

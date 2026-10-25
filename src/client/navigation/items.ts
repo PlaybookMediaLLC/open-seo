@@ -1,3 +1,4 @@
+import { sortBy } from "remeda";
 import {
   IconBookmark as Bookmark,
   IconRobot as Bot,
@@ -22,7 +23,7 @@ const projectNavItems = [
   { to: "/p/$projectId/work" as const, label: "This week", icon: ListCheck }, // playbook-seam
   {
     to: "/p/$projectId" as const,
-    label: "Dashboard",
+    label: "Home",
     icon: LayoutDashboard,
     // Without exact matching, the index path is a prefix of every project
     // route and the Dashboard item would render active everywhere.
@@ -55,7 +56,7 @@ const projectNavItems = [
   },
   {
     to: "/p/$projectId/search-performance" as const,
-    label: "GSC Insights",
+    label: "Search Performance",
     icon: GoogleGlyphMuted,
   },
   {
@@ -75,7 +76,7 @@ const projectNavItems = [
   },
   {
     to: "/p/$projectId/ai-visibility" as const,
-    label: "Prompt Tracking",
+    label: "AI visibility",
     icon: ChartLine,
     activeOptions: { exact: true, includeSearch: false },
   },
@@ -96,23 +97,21 @@ const projectNavItems = [
   },
   {
     to: "/p/$projectId/context" as const,
-    label: "Context",
+    label: "Business context",
     icon: Brain,
   },
 ] as const;
 
-// Project-independent. Rendered inside the project "AI Tools" group when a project
-// is selected, and on its own (connectNavGroup) when none is.
+// Agent connections are a workspace utility, independent of the project.
 const aiNavItem = linkOptions({
   to: "/ai" as const,
-  label: "Agent setup",
+  label: "Agents",
   icon: Bot,
 });
 
-// Shown only when no project is selected; with a project, Agent setup lives in
-// the "AI Tools" group below.
+// Also used by the shell utility links.
 export const connectNavGroup = {
-  label: "AI Tools",
+  label: "Connections",
   items: [aiNavItem],
 };
 
@@ -126,19 +125,18 @@ function getProjectNavItems(projectId: string) {
   );
 }
 
-// Grouped by scope: "My Site" is the project's own domain (tracked data),
-// "Research" is point-at-anything lookup tools.
+// Keep existing URLs; each workspace exposes its related views in the shell.
 export function getProjectNavGroups(projectId: string) {
   const all = getProjectNavItems(projectId);
   const byPath = (path: (typeof projectNavItems)[number]["to"]) =>
     all.find((i) => i.to === path)!;
 
   return [
+    { label: "Home", items: [byPath("/p/$projectId")] },
     {
-      label: "Overview",
+      label: "Work",
       items: [
         byPath("/p/$projectId/work"), // playbook-seam
-        byPath("/p/$projectId"),
         byPath("/p/$projectId/opportunities"),
         byPath("/p/$projectId/experiments"),
       ],
@@ -152,33 +150,52 @@ export function getProjectNavGroups(projectId: string) {
       ],
     },
     {
-      label: "AI Visibility",
-      items: [
-        byPath("/p/$projectId/ai-visibility/research"),
-        byPath("/p/$projectId/prompt-explorer"),
-        byPath("/p/$projectId/ai-visibility"),
-      ],
-    },
-    {
-      label: "My Site",
+      label: "Monitor",
       items: [
         byPath("/p/$projectId/search-performance"),
-        byPath("/p/$projectId/rank-tracking"),
-        byPath("/p/$projectId/saved"),
+        byPath("/p/$projectId/ai-visibility"),
+        byPath("/p/$projectId/ai-visibility/research"),
+        byPath("/p/$projectId/prompt-explorer"),
         byPath("/p/$projectId/audit"),
+        byPath("/p/$projectId/rank-tracking"),
       ],
     },
     {
-      label: "AI Tools",
+      label: "Library",
       items: [
         byPath("/p/$projectId/reports"),
+        byPath("/p/$projectId/saved"),
         byPath("/p/$projectId/context"),
-        aiNavItem,
       ],
     },
   ];
 }
 
+/** The deepest route wins, including nested prompt history and opportunity pages. */
+export function getProjectNavGroup(projectId: string, pathname: string) {
+  pathname = pathname.replace(/\/+$/, "") || "/";
+  const matches = getProjectNavGroups(projectId)
+    .flatMap((group) =>
+      group.items.map((item) => ({
+        group,
+        path: item.to.replace("$projectId", projectId),
+      })),
+    )
+    .filter(
+      ({ path }) =>
+        pathname === path ||
+        (path !== `/p/${projectId}` && pathname.startsWith(`${path}/`)),
+    );
+  return sortBy(matches, [(item) => item.path.length, "desc"])[0]?.group;
+}
+
 export const dataforseoHelpLinkOptions = linkOptions({
   to: "/help/dataforseo-api-key",
 });
+
+/** Provider setup belongs to the research views that require it. */
+export function isPaidResearchPath(pathname: string) {
+  return /^\/p\/[^/]+\/(?:keywords|domain|backlinks|rank-tracking|ai-visibility|prompt-explorer)(?:\/|$)/.test(
+    pathname,
+  );
+}

@@ -1,14 +1,22 @@
+import { AiSetupCostNote } from "./AiSetupCostNote";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { NavTab, NavTabs } from "@/client/components/NavTabs";
 import { IconSparkles as Sparkles } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
 import { Card, CardContent } from "@/client/components/ui/card";
+import { Field, FieldLabel } from "@/client/components/ui/field";
+import { Textarea } from "@/client/components/ui/textarea";
+import { InsufficientCreditsError } from "@/client/features/billing/InsufficientCreditsError";
+import { getErrorCode } from "@/client/lib/error-messages";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
 import { WebsiteResearchProgress } from "@/client/features/projects/WebsiteResearchProgress";
 import { WebsiteSetupReview } from "@/client/features/projects/WebsiteSetupReview";
 import { startAiResearchSetup } from "@/serverFunctions/ai-visibility";
+import { updateProjectContext } from "@/serverFunctions/projectContext";
 import { saveProjectWebsiteSetup } from "@/serverFunctions/projectWebsite";
+import { PROSE_MAX_CHARS } from "@/types/schemas/projectContext";
 import type { SaveProjectWebsiteSetup } from "@/types/schemas/projectWebsite";
 import { SkeletonPageContent } from "@/client/components/SkeletonPresets";
 import {
@@ -51,6 +59,25 @@ export function AiResearchSetupGate({
   const start = useMutation({
     mutationFn: () => startAiResearchSetup({ data: { projectId } }),
     onSuccess: (data) => queryClient.setQueryData(setupOptions.queryKey, data),
+  });
+  // A site we can't read, usually because of bot protection, leaves the
+  // overview to the user. With one saved, setup no longer reads the site.
+  const [overview, setOverview] = useState("");
+  const saveOverview = useMutation({
+    mutationFn: () =>
+      updateProjectContext({
+        data: {
+          projectId,
+          updates: [{ section: "business_overview", content: overview.trim() }],
+        },
+      }),
+    onSuccess: () => {
+      // Setup can still fail, so the saved overview mustn't wait for it.
+      void queryClient.invalidateQueries({
+        queryKey: ["projectContext", projectId],
+      });
+      start.mutate();
+    },
   });
   // Setup writes the tracker, research keywords and a first run. Load what the
   // AI visibility pages read before setup reads ready, so the page that
@@ -109,7 +136,36 @@ export function AiResearchSetupGate({
         }}
       />
     );
-  if (status === "ready" && !finishing) return children;
+  if (status === "ready" && !finishing)
+    return (
+      <>
+        <div className="mb-5 overflow-x-auto">
+          <NavTabs label="AI visibility workspace">
+            <NavTab
+              to="/p/$projectId/ai-visibility/research"
+              params={{ projectId }}
+            >
+              Discover prompts
+            </NavTab>
+            <NavTab to="/p/$projectId/prompt-explorer" params={{ projectId }}>
+              Explore answers
+            </NavTab>
+            <NavTab
+              to="/p/$projectId/ai-visibility"
+              params={{ projectId }}
+              activeOptions={{ exact: true, includeSearch: false }}
+            >
+              Track &amp; results
+            </NavTab>
+          </NavTabs>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Discover questions, inspect answers, then track changes for this
+            project. Your project setup is shared across these views.
+          </p>
+        </div>
+        {children}
+      </>
+    );
   if (setup.data.review)
     return (
       <div className="grid min-h-[calc(100dvh-8rem)] place-items-center">
@@ -151,23 +207,52 @@ export function AiResearchSetupGate({
               monitor.
             </p>
           </div>
-          {failed && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                {unreadable
-                  ? "We couldn’t read this website. Check the URL in project settings, then try again."
-                  : "We couldn’t finish setting up AI visibility. Check your available usage credits, then try again."}
-              </AlertDescription>
-            </Alert>
+          {getErrorCode(start.error) === "INSUFFICIENT_CREDITS" ? (
+            <InsufficientCreditsError title="We couldn’t set up AI visibility" />
+          ) : (
+            failed && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  {unreadable
+                    ? "We couldn’t read this website. Its bot protection may be blocking us. Describe your business below and try again, or check the URL in project settings."
+                    : "We couldn’t finish setting up AI visibility. Try again."}
+                </AlertDescription>
+              </Alert>
+            )
+          )}
+          {unreadable && (
+            <Field>
+              <FieldLabel htmlFor="business-overview">
+                What you sell, who buys it, and where
+              </FieldLabel>
+              <Textarea
+                id="business-overview"
+                value={overview}
+                onChange={(event) => setOverview(event.target.value)}
+                maxLength={PROSE_MAX_CHARS}
+                rows={4}
+              />
+              {saveOverview.isError && (
+                <p className="text-sm text-destructive">
+                  We couldn’t save your description. Try again.
+                </p>
+              )}
+            </Field>
           )}
           <div className="space-y-3">
-            <Button size="lg" className="w-full" onClick={() => start.mutate()}>
-              {failed ? "Try again" : "Start research"}
+            <AiSetupCostNote />
+            <Button
+              size="lg"
+              className="w-full"
+              pending={saveOverview.isPending}
+              onClick={() =>
+                overview.trim() ? saveOverview.mutate() : start.mutate()
+              }
+            >
+              {failed
+                ? "Retry research and setup"
+                : "Start research and tracking"}
             </Button>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Research and a first run of your prompts use a small amount of
-              usage credits.
-            </p>
           </div>
         </CardContent>
       </Card>

@@ -8,16 +8,16 @@ import {
 } from "@/client/layout/AppShellParts";
 import { GscReEngagementModal } from "@/client/features/gsc/GscReEngagementModal";
 import { Sidebar } from "@/client/components/Sidebar";
-import { BILLING_ROUTE } from "@/shared/billing";
 import { getSeoApiKeyStatus } from "@/serverFunctions/config";
 import { getLastProjectId } from "@/client/lib/active-project";
-import { dataforseoHelpLinkOptions } from "@/client/navigation/items";
+import { isPaidResearchPath } from "@/client/navigation/items";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
 } from "@/client/components/ui/sidebar";
+import { WorkspaceNavigation } from "@/client/layout/WorkspaceNavigation";
 import { BrandMark } from "@/client/components/BrandMark";
 import { useAppDocumentTitle } from "@/client/layout/useAppDocumentTitle"; // playbook-seam
 import { useAppZoom } from "@/client/layout/useAppZoom"; // playbook-seam
@@ -68,17 +68,7 @@ export function AuthenticatedAppLayout({
     sidebarProjectId === null && projectsQuery.isPending;
   useAppDocumentTitle(sidebarProjectId, ready); // playbook-seam
   useAppZoom(); // playbook-seam
-  // GSC opportunities, experiments and publishing setup do not use DataForSEO. Do not
-  // interrupt their review/approval flow with an unrelated paid-research modal.
-  const isGrowthWorkflow =
-    /^\/p\/[^/]+\/(?:opportunities(?:\/|$)|experiments(?:\/|$)|settings\/integrations(?:\/|$))/.test(
-      location.pathname,
-    );
-  // The setup guide also needs no banner linking back to itself.
-  const shouldCheckSeoApiKeyStatus =
-    !isGrowthWorkflow &&
-    location.pathname !== BILLING_ROUTE &&
-    location.pathname !== dataforseoHelpLinkOptions.to;
+  const shouldCheckSeoApiKeyStatus = isPaidResearchPath(location.pathname);
   const seoApiKeyStatusQuery = useQuery({
     queryKey: ["seoApiKeyStatus"],
     queryFn: () => getSeoApiKeyStatus(),
@@ -122,6 +112,12 @@ export function AuthenticatedAppLayout({
       defaultOpen={!document.cookie.split("; ").includes("sidebar_state=false")}
       className="h-[100dvh] min-h-0 overflow-hidden"
     >
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-background focus:p-3 focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
       <Sidebar
         projectId={sidebarProjectId}
         projectPending={sidebarProjectPending}
@@ -134,12 +130,22 @@ export function AuthenticatedAppLayout({
         className="min-h-0 overflow-hidden md:!m-2 md:!ml-0 md:!rounded-xl md:border md:border-sidebar-border md:!shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)]"
       >
         <TopBar />
+        {sidebarProjectId && (
+          <WorkspaceNavigation
+            key={sidebarProjectId}
+            projectId={sidebarProjectId}
+          />
+        )}
         <SeoApiStatusBanners
           shouldShowSeoApiWarning={shouldShowSeoApiWarning}
           seoApiKeyStatusError={seoApiKeyStatusError}
         />
         {banner}
-        <div className="min-h-0 flex-1 overflow-auto [--radius:0rem]">
+        <div
+          id="main-content"
+          tabIndex={-1}
+          className="min-h-0 flex-1 overflow-auto outline-none"
+        >
           {children}
         </div>
       </SidebarInset>
@@ -153,7 +159,10 @@ export function AuthenticatedAppLayout({
       {ready ? (
         <GscReEngagementModal
           projectId={sidebarProjectId}
-          suppressed={showMissingSeoApiKeyModal}
+          suppressed={
+            showMissingSeoApiKeyModal ||
+            !location.pathname.endsWith("/search-performance")
+          }
         />
       ) : null}
     </SidebarProvider>

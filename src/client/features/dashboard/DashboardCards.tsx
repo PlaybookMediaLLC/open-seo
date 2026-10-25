@@ -75,7 +75,7 @@ export function GscCard({
 
   return (
     <CardShell
-      title="Google Search Console Performance"
+      title="Search Performance"
       icon={<GoogleSearchConsoleLogo className="size-5" />}
       action={
         <Link
@@ -83,18 +83,23 @@ export function GscCard({
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          View GSC insights →
+          View Search Performance →
         </Link>
       }
     >
       <p className="mb-4 text-sm font-medium text-muted-foreground">
         Last 28 days
       </p>
-      {reportQuery.isError ? (
-        <p className="text-sm text-muted-foreground">
-          Couldn&rsquo;t load Search Console data. Try again shortly.
-        </p>
-      ) : !report ? (
+      {reportQuery.isError && (
+        <QueryError
+          error={reportQuery.error}
+          title="Search Performance could not refresh"
+          fallback="Could not load Search Console data"
+          onRetry={() => void reportQuery.refetch()}
+          isRetrying={reportQuery.isFetching}
+        />
+      )}
+      {!report ? (
         <MetricsTableSkeleton />
       ) : (
         <Table>

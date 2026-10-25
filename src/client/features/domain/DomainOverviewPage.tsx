@@ -1,3 +1,4 @@
+import { DomainCostPreview } from "./components/DomainCostPreview";
 /* eslint-disable max-lines, max-lines-per-function -- Domain Overview keeps page-only orchestration colocated to avoid fake indirection. */
 import { useCallback, useEffect, useMemo, useRef, type FormEvent } from "react";
 import { useForm, useStore } from "@tanstack/react-form";
@@ -29,6 +30,7 @@ import { useDomainOverviewQuery } from "@/client/features/domain/hooks/useDomain
 import { DomainOverviewLoadingState } from "@/client/features/domain/components/DomainOverviewLoadingState";
 import { RecentSearches } from "@/client/components/RecentSearches";
 import { QueryError } from "@/client/components/QueryState";
+import { ProjectResearchTarget } from "@/client/components/ProjectResearchTarget";
 import { DomainSearchCard } from "@/client/features/domain/components/DomainSearchCard";
 import { KeywordsTab } from "@/client/features/domain/components/KeywordsTab";
 import { PagesTab } from "@/client/features/domain/components/PagesTab";
@@ -569,6 +571,13 @@ export function DomainOverviewPage({
           }
         />
 
+        <ProjectResearchTarget
+          projectId={projectId}
+          onSelect={(domain) => {
+            state.controlsForm.setFieldValue("domain", domain);
+            state.handleDomainChange(domain);
+          }}
+        />
         <DomainSearchCard
           controlsForm={state.controlsForm}
           isLoading={state.isLoading}
@@ -582,6 +591,8 @@ export function DomainOverviewPage({
             state.applyLocationChange(locationCode)
           }
         />
+
+        <DomainCostPreview pageSize={routeState.pageSize} />
 
         {state.isLoading ? (
           <>
