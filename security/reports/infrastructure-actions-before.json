@@ -1,0 +1,40 @@
+{
+  "check_type": "github_actions",
+  "summary": {
+    "passed": 365,
+    "failed": 3,
+    "skipped": 0,
+    "parsing_errors": 0,
+    "resource_count": 0,
+    "checkov_version": "3.3.30"
+  },
+  "failed_checks": [
+    {
+      "check_id": "CKV2_GHA_1",
+      "check_name": "Ensure top-level permissions are not set to write-all",
+      "file_path": "/workflows/postgres-tests-playbook.yml",
+      "file_line_range": [
+        0,
+        1
+      ]
+    },
+    {
+      "check_id": "CKV2_GHA_1",
+      "check_name": "Ensure top-level permissions are not set to write-all",
+      "file_path": "/workflows/sourcemaps.yml",
+      "file_line_range": [
+        0,
+        1
+      ]
+    },
+    {
+      "check_id": "CKV2_GHA_1",
+      "check_name": "Ensure top-level permissions are not set to write-all",
+      "file_path": "/workflows/ci.yml",
+      "file_line_range": [
+        0,
+        1
+      ]
+    }
+  ]
+}

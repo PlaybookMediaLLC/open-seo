@@ -1,0 +1,1697 @@
+{
+  "captured_at": "2026-10-25",
+  "source_commit": "f1fdba29",
+  "findings": [
+    {
+      "id": "DEP-ed55f882d450",
+      "key": "ws@8.17.1:GHSA-58qx-3vcg-4xpx",
+      "package": "ws",
+      "installed_version": "8.17.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-58qx-3vcg-4xpx"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "ws: Uninitialized memory disclosure",
+      "cwe_cve": [
+        "CVE-2026-45736",
+        "CWE-908",
+        "GHSA-58qx-3vcg-4xpx"
+      ],
+      "evidence": [
+        "Lockfile resolves ws@8.17.1; advisory affected range: >=8.0.0 <8.20.1.",
+        ".>@trigger.dev/sdk>@trigger.dev/core>socket.io-client>engine.io-client>ws"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 8.20.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-664222cd5e30",
+      "key": "ws@8.17.1:GHSA-96hv-2xvq-fx4p",
+      "package": "ws",
+      "installed_version": "8.17.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-96hv-2xvq-fx4p"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "ws: Memory exhaustion DoS from tiny fragments and data chunks",
+      "cwe_cve": [
+        "CVE-2026-48779",
+        "CWE-1050",
+        "CWE-400",
+        "CWE-770",
+        "GHSA-96hv-2xvq-fx4p"
+      ],
+      "evidence": [
+        "Lockfile resolves ws@8.17.1; advisory affected range: >=8.0.0 <8.21.0.",
+        ".>@trigger.dev/sdk>@trigger.dev/core>socket.io-client>engine.io-client>ws"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 8.21.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-2d924b2c6a43",
+      "key": "smol-toml@1.8.0:GHSA-r4xh-jqrq-34v2",
+      "package": "smol-toml",
+      "installed_version": "1.8.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-r4xh-jqrq-34v2"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "smol-toml: Quadratic-time parse() from parseKey rescanning to end of document on each key line",
+      "cwe_cve": [
+        "CWE-407",
+        "GHSA-r4xh-jqrq-34v2"
+      ],
+      "evidence": [
+        "Lockfile resolves smol-toml@1.8.0; advisory affected range: <=1.8.0.",
+        ".>knip>smol-toml"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.9.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-98157b8446e1",
+      "key": "seroval@1.5.6:GHSA-p6vx-979v-rg4c",
+      "package": "seroval",
+      "installed_version": "1.5.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-p6vx-979v-rg4c"
+        }
+      ],
+      "severity": "critical",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Seroval: `fromJSON()` Promise thenable assimilation invokes plugin-produced callables (bypass of GHSA-mv8w-475r-vwqw)",
+      "cwe_cve": [
+        "CVE-2026-104846",
+        "CWE-843",
+        "GHSA-p6vx-979v-rg4c"
+      ],
+      "evidence": [
+        "Lockfile resolves seroval@1.5.6; advisory affected range: >=0.12.0 <=1.6.0.",
+        ".>@tanstack/react-devtools>@tanstack/devtools>solid-js>seroval"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.6.2 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-ce6e461754e3",
+      "key": "seroval@1.5.6:GHSA-jp82-f5mq-hwhp",
+      "package": "seroval",
+      "installed_version": "1.5.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-jp82-f5mq-hwhp"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Seroval: Memory exhaustion via unchecked TypedArray length in JSON deserialization",
+      "cwe_cve": [
+        "CVE-2026-104845",
+        "CWE-770",
+        "GHSA-jp82-f5mq-hwhp"
+      ],
+      "evidence": [
+        "Lockfile resolves seroval@1.5.6; advisory affected range: <=1.6.2.",
+        ".>@tanstack/react-devtools>@tanstack/devtools>solid-js>seroval"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.6.3 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-7002022a5642",
+      "key": "source-map-js@1.2.1:GHSA-68fv-2mgg-jv7q",
+      "package": "source-map-js",
+      "installed_version": "1.2.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-68fv-2mgg-jv7q"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "source-map-js allows event-loop denial of service through indexed source-map section offsets",
+      "cwe_cve": [
+        "CVE-2026-93749",
+        "CWE-1284",
+        "GHSA-68fv-2mgg-jv7q"
+      ],
+      "evidence": [
+        "Lockfile resolves source-map-js@1.2.1; advisory affected range: >=1.0.0 <1.2.2.",
+        ".>@tailwindcss/vite>@tailwindcss/node>source-map-js",
+        ".>vite>postcss>source-map-js"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.2.2 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-f13d73756c25",
+      "key": "proxy-addr@2.0.7:GHSA-jqcg-44mw-7w3h",
+      "package": "proxy-addr",
+      "installed_version": "2.0.7",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-jqcg-44mw-7w3h"
+        }
+      ],
+      "severity": "critical",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "proxy-addr vulnerable to IP spoofing via IPv4-mapped IPv6 trust subnet",
+      "cwe_cve": [
+        "CVE-2026-90711",
+        "CWE-290",
+        "CWE-348",
+        "CWE-697",
+        "GHSA-jqcg-44mw-7w3h"
+      ],
+      "evidence": [
+        "Lockfile resolves proxy-addr@2.0.7; advisory affected range: >=1.1.0 <2.0.8.",
+        ".>shadcn>@modelcontextprotocol/sdk>express>proxy-addr"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.0.8 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-c5436853b71c",
+      "key": "sharp@0.35.4:GHSA-wq5f-xc86-pv6w",
+      "package": "sharp",
+      "installed_version": "0.35.4",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-wq5f-xc86-pv6w"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "sharp : Vulnerability in librsvg dependency CVE-2026-96889",
+      "cwe_cve": [
+        "CWE-1395",
+        "CWE-416",
+        "GHSA-wq5f-xc86-pv6w"
+      ],
+      "evidence": [
+        "Lockfile resolves sharp@0.35.4; advisory affected range: <0.35.5.",
+        ".>@cloudflare/vite-plugin>miniflare>sharp"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 0.35.5 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-4e6c114cadf9",
+      "key": "shell-quote@1.9.0:GHSA-pqg4-j6r4-53mv",
+      "package": "shell-quote",
+      "installed_version": "1.9.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-pqg4-j6r4-53mv"
+        }
+      ],
+      "severity": "critical",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "shell-quote: `quote()` command injection via a line terminator in a token after a `{ comment }` token",
+      "cwe_cve": [
+        "CVE-2026-102422",
+        "CWE-78",
+        "GHSA-pqg4-j6r4-53mv"
+      ],
+      "evidence": [
+        "Lockfile resolves shell-quote@1.9.0; advisory affected range: >=1.8.4 <1.11.0.",
+        ".>@tanstack/devtools-vite>launch-editor>shell-quote"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.11.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-eec87f750c3c",
+      "key": "@modelcontextprotocol/client@2.0.0:GHSA-6qxp-vccf-f47h",
+      "package": "@modelcontextprotocol/client",
+      "installed_version": "2.0.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-6qxp-vccf-f47h"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: OAuth client could send credentials to an authorization server chosen by the MCP server",
+      "cwe_cve": [
+        "CVE-2026-104850",
+        "CWE-345",
+        "CWE-522",
+        "GHSA-6qxp-vccf-f47h"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/client@2.0.0; advisory affected range: >=2.0.0 <2.2.0.",
+        ".>@modelcontextprotocol/client"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.2.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-e32b55311aa1",
+      "key": "@modelcontextprotocol/sdk@1.30.0:GHSA-6qxp-vccf-f47h",
+      "package": "@modelcontextprotocol/sdk",
+      "installed_version": "1.30.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-6qxp-vccf-f47h"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: OAuth client could send credentials to an authorization server chosen by the MCP server",
+      "cwe_cve": [
+        "CVE-2026-104850",
+        "CWE-345",
+        "CWE-522",
+        "GHSA-6qxp-vccf-f47h"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/sdk@1.30.0; advisory affected range: >=1.12.0 <1.31.0.",
+        ".>shadcn>@modelcontextprotocol/sdk",
+        ".>@modelcontextprotocol/sdk"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.31.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-98b5576d00be",
+      "key": "hono@4.13.7:GHSA-5r4p-p66f-jhc7",
+      "package": "hono",
+      "installed_version": "4.13.7",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-5r4p-p66f-jhc7"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Hono: `serveStatic` decodes the request path a second time, leading to bypass of middleware on static paths",
+      "cwe_cve": [
+        "CVE-2026-111757",
+        "CWE-174",
+        "GHSA-5r4p-p66f-jhc7"
+      ],
+      "evidence": [
+        "Lockfile resolves hono@4.13.7; advisory affected range: >=4.12.4 <4.13.11.",
+        ".>shadcn>@modelcontextprotocol/sdk>hono"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.13.11 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-03da3a63cf76",
+      "key": "vite@7.3.6:GHSA-698v-4r3x-3vcv",
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-698v-4r3x-3vcv"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "launch-editor: escapeCmdArgs() omits % escaping on Windows",
+      "cwe_cve": [
+        "CVE-2026-112943",
+        "CWE-78",
+        "GHSA-698v-4r3x-3vcv"
+      ],
+      "evidence": [
+        "Lockfile resolves vite@7.3.6; advisory affected range: >=7.0.0 <=7.3.6.",
+        ".>vite"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.3.7 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-f29b635f327e",
+      "key": "launch-editor@2.14.1:GHSA-698v-4r3x-3vcv",
+      "package": "launch-editor",
+      "installed_version": "2.14.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-698v-4r3x-3vcv"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "launch-editor: escapeCmdArgs() omits % escaping on Windows",
+      "cwe_cve": [
+        "CVE-2026-112943",
+        "CWE-78",
+        "GHSA-698v-4r3x-3vcv"
+      ],
+      "evidence": [
+        "Lockfile resolves launch-editor@2.14.1; advisory affected range: <=2.14.1.",
+        ".>@tanstack/devtools-vite>launch-editor"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.14.2 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-96ca5b684aae",
+      "key": "@modelcontextprotocol/sdk@1.30.0:GHSA-22jm-h49p-29qw",
+      "package": "@modelcontextprotocol/sdk",
+      "installed_version": "1.30.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-22jm-h49p-29qw"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: Experimental tasks were not tied to the session that created them",
+      "cwe_cve": [
+        "CVE-2026-111767",
+        "CWE-639",
+        "CWE-862",
+        "GHSA-22jm-h49p-29qw"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/sdk@1.30.0; advisory affected range: >=1.24.0 <1.32.0.",
+        ".>shadcn>@modelcontextprotocol/sdk",
+        ".>@modelcontextprotocol/sdk"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.32.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-d26debb86eca",
+      "key": "@modelcontextprotocol/client@2.0.0:GHSA-6prh-2h8m-c8cw",
+      "package": "@modelcontextprotocol/client",
+      "installed_version": "2.0.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-6prh-2h8m-c8cw"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript client SDK: HTTP client transports and OAuth requests followed cross-origin redirects and re-sent custom headers and request bodies",
+      "cwe_cve": [
+        "CVE-2026-111769",
+        "CWE-200",
+        "GHSA-6prh-2h8m-c8cw"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/client@2.0.0; advisory affected range: >=2.0.0 <2.3.0.",
+        ".>@modelcontextprotocol/client"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.3.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-fc348f10e768",
+      "key": "@modelcontextprotocol/sdk@1.30.0:GHSA-6prh-2h8m-c8cw",
+      "package": "@modelcontextprotocol/sdk",
+      "installed_version": "1.30.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-6prh-2h8m-c8cw"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript client SDK: HTTP client transports and OAuth requests followed cross-origin redirects and re-sent custom headers and request bodies",
+      "cwe_cve": [
+        "CVE-2026-111769",
+        "CWE-200",
+        "GHSA-6prh-2h8m-c8cw"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/sdk@1.30.0; advisory affected range: <1.32.0.",
+        ".>shadcn>@modelcontextprotocol/sdk",
+        ".>@modelcontextprotocol/sdk"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.32.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-386efa3cf3c2",
+      "key": "@modelcontextprotocol/server@2.0.0:GHSA-jm63-cq47-j5jp",
+      "package": "@modelcontextprotocol/server",
+      "installed_version": "2.0.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-jm63-cq47-j5jp"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP  TypeScript server SDK: Shared transport or server instances delivered one HTTP client's messages to another",
+      "cwe_cve": [
+        "CVE-2026-111770",
+        "CWE-362",
+        "GHSA-jm63-cq47-j5jp"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/server@2.0.0; advisory affected range: >=2.0.0 <2.3.0.",
+        ".>@modelcontextprotocol/server"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.3.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-bd7e553ee946",
+      "key": "@modelcontextprotocol/server@2.0.0:GHSA-46jr-4wx8-v453",
+      "package": "@modelcontextprotocol/server",
+      "installed_version": "2.0.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-46jr-4wx8-v453"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: One HTTP request within the default size limit could exhaust server memory during validation",
+      "cwe_cve": [
+        "CVE-2026-111768",
+        "CWE-770",
+        "GHSA-46jr-4wx8-v453"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/server@2.0.0; advisory affected range: >=2.0.0 <2.3.0.",
+        ".>@modelcontextprotocol/server"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.3.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-8f3f4f895749",
+      "key": "@modelcontextprotocol/sdk@1.30.0:GHSA-46jr-4wx8-v453",
+      "package": "@modelcontextprotocol/sdk",
+      "installed_version": "1.30.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-46jr-4wx8-v453"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: One HTTP request within the default size limit could exhaust server memory during validation",
+      "cwe_cve": [
+        "CVE-2026-111768",
+        "CWE-770",
+        "GHSA-46jr-4wx8-v453"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/sdk@1.30.0; advisory affected range: >=1.3.0 <1.32.0.",
+        ".>shadcn>@modelcontextprotocol/sdk",
+        ".>@modelcontextprotocol/sdk"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.32.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-e4d83f2646e8",
+      "key": "vite@7.3.6:GHSA-r825-w8mm-5pxw",
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-r825-w8mm-5pxw"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors",
+      "cwe_cve": [
+        "CVE-2026-112944",
+        "CWE-88",
+        "GHSA-r825-w8mm-5pxw"
+      ],
+      "evidence": [
+        "Lockfile resolves vite@7.3.6; advisory affected range: >=7.0.0 <=7.3.6.",
+        ".>vite"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.3.7 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-3afb560256b0",
+      "key": "launch-editor@2.14.1:GHSA-r825-w8mm-5pxw",
+      "package": "launch-editor",
+      "installed_version": "2.14.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-r825-w8mm-5pxw"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "launch-editor: Editor CLI flag misinterpretation causing arbitrary command execution for some editors",
+      "cwe_cve": [
+        "CVE-2026-112944",
+        "CWE-88",
+        "GHSA-r825-w8mm-5pxw"
+      ],
+      "evidence": [
+        "Lockfile resolves launch-editor@2.14.1; advisory affected range: <=2.14.1.",
+        ".>@tanstack/devtools-vite>launch-editor"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.14.2 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-542ccd194197",
+      "key": "vite@7.3.6:GHSA-587h-7wmj-h5pm",
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-587h-7wmj-h5pm"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows",
+      "cwe_cve": [
+        "CVE-2026-112942",
+        "CWE-77",
+        "GHSA-587h-7wmj-h5pm"
+      ],
+      "evidence": [
+        "Lockfile resolves vite@7.3.6; advisory affected range: >=7.0.0 <=7.3.6.",
+        ".>vite"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.3.7 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-63284ebf1d28",
+      "key": "launch-editor@2.14.1:GHSA-587h-7wmj-h5pm",
+      "package": "launch-editor",
+      "installed_version": "2.14.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-587h-7wmj-h5pm"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "launch-editor: `fs.existsSync()` existence check can be bypassed on Windows",
+      "cwe_cve": [
+        "CVE-2026-112942",
+        "CWE-77",
+        "GHSA-587h-7wmj-h5pm"
+      ],
+      "evidence": [
+        "Lockfile resolves launch-editor@2.14.1; advisory affected range: <=2.14.1.",
+        ".>@tanstack/devtools-vite>launch-editor"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.14.2 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-7094e88694e8",
+      "key": "@modelcontextprotocol/server@2.0.0:GHSA-rvq5-wwqv-78pq",
+      "package": "@modelcontextprotocol/server",
+      "installed_version": "2.0.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-rvq5-wwqv-78pq"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: Server bearer authentication accepted tokens issued for another service",
+      "cwe_cve": [
+        "CVE-2026-111771",
+        "CWE-863",
+        "GHSA-rvq5-wwqv-78pq"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/server@2.0.0; advisory affected range: >=2.0.0 <2.3.0.",
+        ".>@modelcontextprotocol/server"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.3.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-73d6ad9a34a4",
+      "key": "@modelcontextprotocol/sdk@1.30.0:GHSA-rvq5-wwqv-78pq",
+      "package": "@modelcontextprotocol/sdk",
+      "installed_version": "1.30.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-rvq5-wwqv-78pq"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "MCP TypeScript SDK: Server bearer authentication accepted tokens issued for another service",
+      "cwe_cve": [
+        "CVE-2026-111771",
+        "CWE-863",
+        "GHSA-rvq5-wwqv-78pq"
+      ],
+      "evidence": [
+        "Lockfile resolves @modelcontextprotocol/sdk@1.30.0; advisory affected range: >=1.6.0 <1.32.0.",
+        ".>shadcn>@modelcontextprotocol/sdk",
+        ".>@modelcontextprotocol/sdk"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 1.32.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-64761b4c74d8",
+      "key": "vite@7.3.6:GHSA-9jrq-w75r-8gcw",
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-9jrq-w75r-8gcw"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "Vite: Cross origin script execution through Vite custom middleware",
+      "cwe_cve": [
+        "CVE-2026-112945",
+        "CWE-80",
+        "GHSA-9jrq-w75r-8gcw"
+      ],
+      "evidence": [
+        "Lockfile resolves vite@7.3.6; advisory affected range: >=7.0.0 <=7.3.6.",
+        ".>vite"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.3.7 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-68cd6e2670db",
+      "key": "vite@7.3.6:GHSA-rq7h-c2jc-7f22",
+      "package": "vite",
+      "installed_version": "7.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-rq7h-c2jc-7f22"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine",
+      "cwe_cve": [
+        "CVE-2026-112946",
+        "CWE-22",
+        "CWE-284",
+        "GHSA-rq7h-c2jc-7f22"
+      ],
+      "evidence": [
+        "Lockfile resolves vite@7.3.6; advisory affected range: >=7.0.0 <=7.3.6.",
+        ".>vite"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.3.7 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-4318dbb6fe7c",
+      "key": "@vitest/mocker@4.1.11:GHSA-qxg6-89mg-rqv8",
+      "package": "@vitest/mocker",
+      "installed_version": "4.1.11",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-qxg6-89mg-rqv8"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web"
+      ],
+      "description": "Vitest: Code injection via unauthenticated manual mock registration",
+      "cwe_cve": [
+        "CVE-2026-112949",
+        "CWE-116",
+        "CWE-306",
+        "CWE-94",
+        "GHSA-qxg6-89mg-rqv8"
+      ],
+      "evidence": [
+        "Lockfile resolves @vitest/mocker@4.1.11; advisory affected range: >=2.1.0-beta.7 <4.1.12.",
+        ".>vitest>@vitest/mocker"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.1.12 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-0687e1f9b01f",
+      "key": "@vitest/mocker@4.1.11:GHSA-xp26-3454-mjgp",
+      "package": "@vitest/mocker",
+      "installed_version": "4.1.11",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-xp26-3454-mjgp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web"
+      ],
+      "description": "Vitest: Windows backslash traversal bypasses the @vitest/mocker redirect allowlist fix",
+      "cwe_cve": [
+        "CVE-2026-112950",
+        "CWE-22",
+        "GHSA-xp26-3454-mjgp"
+      ],
+      "evidence": [
+        "Lockfile resolves @vitest/mocker@4.1.11; advisory affected range: >=4.1.11 <4.1.12.",
+        ".>vitest>@vitest/mocker"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.1.12 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-44710332d9ca",
+      "key": "toml@4.3.0:GHSA-4qx8-w7c3-pj3p",
+      "package": "toml",
+      "installed_version": "4.3.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-4qx8-w7c3-pj3p"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "toml-node: Quadratic-complexity DoS via many array-of-tables headers in toml.parse()",
+      "cwe_cve": [
+        "CVE-2026-114141",
+        "CWE-407",
+        "GHSA-4qx8-w7c3-pj3p"
+      ],
+      "evidence": [
+        "Lockfile resolves toml@4.3.0; advisory affected range: <=5.0.0.",
+        ".>effect>toml"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-e7df9bca0557",
+      "key": "toml@4.3.0:GHSA-9j65-hcg3-gc64",
+      "package": "toml",
+      "installed_version": "4.3.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-9j65-hcg3-gc64"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "toml-node: Quadratic-complexity DoS via long dotted keys or table paths in toml.parse()",
+      "cwe_cve": [
+        "CVE-2026-114143",
+        "CWE-407",
+        "GHSA-9j65-hcg3-gc64"
+      ],
+      "evidence": [
+        "Lockfile resolves toml@4.3.0; advisory affected range: <=5.0.0.",
+        ".>effect>toml"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-3abd08fe4018",
+      "key": "toml@4.3.0:GHSA-9qmh-m7c6-f92p",
+      "package": "toml",
+      "installed_version": "4.3.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-9qmh-m7c6-f92p"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "toml-node: Uncontrolled resource consumption (CPU DoS) via unbounded-length integer literals in toml.parse()",
+      "cwe_cve": [
+        "CVE-2026-114144",
+        "CWE-400",
+        "CWE-770",
+        "GHSA-9qmh-m7c6-f92p"
+      ],
+      "evidence": [
+        "Lockfile resolves toml@4.3.0; advisory affected range: <=5.0.0.",
+        ".>effect>toml"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-7b42a18a661b",
+      "key": "dompurify@3.4.16:GHSA-cg2g-xh64-v4q7",
+      "package": "dompurify",
+      "installed_version": "3.4.16",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-cg2g-xh64-v4q7"
+        }
+      ],
+      "severity": "critical",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "DOMPurify SAFE_FOR_TEMPLATES bypass: split template expressions survive in attached shadow root content on DOM output modes",
+      "cwe_cve": [
+        "CWE-79",
+        "GHSA-cg2g-xh64-v4q7"
+      ],
+      "evidence": [
+        "Lockfile resolves dompurify@3.4.16; advisory affected range: >=3.4.4 <=3.4.16.",
+        ".>posthog-js>dompurify"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.4.17 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-6d19cad29cdb",
+      "key": "dompurify@3.4.16:GHSA-mrv2-3pqr-j5jr",
+      "package": "dompurify",
+      "installed_version": "3.4.16",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrv2-3pqr-j5jr"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "DOMPurify IN_PLACE: hook that removes a parent or sibling leaves the detached subtree's event handlers armed (incomplete fix for GHSA-p98j-92pf-mc4p)",
+      "cwe_cve": [
+        "CWE-693",
+        "CWE-79",
+        "GHSA-mrv2-3pqr-j5jr"
+      ],
+      "evidence": [
+        "Lockfile resolves dompurify@3.4.16; advisory affected range: <=3.4.16.",
+        ".>posthog-js>dompurify"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.4.17 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-49d6482c98ea",
+      "key": "dompurify@3.4.16:GHSA-c6gr-qvv4-5v3f",
+      "package": "dompurify",
+      "installed_version": "3.4.16",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-c6gr-qvv4-5v3f"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "DOMPurify: SMIL attributeName=href guard is skipped when PARSER_MEDIA_TYPE is application/xhtml+xml",
+      "cwe_cve": [
+        "CWE-79",
+        "GHSA-c6gr-qvv4-5v3f"
+      ],
+      "evidence": [
+        "Lockfile resolves dompurify@3.4.16; advisory affected range: <=3.4.16.",
+        ".>posthog-js>dompurify"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.4.17 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-49d523bf23d8",
+      "key": "ip-address@10.7.2:GHSA-rxp7-6hxx-x8q5",
+      "package": "ip-address",
+      "installed_version": "10.7.2",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-rxp7-6hxx-x8q5"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "ip-address: Address6 matches a zone identifier in quadratic time ahead of its length limit, allowing a single long string to stall the process",
+      "cwe_cve": [
+        "CVE-2026-111997",
+        "CWE-1333",
+        "GHSA-rxp7-6hxx-x8q5"
+      ],
+      "evidence": [
+        "Lockfile resolves ip-address@10.7.2; advisory affected range: <=10.7.3.",
+        ".>shadcn>@modelcontextprotocol/sdk>express-rate-limit>ip-address"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 10.7.4 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-ee9f5a5519ac",
+      "key": "zod@3.25.76:GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "installed_version": "3.25.76",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrhx-c7xc-m3w5"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Zod can exhaust memory while validating oversized constrained collections",
+      "cwe_cve": [
+        "CVE-2023-54404",
+        "CWE-770",
+        "GHSA-mrhx-c7xc-m3w5"
+      ],
+      "evidence": [
+        "Lockfile resolves zod@3.25.76; advisory affected range: <4.6.6.",
+        ".>shadcn>zod"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.6.6 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-faa1dfbaaff2",
+      "key": "zod@4.4.3:GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "installed_version": "4.4.3",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrhx-c7xc-m3w5"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Zod can exhaust memory while validating oversized constrained collections",
+      "cwe_cve": [
+        "CVE-2023-54404",
+        "CWE-770",
+        "GHSA-mrhx-c7xc-m3w5"
+      ],
+      "evidence": [
+        "Lockfile resolves zod@4.4.3; advisory affected range: <4.6.6.",
+        ".>@better-auth/api-key>zod"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.6.6 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-da81a7a36491",
+      "key": "zod@4.6.5:GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "installed_version": "4.6.5",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrhx-c7xc-m3w5"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "tests/badseo"
+      ],
+      "description": "Zod can exhaust memory while validating oversized constrained collections",
+      "cwe_cve": [
+        "CVE-2023-54404",
+        "CWE-770",
+        "GHSA-mrhx-c7xc-m3w5"
+      ],
+      "evidence": [
+        "Lockfile resolves zod@4.6.5; advisory affected range: <4.6.6.",
+        ".>@tanstack/react-start>@tanstack/start-plugin-core>zod"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.6.6 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-75436022558b",
+      "key": "zod@4.3.6:GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "installed_version": "4.3.6",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrhx-c7xc-m3w5"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "Zod can exhaust memory while validating oversized constrained collections",
+      "cwe_cve": [
+        "CVE-2023-54404",
+        "CWE-770",
+        "GHSA-mrhx-c7xc-m3w5"
+      ],
+      "evidence": [
+        "Lockfile resolves zod@4.3.6; advisory affected range: <4.6.6.",
+        ".>zod"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.6.6 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-fceb9375ad7f",
+      "key": "body-parser@2.3.0:GHSA-27r3-jxmh-p828",
+      "package": "body-parser",
+      "installed_version": "2.3.0",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-27r3-jxmh-p828"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "body-parser vulnerable to Denial of Service via trailing bytes after a compressed request body",
+      "cwe_cve": [
+        "CVE-2026-111181",
+        "CWE-248",
+        "GHSA-27r3-jxmh-p828"
+      ],
+      "evidence": [
+        "Lockfile resolves body-parser@2.3.0; advisory affected range: >=2.0.0 <2.4.0.",
+        ".>shadcn>@modelcontextprotocol/sdk>express>body-parser"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 2.4.0 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-cda9cf9561d4",
+      "key": "undici@7.29.1:GHSA-4qv8-2p9j-2685",
+      "package": "undici",
+      "installed_version": "7.29.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-4qv8-2p9j-2685"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "undici vulnerable to Denial of Service via unbounded memory in the EventSource parser",
+      "cwe_cve": [
+        "CVE-2026-109924",
+        "CWE-770",
+        "GHSA-4qv8-2p9j-2685"
+      ],
+      "evidence": [
+        "Lockfile resolves undici@7.29.1; advisory affected range: >=7.0.0 <7.30.1.",
+        ".>@cloudflare/vite-plugin>miniflare>undici"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.30.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-7c980ca3d4e1",
+      "key": "undici@7.29.1:GHSA-f72v-6w45-q472",
+      "package": "undici",
+      "installed_version": "7.29.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-f72v-6w45-q472"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "undici vulnerable to Subresource Integrity bypass via non-lowercase algorithm tokens",
+      "cwe_cve": [
+        "CVE-2026-109841",
+        "CWE-178",
+        "GHSA-f72v-6w45-q472"
+      ],
+      "evidence": [
+        "Lockfile resolves undici@7.29.1; advisory affected range: >=7.15.0 <7.30.1.",
+        ".>@cloudflare/vite-plugin>miniflare>undici"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.30.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-837b8aaa65f7",
+      "key": "fast-uri@3.1.8:GHSA-w74x-v6f9-j3xg",
+      "package": "fast-uri",
+      "installed_version": "3.1.8",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-w74x-v6f9-j3xg"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "fast-uri vulnerable to URI scheme spoofing via percent-encoded scheme decoding",
+      "cwe_cve": [
+        "CVE-2026-110306",
+        "CWE-172",
+        "CWE-180",
+        "GHSA-w74x-v6f9-j3xg"
+      ],
+      "evidence": [
+        "Lockfile resolves fast-uri@3.1.8; advisory affected range: >=3.0.0 <3.1.9.",
+        ".>shadcn>@dotenvx/dotenvx>conf>ajv>fast-uri"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.1.9 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-3a8b6d1e62d0",
+      "key": "fast-uri@3.1.8:GHSA-xhq7-xmqj-769h",
+      "package": "fast-uri",
+      "installed_version": "3.1.8",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-xhq7-xmqj-769h"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "fast-uri vulnerable to improper path equivalence in relative reference normalization",
+      "cwe_cve": [
+        "CVE-2026-110095",
+        "CWE-41",
+        "GHSA-xhq7-xmqj-769h"
+      ],
+      "evidence": [
+        "Lockfile resolves fast-uri@3.1.8; advisory affected range: >=3.0.0 <3.1.9.",
+        ".>shadcn>@dotenvx/dotenvx>conf>ajv>fast-uri"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.1.9 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-6b4688b24a35",
+      "key": "fast-uri@3.1.8:GHSA-wjr9-j795-jxcr",
+      "package": "fast-uri",
+      "installed_version": "3.1.8",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-wjr9-j795-jxcr"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "fast-uri vulnerable to host confusion via unchecked WHATWG host canonicalization",
+      "cwe_cve": [
+        "CVE-2026-110180",
+        "CWE-20",
+        "CWE-436",
+        "GHSA-wjr9-j795-jxcr"
+      ],
+      "evidence": [
+        "Lockfile resolves fast-uri@3.1.8; advisory affected range: >=3.1.3 <3.1.9.",
+        ".>shadcn>@dotenvx/dotenvx>conf>ajv>fast-uri"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.1.9 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-f1e74054ba71",
+      "key": "fast-uri@3.1.8:GHSA-333x-w4r6-6crp",
+      "package": "fast-uri",
+      "installed_version": "3.1.8",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-333x-w4r6-6crp"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml",
+      "workspaces": [
+        "."
+      ],
+      "description": "fast-uri vulnerable to scheme injection via an unescaped first-segment colon in suffix references",
+      "cwe_cve": [
+        "CVE-2026-110725",
+        "CWE-116",
+        "CWE-41",
+        "GHSA-333x-w4r6-6crp"
+      ],
+      "evidence": [
+        "Lockfile resolves fast-uri@3.1.8; advisory affected range: >=3.0.0 <3.1.9.",
+        ".>shadcn>@dotenvx/dotenvx>conf>ajv>fast-uri"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 3.1.9 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-2248c5c56283",
+      "key": "undici@7.29.1:GHSA-xjj6-f33q-929c",
+      "package": "undici",
+      "installed_version": "7.29.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-xjj6-f33q-929c"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "./pnpm-lock.yaml, web/pnpm-lock.yaml, tests/badseo/pnpm-lock.yaml",
+      "workspaces": [
+        ".",
+        "web",
+        "tests/badseo"
+      ],
+      "description": "undici vulnerable to Denial of Service via unhandled error on excessive content-encodings",
+      "cwe_cve": [
+        "CVE-2026-109869",
+        "CWE-248",
+        "CWE-459",
+        "GHSA-xjj6-f33q-929c"
+      ],
+      "evidence": [
+        "Lockfile resolves undici@7.29.1; advisory affected range: >=7.18.0 <7.30.1.",
+        ".>@cloudflare/vite-plugin>miniflare>undici"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 7.30.1 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    },
+    {
+      "id": "DEP-60c77660a7b8",
+      "key": "zod@4.6.1:GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "installed_version": "4.6.1",
+      "scanners": [
+        {
+          "tool": "pnpm audit",
+          "rule": "GHSA-mrhx-c7xc-m3w5"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high (affected version); runtime exploitability depends on the call path",
+      "location": "web/pnpm-lock.yaml",
+      "workspaces": [
+        "web"
+      ],
+      "description": "Zod can exhaust memory while validating oversized constrained collections",
+      "cwe_cve": [
+        "CVE-2023-54404",
+        "CWE-770",
+        "GHSA-mrhx-c7xc-m3w5"
+      ],
+      "evidence": [
+        "Lockfile resolves zod@4.6.1; advisory affected range: <4.6.6.",
+        ".>zod"
+      ],
+      "impact": "An installed dependency version is affected by the advisory. This proves dependency exposure, not unauthenticated production exploitability; developer-only paths require local/tool input.",
+      "recommendation": "Upgrade to version 4.6.6 or later",
+      "agent": "C",
+      "status": "confirmed",
+      "verification": []
+    }
+  ]
+}

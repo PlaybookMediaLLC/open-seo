@@ -1,0 +1,174 @@
+{
+  "image_id": "sha256:8100abcb43f099c4acc66404c1521fb0658b513a3b8493c3145217c31c98f2ff",
+  "image_size_bytes": 1974434886,
+  "smoke_image_id": "sha256:8100abcb43f099c4acc66404c1521fb0658b513a3b8493c3145217c31c98f2ff",
+  "image_build": "passed",
+  "smoke": "passed",
+  "scanner_statuses": {
+    "Trivy config": "success",
+    "Trivy dependencies": "success",
+    "Trivy image": "success",
+    "Checkov repository": "success",
+    "Checkov github-actions": "success"
+  },
+  "before": [
+    {
+      "type": "debian",
+      "target": "open-seo:security-assessment (debian 12.15)",
+      "packages": 413,
+      "records": 4575,
+      "severity_counts": {
+        "low": 1763,
+        "high": 584,
+        "medium": 2041,
+        "unknown": 166,
+        "critical": 21
+      }
+    },
+    {
+      "type": "node-pkg",
+      "target": "Node.js",
+      "packages": 1605,
+      "records": 70,
+      "severity_counts": {
+        "medium": 28,
+        "high": 40,
+        "low": 1,
+        "critical": 1
+      }
+    },
+    {
+      "type": "gobinary",
+      "target": "app/node_modules/.pnpm/@esbuild+linux-x64@0.25.12/node_modules/@esbuild/linux-x64/bin/esbuild",
+      "packages": 3,
+      "records": 60,
+      "severity_counts": {
+        "unknown": 1,
+        "critical": 1,
+        "high": 25,
+        "medium": 30,
+        "low": 3
+      }
+    },
+    {
+      "type": "gobinary",
+      "target": "app/node_modules/.pnpm/@oxlint-tsgolint+linux-x64@0.15.0/node_modules/@oxlint-tsgolint/linux-x64/tsgolint",
+      "packages": 22,
+      "records": 49,
+      "severity_counts": {
+        "high": 28,
+        "medium": 18,
+        "low": 3
+      }
+    },
+    {
+      "type": "dockerfile",
+      "target": "open-seo:security-assessment",
+      "packages": 0,
+      "records": 0,
+      "severity_counts": {}
+    }
+  ],
+  "after": [
+    {
+      "type": "debian",
+      "target": "open-seo:security-assessment (debian 12.15)",
+      "packages": 91,
+      "records": 242,
+      "severity_counts": {
+        "low": 87,
+        "high": 58,
+        "medium": 95,
+        "unknown": 1,
+        "critical": 1
+      }
+    },
+    {
+      "type": "node-pkg",
+      "target": "Node.js",
+      "packages": 1554,
+      "records": 6,
+      "severity_counts": {
+        "medium": 2,
+        "high": 4
+      }
+    },
+    {
+      "type": "gobinary",
+      "target": "app/node_modules/.pnpm/@esbuild+linux-x64@0.25.12/node_modules/@esbuild/linux-x64/bin/esbuild",
+      "packages": 3,
+      "records": 60,
+      "severity_counts": {
+        "unknown": 1,
+        "critical": 1,
+        "high": 25,
+        "medium": 30,
+        "low": 3
+      }
+    },
+    {
+      "type": "gobinary",
+      "target": "app/node_modules/.pnpm/@oxlint-tsgolint+linux-x64@0.15.0/node_modules/@oxlint-tsgolint/linux-x64/tsgolint",
+      "packages": 22,
+      "records": 49,
+      "severity_counts": {
+        "high": 28,
+        "medium": 18,
+        "low": 3
+      }
+    },
+    {
+      "type": "dockerfile",
+      "target": "open-seo:security-assessment",
+      "packages": 0,
+      "records": 0,
+      "severity_counts": {}
+    }
+  ],
+  "preflight_regression": {
+    "before_exit_code": 1,
+    "after_exit_code": 0,
+    "tests_passed": 19,
+    "test_file": "src/lib/selfhost-preflight-cli.test.ts",
+    "change": "Plain Node preflight imports auth-mode without Vite import.meta.env; optional access preserves compiled-client behavior."
+  },
+  "remaining_image_by_status": {
+    "confirmed": {},
+    "unverified": {
+      "low": 93,
+      "high": 115,
+      "medium": 145,
+      "unknown": 2,
+      "critical": 1
+    },
+    "false_positive": {
+      "critical": 1
+    }
+  },
+  "manual_review": {
+    "reviewed": [
+      "compose.yaml",
+      "wrangler.jsonc",
+      "wrangler.audit.jsonc",
+      "deploy/alchemy/alchemy.run.ts",
+      "deploy/alchemy/alchemy.access.ts",
+      "deploy/alchemy/alchemy.preview-access.run.ts",
+      "deploy/alchemy/relay-env.ts"
+    ],
+    "observations": [
+      "Compose publishes only127.0.0.1 and explicitly selects trusted-local local_noauth mode.",
+      "Cloudflare secret settings use Config.redacted/optionalSecret; auxiliary audit worker receives a bounded subset.",
+      "Custom-domain self-host deployments disable alternate workers.dev URL; audit worker url:false.",
+      "Access deployments fail closed with a nonempty email allow-list; live Cloudflare configuration was not queried.",
+      "Persistent database IDs were preserved; no deployment or schema mutation was performed."
+    ],
+    "limitations": [
+      "Native Trivy/Checkov policies do not interpret Alchemy TypeScript or Wrangler JSONC; these observations are source review only."
+    ]
+  },
+  "limitations": [
+    "No authenticated external service behavior was tested; smoke used no provider credentials and only disposable local data.",
+    "Default container root user remains a confirmed medium risk; adopting USER node requires an upgrade-safe migration for existing root-owned state and writable build/cache paths.",
+    "Most remaining image matches require runtime-reachability validation; no-fix distro, Go build-tool, and npm-bundled findings are not silently accepted."
+  ]
+}

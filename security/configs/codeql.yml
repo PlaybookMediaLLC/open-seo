@@ -1,0 +1,15 @@
+name: OpenSEO application and security tooling
+queries:
+  - uses: security-extended
+paths-ignore:
+  - node_modules
+  - "**/node_modules"
+  - dist
+  - "**/dist"
+  - .source
+  - "**/.source"
+  - .wrangler
+  - "**/.wrangler"
+  - .tanstack
+  - "**/.tanstack"
+  - security/reports

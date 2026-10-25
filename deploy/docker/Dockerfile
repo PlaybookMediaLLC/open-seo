@@ -1,16 +1,30 @@
-# Use the full Node image so workerd has a working CA trust store for outbound HTTPS.
-FROM node:22
+# Keep workerd's system CA trust without the full buildpack image's unused
+# compilers, image decoders, and database clients. Stay on Node 22 / Debian 12.
+FROM node:22-bookworm-slim
+
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@10.30.1 --activate
+# Corporate/build-environment CAs can be supplied without persisting them in
+# image layers: docker build --secret id=proxy_ca,src=/path/to/ca.pem ...
+RUN --mount=type=secret,id=proxy_ca \
+  if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+  corepack enable \
+  && NODE_USE_ENV_PROXY=1 corepack prepare pnpm@10.34.8 --activate \
+  && NODE_USE_ENV_PROXY=1 npm install --global npm@11.21.1
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=secret,id=proxy_ca \
+  if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+  NODE_USE_ENV_PROXY=1 pnpm install --frozen-lockfile
 
 COPY . .
 

@@ -152,4 +152,14 @@ describe("weigh", () => {
       }),
     ).toEqual([]);
   });
+
+  it("evaluates adversarial ignore patterns without catastrophic backtracking", () => {
+    const longPath = { ...finding, path: `/${"a".repeat(1000)}!` };
+    expect(
+      weigh([longPath], traffic, {
+        raiseOnHighTraffic: false,
+        ignores: [{ rule: finding.rule, pathRegex: "^/(a+)+$" }],
+      }),
+    ).toEqual([longPath]);
+  });
 });

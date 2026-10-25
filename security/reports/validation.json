@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-10-25T18:24:59.741356+00:00",
+  "checks": [
+    {
+      "command": "pnpm run test:ci",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "380 test files; 2912 tests passed, including the Docker cold-start preflight regression."
+    },
+    {
+      "command": "pnpm run ci:check",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "Prettier, Knip, application+fixture TypeScript, type-aware Oxlint, plugin sync and unchanged plugin-copy check after all application changes."
+    },
+    {
+      "command": "pnpm vite build",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "Client, SSR, audit worker and eager-bundle guard completed."
+    },
+    {
+      "command": "pnpm --dir web run test:protection",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "Concurrent abuse/spend reservations, rollback and persisted budget checks passed."
+    },
+    {
+      "command": "pnpm --dir web run types:check",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "command": "pnpm --dir web run build",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "Production website build and prerender completed; 106 sitemap URLs."
+    },
+    {
+      "command": "python3 -m unittest discover -s security -p 'test_*.py'",
+      "status": "passed",
+      "exit_code": 0,
+      "tests": 9
+    },
+    {
+      "command": "python3 security/scanners/secrets-test.py",
+      "status": "passed",
+      "exit_code": 0,
+      "tests": 3
+    },
+    {
+      "command": "python3 security/scanners/runtime_test.py",
+      "status": "passed",
+      "exit_code": 0,
+      "tests": 4
+    },
+    {
+      "command": "python3 security/scanners/infrastructure-context-test.py",
+      "status": "passed",
+      "exit_code": 0,
+      "evidence": "Real synthetic Docker build excluded 8 credential-file paths and retained application/example files."
+    },
+    {
+      "command": "node --test security/tests/dependency-regressions.test.mjs",
+      "status": "passed",
+      "exit_code": 0,
+      "tests": 2
+    },
+    {
+      "command": "actionlint 1.7.12 on all four changed workflows",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "command": "bash -n on all 12 security shell scripts",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -m unittest discover -s security/tests -p 'test_*.py'",
+      "status": "passed",
+      "exit_code": 0,
+      "tests": 2
+    },
+    {
+      "command": "bash security/scan.sh fast",
+      "status": "expected_incomplete",
+      "exit_code": 2,
+      "evidence": "All selected categories executed; application wrapper exit 2 is recorded for partial Semgrep coverage; OSV proxy denial remains explicit. All category summaries were present and parsed."
+    },
+    {
+      "command": "python3 security/scanners/infrastructure-smoke.py",
+      "status": "passed",
+      "exit_code": 0,
+      "image_id": "sha256:8100abcb43f099c4acc66404c1521fb0658b513a3b8493c3145217c31c98f2ff",
+      "evidence": [
+        "Cold start: preflight, local migrations, Vite build, TypeScript check, preview and database health passed.",
+        "System CA bundle is present for workerd HTTPS trust.",
+        "Wrangler secret file and generated security reports are absent from the image.",
+        "Restart reused disposable local database state and passed database health."
+      ]
+    },
+    {
+      "command": "JSON Schema validation against SARIF 2.1.0 for all four published SARIF reports",
+      "status": "passed",
+      "exit_code": 0
+    }
+  ],
+  "notes": [
+    "Docker startup/restart and scanner completion are recorded separately in category reports; these application validation results do not establish a clean vulnerability scan.",
+    "Build warnings: existing chunk-size/dynamic-import notices and Zod PURE annotation warnings were non-fatal. Knip reported one pre-existing configuration hint.",
+    "No deploy, release publication, production migration, or remote repository setting change was performed.",
+    "After the full CI run, documentation/report-only updates and the dedup source-observation fix were checked with formatting, nine aggregator regressions, focused Semgrep (zero findings/errors), JSON/SARIF validation, actionlint and git diff --check. Application code did not change."
+  ]
+}

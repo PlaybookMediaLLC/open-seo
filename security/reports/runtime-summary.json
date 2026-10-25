@@ -1,0 +1,611 @@
+{
+  "generated_at": "2026-10-25T17:46:23.040768+00:00",
+  "tools": [
+    {
+      "name": "Nuclei",
+      "version": "3.11.1",
+      "status": "success",
+      "command": "nuclei -u AUTHORIZED_ORIGIN -t security/configs/nuclei -ni -duc -dr -rl 1 -c 1 -bs 1 -retries 0 -or -ot -jsonl",
+      "coverage": "Two reviewed GET-only HTTP templates; no redirects/OAST/fuzzing",
+      "limitations": [
+        "Coverage is intentionally bounded; not a complete active vulnerability assessment."
+      ]
+    },
+    {
+      "name": "OWASP ZAP",
+      "version": "2.17.0",
+      "status": "success",
+      "command": "zap.sh -silent -daemon; protected exact-path context; active rules disabled; sendRequest followRedirects=false; passive alerts",
+      "coverage": "Fixed GET paths from security/configs/runtime-paths.json",
+      "limitations": [
+        "Unauthenticated responses only; no spider, AJAX spider, active scanning or paid integrations."
+      ]
+    },
+    {
+      "name": "Burp Suite",
+      "version": null,
+      "status": "blocked",
+      "command": null,
+      "coverage": "No automated scan executed",
+      "limitations": [
+        "Official PortSwigger download was proxy-blocked (CONNECT HTTP 403) in the assessment environment.",
+        "Community Edition has no automated scanner; licensed/manual configuration is required. See security/configs/burp.md."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "RUNTIME-b53a0ee967a6",
+      "scanners": [
+        {
+          "tool": "Nuclei",
+          "rule": "openseo-response-headers"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/",
+      "description": "Application HTML response hardening",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/"
+    },
+    {
+      "id": "RUNTIME-c4e28bf8d7a6",
+      "scanners": [
+        {
+          "tool": "Nuclei",
+          "rule": "openseo-response-headers"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/sign-in",
+      "description": "Application HTML response hardening",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/sign-in"
+    },
+    {
+      "id": "RUNTIME-da3e43346050",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10021"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/api/auth/get-session",
+      "description": "X-Content-Type-Options Header Missing",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/api/auth/get-session"
+    },
+    {
+      "id": "RUNTIME-0356fb367bc9",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10021"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/api/health",
+      "description": "X-Content-Type-Options Header Missing",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/api/health"
+    },
+    {
+      "id": "RUNTIME-267cc1dc72b1",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10021"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/.well-known/oauth-authorization-server",
+      "description": "X-Content-Type-Options Header Missing",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/.well-known/oauth-authorization-server"
+    },
+    {
+      "id": "RUNTIME-205629edb684",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/sign-in",
+      "description": "CSP: Failure to Define Directive with No Fallback",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/sign-in"
+    },
+    {
+      "id": "RUNTIME-c17fe683c4db",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/",
+      "description": "CSP: Failure to Define Directive with No Fallback",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/"
+    },
+    {
+      "id": "RUNTIME-4612b2c61317",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/sign-in",
+      "description": "CSP: Wildcard Directive",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/sign-in"
+    },
+    {
+      "id": "RUNTIME-aaab7e7e3738",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/",
+      "description": "CSP: Wildcard Directive",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/"
+    },
+    {
+      "id": "RUNTIME-b18fb47b9136",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/sign-in",
+      "description": "CSP: script-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/sign-in"
+    },
+    {
+      "id": "RUNTIME-55ff4e70e2a3",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/",
+      "description": "CSP: script-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/"
+    },
+    {
+      "id": "RUNTIME-cd0065289795",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/sign-in",
+      "description": "CSP: style-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/sign-in"
+    },
+    {
+      "id": "RUNTIME-d8c9e775664a",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/.git/config",
+      "description": "CSP: Failure to Define Directive with No Fallback",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/.git/config"
+    },
+    {
+      "id": "RUNTIME-68b6a05cf116",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/",
+      "description": "CSP: style-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/"
+    },
+    {
+      "id": "RUNTIME-7ec85f80cc1d",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/.git/config",
+      "description": "CSP: Wildcard Directive",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/.git/config"
+    },
+    {
+      "id": "RUNTIME-86915c52b6dc",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/.git/config",
+      "description": "CSP: script-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/.git/config"
+    },
+    {
+      "id": "RUNTIME-11e8d1981ace",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10055"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "/.git/config",
+      "description": "CSP: style-src unsafe-inline",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "Observed Content-Security-Policy: frame-ancestors 'self'. src/server.ts appFetch intentionally applies framing protection without a script/style policy; no XSS was reproduced.",
+      "impact": "A restrictive CSP would limit the impact of a separate injection defect. This scan did not establish such a defect or verify deployed CDN/Worker headers.",
+      "recommendation": "Verify staging policy and design nonce-aware script restrictions compatible with TanStack bootstrap, Turnstile and PostHog before changing this policy.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:csp:/.git/config"
+    },
+    {
+      "id": "RUNTIME-127887a0b674",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10019"
+        }
+      ],
+      "severity": "info",
+      "confidence": "medium",
+      "location": "/.env",
+      "description": "Content-Type Header Missing",
+      "cwe_cve": [
+        "CWE-345"
+      ],
+      "evidence": "GET /.env returned Vite HTTP 403 with no file contents. The missing content type belongs to a development-server deny response.",
+      "impact": "No secret exposure and no demonstrated product vulnerability.",
+      "recommendation": "No product change from this development-only response; retain denied access and verify deployed handling separately.",
+      "agent": "E",
+      "status": "false_positive",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ]
+    },
+    {
+      "id": "RUNTIME-9a3d85760c40",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10109"
+        }
+      ],
+      "severity": "info",
+      "confidence": "medium",
+      "location": "/.git/config",
+      "description": "Modern Web Application",
+      "cwe_cve": [],
+      "evidence": "ZAP identified a modern web application. This informational fingerprint contains no vulnerability assertion.",
+      "impact": "No security defect demonstrated.",
+      "recommendation": "No remediation required.",
+      "agent": "E",
+      "status": "false_positive",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ]
+    },
+    {
+      "id": "RUNTIME-d45364ed0e74",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10109"
+        }
+      ],
+      "severity": "info",
+      "confidence": "medium",
+      "location": "/sign-in",
+      "description": "Modern Web Application",
+      "cwe_cve": [],
+      "evidence": "ZAP identified a modern web application. This informational fingerprint contains no vulnerability assertion.",
+      "impact": "No security defect demonstrated.",
+      "recommendation": "No remediation required.",
+      "agent": "E",
+      "status": "false_positive",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ]
+    },
+    {
+      "id": "RUNTIME-1e03aaae8c77",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10021"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/sign-in",
+      "description": "X-Content-Type-Options Header Missing",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/sign-in"
+    },
+    {
+      "id": "RUNTIME-cbc3009782c9",
+      "scanners": [
+        {
+          "tool": "OWASP ZAP",
+          "rule": "10021"
+        }
+      ],
+      "severity": "low",
+      "confidence": "medium",
+      "location": "/",
+      "description": "X-Content-Type-Options Header Missing",
+      "cwe_cve": [
+        "CWE-693"
+      ],
+      "evidence": "The local development response omits X-Content-Type-Options; correct HTML/JSON MIME types were observed. No executable user-controlled response or MIME-confusion attack was reproduced.",
+      "impact": "Defense-in-depth header omission; practical vulnerability and deployed response behavior remain unverified.",
+      "recommendation": "Confirm staging headers and MIME behavior, then consider nosniff where compatible. Do not infer production configuration from Vite dev responses.",
+      "agent": "E",
+      "status": "unverified",
+      "verification": [
+        "Agent E manually reviewed the healthy isolated hosted-mode development instance on 2026-10-25.",
+        "See security/reports/runtime-assessment.md for scope, evidence and limitations."
+      ],
+      "dedup_key": "runtime:nosniff:/"
+    }
+  ],
+  "notes": [
+    "Only explicitly authorized exact origin requested; no redirects followed.",
+    "Reports omit raw bodies, cookies, authorization headers, secrets, and query strings.",
+    "Scanner alerts require manual validation; findings are not marked fixed by this wrapper.",
+    "Assessment target: http://127.0.0.1:3217, isolated Vite development instance, own local D1, dummy providers, no production/staging systems scanned.",
+    "All 22 metadata alerts manually triaged; same-endpoint CSP subrules and Nuclei/ZAP nosniff observations deduplicate in the aggregate registry.",
+    "Four runtime safety tests pass. No confirmed runtime application vulnerability or runtime application fix is claimed."
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "package": "zlib1g",
+  "files": [
+    "/.",
+    "/lib",
+    "/lib/x86_64-linux-gnu",
+    "/lib/x86_64-linux-gnu/libz.so.1.2.13",
+    "/usr",
+    "/usr/share",
+    "/usr/share/doc",
+    "/usr/share/doc/zlib1g",
+    "/usr/share/doc/zlib1g/changelog.Debian.gz",
+    "/usr/share/doc/zlib1g/changelog.gz",
+    "/usr/share/doc/zlib1g/copyright",
+    "/lib/x86_64-linux-gnu/libz.so.1"
+  ],
+  "libraries": [
+    "/lib/x86_64-linux-gnu/libz.so.1.2.13",
+    "/lib/x86_64-linux-gnu/libz.so.1"
+  ],
+  "containsMiniZipSymbol": false,
+  "minizip_package_query_exit": 1,
+  "minizip_packages": "",
+  "image_id": "sha256:a5e3a282254085c6da093af9214726f9c86485bc7d5a80c0a0c15fd46988c245"
+}

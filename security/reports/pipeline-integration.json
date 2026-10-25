@@ -1,0 +1,267 @@
+{
+  "command": "SECURITY_TOOLS_DIR=/workspace/.security-tools bash security/scan.sh fast",
+  "exit_code": 2,
+  "generated_at": "2026-10-25T18:06:42.987155+00:00",
+  "gate": {
+    "status": "incomplete",
+    "blocking_findings": 3
+  },
+  "errors": [
+    "application: wrapper exited 2"
+  ],
+  "findings_by_status": {
+    "false_positive": 130,
+    "fixed": 50,
+    "confirmed": 4
+  },
+  "tools": [
+    {
+      "name": "gitleaks",
+      "scope": "worktree",
+      "version": "8.30.1",
+      "status": "success",
+      "command": "gitleaks dir $TRACKED_WORKTREE --redact=100 --no-banner --no-color --ignore-gitleaks-allow --gitleaks-ignore-path $PRIVATE_TMP/empty-ignore --config $REPO/security/configs/secrets-gitleaks.toml --exit-code=10 --report-format=json --report-path $PRIVATE_TMP/gitleaks-worktree.json",
+      "coverage": "worktree",
+      "limitations": [],
+      "exit_code": 10,
+      "detections": 8,
+      "category": "secrets"
+    },
+    {
+      "name": "gitleaks",
+      "scope": "history",
+      "version": null,
+      "status": "deferred",
+      "command": null,
+      "coverage": "history",
+      "limitations": [
+        "Full history is scanned by full mode; fast mode scans current files."
+      ],
+      "category": "secrets"
+    },
+    {
+      "name": "trufflehog",
+      "scope": "worktree",
+      "version": "trufflehog 3.99.7",
+      "status": "success",
+      "command": "trufflehog filesystem $TRACKED_WORKTREE --no-verification --no-update --no-ignore-tag --json --fail --fail-on-scan-errors --concurrency=4",
+      "coverage": "worktree",
+      "limitations": [],
+      "exit_code": 183,
+      "detections": 7,
+      "category": "secrets"
+    },
+    {
+      "name": "trufflehog",
+      "scope": "history",
+      "version": null,
+      "status": "deferred",
+      "command": null,
+      "coverage": "history",
+      "limitations": [
+        "Full history is scanned by full mode; fast mode scans current files."
+      ],
+      "category": "secrets"
+    },
+    {
+      "name": "Semgrep",
+      "version": "1.182.1",
+      "status": "error",
+      "command": "semgrep scan --config <all pinned official javascript/typescript/python security directories> --config security/configs/semgrep-local.yml --no-rewrite-rule-ids --metrics=off --disable-version-check --jobs 2 --max-memory 2048 --json .",
+      "coverage": "Repository JS/TS/TSX/Python, including application, marketing, workers, tests, scripts and deployment code; generated/build/dependency output excluded.",
+      "limitations": [
+        "Partial scan: 6 parser/timeout/other errors; see sanitized JSON."
+      ],
+      "scanned_files": 2787,
+      "category": "application"
+    },
+    {
+      "name": "CodeQL",
+      "language": "javascript",
+      "version": null,
+      "status": "deferred",
+      "command": "codeql database create --language=javascript --build-mode=none --codescanning-config=security/configs/codeql.yml; codeql database analyze javascript-security-extended.qls --format=sarifv2.1.0 --threads=2 --ram=4096",
+      "coverage": "Repository javascript sources; security-extended suite; generated/build/dependency output excluded.",
+      "limitations": [
+        "Full-repository CodeQL is deferred to the scheduled/manual full profile."
+      ],
+      "category": "application"
+    },
+    {
+      "name": "CodeQL",
+      "language": "python",
+      "version": null,
+      "status": "deferred",
+      "command": "codeql database create --language=python --build-mode=none --codescanning-config=security/configs/codeql.yml; codeql database analyze python-security-extended.qls --format=sarifv2.1.0 --threads=2 --ram=4096",
+      "coverage": "Repository python sources; security-extended suite; generated/build/dependency output excluded.",
+      "limitations": [
+        "Full-repository CodeQL is deferred to the scheduled/manual full profile."
+      ],
+      "category": "application"
+    },
+    {
+      "name": "OSV-Scanner",
+      "version": "osv-scanner version: 2.7.0",
+      "status": "blocked",
+      "command": "osv-scanner scan source --no-resolve --all-vulns --format json --output-file REPORT/dependencies-osv.json --lockfile pnpm-lock.yaml --lockfile tests/badseo/pnpm-lock.yaml --lockfile web/pnpm-lock.yaml",
+      "coverage": [
+        "pnpm-lock.yaml",
+        "tests/badseo/pnpm-lock.yaml",
+        "web/pnpm-lock.yaml"
+      ],
+      "limitations": [
+        "OSV vulnerability matching did not complete. Install the tool and allow api.osv.dev through the configured proxy; this result is not a clean scan.",
+        "The api.osv.dev request was rejected by the network proxy (403/Forbidden)."
+      ],
+      "exit_code": 127,
+      "category": "dependencies"
+    },
+    {
+      "name": "pnpm audit (.)",
+      "version": "10.34.8",
+      "status": "success",
+      "command": "pnpm --dir . audit --json",
+      "coverage": [
+        "pnpm-lock.yaml",
+        "Production, development, optional and transitive dependencies; no --prod filter."
+      ],
+      "limitations": [
+        "Registry advisory matching proves affected package versions, not runtime reachability."
+      ],
+      "exit_code": 1,
+      "category": "dependencies"
+    },
+    {
+      "name": "pnpm audit (tests/badseo)",
+      "version": "10.34.8",
+      "status": "success",
+      "command": "pnpm --dir tests/badseo audit --json",
+      "coverage": [
+        "tests/badseo/pnpm-lock.yaml",
+        "Production, development, optional and transitive dependencies; no --prod filter."
+      ],
+      "limitations": [
+        "Registry advisory matching proves affected package versions, not runtime reachability."
+      ],
+      "exit_code": 0,
+      "category": "dependencies"
+    },
+    {
+      "name": "pnpm audit (web)",
+      "version": "10.34.8",
+      "status": "success",
+      "command": "pnpm --dir web audit --json",
+      "coverage": [
+        "web/pnpm-lock.yaml",
+        "Production, development, optional and transitive dependencies; no --prod filter."
+      ],
+      "limitations": [
+        "Registry advisory matching proves affected package versions, not runtime reachability."
+      ],
+      "exit_code": 0,
+      "category": "dependencies"
+    },
+    {
+      "name": "pip-audit",
+      "version": null,
+      "status": "not_applicable",
+      "command": "pip-audit --require-hashes --disable-pip --no-deps -r <reviewed-requirements-lockfile> --format json",
+      "coverage": [],
+      "limitations": [
+        "No third-party Python dependency manifests; scanner virtualenvs are out of application scope."
+      ],
+      "category": "dependencies"
+    },
+    {
+      "name": "Trivy dependencies",
+      "version": "Version: 0.76.1",
+      "status": "deferred",
+      "command": "",
+      "coverage": "All lockfiles",
+      "limitations": [
+        "Full mode scans application and development dependencies."
+      ],
+      "category": "infrastructure"
+    },
+    {
+      "name": "Trivy config",
+      "version": "Version: 0.76.1",
+      "status": "success",
+      "command": "$SECURITY_TOOLS_DIR/bin/trivy fs --config security/configs/infrastructure-trivy.yaml --scanners misconfig --include-dev-deps --format json --output <private-report> --cache-dir $SECURITY_TOOLS_DIR/trivy-cache --timeout 5m --quiet .",
+      "coverage": "Repository Dockerfiles and supported IaC",
+      "limitations": [],
+      "category": "infrastructure"
+    },
+    {
+      "name": "Trivy image",
+      "version": "Version: 0.76.1",
+      "status": "deferred",
+      "command": "",
+      "coverage": "Local application image",
+      "limitations": [
+        "Image scanning runs in full mode."
+      ],
+      "category": "infrastructure"
+    },
+    {
+      "name": "Checkov repository",
+      "version": "3.3.30",
+      "status": "success",
+      "command": "$SECURITY_TOOLS_DIR/checkov-venv/bin/checkov -d . --skip-download --quiet --output json --skip-framework secrets sca_package sca_image --skip-path (^|/)(node_modules|\\.git|\\.wrangler|dist|\\.logs|security/(reports|runs))(/|$)",
+      "coverage": "All locally supported IaC definitions",
+      "limitations": [
+        "Secret scanning and package/image SCA are handled by dedicated scanners; no Prisma Cloud account used."
+      ],
+      "category": "infrastructure"
+    },
+    {
+      "name": "Checkov github-actions",
+      "version": "3.3.30",
+      "status": "success",
+      "command": "$SECURITY_TOOLS_DIR/checkov-venv/bin/checkov -d .github --skip-download --quiet --output json --framework github_actions",
+      "coverage": "All GitHub Actions workflows",
+      "limitations": [
+        "Secret scanning and package/image SCA are handled by dedicated scanners; no Prisma Cloud account used."
+      ],
+      "category": "infrastructure"
+    },
+    {
+      "name": "Nuclei",
+      "version": null,
+      "status": "deferred",
+      "command": null,
+      "coverage": "No scanner requests (readiness checks may have been attempted)",
+      "limitations": [
+        "No authorized target supplied; runtime scan was not executed."
+      ],
+      "category": "runtime"
+    },
+    {
+      "name": "OWASP ZAP",
+      "version": null,
+      "status": "deferred",
+      "command": null,
+      "coverage": "No scanner requests (readiness checks may have been attempted)",
+      "limitations": [
+        "No authorized target supplied; runtime scan was not executed."
+      ],
+      "category": "runtime"
+    },
+    {
+      "name": "Burp Suite",
+      "version": null,
+      "status": "deferred",
+      "command": null,
+      "coverage": "No scanner requests (readiness checks may have been attempted)",
+      "limitations": [
+        "No authorized target supplied; runtime scan was not executed."
+      ],
+      "category": "runtime"
+    }
+  ],
+  "notes": [
+    "End-to-end entry point completed every selected scanner category and failed closed as expected.",
+    "OSV proxy denial and Semgrep parser warnings remain incomplete; full-mode tools and absent authorized runtime target were explicitly deferred.",
+    "This integration record is a fast-mode run; the aggregate full assessment uses the separately executed full/history/CodeQL/image and local-runtime category snapshots."
+  ]
+}

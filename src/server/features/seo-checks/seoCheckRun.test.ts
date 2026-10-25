@@ -137,6 +137,17 @@ const stored = (runId: string) =>
     .where(eq(ciCheckFindings.runId, runId));
 const budget = { links: 200, renders: 5 };
 
+it("refuses stored gate patterns that the current matcher cannot safely evaluate", async () => {
+  const { runId } = await queuedRun({
+    gateConfig: JSON.stringify({
+      ignore: [{ rule: "newly-noindex", path: "^/(a+)\\1$" }],
+    }),
+  });
+  await expect(planCheck(runId)).rejects.toThrow(
+    "without lookaround or backreferences",
+  );
+});
+
 it("finds the regressions, weighs them by traffic and stores the run", async () => {
   const { runId } = await queuedRun();
   const plan = await planCheck(runId);

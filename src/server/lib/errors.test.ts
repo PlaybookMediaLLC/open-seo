@@ -4,6 +4,11 @@ import { AppError, toClientError } from "@/server/lib/errors";
 describe("toClientError", () => {
   it.each([
     {
+      label: "preserves the actionable saved-pattern validation code",
+      error: new Error("INVALID_PATH_PATTERN"),
+      message: "INVALID_PATH_PATTERN",
+    },
+    {
       label: "sanitizes internal detail down to the bare code",
       error: new AppError(
         "INTERNAL_ERROR",

@@ -151,6 +151,7 @@ export async function planCheck(runId: string) {
     .where(eq(ciCheckIgnores.projectId, run.projectId));
   // RFC-0015 5.4: the file was validated when the run was queued.
   const gate = run.gateConfig ? parseGateConfig(run.gateConfig) : null;
+  if (gate && "error" in gate) throw new Error(gate.error);
   const config = gate && "config" in gate ? gate.config : null;
   const enabled = run.packsEnabled.split(" ");
   const nested = baseSite.urls.flatMap((url) => {

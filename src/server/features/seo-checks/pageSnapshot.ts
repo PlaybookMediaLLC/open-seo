@@ -13,6 +13,7 @@ const USER_AGENT =
   "RelaySEOCheck/1.0 (+https://relay.playbookmedia.io/docs/seo-checks)";
 const MAX_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 10_000;
+const MAX_ASSET_REDIRECTS = 5;
 
 const failed: Snapshot = {
   status: null,
@@ -193,15 +194,33 @@ export async function linkStatus(url: string, access: CrawlerAccess | null) {
  */
 export async function assetSize(url: string, access: CrawlerAccess | null) {
   try {
-    await normalizeAndValidateStartUrl(url);
-    const response = await fetch(url, {
-      method: "HEAD",
-      redirect: "follow",
-      headers: { "User-Agent": USER_AGENT, ...crawlerHeadersFor(url, access) },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    const length = Number(response.headers.get("content-length"));
-    return response.ok && Number.isFinite(length) && length > 0 ? length : null;
+    let current = url;
+    const signal = AbortSignal.timeout(TIMEOUT_MS);
+    for (let hop = 0; hop <= MAX_ASSET_REDIRECTS; hop++) {
+      current = await normalizeAndValidateStartUrl(current);
+      const response = await fetch(current, {
+        method: "HEAD",
+        redirect: "manual",
+        headers: {
+          "User-Agent": USER_AGENT,
+          ...crawlerHeadersFor(current, access),
+        },
+        signal,
+      });
+      await response.body?.cancel();
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get("location");
+        if (!location) return null;
+        // Each hop rechecks SSRF policy and scopes credentials to its host.
+        current = new URL(location, current).toString();
+        continue;
+      }
+      const length = Number(response.headers.get("content-length"));
+      return response.ok && Number.isFinite(length) && length > 0
+        ? length
+        : null;
+    }
+    return null;
   } catch {
     return null;
   }

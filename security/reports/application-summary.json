@@ -1,0 +1,3341 @@
+{
+  "tools": [
+    {
+      "name": "Semgrep",
+      "version": "1.182.1",
+      "status": "error",
+      "command": "bash security/scanners/application.sh REPORT_DIR full (pinned official JavaScript, TypeScript, Python security rules plus semgrep-local.yml; --metrics=off --disable-version-check --no-rewrite-rule-ids --jobs 2 --max-memory 2048 --json)",
+      "coverage": "All nonignored repository targets for official JS/TS/Python security rules. Full scan followed by fresh security Python rescan after agent edits stabilized.",
+      "limitations": [
+        "Six partial parser warnings remain explicit. Default ignored build/dependency paths and three targets larger than 1 MB were skipped; no tracked JS/TS/Python source exceeds 1 MB.",
+        "Partial scan: 6 parser/timeout/other errors; see sanitized JSON."
+      ],
+      "scanned_files": 2821,
+      "rules_commit": "16b9e6d45f10649f6a531ec4838ed9924372c3bc"
+    },
+    {
+      "name": "CodeQL",
+      "language": "javascript",
+      "version": "2.27.3",
+      "status": "success",
+      "command": "LGTM_INDEX_INCLUDE=$'.\\n.agents' codeql database create --language=javascript-typescript --build-mode=none --codescanning-config=security/configs/codeql.yml --threads=2 --ram=4096; codeql database analyze javascript-security-extended.qls --format=sarifv2.1.0 --threads=2 --ram=4096",
+      "coverage": "All 2001 eligible repository JavaScript/TypeScript source files, including hidden skill scripts; 105 security-extended queries.",
+      "limitations": [
+        "The infrastructure agent subsequently made a one-line Node compatibility change in src/lib/auth-mode.ts; a focused Semgrep rescan of that final file reported 0 findings/0 errors. No original SAST finding involved that file."
+      ],
+      "expected_files": 2001,
+      "scanned_files": 2001,
+      "query_pack": "codeql/javascript-queries@2.4.8"
+    },
+    {
+      "name": "CodeQL",
+      "language": "python",
+      "version": "2.27.3",
+      "status": "success",
+      "command": "codeql database create --language=python --build-mode=none --codescanning-config=security/configs/codeql.yml --threads=2 --ram=2048; codeql database analyze python-security-extended.qls --format=sarifv2.1.0 --threads=2 --ram=2048",
+      "coverage": "All 13 repository Python tooling files; 52 security-extended queries.",
+      "limitations": [
+        "After the full Python CodeQL run, security/scanners/infrastructure.py changed only its generated-output exclusion from security/reports to security/(reports|runs). A fresh focused Semgrep scan using all 18 official Python security rule directories reported the same reviewed subprocess audit match and 0 errors. CodeQL was not rerun for this exclusion constant; its coverage counts describe the preceding source snapshot.",
+        "After the full Python CodeQL run, security/scanners/infrastructure-smoke.py was updated to reread Docker's ephemeral host port after restart and require the refreshed address to remain on 127.0.0.1 before its health check. A fresh focused Semgrep scan with all 18 official Python security rule directories reported 0 findings and 0 errors. CodeQL was not rerun for this local smoke-helper change; its coverage counts describe the preceding source snapshot.",
+        "After the full Python CodeQL run, security/report.py was updated to retain per-source deduplicated observations and select location/evidence/remediation from the remaining open component. A fresh focused Semgrep scan with all 18 official Python security rule directories reported 0 findings and 0 errors. CodeQL was not rerun for this local report aggregation change; its coverage counts describe the preceding source snapshot."
+      ],
+      "expected_files": 13,
+      "scanned_files": 13,
+      "query_pack": "codeql/python-queries@1.8.13"
+    }
+  ],
+  "findings": [
+    {
+      "id": "SEC-B-56ac680225e4",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-redos"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "deploy/alchemy/alchemy.run.ts:332",
+      "description": "Reviewed detect-redos audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "The hostname expression separates repeated labels with literal dots outside the label character class; it has no overlapping nested repetition. Alchemy input is also operator configuration.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-81383b1e3b6b",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "react-href-var"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/features/ai-search/components/PromptExplorerResults.tsx:152",
+      "description": "Reviewed react-href-var audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "Citation extraction calls safeHttpUrl before constructing stored/returned citations; it rejects non-http(s) schemes and embedded credentials. The component renders only that normalized citation model.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-484679aa8f3a",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "jquery-insecure-selector"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/features/backlinks/BacklinksTable.test.ts:26",
+      "description": "Reviewed jquery-insecure-selector audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ba22244502ff",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "js-open-redirect-from-function"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/client/features/integrations/googleLinkError.test.ts:15",
+      "description": "Reviewed js-open-redirect-from-function audit match.",
+      "cwe_cve": [
+        "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2bc4c47a2b9d",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/features/integrations/startGoogleLink.ts:55",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "Lookup key is the closed UI provider union (gsc/ga4); values are fixed imported server-function references.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f462465a39f6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "js-open-redirect-from-function"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/client/features/integrations/startGoogleLink.ts:57",
+      "description": "Reviewed js-open-redirect-from-function audit match.",
+      "cwe_cve": [
+        "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      ],
+      "evidence": "Navigation uses the authenticated server OAuth-start result. googleOAuth.ts constructs the provider authorization URL with a fixed Google origin and signed single-use state; caller callback paths do not replace that origin.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f462465a39f6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "js-open-redirect-from-function"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/client/features/integrations/startGoogleLink.ts:57",
+      "description": "Reviewed js-open-redirect-from-function audit match.",
+      "cwe_cve": [
+        "CWE-601: URL Redirection to Untrusted Site ('Open Redirect')"
+      ],
+      "evidence": "Navigation uses the authenticated server OAuth-start result. googleOAuth.ts constructs the provider authorization URL with a fixed Google origin and signed single-use state; caller callback paths do not replace that origin.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d11f402b9e60",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:45",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d11f402b9e60",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:45",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-4f974feed7ec",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:46",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-a7ebf1833d9e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:49",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-a7ebf1833d9e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:49",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ac82abf58aed",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:52",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-785a665587e4",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/client/lib/clipboard.ts:60",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-c502be2e852a",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/lib/auth.ts:160",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "Dynamic console method is chosen from Better Auth log levels and a local debug-to-log mapping; it cannot select an arbitrary application method.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-3d4e1f0e8539",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/routes/sitemap[.]xml.ts:17",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Sitemap values come from fixed Relay origin plus repository-authored documentation route metadata, not request parameters or customer text.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b4d5ca569e98",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/email/loops-client.ts:112",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-89542bbe90ca",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/email/relay-email.ts:34",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-c8156d95ae25",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/accessibility/AccessibilityCheckService.test.ts:72",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f7bcb897254d",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/accessibility/AltTextDraftService.ts:112",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-61ae77d3716a",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/accessibility/accessibilityStep.test.ts:150",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b1a3bb9f96dc",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/accessibility/accessibilityStep.test.ts:195",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-47e9f150a2ea",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/accessibility/axeRun.test.ts:70",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-50dfcb76ac40",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/brandLookup.ts:151",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-97e6d0115e85",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/brandLookup.ts:358",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-cea4388aed21",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/brandLookup.ts:388",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-70bd45d08c79",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/promptExplorer.ts:161",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-081cfd2917b3",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/promptExplorer.ts:327",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b17c944f1c42",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-search/services/promptExplorer.ts:351",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d38bddbc2ad5",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts:161",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-7fcf1cfad85f",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts:212",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b5d940675318",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts:295",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-1a5774f96776",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/aiVisibilityMatching.ts:44",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e58c7f2d5d7d",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/aiVisibilityMatching.ts:112",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-1886eb85b2f2",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/ai-visibility/services/websiteTrackingSetup.ts:72",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e5d47194dbce",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/audit/services/AuditService.ts:315",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b2bd7bf9b7c4",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/audit/services/AuditService.ts:328",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b5f9f3a6e2d5",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/audit/services/auditReconciler.ts:127",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-7ab96aaaaadf",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/conversion/CopyDraftService.ts:102",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2c33c7dd84ea",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/conversion/CopyDraftService.ts:104",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "XML-like delimiters are sent as plain LLM prompt text, not rendered as browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-fe9b1ca35102",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/conversion/copyDraftChecks.ts:79",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-34ad443d6ac7",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/docs/DocsDraftService.ts:148",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "input.kind is validated by the documentation draft discriminated union, selecting a fixed formatter from WHAT.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-be3f59b17615",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/docs/DocsDraftService.ts:156",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-4a1900e580d8",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/growth/GrowthJobService.ts:189",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "kind is a validated growth-job kind from the authorized schedule/workflow; GROWTH_JOBS is a fixed dispatcher with a missing-job guard.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-485b723c4402",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/growth/emailDigest.ts:117",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-bf1277e73495",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/growth/emailDigest.ts:120",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ca4ebb039404",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/opportunities/services/ContentBriefService.ts:147",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d25bf708e685",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/opportunities/services/OpportunityService.test.ts:135",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ad7e68d31c14",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/opportunities/services/detectors/shared.ts:155",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-66139c58a4d9",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/PublishingConnectionService.test.ts:94",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-7f199c1fc388",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/anchorDraft.ts:74",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-97ad295d8fa3",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/anchorDraft.ts:76",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "XML-like delimiters are sent as plain LLM prompt text, not rendered as browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-6db35a42f1bc",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/draftChecks.ts:59",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-94d991a2584e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "raw-html-join"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/draftInputs.ts:153",
+      "description": "Reviewed raw-html-join audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-0a36f2c42598",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/pageTexts.test.ts:11",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-84dbc3f58ac6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/publishing/pagesRouterHead.test.ts:5",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-a1ace81f2fd4",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/rank-tracking/services/scheduledRankChecks.ts:132",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-71feaf0361ab",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/rank-tracking/services/scheduledRankChecks.ts:189",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-5f7b3e44172e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/features/rank-tracking/services/scheduledRankChecks.ts:221",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ec16df8b7af3",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/reports/reportRoute.test.ts:80",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e4fdd0839ef6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/reports/reportRoute.test.ts:104",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-58c140290226",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/reports/sharePage.test.ts:47",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-28d7a42aa085",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/reports/sharePage.test.ts:56",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-a95f50924689",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/seo-checks/seoCheckRun.test.ts:62",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f77b855059ed",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/seo-checks/urlSelection.ts:60",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Patterns are derived from route file segments, metacharacters are escaped, and each dynamic segment becomes a non-slash character class separated by a literal slash. This is not evaluation of arbitrary regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e874c29d2afd",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/split-tests/SplitTestService.test.ts:74",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-8db6ab16f898",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/split-tests/splitTestRefresh.test.ts:58",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2e506d3dc10b",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/support/redact.ts:23",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-3f608380ea96",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/discovery.test.ts:5",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2c3e804abc6b",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/discovery.test.ts:6",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-27321ada307e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:213",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2cb68fd055ba",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:234",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-da850429cee2",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:238",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e75c5e613030",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:241",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-dddd908bcff8",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:257",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f9802dcc56e9",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/page-analyzer.test.ts:282",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-9eb425e04f83",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-dynamic-method"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/lib/audit/url-policy.test.ts:62",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "cwe_cve": [
+        "CWE-94: Improper Control of Generation of Code ('Code Injection')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-fc2472c2086c",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/lib/chatAgent.ts:19",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-9e02d8b40fe6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/lib/dataforseo/envelope.ts:346",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e6b2a8c27009",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/lib/dataforseo/llm-models.ts:128",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e58a0a7435df",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/mcp/instrumentation.ts:187",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-5f0582d087ab",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-redos"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/mcp/tools/dataforseo-research-tools.ts:144",
+      "description": "Reviewed detect-redos audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Hostname expression has disjoint literal-dot separators and a 253/255-character bound before matching; the audit rule does not model this constraint.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-cbf75bbe3ce6",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/AiVisibilityWorkflow.ts:87",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d10a98147ae1",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/AiVisibilityWorkflow.ts:105",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-77fe24330ac3",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/AiVisibilityWorkflow.ts:121",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b8520384f37a",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/AiVisibilityWorkflow.ts:156",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-65623da262a0",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/RankCheckWorkflow.ts:416",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-8f19738bf2df",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/SiteAuditWorkflow.ts:102",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-bdb6dfccc693",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/rankCheckPaths.ts:180",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-44464e173528",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/rankCheckPaths.ts:295",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f382bfce4436",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/rankCheckPaths.ts:392",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-743b6b5d86c1",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/rankCheckPaths.ts:441",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-0c746d91a55b",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/server/workflows/site-audit-workflow-helpers.ts:247",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ab8e3c54a3ec",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "src/serverFunctions/rank-tracking.ts:196",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2ca8b5e4b6b0",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-redos"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/shared/crawler-access.ts:60",
+      "description": "Reviewed detect-redos audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "The hostname expression separates repeated labels with literal dots outside the label character class; it has no overlapping nested repetition. Alchemy input is also operator configuration.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-8eef99cda710",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "hardcoded-hmac-key"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/shared/gdpr-erasure.test.ts:10",
+      "description": "Reviewed hardcoded-hmac-key audit match.",
+      "cwe_cve": [
+        "CWE-798: Use of Hard-coded Credentials"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-c0c0e4e9d231",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/shared/report-sandbox.ts:93",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Interpolated PRINT_SCRIPT is a static developer-authored script. Report content remains constrained by the separate report sandbox CSP and iframe policy.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ac894e018248",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "html-in-template-string"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "web/scripts/generate-sitemap.js:148",
+      "description": "Reviewed html-in-template-string audit match.",
+      "cwe_cve": [
+        "CWE-116: Improper Encoding or Escaping of Output"
+      ],
+      "evidence": "Build-time sitemap uses operator SITE_URL and repository-authored route/content metadata. No request or remotely submitted content reaches this XML template.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-c1759d5517a5",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "react-dangerouslysetinnerhtml"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "web/src/components/library-page.tsx:79",
+      "description": "Reviewed react-dangerouslysetinnerhtml audit match.",
+      "cwe_cve": [
+        "CWE-79: Improper Neutralization of Input During Web Page Generation ('Cross-site Scripting')"
+      ],
+      "evidence": "Breadcrumb JSON-LD inputs are repository-authored MDX library metadata, not user/remote content. No attacker-controlled route parameter is inserted into this script.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-4675042a6d12",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-redos"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "web/src/lib/free-tools/server.ts:38",
+      "description": "Reviewed detect-redos audit match.",
+      "cwe_cve": [
+        "CWE-1333: Inefficient Regular Expression Complexity"
+      ],
+      "evidence": "Hostname expression has disjoint literal-dot separators and a 253/255-character bound before matching; the audit rule does not model this constraint.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ef2974c79d0d",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "web/src/lib/free-tools/server.ts:241",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-2c84e0bc6d74",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "web/src/routes/api/competitor-keyword-finder.ts:89",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-7a834a3d3028",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "web/src/routes/api/domain-age-checker.ts:160",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-af1151539eef",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "unsafe-formatstring"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "web/src/routes/api/keyword-generator.ts:87",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "cwe_cve": [
+        "CWE-134: Use of Externally-Controlled Format String"
+      ],
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-633c4d83a337",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/dependencies.py:25",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-5890ada053b0",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/runtime.py:92",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-9cac2da2df89",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/runtime.py:142",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-0121eff9c6aa",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-tainted-env-args"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/runtime.py:142",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-0ca1a5130391",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/secrets-scan.py:113",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-69a671d1b45f",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-tainted-env-args"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/secrets-scan.py:113",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-1d62ef60ff92",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/secrets-scan.py:141",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-607e364becc4",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-tainted-env-args"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/secrets-scan.py:141",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-750692365824",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/secrets-test.py:61",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-b16b875d6b0e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/application.py:183",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-7dada48068da",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/application.py:205",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-84c2b40fb332",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-tainted-env-args"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/application.py:205",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-ae8c3d2ca12e",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/application.py:224",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-d8dd1516663a",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-tainted-env-args"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/application.py:224",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e0bee5447d69",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "dangerous-subprocess-use-audit"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "security/scanners/infrastructure.py:50",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "cwe_cve": [
+        "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+      ],
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-25: repeated all 18 official Python security rule directories after generated-output exclusion changed to security/(reports|runs); same reviewed subprocess audit match, no scan errors."
+      ]
+    },
+    {
+      "id": "SEC-B-ef2e41bf0a94",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/incomplete-url-substring-sanitization"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/features/seo-checks/seoCheckRun.test.ts:72",
+      "description": "Reviewed js/incomplete-url-substring-sanitization audit match.",
+      "cwe_cve": [
+        "CWE-020"
+      ],
+      "evidence": "Test-only mock classifies synthetic preview responses; it is not the production origin check.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-bc2631ba4d77",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/incomplete-url-substring-sanitization"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/mcp/oauth-registration.ts:51",
+      "description": "Reviewed js/incomplete-url-substring-sanitization audit match.",
+      "cwe_cve": [
+        "CWE-020"
+      ],
+      "evidence": "redirect_uris is parsed as an array of strings. Array.includes performs an exact callback-element comparison, not a URL substring check; provider redirect validation remains in the OAuth provider.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-60e3aa8dc8b7",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/stack-trace-exposure"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/run.mjs:235",
+      "description": "Reviewed js/stack-trace-exposure audit match.",
+      "cwe_cve": [
+        "CWE-209",
+        "CWE-497"
+      ],
+      "evidence": "Local evaluation gateway listens only on127.0.0.1 and returns String(error), not an error stack. It is an operator-invoked development harness, not a deployed API endpoint; keep it loopback-only.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-e8efe4483156",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/bad-tag-filter"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/lib/scrape.ts:111",
+      "description": "Reviewed js/bad-tag-filter audit match.",
+      "cwe_cve": [
+        "CWE-020",
+        "CWE-080",
+        "CWE-116",
+        "CWE-184",
+        "CWE-185",
+        "CWE-186"
+      ],
+      "evidence": "htmlToText extracts readable plain text for an LLM, not trusted HTML for innerHTML. Browser output uses escaped React/shared Markdown rendering; this is not an HTML sanitizer security boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-c5c9793e25d4",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/double-escaping"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/report-text.mjs:7",
+      "description": "Reviewed js/double-escaping audit match.",
+      "cwe_cve": [
+        "CWE-116",
+        "CWE-020"
+      ],
+      "evidence": "Operator-only CLI decodes report HTML into readable terminal text. The output is not treated as trusted HTML or sent to a browser rendering sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-a774603edef1",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/double-escaping"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/lib/scrape.ts:123",
+      "description": "Reviewed js/double-escaping audit match.",
+      "cwe_cve": [
+        "CWE-116",
+        "CWE-020"
+      ],
+      "evidence": "Entity decoding produces plain extracted text for model input; the result is not inserted as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-022b782393ce",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/incomplete-multi-character-sanitization"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/report-text.mjs:18",
+      "description": "Reviewed js/incomplete-multi-character-sanitization audit match.",
+      "cwe_cve": [
+        "CWE-020",
+        "CWE-080",
+        "CWE-116"
+      ],
+      "evidence": "Regex replacements format HTML as readable terminal text; this CLI is not an HTML sanitizer and its output is not rendered as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-0941f42d6fb3",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/incomplete-multi-character-sanitization"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/report-text.mjs:23",
+      "description": "Reviewed js/incomplete-multi-character-sanitization audit match.",
+      "cwe_cve": [
+        "CWE-020",
+        "CWE-080",
+        "CWE-116"
+      ],
+      "evidence": "Regex replacements format HTML as readable terminal text; this CLI is not an HTML sanitizer and its output is not rendered as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-347249ecfce4",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/file-system-race"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "scripts/rank-location-repair-support.ts:64",
+      "description": "Reviewed js/file-system-race audit match.",
+      "cwe_cve": [
+        "CWE-367"
+      ],
+      "evidence": "Operator-only maintenance cache under repository .cache by default; cache contents are public location metadata. The cache directory is explicitly operator-selected, not a public shared /tmp filename or network request value.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-9acb70a32e5d",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/regex/missing-regexp-anchor"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "tests/growth-workflow.e2e.ts:68",
+      "description": "Reviewed js/regex/missing-regexp-anchor audit match.",
+      "cwe_cve": [
+        "CWE-020"
+      ],
+      "evidence": "End-to-end assertion on a test result, not an access-control hostname validator.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-950a7359d1b2",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/regex/missing-regexp-anchor"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "vite-plugin-relay-brand.ts:147",
+      "description": "Reviewed js/regex/missing-regexp-anchor audit match.",
+      "cwe_cve": [
+        "CWE-020"
+      ],
+      "evidence": "Build-time global source-text branding replacement intentionally matches embedded repository URLs. It is not a hostname allowlist or authorization check.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-6a5a7d2cf469",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/file-access-to-http"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "scripts/migrate-d1-to-postgres.ts:122",
+      "description": "Reviewed js/file-access-to-http audit match.",
+      "cwe_cve": [
+        "CWE-200"
+      ],
+      "evidence": "Operator-run migration intentionally reads the non-secret D1 database ID from wrangler.jsonc and inserts it into the fixed api.cloudflare.com query endpoint. It does not send arbitrary files to an attacker-selected host.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-cb9fa3a4f430",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/http-to-file-access"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/run.mjs:217",
+      "description": "Reviewed js/http-to-file-access audit match.",
+      "cwe_cve": [
+        "CWE-912",
+        "CWE-434"
+      ],
+      "evidence": "Intentional evaluation report capture after the allowed-tool and assigned-project checks. Output path is constructed from operator-selected output directory and sanitized per-run name, never from an HTTP filename/path.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-f952da48a319",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/http-to-file-access"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": ".agents/skills/evaluate-skill/scripts/run.mjs:227",
+      "description": "Reviewed js/http-to-file-access audit match.",
+      "cwe_cve": [
+        "CWE-912",
+        "CWE-434"
+      ],
+      "evidence": "Intentional evaluation report capture after the allowed-tool and assigned-project checks. Output path is constructed from operator-selected output directory and sanitized per-run name, never from an HTTP filename/path.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "agent": "B",
+      "status": "false_positive",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    },
+    {
+      "id": "SEC-B-001",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "crawler-credentials-automatic-redirect"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/features/seo-checks/pageSnapshot.ts:195",
+      "description": "Asset-size probes followed redirects without revalidating the destination or rescoping preview credentials.",
+      "cwe_cve": [
+        "CWE-918",
+        "CWE-200"
+      ],
+      "evidence": "Local Semgrep crawler-credentials-automatic-redirect rule matched the original assetSize fetch. Before-patch regression reproduced a metadata-address redirect returning a size and a synthetic preview credential reaching a different host. No external targets or real credentials used.",
+      "impact": "A controlled asset redirect could reach an otherwise blocked host or disclose preview bypass headers to another origin.",
+      "recommendation": "Use bounded manual redirects, validate each destination, recompute crawlerHeadersFor each host, and share one request deadline.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: two security regression tests failed on original code; fixed pageSnapshot+seoCheckRun suites passed 13/13.",
+        "2026-10-25: targeted local Semgrep rule matched 1 before and 0 after; complete security rules rescan has no original-rule match."
+      ]
+    },
+    {
+      "id": "SEC-B-002",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/split-tests/splitTestBaseline.ts; src/server/features/split-tests/splitTestHistory.ts; src/server/features/seo-checks/seoRules.ts",
+      "description": "User-authored split-test and release-gate expressions ran on the native backtracking regular-expression engine.",
+      "cwe_cve": [
+        "CWE-1333",
+        "CWE-400"
+      ],
+      "evidence": "Official Semgrep detect-non-literal-regexp identified native dynamic matching. A safe isolated Node subprocess testing ^/(a+)+$ against a 34-character path exceeded 2 seconds and was terminated. Input validation previously checked syntax only.",
+      "impact": "An authorized project operator or repository change could exhaust the CPU budget for a backtest or release check. Length-limiting the pattern alone did not prevent exponential matching.",
+      "recommendation": "Use RE2JS matching and validate the RE2 feature set at configuration boundaries. Existing patterns using lookaround/backreferences require replacement; stored gate configuration now fails explicitly instead of silently dropping ignores.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: 1000-character adversarial input completes through public weigh entry point; unsupported backreference syntax is rejected by gate and split-test schemas.",
+        "2026-10-25: DB-backed planCheck regression rejects unsupported stored gate config; saved split-test failures use actionable INVALID_PATH_PATTERN client copy.",
+        "2026-10-25: focused regression suite 105/105 passed across 22 files. Original native-regex findings in remediated paths absent from final Semgrep rescan.",
+        "Compatibility: RE2 matching preserves ordinary path search/anchors but intentionally rejects unsupported constructs. Recreate saved split tests with supported patterns; update relay-gate.json before retrying queued runs."
+      ]
+    },
+    {
+      "id": "SEC-B-003",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/insecure-temporary-file"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "scripts/release-notes.mjs:302",
+      "description": "Draft release notes used a predictable global temporary filename and followed pre-existing symlinks.",
+      "cwe_cve": [
+        "CWE-377",
+        "CWE-59"
+      ],
+      "evidence": "CodeQL js/insecure-temporary-file reported the Date.now-based filename. A subprocess regression pre-created a symlink at that predictable name; original CLI overwrote the synthetic victim. Git and gh were local stubs and no release was published.",
+      "impact": "A different local user able to precreate the guessed temporary path could cause an operator running --draft to overwrite a writable file or alter temporary release-note handling.",
+      "recommendation": "Create a random private directory, exclusively write the note file with mode 0600, and remove the directory in a finally block.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: regression failed before patch by observing victim content replaced; passes after with unchanged victim,0700 directory, 0600 file, and cleanup.",
+        "2026-10-25: fresh CodeQL database and security-extended rescan no longer reports js/insecure-temporary-file."
+      ]
+    }
+  ],
+  "notes": [
+    "Raw scanner artifacts stay in a private tools cache; committed outputs omit snippets and data-flow values.",
+    "A triage decision applies only to its exact source-file SHA-256; changed files return to unverified.",
+    "CodeQL licensing: public repositories are supported; private-repository use requires the appropriate GitHub Code Security entitlement."
+  ]
+}

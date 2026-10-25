@@ -1,0 +1,17 @@
+{
+  "image": "open-seo:security-assessment",
+  "status": "passed",
+  "checks": [
+    "Cold start: preflight, local migrations, Vite build, TypeScript check, preview and database health passed.",
+    "System CA bundle is present for workerd HTTPS trust.",
+    "Wrangler secret file and generated security reports are absent from the image.",
+    "Restart reused disposable local database state and passed database health."
+  ],
+  "image_id": "sha256:8100abcb43f099c4acc66404c1521fb0658b513a3b8493c3145217c31c98f2ff",
+  "versions": {
+    "node": "v22.23.4",
+    "pnpm": "10.34.8",
+    "npm": "11.21.1"
+  },
+  "private_log": "/tmp/openseo-security-smoke-yi1hgt73.log"
+}

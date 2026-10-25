@@ -195,6 +195,10 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
             value={pagePattern}
             onChange={(event) => setPagePattern(event.target.value)}
           />
+          <p className="text-xs text-muted-foreground">
+            Use RE2 syntax, such as ^/integrations/[^/]+$. Lookaround and
+            backreferences are not supported.
+          </p>
           {create.isError && (
             <p role="alert" className="text-destructive">
               {create.error.message}
