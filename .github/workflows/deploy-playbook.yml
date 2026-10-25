@@ -112,6 +112,7 @@ jobs:
 
       - name: Build and deploy stage
         run: |
+          pnpm build:report-widgets
           pnpm exec vite build --mode playbook
           pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.playbook --stage "$STAGE" --yes
 
