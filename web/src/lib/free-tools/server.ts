@@ -85,13 +85,14 @@ const turnstileResultSchema = z.object({
 /** Bound the bytes read, including requests without Content-Length. */
 export async function readToolBody(
   request: Request,
+  contentTypes = ["application/json"],
 ): Promise<unknown | Response> {
-  if (
-    !request.headers
-      .get("content-type")
-      ?.toLowerCase()
-      .startsWith("application/json")
-  ) {
+  const contentType = request.headers
+    .get("content-type")
+    ?.split(";")[0]
+    .trim()
+    .toLowerCase();
+  if (!contentType || !contentTypes.includes(contentType)) {
     return jsonResponse({ error: "Send a JSON request" }, 415);
   }
   const reader = request.body?.getReader();
@@ -128,6 +129,7 @@ export async function guardToolRequest(input: {
   tool: string;
   request: Request;
   turnstileToken?: string;
+  turnstileAction?: "free_tool" | "newsletter";
 }): Promise<Response | null> {
   const { TURNSTILE_SECRET_KEY, BACKLINK_CHECK_RATE_LIMIT } = bindings();
   const url = new URL(input.request.url);
@@ -191,7 +193,7 @@ export async function guardToolRequest(input: {
       !result.success ||
       !result.data.success ||
       result.data.hostname !== url.hostname ||
-      result.data.action !== "free_tool"
+      result.data.action !== (input.turnstileAction ?? "free_tool")
     ) {
       return jsonResponse(
         { error: "Human verification failed. Refresh the page and try again." },

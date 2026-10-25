@@ -8,6 +8,7 @@ import {
 } from "./auto-reload";
 import { syncAutumnCustomerStatus } from "./customer-status-sync";
 import { verifySvixSignature } from "./svix";
+import { readRequestText } from "@/server/lib/request-body";
 
 export const AUTUMN_WEBHOOK_PATH = "/api/autumn/webhook";
 
@@ -28,7 +29,8 @@ export async function handleAutumnWebhookRequest(request: Request) {
     });
   }
 
-  const rawPayload = await request.text();
+  const rawPayload = await readRequestText(request, 2 * 1024 * 1024);
+  if (rawPayload === null) return json({ error: "Payload too large" }, 413);
   const webhookSecret = await getRequiredEnvValue("AUTUMN_WEBHOOK_SECRET");
   const isVerified = await verifySvixSignature({
     headers: request.headers,
