@@ -589,6 +589,13 @@
       "when": 1792866571051,
       "tag": "0083_upstream_20261024",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1792886400000,
+      "tag": "0084_bind_api_keys_to_organization",
+      "breakpoints": true
     }
   ]
 }

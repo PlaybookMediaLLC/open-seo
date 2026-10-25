@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ApiKeySettings } from "@/client/features/settings/ApiKeySettings";
 import { SectionHeader } from "@/client/components/PageHeader";
 import { ThemePreferenceRadio } from "@/client/components/ThemePreferenceMenuItems";
+import { McpConnectionsSettings } from "@/client/features/settings/McpConnectionsSettings";
 import { PrivacySettings } from "@/client/features/settings/PrivacySettings";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { version } from "../../../../package.json";
@@ -24,6 +25,8 @@ function PersonalSettings() {
 
       {isHosted ? (
         <>
+          <McpConnectionsSettings />
+
           <ApiKeySettings />
 
           <PrivacySettings />

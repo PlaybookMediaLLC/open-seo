@@ -26,6 +26,7 @@
     // Standalone CLI/dev scripts, invoked via package.json scripts
     "scripts/**",
     "tests/*.e2e.ts", // playbook-seam: growth E2E spec, run by tests/playwright.growth.config.ts
+    "tests/playwright.growth.config.ts", // invoked by the growth E2E workflow
     "trigger.config.ts", // playbook-seam: Trigger.dev config, read by its CLI (RFC-0008)
     "trigger/**", // playbook-seam: Trigger.dev tasks, deployed by its CLI (RFC-0008)
     // shadcn components are copied in whole; pages use only some exports

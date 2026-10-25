@@ -35,8 +35,6 @@ afterAll(() => database.client.close());
 
 const mocks = vi.hoisted(() => ({
   getProjectForOrganization: vi.fn(),
-  getProjectWithOrganization: vi.fn(),
-  getMembership: vi.fn(),
   GscService: {
     listSitesForUserWithGrantStatus: vi.fn(),
     getConnection: vi.fn(),
@@ -56,11 +54,7 @@ vi.mock("@/server/email/onboarding-drip", () => ({
 vi.mock("@/server/features/projects/services/ProjectService", () => ({
   ProjectService: {
     getProjectForOrganization: mocks.getProjectForOrganization,
-    getProjectWithOrganization: mocks.getProjectWithOrganization,
   },
-}));
-vi.mock("@/server/auth/repositories/AuthRepository", () => ({
-  AuthRepository: { getMembership: mocks.getMembership },
 }));
 vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: mocks.GscService,
@@ -113,11 +107,6 @@ const setters = [
 describe("Google connection MCP tools", () => {
   beforeEach(() => {
     mocks.getProjectForOrganization.mockResolvedValue({ id: "project_1" });
-    mocks.getProjectWithOrganization.mockResolvedValue({
-      project: { id: "project_1" },
-      organizationId: "project_org",
-    });
-    mocks.getMembership.mockResolvedValue({ role: "owner" });
     mocks.GscService.listSitesForUserWithGrantStatus.mockResolvedValue({
       accounts: [gscAccount("acct_a"), gscAccount("acct_b")],
     });
@@ -170,16 +159,16 @@ describe("Google connection MCP tools", () => {
   });
 
   it.each(setters)(
-    "records a $provider change under the verified project organization and MCP actor",
+    "records a $provider change under the credential organization and MCP actor",
     async ({ call, action }) => {
-      await call(makeToolContext({ orgScope: "user" }));
+      await call(toolContext);
 
       const { rows } = await database.client.execute(
         "SELECT organization_id, project_id, actor_type, actor_id, action, target_type, target_id FROM audit_events",
       );
       expect(rows).toEqual([
         {
-          organization_id: "project_org",
+          organization_id: "org_123",
           project_id: "project_1",
           actor_type: "mcp",
           actor_id: "user_123",
@@ -188,6 +177,21 @@ describe("Google connection MCP tools", () => {
           target_id: "project_1",
         },
       ]);
+    },
+  );
+
+  it.each(setters)(
+    "rejects a $provider project outside the credential organization without changing or auditing it",
+    async ({ call, set }) => {
+      mocks.getProjectForOrganization.mockResolvedValueOnce(null);
+
+      await expect(call(toolContext)).rejects.toMatchObject({
+        code: "FORBIDDEN",
+      });
+      expect(set).not.toHaveBeenCalled();
+      expect(
+        (await database.client.execute("SELECT id FROM audit_events")).rows,
+      ).toEqual([]);
     },
   );
 
