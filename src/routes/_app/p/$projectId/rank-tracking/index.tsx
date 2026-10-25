@@ -38,7 +38,7 @@ function RankTrackingIndex() {
 
   return (
     <div className="space-y-3">
-      <RankTrackingChangesAlert />
+      <RankTrackingChangesAlert projectId={projectId} />
       <RankTrackingDomainList
         projectId={projectId}
         search={search}

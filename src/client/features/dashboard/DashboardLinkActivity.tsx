@@ -28,100 +28,105 @@ export function DashboardLinkActivity({
     retry: false,
   });
   return (
-    <QueryState query={query} errorFallback="Could not load new links">
-      {(data) => (
-        <CardShell
-          title="New backlinks"
-          titleInfo={
-            <DashboardInfo label="About new links">
-              <p>
-                Links to your website found in the past week. We show new
-                linking sites first.
-              </p>
-              <p className="mt-2">
-                A link may be older than the date it was found.
-              </p>
-            </DashboardInfo>
-          }
-          action={
-            <Link
-              to="/p/$projectId"
-              params={{ projectId }}
-              search={{ tab: "backlinks" }}
-              className={moreDetailsClass}
-            >
-              View all →
-            </Link>
-          }
+    <CardShell
+      title="New backlinks"
+      titleInfo={
+        <DashboardInfo label="About new links">
+          <p>
+            Links to your website found in the past week. We show new linking
+            sites first.
+          </p>
+          <p className="mt-2">
+            A link may be older than the date it was found.
+          </p>
+        </DashboardInfo>
+      }
+      action={
+        <Link
+          to="/p/$projectId"
+          params={{ projectId }}
+          search={{ tab: "backlinks" }}
+          className={moreDetailsClass}
         >
-          <Freshness {...data} />
-          {data.value.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Referring domain</TableHead>
-                  <TableHead className="text-right">Backlinks</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.value.slice(0, 5).map((row, index) => (
-                  <TableRow key={row.domain ?? index}>
-                    <TableCell className="font-medium">
-                      <ExternalPage
-                        url={row.domain ? `https://${row.domain}` : null}
-                        label={row.domain}
-                      />
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      {row.backlinks?.toLocaleString() ?? "—"}
-                    </TableCell>
+          View all →
+        </Link>
+      }
+    >
+      <QueryState query={query} errorFallback="Could not load new backlinks">
+        {(data) => (
+          <>
+            <Freshness {...data} />
+            {data.value.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Referring domain</TableHead>
+                    <TableHead className="text-right">Backlinks</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : data.links.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Referring page</TableHead>
-                  <TableHead>Anchor</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.links.slice(0, 5).map((row, index) => (
-                  <TableRow key={`${row.urlFrom}:${index}`}>
-                    <TableCell>
-                      <ExternalPage url={row.urlFrom} label={row.domainFrom} />
-                    </TableCell>
-                    <TableCell
-                      className="max-w-48 truncate"
-                      title={row.anchor ?? undefined}
-                    >
-                      {row.anchor || "—"}
-                    </TableCell>
+                </TableHeader>
+                <TableBody>
+                  {data.value.slice(0, 5).map((row, index) => (
+                    <TableRow key={row.domain ?? index}>
+                      <TableCell className="font-medium">
+                        <ExternalPage
+                          url={row.domain ? `https://${row.domain}` : null}
+                          label={row.domain}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {row.backlinks?.toLocaleString() ?? "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : data.links.length ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Referring page</TableHead>
+                    <TableHead>Anchor</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
-              <Link2 className="size-7 text-muted-foreground" />
-              <h3 className="font-medium">No new links this week</h3>
-              <p className="text-sm text-muted-foreground">
-                Explore the sites already linking to you.
-              </p>
-              <Link
-                to="/p/$projectId"
-                params={{ projectId }}
-                search={{ tab: "backlinks" }}
-                className="text-sm text-primary hover:underline"
-              >
-                View backlinks →
-              </Link>
-            </div>
-          )}
-        </CardShell>
-      )}
-    </QueryState>
+                </TableHeader>
+                <TableBody>
+                  {data.links.slice(0, 5).map((row, index) => (
+                    <TableRow key={`${row.urlFrom}:${index}`}>
+                      <TableCell>
+                        <ExternalPage
+                          url={row.urlFrom}
+                          label={row.domainFrom}
+                        />
+                      </TableCell>
+                      <TableCell
+                        className="max-w-48 truncate"
+                        title={row.anchor ?? undefined}
+                      >
+                        {row.anchor || "—"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
+                <Link2 className="size-7 text-muted-foreground" />
+                <h3 className="font-medium">No new links this week</h3>
+                <p className="text-sm text-muted-foreground">
+                  Explore the sites already linking to you.
+                </p>
+                <Link
+                  to="/p/$projectId"
+                  params={{ projectId }}
+                  search={{ tab: "backlinks" }}
+                  className="text-sm text-primary hover:underline"
+                >
+                  View backlinks →
+                </Link>
+              </div>
+            )}
+          </>
+        )}
+      </QueryState>
+    </CardShell>
   );
 }

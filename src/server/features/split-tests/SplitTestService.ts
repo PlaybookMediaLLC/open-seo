@@ -391,7 +391,27 @@ async function backtestPattern(
   };
 }
 
+/** Read-only sample of the exact baseline population used when creating a test. */
+async function previewPattern(
+  context: OpportunityContext,
+  input: { projectId: string; pagePattern: string },
+) {
+  await authorize(context, input.projectId);
+  requireOrgPermission(context, { integration: ["manage"] });
+  const window = baselineWindow();
+  const pages = await loadBaseline(input.projectId, input.pagePattern, window);
+  return {
+    pattern: input.pagePattern,
+    window,
+    total: pages.length,
+    pages: pages
+      .slice(0, 20)
+      .map(({ path, origin, clicks }) => ({ url: `${origin}${path}`, clicks })),
+  };
+}
+
 export const SplitTestService = {
+  previewPattern,
   list,
   get,
   create,

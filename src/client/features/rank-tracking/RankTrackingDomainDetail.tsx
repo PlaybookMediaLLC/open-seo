@@ -236,7 +236,7 @@ export function RankTrackingDomainDetail({
 
   return (
     <div className="space-y-3">
-      <RankTrackingChangesAlert />
+      <RankTrackingChangesAlert projectId={projectId} />
 
       {config.lastSkipReason === "insufficient_credits" && (
         <Alert variant="warning">

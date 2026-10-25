@@ -1,4 +1,10 @@
-import { Outlet, createFileRoute, useParams } from "@tanstack/react-router";
+import { getProjectNavGroup } from "@/client/navigation/items";
+import {
+  Outlet,
+  createFileRoute,
+  useParams,
+  useLocation,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useHostedAuthRouteGuard } from "@/client/features/auth/useHostedAuthRouteGuard";
 import { prefetchBillingAccount } from "@/client/features/billing/billingAccountQuery";
@@ -22,6 +28,11 @@ function AppRouteLayout() {
   const authGate = useHostedAuthRouteGuard();
   const isOnboarded = useOnboardingRedirect();
   const { projectId } = useParams({ strict: false });
+  const { pathname } = useLocation();
+  const workspace = projectId
+    ? getProjectNavGroup(projectId, pathname)?.label
+    : undefined;
+  const showCreditNotices = workspace === "Research" || workspace === "Monitor";
   // The shell paints at once, and only the page waits for the session check,
   // so a full load shows the sidebar and a page skeleton instead of a spinner.
   const ready = authGate.canRenderAuthenticatedContent;
@@ -47,7 +58,7 @@ function AppRouteLayout() {
         ready && authGate.isHostedMode ? (
           <>
             <TermsUpdateBanner />
-            {projectId ? (
+            {projectId && showCreditNotices ? (
               <>
                 <SpendLimitBanner projectId={projectId} /> {/* playbook-seam */}
                 <FreePlanBanner />

@@ -1,26 +1,24 @@
-import { Info } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { IconInfoCircle } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 
-export function RankTrackingChangesAlert() {
+export function RankTrackingChangesAlert({ projectId }: { projectId: string }) {
   return (
     <Alert variant="info">
-      <Info />
+      <IconInfoCircle />
       <AlertDescription className="text-foreground">
+        <p className="font-medium">Check the status of each rank run.</p>
         <p>
-          <span className="font-medium">
-            Rank tracking now retries some results.
-          </span>{" "}
-          Since September, Google has been serving incomplete results to all
-          rank trackers.{" "}
-          <a
-            href="https://openseo.so/blogs/rank-tracking-changes"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium underline underline-offset-4"
-          >
-            Read what changed
-          </a>
+          Google can return incomplete results. Some checks are retried; a
+          missing position alone does not establish a ranking drop.
         </p>
+        <Link
+          to="/p/$projectId/search-performance"
+          params={{ projectId }}
+          className="underline"
+        >
+          Compare with Search Console observations
+        </Link>
       </AlertDescription>
     </Alert>
   );

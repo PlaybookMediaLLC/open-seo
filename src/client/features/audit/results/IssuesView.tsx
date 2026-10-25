@@ -8,6 +8,7 @@ import {
 } from "@/shared/audit-issues";
 import type { AuditResultsData } from "@/client/features/audit/results/types";
 import { SeverityBadge } from "@/client/features/audit/shared";
+import { CopyButton } from "@/client/components/CopyButton";
 import { EmptyState } from "@/client/components/EmptyState";
 
 type AuditIssueRow = AuditResultsData["issues"][number];
@@ -183,6 +184,24 @@ function IssueRow({ group }: { group: IssueGroup }) {
               <span className="text-foreground/80">{group.howToFix}</span>
             </p>
           )}
+          <CopyButton
+            size="default"
+            label="Copy issue brief"
+            successMessage="Issue brief copied"
+            value={[
+              group.title,
+              `Severity: ${group.severity}`,
+              group.explanation,
+              `Suggested fix: ${group.howToFix}`,
+              "Affected pages:",
+              ...group.issues.map((issue) => issue.pageUrl),
+              "Verify the fix against a new audit before closing this issue.",
+            ].join("\n\n")}
+          />
+          <p className="text-xs text-muted-foreground">
+            Paste this brief into your task tracker or agent. Copying does not
+            assign work or change your site.
+          </p>
           <AffectedUrlList issues={group.issues} />
         </div>
       )}

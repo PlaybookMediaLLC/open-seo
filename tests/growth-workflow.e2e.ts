@@ -32,6 +32,18 @@ test("detect, review, prepare, open a pull request and track it", async ({
 
   await page.goto("/app");
   await page.waitForURL(/\/p\/[^/]+/);
+  await dismissProviderSetup(page);
+  const previousUrl = page.url();
+  await page.getByRole("combobox", { name: "Switch project" }).click();
+  await page.getByRole("button", { name: "New project" }).click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Name", { exact: true })
+    .fill(`UX workflow ${Date.now()}`);
+  await page
+    .getByRole("button", { name: "Create project", exact: true })
+    .click();
+  await expect(page).not.toHaveURL(previousUrl);
   const projectId = /\/p\/([^/?#]+)/.exec(page.url())?.[1];
   await dismissProviderSetup(page);
 
@@ -62,7 +74,10 @@ test("detect, review, prepare, open a pull request and track it", async ({
 
   // Detect, open the opportunity, review it and approve preparation.
   await page.goto(`/p/${projectId}/opportunities`);
-  await page.getByRole("button", { name: "Run detection" }).click();
+  await page.getByText("Find opportunities", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Analyze connected search data" })
+    .click();
   await expect(page.getByText(/Saved 1 evidence-backed/)).toBeVisible();
   await page
     .getByRole("row", { name: /example\.com\/about/ })
@@ -88,6 +103,30 @@ test("detect, review, prepare, open a pull request and track it", async ({
     page.getByText('"About us | Example" (18 characters)'),
   ).toBeVisible();
   await page
+    .getByRole("heading", { name: "Review a striking-distance query" })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: "test-results/relay-review-desktop.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(
+    page.getByRole("navigation", { name: "Review sections" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page
+    .getByRole("heading", { name: "Review a striking-distance query" })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: "test-results/relay-review-mobile.png",
+    fullPage: true,
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page
     .getByRole("checkbox", { name: /I reviewed this exact diff/ })
     .click();
   await page
@@ -95,7 +134,7 @@ test("detect, review, prepare, open a pull request and track it", async ({
     .click();
   await confirmDialog(page, "Approve and create pull request");
   await expect(
-    page.getByRole("button", { name: "View pull request #1" }),
+    page.getByRole("button", { name: /View pull request #\d+/ }),
   ).toBeVisible();
 
   // Start tracking and read the pull request status.
@@ -105,4 +144,67 @@ test("detect, review, prepare, open a pull request and track it", async ({
   await expect(
     page.getByText("GitHub reports this pull request is open."),
   ).toBeVisible();
+});
+
+test("workspaces retain project scope, keyboard access and research drafts", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  await page.waitForURL(/\/p\/[^/]+/);
+  await dismissProviderSetup(page);
+  const projectId = /\/p\/([^/?#]+)/.exec(page.url())?.[1];
+  const mainNav = page.getByRole("navigation", { name: "Main navigation" });
+  for (const name of ["Home", "Work", "Research", "Monitor", "Library"]) {
+    await expect(
+      mainNav.getByRole("link", { name, exact: true }),
+    ).toHaveAttribute("href", new RegExp(`/p/${projectId}(?:/|$)`));
+  }
+  await expect(
+    page.getByRole("dialog", { name: "Set up DataForSEO research" }),
+  ).not.toBeVisible();
+  await page.getByRole("link", { name: "Skip to main content" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main-content")).toBeFocused();
+  await page.screenshot({
+    path: "test-results/relay-home-desktop.png",
+    fullPage: true,
+  });
+  await mainNav.getByRole("link", { name: "Research", exact: true }).click();
+  await page.getByRole("button", { name: "Dismiss", exact: true }).click();
+  await page
+    .getByRole("textbox", { name: "Keywords", exact: true })
+    .fill("seo");
+  await expect(
+    page.getByText(/Estimated maximum for 1 fresh search/),
+  ).toBeVisible();
+  await expect(page).not.toHaveURL(/keyword=/);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: "test-results/relay-research-mobile.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "Search & start a task" }).click();
+  await page
+    .getByRole("textbox", { name: "Search tasks and views" })
+    .fill("saved");
+  await page
+    .getByRole("dialog")
+    .getByRole("link", { name: "Saved Keywords", exact: true })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`/p/${projectId}/saved`));
+  await expect(
+    page.getByText("Build your keyword collection", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Update keyword stats" }),
+  ).not.toBeVisible();
+  await page.screenshot({
+    path: "test-results/relay-library-mobile.png",
+    fullPage: true,
+  });
 });

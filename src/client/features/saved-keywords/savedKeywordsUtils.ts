@@ -1,3 +1,5 @@
+import type { SortingState } from "@tanstack/react-table";
+import type { SavedKeywordsSearch } from "@/types/schemas/keywords";
 import type { CsvValue } from "@/client/lib/csv";
 import { KEYWORD_RESEARCH_HEADERS } from "@/client/features/keywords/state/keywordControllerActions";
 import type { SavedKeywordRow } from "@/types/keywords";
@@ -47,4 +49,10 @@ export function formatSavedKeywordNumber(value: number | null | undefined) {
 export function formatSavedKeywordDate(value: string | null | undefined) {
   if (!value) return "-";
   return new Date(value).toLocaleDateString();
+}
+
+export function sortingFromSearch(search: SavedKeywordsSearch): SortingState {
+  const sort = search.sort ?? "fetchedAt";
+  if (sort === "createdAt") return [];
+  return [{ id: sort, desc: (search.order ?? "desc") === "desc" }];
 }

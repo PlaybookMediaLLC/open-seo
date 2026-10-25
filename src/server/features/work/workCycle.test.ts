@@ -190,3 +190,12 @@ describe("Completed, Measuring and Waiting on you", () => {
     expect(section(result, "waiting")).toEqual(["old", "open-old"]);
   });
 });
+
+it("does not claim that detection found no work before a completed detection", () => {
+  expect(cycle({ latestDetectionAt: null }).emptyReasons).toContain(
+    "No detection has completed yet",
+  );
+  expect(cycle({}).emptyReasons).toContain(
+    "The latest detection found no open items",
+  );
+});
