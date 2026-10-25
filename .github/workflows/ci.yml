@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -37,6 +40,9 @@ jobs:
 
       - name: Run tests
         run: pnpm run test:ci
+
+      - name: Verify dependency security regressions
+        run: node --test security/tests/dependency-regressions.test.mjs
 
       # Runs the leanWorkerBundle generateBundle assertion: fails if a
       # denylisted package (dataforseo-client, autumn-js, ...) re-enters the

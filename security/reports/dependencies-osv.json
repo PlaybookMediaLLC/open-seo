@@ -1,0 +1,13 @@
+{
+  "scan_complete": false,
+  "exit_code": 127,
+  "lockfiles": [
+    "pnpm-lock.yaml",
+    "tests/badseo/pnpm-lock.yaml",
+    "web/pnpm-lock.yaml"
+  ],
+  "limitations": [
+    "OSV vulnerability matching did not complete. Install the tool and allow api.osv.dev through the configured proxy; this result is not a clean scan.",
+    "The api.osv.dev request was rejected by the network proxy (403/Forbidden)."
+  ]
+}

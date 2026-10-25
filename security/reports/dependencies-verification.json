@@ -1,0 +1,40 @@
+{
+  "regressions": [
+    {
+      "advisory": "GHSA-mrhx-c7xc-m3w5",
+      "package": "zod",
+      "before_version": "4.3.6",
+      "before": "A max(1) array of 1000 invalid items produces 1001 issues; the regression fails.",
+      "after": "The installed patched Zod produces one too_big issue; regression passes.",
+      "scope": "Constrained arrays only; unbounded arrays still accumulate element issues."
+    },
+    {
+      "advisory": "GHSA-pqg4-j6r4-53mv",
+      "package": "shell-quote",
+      "before_version": "1.9.0",
+      "before": "quote accepts a newline-containing argument after a comment token; the regression fails.",
+      "after": "The installed patched shell-quote throws TypeError; regression passes.",
+      "scope": "No shell command or generated payload was executed."
+    }
+  ],
+  "tests": [
+    {
+      "command": "node --test security/tests/dependency-regressions.test.mjs",
+      "result": "2 passed; 0 failed",
+      "evidence": "security/reports/dependencies-regression-tests.txt"
+    },
+    {
+      "command": "pnpm exec vitest run src/server/mcp/transport.test.ts src/server/mcp/transport-v2.test.ts src/server/mcp/output-schema-contract.test.ts --reporter=dot",
+      "result": "14 passed; 0 failed across 3 files",
+      "fixture_adjustment": "Modern protocol requests now include the required MCP-Protocol-Version header; origin validation remains enforced."
+    }
+  ],
+  "installation": "All three workspaces installed successfully using pnpm 10.30.1. Root added existing transitive re2js 1.3.3 directly for Agent B mitigation.",
+  "pending": "Repository-wide type/lint/test/build results are coordinated by the primary agent and recorded separately.",
+  "package_manager_remediation": {
+    "before": "pnpm10.30.1",
+    "after": "pnpm10.34.8",
+    "evidence": "Trivy image scanner reported18 package-manager advisories, including high path traversal/arbitrary write/code execution advisories. Infrastructure agent owns original findings and final image rescan.",
+    "verification": "Official Corepack prepare installed10.34.8; pnpm --version verified. Frozen installs completed in root, web and tests/badseo; all3 lockfile SHA256 hashes unchanged."
+  }
+}

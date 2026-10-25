@@ -1,8 +1,8 @@
 import { sortBy } from "remeda";
-import { RE2JS } from "re2js";
 import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { literalPrefix } from "./splitTestBaseline";
+import { createPathMatcher } from "@/shared/path-pattern";
 import type { PastPage } from "./splitTestBacktest";
 
 // RFC-0011 phase 3: the 91 past days that a backtest replays, from one
@@ -17,7 +17,7 @@ export async function pastClicks(
   const half = shiftGa4Date(start, 28);
   const baselineEnd = shiftGa4Date(start, 55);
   const observation = shiftGa4Date(start, 63);
-  const regex = RE2JS.compile(pattern);
+  const matchesPath = createPathMatcher(pattern);
   const result = await GscService.getPerformance({
     projectId,
     dimensions: ["page", "date"],
@@ -42,7 +42,7 @@ export async function pastClicks(
     } catch {
       continue;
     }
-    if (!regex.test(path)) continue;
+    if (!matchesPath(path)) continue;
     const entry = past.get(path) ?? {
       baseline: 0,
       observation: 0,

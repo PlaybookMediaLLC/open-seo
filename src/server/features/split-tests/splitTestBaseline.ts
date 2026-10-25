@@ -4,8 +4,8 @@ import {
 } from "@/server/features/ga4/services/Ga4Dates";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { AppError } from "@/server/lib/errors";
+import { createPathMatcher } from "@/shared/path-pattern";
 import { growth, pairDifferences, type Pair } from "./splitStats";
-import { RE2JS } from "re2js";
 
 // RFC-0011 5.2: the 56-day baseline of the pages that match a pattern, from
 // one Search Console request of final data on the Pacific calendar.
@@ -49,7 +49,7 @@ export async function loadBaseline(
   pattern: string,
   window: { start: string; end: string },
 ): Promise<BaselineStats[]> {
-  const regex = RE2JS.compile(pattern);
+  const matchesPath = createPathMatcher(pattern);
   const secondHalfStart = shiftGa4Date(window.start, HALF);
   const result = await GscService.getPerformance({
     projectId,
@@ -75,7 +75,7 @@ export async function loadBaseline(
   for (const row of result.rows) {
     const [url = "", date = ""] = row.keys ?? [];
     const page = pathOf(url);
-    if (!page || !regex.test(page.path)) continue;
+    if (!page || !matchesPath(page.path)) continue;
     const entry = pages.get(page.path) ?? {
       ...page,
       clicks: 0,

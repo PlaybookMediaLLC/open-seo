@@ -54,6 +54,8 @@ minimumReleaseAgeExclude:
 # To prune once a parent catches up: delete the line, run `pnpm install`, and
 # keep it deleted if `pnpm audit` stays clean.
 overrides:
+  # Keep all MCP v1 consumers above the patched SDK floor.
+  "@modelcontextprotocol/sdk@1": "^1.32.0"
   "ws@8": "^8.21.0"
   seroval: "^1.6.3"
   proxy-addr: "^2.0.8"

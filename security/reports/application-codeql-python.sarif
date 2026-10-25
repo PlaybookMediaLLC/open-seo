@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "CodeQL",
+          "version": "2.27.3",
+          "rules": [
+            {
+              "id": "py/use-of-input"
+            },
+            {
+              "id": "py/code-injection"
+            },
+            {
+              "id": "py/xpath-injection"
+            },
+            {
+              "id": "py/full-ssrf"
+            },
+            {
+              "id": "py/csrf-protection-disabled"
+            },
+            {
+              "id": "py/http-response-splitting"
+            },
+            {
+              "id": "py/pam-auth-bypass"
+            },
+            {
+              "id": "py/flask-debug"
+            },
+            {
+              "id": "py/xml-bomb"
+            },
+            {
+              "id": "py/ldap-injection"
+            },
+            {
+              "id": "py/insecure-cookie"
+            },
+            {
+              "id": "py/nosql-injection"
+            },
+            {
+              "id": "py/cookie-injection"
+            },
+            {
+              "id": "py/incomplete-url-substring-sanitization"
+            },
+            {
+              "id": "py/overly-large-range"
+            },
+            {
+              "id": "py/incomplete-hostname-regexp"
+            },
+            {
+              "id": "py/weak-cryptographic-algorithm"
+            },
+            {
+              "id": "py/weak-sensitive-data-hashing"
+            },
+            {
+              "id": "py/insecure-default-protocol"
+            },
+            {
+              "id": "py/insecure-protocol"
+            },
+            {
+              "id": "py/command-line-injection"
+            },
+            {
+              "id": "py/stack-trace-exposure"
+            },
+            {
+              "id": "py/xxe"
+            },
+            {
+              "id": "py/template-injection"
+            },
+            {
+              "id": "py/bad-tag-filter"
+            },
+            {
+              "id": "py/path-injection"
+            },
+            {
+              "id": "py/paramiko-missing-host-key-validation"
+            },
+            {
+              "id": "py/sql-injection"
+            },
+            {
+              "id": "py/clear-text-logging-sensitive-data"
+            },
+            {
+              "id": "py/clear-text-storage-sensitive-data"
+            },
+            {
+              "id": "py/regex-injection"
+            },
+            {
+              "id": "py/redos"
+            },
+            {
+              "id": "py/polynomial-redos"
+            },
+            {
+              "id": "py/url-redirection"
+            },
+            {
+              "id": "py/bind-socket-all-network-interfaces"
+            },
+            {
+              "id": "py/unsafe-deserialization"
+            },
+            {
+              "id": "py/reflective-xss"
+            },
+            {
+              "id": "py/weak-crypto-key"
+            },
+            {
+              "id": "py/insecure-temporary-file"
+            },
+            {
+              "id": "py/client-exposed-cookie"
+            },
+            {
+              "id": "py/samesite-none-cookie"
+            },
+            {
+              "id": "py/partial-ssrf"
+            },
+            {
+              "id": "py/shell-command-constructed-from-input"
+            },
+            {
+              "id": "py/tarslip"
+            },
+            {
+              "id": "py/request-without-cert-validation"
+            },
+            {
+              "id": "py/log-injection"
+            },
+            {
+              "id": "py/jinja2/autoescape-false"
+            },
+            {
+              "id": "py/overly-permissive-file"
+            },
+            {
+              "id": "py/summary/lines-of-code"
+            },
+            {
+              "id": "py/summary/lines-of-user-code"
+            }
+          ]
+        }
+      },
+      "results": []
+    }
+  ]
+}

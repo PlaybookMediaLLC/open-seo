@@ -4,7 +4,7 @@
   "sideEffects": false,
   "version": "0.1.16",
   "type": "module",
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.34.8",
   "scripts": {
     "postinstall": "[ ! -f source.config.ts ] || fumadocs-mdx",
     "predev": "pnpm build:report-widgets",
@@ -62,7 +62,11 @@
     "seed:marketing": "tsx scripts/seed-marketing.ts",
     "capture:product": "tsx scripts/capture-product-video.ts",
     "ci:check": "prettier --check . && knip && tsc --noEmit && tsc --noEmit -p tests/badseo/tsconfig.json && tsc --noEmit -p tsconfig.report-widgets.json && oxlint . --type-aware && pnpm sync-plugin-skills && test -z \"$(git status --porcelain -- plugins/openseo/skills)\"",
-    "deploy:postgres": "npm run db:migrate:pg && pnpm build && pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.production --stage hosted-prod --adopt"
+    "deploy:postgres": "npm run db:migrate:pg && pnpm build && pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.production --stage hosted-prod --adopt",
+    "security:install": "bash security/install.sh",
+    "security:scan": "bash security/scan.sh fast",
+    "security:full": "bash security/scan.sh full",
+    "security:dast": "bash security/scan.sh dast"
   },
   "cloudflare": {
     "bindings": {

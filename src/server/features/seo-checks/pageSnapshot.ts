@@ -13,6 +13,7 @@ const USER_AGENT =
   "RelaySEOCheck/1.0 (+https://relay.playbookmedia.io/docs/seo-checks)";
 const MAX_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 10_000;
+const MAX_ASSET_REDIRECTS = 5;
 
 const failed: Snapshot = {
   status: null,
@@ -195,7 +196,7 @@ export async function assetSize(url: string, access: CrawlerAccess | null) {
   try {
     const signal = AbortSignal.timeout(TIMEOUT_MS);
     let current = url;
-    for (let hop = 0; hop <= 5; hop++) {
+    for (let hop = 0; hop <= MAX_ASSET_REDIRECTS; hop++) {
       current = await normalizeAndValidateStartUrl(current);
       const response = await fetch(current, {
         method: "HEAD",
@@ -210,6 +211,7 @@ export async function assetSize(url: string, access: CrawlerAccess | null) {
       if ([301, 302, 303, 307, 308].includes(response.status)) {
         const location = response.headers.get("location");
         if (!location) return null;
+        // Each hop rechecks SSRF policy and scopes credentials to its host.
         current = new URL(location, current).href;
         continue;
       }

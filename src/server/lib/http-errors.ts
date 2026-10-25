@@ -9,6 +9,7 @@ function statusForAppError(code: string): number {
     case "NOT_FOUND":
       return 404;
     case "VALIDATION_ERROR":
+    case "INVALID_PATH_PATTERN":
     case "UNKNOWN_LOCATION":
       return 400;
     case "PAYMENT_REQUIRED":
