@@ -165,7 +165,7 @@ describe("audit crawler access", () => {
     // Shopify's edge 429 carries no `powered-by` header.
     const defaultFetch = vi.mocked(fetch).getMockImplementation()!;
     vi.mocked(fetch).mockImplementation((url, init) =>
-      String(url).includes("dns-query")
+      typeof url === "string" && url.includes("dns-query")
         ? defaultFetch(url, init)
         : Promise.resolve(new Response(null, { status: 429 })),
     );
