@@ -6,7 +6,8 @@ const {
   assertPaidPlan,
   mentionsSearch,
   generateText,
-  billResearchSpend,
+  holdResearch,
+  settleResearch,
   isHosted,
   creditsDepleted,
   getCached,
@@ -16,7 +17,8 @@ const {
   assertPaidPlan: vi.fn(),
   mentionsSearch: vi.fn(),
   generateText: vi.fn(),
-  billResearchSpend: vi.fn(),
+  holdResearch: vi.fn(),
+  settleResearch: vi.fn(),
   isHosted: vi.fn(),
   creditsDepleted: vi.fn(),
   getCached: vi.fn(),
@@ -37,7 +39,10 @@ vi.mock("@/server/lib/runtime-env", () => ({
   getOptionalEnvValue: vi.fn(),
   isHostedServerAuthMode: isHosted,
 }));
-vi.mock("@/server/billing/researchSpend", () => ({ billResearchSpend }));
+vi.mock("@/server/billing/researchHold", () => ({
+  holdResearch,
+  settleResearch,
+}));
 vi.mock("@/server/billing/subscription", () => ({
   checkUsageCreditsDepleted: creditsDepleted,
 }));
@@ -68,14 +73,18 @@ vi.mock(
 
 import { listAiResearchKeywords, researchAiPrompts } from "./aiPromptResearch";
 import { customer } from "./aiVisibilityTestFixtures";
+import { AppError } from "@/server/lib/errors";
 
 const input = { projectId: "project", keyword: "seo tool" } as const;
+const hold = { lockId: "relevance-hold" };
 
 describe("researchAiPrompts", () => {
   beforeEach(() => {
     assertPaidPlan.mockResolvedValue(undefined);
     isHosted.mockResolvedValue(true);
     creditsDepleted.mockResolvedValue({ depleted: false });
+    holdResearch.mockResolvedValue(hold);
+    settleResearch.mockResolvedValue(undefined);
     getCached.mockResolvedValue(null);
     getTracker.mockResolvedValue({
       brands: [
@@ -134,8 +143,13 @@ describe("researchAiPrompts", () => {
       },
       { text: "Is moz a good seo tool?", tracked: true, sources: [] },
     ]);
-    expect(billResearchSpend).toHaveBeenCalledWith(
-      expect.objectContaining({ projectId: "project" }),
+    expect(holdResearch).toHaveBeenCalledWith(
+      { ...customer, projectId: "project" },
+      { estimatedCredits: 50, ledgerFeature: "ai_research" },
+    );
+    expect(settleResearch).toHaveBeenCalledWith(
+      { ...customer, projectId: "project" },
+      hold,
       [expect.objectContaining({ provider: "openrouter", costUsd: 0.003 })],
     );
   });
@@ -180,8 +194,59 @@ describe("researchAiPrompts", () => {
 
     expect(mentionsSearch).not.toHaveBeenCalled();
     expect(generateText).not.toHaveBeenCalled();
+    expect(holdResearch).not.toHaveBeenCalled();
     expect(result.prompts[0].text).toBe("Which seo tool is free?");
   });
+
+  it("refuses a fresh relevance call at the monthly limit even when prompt data is cached", async () => {
+    getCached.mockImplementation(async (key: string) =>
+      key === "ai-visibility:prompt-research"
+        ? {
+            prompts: [
+              {
+                question: "which seo tool?",
+                answer: "",
+                volume: 1,
+                sources: [],
+              },
+            ],
+          }
+        : null,
+    );
+    holdResearch.mockRejectedValue(new AppError("SPEND_LIMIT_REACHED"));
+
+    await expect(researchAiPrompts(input, customer)).rejects.toMatchObject({
+      code: "SPEND_LIMIT_REACHED",
+    });
+    expect(mentionsSearch).not.toHaveBeenCalled();
+    expect(generateText).not.toHaveBeenCalled();
+    expect(settleResearch).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    "settles the hold after model failure, with recorded spend: %s",
+    async (paidStep) => {
+      generateText.mockImplementation(
+        async ({
+          onStepFinish,
+        }: {
+          onStepFinish: (step: object) => unknown;
+        }) => {
+          if (paidStep) await onStepFinish({});
+          throw new Error("model failed");
+        },
+      );
+
+      await expect(researchAiPrompts(input, customer)).rejects.toThrow(
+        "model failed",
+      );
+      expect(settleResearch).toHaveBeenCalledWith(
+        { ...customer, projectId: "project" },
+        hold,
+        paidStep ? [expect.objectContaining({ costUsd: 0.003 })] : [],
+      );
+    },
+  );
 });
 
 describe("listAiResearchKeywords", () => {
