@@ -1,6 +1,6 @@
 # Keep workerd's system CA trust without the full buildpack image's unused
-# compilers, image decoders, and database clients. Stay on Node 22 / Debian 12.
-FROM node:22-bookworm-slim
+# compilers, image decoders, and database clients. Keep Node aligned with .nvmrc.
+FROM node:22.23.4-bookworm-slim
 
 RUN apt-get update \
   && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \

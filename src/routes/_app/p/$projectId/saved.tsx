@@ -24,7 +24,10 @@ import { TablePagination } from "@/client/components/table/TablePagination";
 import { SavedKeywordsBulkActionBar } from "@/client/features/saved-keywords/SavedKeywordsBulkActionBar";
 import { SavedKeywordsBulkTagsModal } from "@/client/features/saved-keywords/SavedKeywordsBulkTagsModal";
 import { SavedKeywordsFilters } from "@/client/features/saved-keywords/SavedKeywordsFilters";
-import { SavedKeywordsHeader } from "@/client/features/saved-keywords/SavedKeywordsHeader";
+import {
+  SavedKeywordsHeader,
+  SavedKeywordsEmptyState,
+} from "@/client/features/saved-keywords/SavedKeywordsHeader";
 import {
   DeleteSavedKeywordsModal,
   RemoveSavedKeywordsError,
@@ -35,6 +38,7 @@ import {
   EMPTY_SAVED_KEYWORDS_FILTERS,
 } from "@/client/features/saved-keywords/savedKeywordsFilterTypes";
 import {
+  sortingFromSearch,
   SAVED_KEYWORD_PAGE_SIZES,
   toSavedKeywordSort,
 } from "@/client/features/saved-keywords/savedKeywordsUtils";
@@ -78,12 +82,6 @@ export const Route = createFileRoute("/_app/p/$projectId/saved")({
 });
 
 const FILTER_DEBOUNCE_MS = 350;
-
-function sortingFromSearch(search: SavedKeywordsSearch): SortingState {
-  const sort = search.sort ?? "fetchedAt";
-  if (sort === "createdAt") return [];
-  return [{ id: sort, desc: (search.order ?? "desc") === "desc" }];
-}
 
 function SavedKeywordsPage() {
   const { projectId } = Route.useParams();
@@ -333,7 +331,12 @@ function SavedKeywordsPage() {
         ) : null}
         {/* Without data a failed load has nothing to show; the empty
             state would claim there are no saved keywords. */}
-        {savedKeywordsQuery.isError && data === undefined ? null : (
+        {savedKeywordsQuery.isError && data === undefined ? null : data &&
+          !isFetching &&
+          totalCount === 0 &&
+          !hasActiveFilters ? (
+          <SavedKeywordsEmptyState projectId={projectId} />
+        ) : (
           <SavedKeywordsTable
             rows={savedKeywords}
             rowSelection={rowSelection}

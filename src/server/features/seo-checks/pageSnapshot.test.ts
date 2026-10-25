@@ -78,50 +78,65 @@ it("reads the page facts and each JSON-LD block", async () => {
   });
 });
 
-it("does not follow an asset redirect to a blocked host", async () => {
-  const internal = "http://169.254.169.254/latest/meta-data/";
+it("validates asset redirects before contacting the next host", async () => {
+  const fetch = vi
+    .fn<(url: string, init: RequestInit) => Promise<Response>>()
+    .mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: "http://10.0.0.1/" },
+      }),
+    );
+  vi.stubGlobal("fetch", fetch);
   mocks.validate.mockImplementation(async (url: string) => {
-    if (url === internal) throw new Error("CRAWL_TARGET_BLOCKED");
+    if (url === "http://10.0.0.1/") throw new Error("CRAWL_TARGET_BLOCKED");
     return url;
   });
-  const fetch = vi.fn(async (_url: string, init: RequestInit) =>
-    init.redirect === "follow"
-      ? new Response(null, { headers: { "content-length": "123" } })
-      : new Response(null, { status: 302, headers: { location: internal } }),
-  );
-  vi.stubGlobal("fetch", fetch);
-
-  expect(await assetSize("https://example.com/asset.js", null)).toBeNull();
+  expect(await assetSize("https://example.com/asset", null)).toBeNull();
   expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch.mock.calls[0][1].redirect).toBe("manual");
 });
 
-it("measures redirected assets without forwarding preview credentials", async () => {
-  const cdn = "https://cdn.example.com/asset.js";
-  let cdnHeaders: Headers | undefined;
-  vi.stubGlobal("fetch", async (url: string, init: RequestInit) => {
-    if (url === cdn || init.redirect === "follow") {
-      cdnHeaders = new Headers(init.headers);
-      return new Response(null, { headers: { "content-length": "123" } });
-    }
-    return new Response(null, { status: 302, headers: { location: cdn } });
-  });
+it.each(["https://cdn.example/asset", "http://preview.example/asset"])(
+  "does not forward preview credentials to %s",
+  async (target) => {
+    const fetch = vi
+      .fn<(url: string, init: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: target } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { headers: { "content-length": "123" } }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    expect(
+      await assetSize("https://preview.example/asset", {
+        host: "preview.example",
+        headers: { "x-vercel-protection-bypass": "secret" },
+        expiresAt: null,
+      }),
+    ).toBe(123);
+    expect(
+      new Headers(fetch.mock.calls[0][1].headers).get(
+        "x-vercel-protection-bypass",
+      ),
+    ).toBe("secret");
+    expect(
+      new Headers(fetch.mock.calls[1][1].headers).has(
+        "x-vercel-protection-bypass",
+      ),
+    ).toBe(false);
+  },
+);
 
-  expect(
-    await assetSize("https://preview.example.com/asset.js", {
-      host: "preview.example.com",
-      headers: { "x-vercel-protection-bypass": "test-preview-credential" },
-      expiresAt: null,
+it("bounds an asset redirect loop", async () => {
+  const fetch = vi.fn().mockResolvedValue(
+    new Response(null, {
+      status: 302,
+      headers: { location: "/asset" },
     }),
-  ).toBe(123);
-  expect(cdnHeaders?.get("x-vercel-protection-bypass")).toBeNull();
-});
-
-it("bounds asset redirect loops", async () => {
-  const fetch = vi.fn(
-    async () =>
-      new Response(null, { status: 302, headers: { location: "/asset.js" } }),
   );
   vi.stubGlobal("fetch", fetch);
-  expect(await assetSize("https://example.com/asset.js", null)).toBeNull();
+  expect(await assetSize("https://example.com/asset", null)).toBeNull();
   expect(fetch).toHaveBeenCalledTimes(6);
 });

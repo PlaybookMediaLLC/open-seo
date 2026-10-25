@@ -250,6 +250,20 @@ export function SearchPerformancePage({
         ) : (
           <>
             {reportQuery.isError ? reportError : null}
+            <p className="text-sm text-muted-foreground">
+              Loaded into this view{" "}
+              {new Date(reportQuery.dataUpdatedAt).toLocaleString()}. Search
+              Console data can lag; this is the retrieval time, not the last
+              search event.
+            </p>
+            {report.totals.impressions < 100 && (
+              <p className="rounded-lg bg-muted p-3 text-sm">
+                Sparse evidence: {report.totals.impressions} impressions in this
+                period. Rankings and percentage changes can move sharply with
+                small samples; these observations do not establish a reliable
+                growth opportunity.
+              </p>
+            )}
             {reportQuery.isPlaceholderData ? (
               <SearchPerformanceLoadingState />
             ) : (
@@ -276,8 +290,8 @@ export function SearchPerformancePage({
               >
                 <TabsTrigger value="striking">
                   {reportQuery.isPlaceholderData
-                    ? "Striking distance"
-                    : `Striking distance (${report.strikingDistance.length})`}
+                    ? "Positions near page one"
+                    : `Positions near page one (${report.strikingDistance.length})`}
                 </TabsTrigger>
                 <TabsTrigger value="queries">Queries</TabsTrigger>
                 <TabsTrigger value="pages">Pages</TabsTrigger>

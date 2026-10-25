@@ -1,9 +1,9 @@
 minimumReleaseAge: 11520
 minimumReleaseAgeExclude:
-  # TEMPORARY (remove after 2026-10-31): patched versions for GHSA-27r3-jxmh-p828
-  # and GHSA-w74x-v6f9-j3xg / GHSA-wjr9-j795-jxcr; keep the global 8-day gate.
-  - "body-parser@2.4.0"
+  # October security fixes inside the release-age window; remove after 2026-10-31.
   - "fast-uri@3.1.9"
+  - "body-parser@2.4.0"
+  - "shadcn@4.22.1"
   - "@every-app/*"
   # TEMPORARY (remove after 2026-10-01): DOMPurify security fix, GHSA-p98j-92pf-mc4p.
   - "dompurify@3.4.16"
@@ -54,13 +54,13 @@ minimumReleaseAgeExclude:
 # To prune once a parent catches up: delete the line, run `pnpm install`, and
 # keep it deleted if `pnpm audit` stays clean.
 overrides:
-  # October 2026 security fixes, scoped to compatible dependency majors.
-  source-map-js: "^1.2.2"
-  "zod@4": "^4.6.6"
+  # Keep all MCP v1 consumers above the patched SDK floor.
+  "@modelcontextprotocol/sdk@1": "^1.32.0"
   "ws@8": "^8.21.0"
   seroval: "^1.6.3"
   proxy-addr: "^2.0.8"
-  "@modelcontextprotocol/sdk@1": "^1.32.0"
+  source-map-js: "^1.2.2"
+  "zod@4": "4.6.7"
   # GHSA-4x5r-pxfx-6jf8 — waiting on @tanstack/devtools-vite
   "@babel/core": "^7.29.6"
   # September 2026 recursion/CPU DoS fixes plus earlier advisories — just-bash/shadcn
@@ -91,7 +91,7 @@ overrides:
   undici: "^7.30.1"
   # GHSA-67mh-4wv8-2f99 — update drizzle-kit's legacy loader instead of ignoring it.
   "@esbuild-kit/core-utils>esbuild": "^0.25.12"
-  # GHSA-wq5f-xc86-pv6w — 0.35.5 fixes bundled librsvg (and earlier libheif issue).
+  # GHSA-rgj7-g3m4-5g8c — Miniflare 4 pins 0.34.5; 0.35.5 also fixes bundled librsvg.
   "miniflare>sharp": "0.35.5"
   # September 2026 advisories: keep these fixes within each supported major.
   "@ai-sdk/provider-utils@4": "^4.0.33"
@@ -104,7 +104,8 @@ overrides:
   "fflate@0.4": "~0.4.9"
   mysql2: "^3.23.1"
   "nanoid@3": "^3.3.18"
-  "toml@4": "^4.2.0"
+  # toml 5 retains parse(); its Node >=20 floor matches Effect and this project.
+  "effect>toml": "^5.0.1"
 
 # Cloudflare echoes targeted placement back as `{ mode: "targeted" }` without
 # `region`; 0.28.2's response schema requires it, so alchemy fails a deploy

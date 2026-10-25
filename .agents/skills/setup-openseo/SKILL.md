@@ -56,7 +56,8 @@ For self-hosted OpenSEO, use its endpoint directly; the official plugin targets 
 - Use the current agent’s native reload flow, checking its installed version, help, or official documentation. Prefer automatic discovery or an in-place reload; restart only if required to load the new tools and skills.
 - Once tools load in this session, run whoami and list_projects (free reads). Check skill discovery too. If a reload needs my action, give the instructions rather than repeatedly retrying unavailable tools.
 - Track installation, sign-in, and verification separately. A connected server is not proof that this session can use its tools. Never claim verification before the free reads succeed.
-- Do not create projects or run paid research during installation.
+- If list_projects returns no projects, ask for my website and create a project for it with create_project. Creating a project uses no credits.
+- Do not run paid research during installation.
 
 ## 7. Finish with a short handoff
 

@@ -1,10 +1,19 @@
-import { Outlet, createFileRoute, useParams } from "@tanstack/react-router";
+import { getProjectNavGroup } from "@/client/navigation/items";
+import {
+  Outlet,
+  createFileRoute,
+  useParams,
+  useLocation,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useHostedAuthRouteGuard } from "@/client/features/auth/useHostedAuthRouteGuard";
 import { prefetchBillingAccount } from "@/client/features/billing/billingAccountQuery";
 import { FreePlanBanner } from "@/client/features/billing/FreePlanBanner";
 import { SpendLimitBanner } from "@/client/features/spend/SpendLimitBanner"; // playbook-seam
+import { TermsUpdateBanner } from "@/client/features/auth/TermsUpdateBanner";
 import { SkeletonPage } from "@/client/components/SkeletonPresets";
+import { PageLoading } from "@/client/components/Spinner";
+import { getLastProjectId } from "@/client/lib/active-project";
 import { AuthenticatedAppLayout } from "@/client/layout/AppShell";
 import { useOnboardingRedirect } from "@/client/features/onboarding/useOnboardingRedirect";
 
@@ -17,8 +26,13 @@ export const Route = createFileRoute("/_app")({
 // between the two.
 function AppRouteLayout() {
   const authGate = useHostedAuthRouteGuard();
-  useOnboardingRedirect();
+  const isOnboarded = useOnboardingRedirect();
   const { projectId } = useParams({ strict: false });
+  const { pathname } = useLocation();
+  const workspace = projectId
+    ? getProjectNavGroup(projectId, pathname)?.label
+    : undefined;
+  const showCreditNotices = workspace === "Research" || workspace === "Monitor";
   // The shell paints at once, and only the page waits for the session check,
   // so a full load shows the sidebar and a page skeleton instead of a spinner.
   const ready = authGate.canRenderAuthenticatedContent;
@@ -29,15 +43,27 @@ function AppRouteLayout() {
     if (ready) prefetchBillingAccount();
   }, [ready]);
 
+  // Until onboarding is known to be done, show a plain spinner, so a user on
+  // their way to /onboarding never sees the dashboard flash first. A browser
+  // that has opened a project is past onboarding, so the shell paints at once.
+  if (!isOnboarded && !getLastProjectId()) {
+    return <PageLoading />;
+  }
+
   return (
     <AuthenticatedAppLayout
       projectId={projectId}
       ready={ready}
       banner={
-        ready && projectId && authGate.isHostedMode ? (
+        ready && authGate.isHostedMode ? (
           <>
-            <SpendLimitBanner projectId={projectId} /> {/* playbook-seam */}
-            <FreePlanBanner />
+            <TermsUpdateBanner />
+            {projectId && showCreditNotices ? (
+              <>
+                <SpendLimitBanner projectId={projectId} /> {/* playbook-seam */}
+                <FreePlanBanner />
+              </>
+            ) : null}
           </>
         ) : undefined
       }

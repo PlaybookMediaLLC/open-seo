@@ -1,5 +1,6 @@
 import { AppError } from "@/server/lib/errors";
-import { crawlerHeadersFor, type CrawlerAccess } from "@/shared/crawler-access";
+import type { CrawlerAccess } from "@/shared/crawler-access";
+import { auditRequestHeaders } from "@/server/lib/audit/web-bot-auth";
 
 const BLOCKED_HOSTS = new Set([
   "localhost",
@@ -29,6 +30,14 @@ function normalizeHost(hostname: string): string {
   }
   if (host.endsWith(".")) {
     host = host.slice(0, -1);
+  }
+  // DNS answers can spell loopback/mapped IPv6 in expanded form.
+  if (host.includes(":")) {
+    try {
+      host = new URL(`http://[${host}]/`).hostname.slice(1, -1);
+    } catch {
+      return "";
+    }
   }
   return host;
 }
@@ -101,6 +110,8 @@ function isPrivateIpv6(host: string): boolean {
   ) {
     return true;
   }
+  if (/^(fec|fed|fee|fef|ff|64:ff9b:)/.test(value)) return true;
+  if (value.startsWith("::") && !value.startsWith("::ffff:")) return true;
 
   const mappedIpv4 = parseMappedIpv4FromIpv6(value);
   if (mappedIpv4 && isPrivateIpv4(mappedIpv4)) {
@@ -152,10 +163,12 @@ async function resolveAddressRecords(
     },
   );
 
-  if (!response.ok) return [];
+  if (!response.ok) throw new AppError("CRAWL_TARGET_BLOCKED");
 
   const body: DnsJsonResponse = await response.json();
-  if (body.Status !== 0 || !Array.isArray(body.Answer)) return [];
+  if (body.Status !== 0) throw new AppError("CRAWL_TARGET_BLOCKED");
+  if (body.Answer === undefined) return [];
+  if (!Array.isArray(body.Answer)) throw new AppError("CRAWL_TARGET_BLOCKED");
 
   const expectedType = type === "A" ? 1 : 28;
   return body.Answer.filter(
@@ -177,11 +190,25 @@ async function hostnameResolvesToBlockedAddress(
     ]);
 
     const addresses = [...v4, ...v6];
-    if (addresses.length === 0) return false;
+    if (addresses.length === 0) return true;
 
     return addresses.some(
-      (address) => isPrivateIpv4(address) || isPrivateIpv6(address),
+      (address) => !isIpLiteral(address) || isBlockedHost(address),
     );
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Shopify storefronts, custom domains included, resolve into Shopify's
+ * 23.227.38.0/24. This identifies a store even when its edge answers with a
+ * bare 429 that carries no `powered-by` header.
+ */
+export async function isShopifyHost(hostname: string): Promise<boolean> {
+  try {
+    const addresses = await resolveAddressRecords(normalizeHost(hostname), "A");
+    return addresses.some((address) => address.startsWith("23.227.38."));
   } catch {
     return false;
   }
@@ -268,10 +295,7 @@ export async function resolveStartUrlRedirects(
       response = await fetch(current, {
         method: "HEAD",
         redirect: "manual",
-        headers: {
-          "User-Agent": "OpenSEO-Audit/1.0",
-          ...crawlerHeadersFor(current, access),
-        },
+        headers: await auditRequestHeaders(current, access),
         signal: AbortSignal.timeout(START_URL_PROBE_TIMEOUT_MS),
       });
     } catch {

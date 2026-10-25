@@ -1,5 +1,7 @@
 # Remediation and verification
 
+> Integration update: this assessment records the original security branch. The branch has since incorporated newer `develop` changes. Fresh dependency audits now report zero findings in all three workspaces, including the previously open TOML advisories. See [develop integration evidence](reports/develop-integration.json) for current validation; earlier scanner and image reports remain historical snapshots.
+
 Assessment scope: repository source, all locally reachable Git history, all three
 pnpm workspaces, supported infrastructure definitions, a locally built self-host
 container, and a disposable local application. No production or external staging

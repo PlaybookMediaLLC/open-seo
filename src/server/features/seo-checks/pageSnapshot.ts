@@ -194,8 +194,8 @@ export async function linkStatus(url: string, access: CrawlerAccess | null) {
  */
 export async function assetSize(url: string, access: CrawlerAccess | null) {
   try {
-    let current = url;
     const signal = AbortSignal.timeout(TIMEOUT_MS);
+    let current = url;
     for (let hop = 0; hop <= MAX_ASSET_REDIRECTS; hop++) {
       current = await normalizeAndValidateStartUrl(current);
       const response = await fetch(current, {
@@ -208,11 +208,11 @@ export async function assetSize(url: string, access: CrawlerAccess | null) {
         signal,
       });
       await response.body?.cancel();
-      if (response.status >= 300 && response.status < 400) {
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
         const location = response.headers.get("location");
         if (!location) return null;
         // Each hop rechecks SSRF policy and scopes credentials to its host.
-        current = new URL(location, current).toString();
+        current = new URL(location, current).href;
         continue;
       }
       const length = Number(response.headers.get("content-length"));

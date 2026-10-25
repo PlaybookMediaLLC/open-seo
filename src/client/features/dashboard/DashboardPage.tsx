@@ -21,6 +21,8 @@ import { Fragment } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { sort } from "remeda";
 import { DashboardOnboarding } from "./DashboardOnboarding";
+import { DashboardAgentCard } from "./DashboardAgentCard";
+import { getStepStatus } from "./dashboardSteps";
 import {
   AuditHealthCard,
   GscCard,
@@ -34,6 +36,7 @@ import {
   getDashboardOverview,
 } from "@/serverFunctions/dashboard";
 import { Skeleton } from "@/client/components/ui/skeleton";
+import { isHostedClientAuthMode } from "@/lib/auth-mode";
 
 export function DashboardPage({
   projectId,
@@ -47,6 +50,7 @@ export function DashboardPage({
   const activationQuery = useQuery({
     queryKey: ["dashboardActivation", projectId],
     queryFn: () => getDashboardActivation({ data: { projectId } }),
+    refetchOnWindowFocus: "always",
   });
   const overviewQuery = useQuery({
     queryKey: ["dashboardOverview", projectId],
@@ -168,7 +172,7 @@ export function DashboardPage({
               Your website
             </p>
             <h1 className="text-2xl font-semibold">
-              {activation.domain || "Dashboard"}
+              {activation.domain || "Home"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Search visibility, links and site health in one place.
@@ -185,6 +189,7 @@ export function DashboardPage({
         </div>
 
         <ThisWeekCard projectId={projectId} /* playbook-seam */ />
+
         <WorkspaceMergeBanner />
 
         {activationQuery.isError ? (
@@ -205,11 +210,22 @@ export function DashboardPage({
           />
         ) : null}
 
-        <DashboardOnboarding
-          key={projectId}
-          projectId={projectId}
-          activation={activation}
-        />
+        <details className="rounded-xl border bg-card p-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Project setup and optional connections
+          </summary>
+          <div className="mt-4 space-y-4">
+            {isHostedClientAuthMode() &&
+            getStepStatus(activation, "mcp") === "todo" ? (
+              <DashboardAgentCard projectId={projectId} />
+            ) : null}
+            <DashboardOnboarding
+              key={projectId}
+              projectId={projectId}
+              activation={activation}
+            />
+          </div>
+        </details>
 
         <Tabs
           value={tab}

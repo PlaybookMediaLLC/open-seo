@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkflowStep } from "cloudflare:workers";
+import { AppError } from "@/server/lib/errors";
 import { RankCheckWorkflow } from "./RankCheckWorkflow";
 
 const mocks = vi.hoisted(() => ({
@@ -15,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   failRunIfActive: vi.fn(),
   captureServerEvent: vi.fn(),
   isHostedServerAuthMode: vi.fn(),
+  assertSpendRoom: vi.fn(),
 }));
 
 vi.mock("cloudflare:workers", () => ({
@@ -34,14 +36,25 @@ vi.mock("@/server/features/rank-tracking/services/rankCheckRunGuards", () => ({
 vi.mock("@/server/workflows/rankCheckPaths", () => ({
   runLiveCheck: mocks.runLiveCheck,
   runQueuedCheck: vi.fn(),
+  retryRankChecks: vi.fn(),
 }));
 vi.mock("@/server/workflows/pgStep", () => ({
-  pgStep: (
+  // Like the engine, run() gets a rebuilt Error, never the thrown object.
+  pgStep: async (
     _step: unknown,
     _name: string,
     _config: unknown,
     fn: () => unknown,
-  ) => fn(),
+  ) => {
+    try {
+      return await fn();
+    } catch (error) {
+      throw new Error(
+        error instanceof Error ? `${error.name}: ${error.message}` : "",
+        { cause: error },
+      );
+    }
+  },
 }));
 vi.mock("@/server/lib/dataforseo", () => ({
   createDataforseoClient: mocks.createDataforseoClient,
@@ -54,11 +67,18 @@ vi.mock("@/server/billing/autumn", () => ({
 }));
 // playbook-seam: RFC-0009 spend limits have their own tests.
 vi.mock("@/server/billing/spendAdmission", () => ({
-  assertSpendRoom: async () => undefined,
+  assertSpendRoom: mocks.assertSpendRoom,
 }));
 vi.mock("@/server/lib/runtime-env", () => ({
   isHostedServerAuthMode: mocks.isHostedServerAuthMode,
 }));
+vi.mock("@/server/email/onboarding-drip", () => ({
+  sendCreditsExhaustedEvent: vi.fn(),
+}));
+
+beforeEach(() => {
+  mocks.assertSpendRoom.mockResolvedValue(undefined);
+});
 
 const billingCustomer = {
   userId: "user_1",
@@ -121,10 +141,46 @@ describe("rank check workflow credit ceiling", () => {
   it("rejects a keyword-list race before balance or DataForSEO calls", async () => {
     mocks.getKeywordsForConfig.mockResolvedValue(keywords(5));
 
-    await expect(runWorkflow({ maxCostCredits: 12 })).rejects.toMatchObject({
-      code: "VALIDATION_ERROR",
-    });
+    await expect(runWorkflow({ maxCostCredits: 20 })).rejects.toThrow();
 
+    expect(mocks.autumnCheck).not.toHaveBeenCalled();
+    expect(mocks.createDataforseoClient).not.toHaveBeenCalled();
+    expect(mocks.runLiveCheck).not.toHaveBeenCalled();
+  });
+
+  it("keeps a credits refusal as the bare code, so the credits card shows", async () => {
+    mocks.getKeywordsForConfig.mockResolvedValue(keywords(5));
+    mocks.autumnCheck.mockResolvedValue({ balance: { remaining: 0 } });
+
+    await expect(runWorkflow({})).rejects.toThrow("INSUFFICIENT_CREDITS");
+
+    expect(mocks.failRunIfActive).toHaveBeenCalledWith(
+      "run_1",
+      "INSUFFICIENT_CREDITS",
+    );
+    expect(mocks.updateConfig).toHaveBeenCalledWith("config_1", "project_1", {
+      lastSkipReason: "insufficient_credits",
+    });
+  });
+
+  it("keeps a monthly spend refusal after the engine rebuilds the error", async () => {
+    mocks.getKeywordsForConfig.mockResolvedValue(keywords(5));
+    mocks.assertSpendRoom.mockRejectedValueOnce(
+      new AppError(
+        "SPEND_LIMIT_REACHED",
+        "The organization monthly limit is reached",
+      ),
+    );
+
+    await expect(runWorkflow({})).rejects.toThrow("SPEND_LIMIT_REACHED");
+
+    expect(mocks.failRunIfActive).toHaveBeenCalledWith(
+      "run_1",
+      "SPEND_LIMIT_REACHED",
+    );
+    expect(mocks.updateConfig).toHaveBeenCalledWith("config_1", "project_1", {
+      lastSkipReason: "spend_limit",
+    });
     expect(mocks.autumnCheck).not.toHaveBeenCalled();
     expect(mocks.createDataforseoClient).not.toHaveBeenCalled();
     expect(mocks.runLiveCheck).not.toHaveBeenCalled();
@@ -134,7 +190,7 @@ describe("rank check workflow credit ceiling", () => {
   // callers without a ceiling — every scheduled check — must not be treated
   // as approving zero credits.
   it.each([
-    ["at the approved ceiling", 12, 4],
+    ["at the approved ceiling", 20, 4],
     ["without a ceiling", undefined, 5],
   ])("checks the reloaded list %s", async (_label, maxCostCredits, count) => {
     mocks.getKeywordsForConfig.mockResolvedValue(keywords(count));

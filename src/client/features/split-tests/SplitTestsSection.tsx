@@ -5,6 +5,7 @@ import { CardShell } from "@/client/components/CardShell";
 import { QueryError } from "@/client/components/QueryState";
 import { Badge } from "@/client/components/ui/badge";
 import { Button } from "@/client/components/ui/button";
+import { Label } from "@/client/components/ui/label";
 import { Input } from "@/client/components/ui/input";
 import {
   Sheet,
@@ -18,6 +19,7 @@ import { Textarea } from "@/client/components/ui/textarea";
 import { dateLabel } from "@/client/features/opportunities/shared";
 import {
   backtestSplitTestPattern,
+  previewSplitTestPattern,
   createSplitTest,
   listSplitTests,
 } from "@/serverFunctions/splitTests";
@@ -127,6 +129,14 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
         });
     },
   });
+  const preview = useMutation({
+    mutationFn: () =>
+      previewSplitTestPattern({
+        data: { projectId: props.projectId, pagePattern },
+      }),
+  });
+  const currentPreview =
+    preview.data?.pattern === pagePattern.trim() ? preview.data : null;
   const refused = create.data && !create.data.created ? create.data : null;
   const backtest = useMutation({
     mutationFn: () =>
@@ -145,19 +155,25 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-3 px-4 text-sm">
+          <Label htmlFor="split-name">Name</Label>
           <Input
+            id="split-name"
             aria-label="Name"
             placeholder="Integration titles name the product"
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
+          <Label htmlFor="split-hypothesis">Hypothesis</Label>
           <Textarea
+            id="split-hypothesis"
             aria-label="Hypothesis"
             placeholder="Titles that name the product get more clicks."
             value={hypothesis}
             onChange={(event) => setHypothesis(event.target.value)}
           />
+          <Label htmlFor="split-field">Field to change</Label>
           <select
+            id="split-field"
             aria-label="Field to change"
             className="h-9 w-full rounded-md border bg-background px-2"
             value={field}
@@ -174,7 +190,9 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
               </option>
             ))}
           </select>
+          <Label htmlFor="split-metric">Metric</Label>
           <select
+            id="split-metric"
             aria-label="Metric"
             className="h-9 w-full rounded-md border bg-background px-2"
             value={metric}
@@ -189,16 +207,56 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
               Measure the chosen conversion (GA4)
             </option>
           </select>
+          <Label htmlFor="split-pattern">Page pattern</Label>
           <Input
+            id="split-pattern"
             aria-label="Page pattern"
+            aria-describedby="split-pattern-help"
             placeholder="^/integrations/[^/]+$"
             value={pagePattern}
             onChange={(event) => setPagePattern(event.target.value)}
           />
-          <p className="text-xs text-muted-foreground">
-            Use RE2 syntax, such as ^/integrations/[^/]+$. Lookaround and
-            backreferences are not supported.
+          <p id="split-pattern-help" className="text-sm text-muted-foreground">
+            Match URL paths with an RE2 expression. For example,{" "}
+            <code>^/integrations/[^/]+$</code> includes{" "}
+            <code>/integrations/slack</code> and excludes{" "}
+            <code>/blog/slack</code>. Lookaround and backreferences are not
+            supported. Check the matching pages before creating a test.
           </p>
+          <Button
+            variant="outline"
+            pending={preview.isPending}
+            disabled={pagePattern.trim().length < 3}
+            onClick={() => preview.mutate()}
+          >
+            Preview matching pages
+          </Button>
+          {preview.isError && (
+            <QueryError
+              error={preview.error}
+              fallback="Could not preview matching pages"
+            />
+          )}
+          {currentPreview && (
+            <div className="space-y-2 rounded-lg border p-3">
+              <p>
+                {currentPreview.total} matching pages in Search Console,{" "}
+                {currentPreview.window.start} to {currentPreview.window.end}.
+                Showing up to 20. No test or site change has been created.
+              </p>
+              <ul className="max-h-48 overflow-auto space-y-1">
+                {currentPreview.pages.map((page) => (
+                  <li key={page.url} className="break-all">
+                    {page.url} · {page.clicks} clicks
+                  </li>
+                ))}
+              </ul>
+              <p className="text-muted-foreground">
+                Only pages present in this baseline are listed. Creating the
+                test rechecks eligibility.
+              </p>
+            </div>
+          )}
           {create.isError && (
             <p role="alert" className="text-destructive">
               {create.error.message}
@@ -248,7 +306,10 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
           <Button
             pending={create.isPending}
             disabled={
-              !name.trim() || !hypothesis.trim() || pagePattern.length < 3
+              !name.trim() ||
+              !hypothesis.trim() ||
+              !currentPreview ||
+              currentPreview.total === 0
             }
             onClick={() => create.mutate()}
           >

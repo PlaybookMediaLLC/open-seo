@@ -3,6 +3,7 @@ import { jsonNoStore } from "@/server/features/growth/internalAuth";
 import { createCheck } from "@/server/features/seo-checks/CheckApi";
 import { verifyCiToken } from "@/server/features/seo-checks/ciTokens";
 import { createCheckInputSchema } from "@/types/schemas/seoChecks";
+import { readRequestText } from "@/server/lib/request-body";
 
 // RFC-0010 5.10: the GitHub Action starts a check with its CI token.
 const MAX_BODY_BYTES = 64 * 1024;
@@ -20,9 +21,8 @@ export const Route = createFileRoute("/api/ci/v1/checks")({
             },
             401,
           );
-        const text = await request.text();
-        if (text.length > MAX_BODY_BYTES)
-          return jsonNoStore({ error: "too_large" }, 413);
+        const text = await readRequestText(request, MAX_BODY_BYTES);
+        if (text === null) return jsonNoStore({ error: "too_large" }, 413);
         let raw: unknown = null;
         try {
           raw = JSON.parse(text);

@@ -15,6 +15,7 @@ import { BILLING_ROUTE } from "@/shared/billing";
 
 /** Pages outside a project, by path prefix. */
 const ACCOUNT_PAGES: [string, string][] = [
+  ["/ai", "Agents"],
   ["/settings", "Settings"],
   [BILLING_ROUTE, "Billing"],
   ["/projects", "Projects"],

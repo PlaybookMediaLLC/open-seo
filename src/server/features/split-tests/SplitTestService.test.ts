@@ -318,3 +318,23 @@ it("checks the MDE of a conversion test on the chosen conversion", async () => {
     .where(eq(splitTests.id, result.testId));
   expect(test).toEqual({ metric: "conversions", metricEvent: "sign_up" });
 });
+
+it("previews the matching baseline pages without creating a split test", async () => {
+  const { projectId, context } = await project();
+  mocks.performance.mockResolvedValue(rows(2, ["/blog/other"]));
+  const result = await SplitTestService.previewPattern(
+    context,
+    input(projectId),
+  );
+  expect(result.total).toBe(2);
+  expect(result.pages.map((page) => page.url)).toEqual([
+    "https://example.com/integrations/p0",
+    "https://example.com/integrations/p1",
+  ]);
+  expect(
+    await db
+      .select()
+      .from(splitTests)
+      .where(eq(splitTests.projectId, projectId)),
+  ).toEqual([]);
+});

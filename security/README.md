@@ -136,7 +136,7 @@ documented blocked checks before treating the new status as passing.
 
 ## Remediation workflow
 
-Use `findings.md` and `remediation.md` for the assessed snapshot. New detections
+Use `findings.md` and `remediation.md` for the assessed snapshot; `reports/develop-integration.json` records subsequent develop integration and fresh validation. New detections
 begin as unverified. Reproduce the issue safely and trace its affected code before
 assigning a fix. Group confirmed findings by owner: A secrets, B application,
 C dependencies, D infrastructure, E runtime. Give the owner redacted scanner

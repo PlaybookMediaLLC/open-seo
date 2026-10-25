@@ -1,5 +1,7 @@
 # Security findings — 2026-10-25
 
+> Integration update: this assessment records the original security branch. The branch has since incorporated newer `develop` changes. Fresh dependency audits now report zero findings in all three workspaces, including the previously open TOML advisories. See [develop integration evidence](reports/develop-integration.json) for current validation; earlier scanner and image reports remain historical snapshots.
+
 **Security coverage is incomplete and unresolved findings remain.** The repository assessment, remediation, local runtime checks and repeatable pipeline have been executed. No production target was scanned or deployed.
 
 ## Results

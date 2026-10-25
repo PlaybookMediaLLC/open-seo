@@ -17,10 +17,6 @@ vi.mock("@/server/auth/repositories/AuthRepository", () => ({
   },
 }));
 
-vi.mock("@/server/auth/default-hosted-organization", () => ({
-  resolveExistingActiveHostedOrganization: vi.fn(),
-}));
-
 vi.mock("@/middleware/ensure-user/cloudflareAccess", () => ({
   resolveCloudflareAccessContext: vi.fn(),
 }));
@@ -155,9 +151,10 @@ describe("Agents SDK v2 MCP transport", () => {
         { ...ctx, props },
       );
 
-    await expect(
-      call("chrome-extension://pghallcbnfabbgfijhbcldaapmgidnaa"),
-    ).resolves.toMatchObject({ status: 200 });
+    const extensionResponse = await call(
+      "chrome-extension://pghallcbnfabbgfijhbcldaapmgidnaa",
+    );
+    expect(extensionResponse.status, await extensionResponse.text()).toBe(200);
     await expect(call("https://open-seo.test")).resolves.toMatchObject({
       status: 200,
     });

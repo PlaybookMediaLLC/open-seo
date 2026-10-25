@@ -5,6 +5,7 @@ import {
   type OAuthProviderOptions,
   type TokenExchangeCallbackOptions,
 } from "@cloudflare/workers-oauth-provider";
+import type * as WorkersOAuthProvider from "@cloudflare/workers-oauth-provider";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { createOpenSeoOAuthProvider } from "./oauth-provider";
@@ -17,52 +18,17 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("cloudflare:workers", () => ({
   waitUntil: (promise: Promise<unknown>) => void promise,
+  // oxlint-disable-next-line typescript/no-extraneous-class -- runtime shim for the real provider's exported classes
+  WorkerEntrypoint: class {},
   // api-key-auth pulls the db client into this module graph; it reads env at
   // module load.
   env: {},
 }));
 
-// The whole module is doubled because the real one imports "cloudflare:workers"
-// at top level, which vitest's node environment cannot load even via
-// importOriginal. The error-class doubles must stay signature-compatible with
-// the real AuthorizationError/OAuthError.
-vi.mock("@cloudflare/workers-oauth-provider", () => {
-  class AuthorizationError extends Error {
-    readonly description: string;
-    readonly redirectUri?: string;
-    readonly state?: string;
-    readonly issuer?: string;
-
-    constructor(
-      readonly code: string,
-      options: {
-        description: string;
-        redirectUri?: string;
-        state?: string;
-        issuer?: string;
-      },
-    ) {
-      super(options.description);
-      this.description = options.description;
-      this.redirectUri = options.redirectUri;
-      this.state = options.state;
-      this.issuer = options.issuer;
-    }
-  }
-
-  class OAuthError extends Error {
-    constructor(
-      readonly code: string,
-      options?: { description?: string },
-    ) {
-      super(options?.description);
-    }
-  }
-
+vi.mock("@cloudflare/workers-oauth-provider", async (importOriginal) => {
+  const actual = await importOriginal<typeof WorkersOAuthProvider>();
   return {
-    AuthorizationError,
-    GrantType: { REFRESH_TOKEN: "refresh_token" },
-    OAuthError,
+    ...actual,
     OAuthProvider: class {
       constructor(options: OAuthProviderOptions<unknown>) {
         mocks.options.push(options);
@@ -97,6 +63,7 @@ vi.mock("@/middleware/ensure-user/hosted", () => ({
 
 vi.mock("@/server/features/activation/mcpActivation", () => ({
   recordMcpAuthorized: vi.fn(),
+  completeOnboardingFromAgent: vi.fn(),
 }));
 
 vi.mock("@/server/lib/posthog", () => ({
@@ -123,12 +90,15 @@ async function dispatch(
 
 function tokenExchangeOptions(
   requestedScope: string[],
-): TokenExchangeCallbackOptions {
+): TokenExchangeCallbackOptions<unknown> {
   return {
     grantType: GrantType.REFRESH_TOKEN,
     clientId: "client-1",
+    subjectClientId: "client-1",
     userId: "user-1",
     grantId: "grant-1",
+    resource: "https://app.openseo.so/mcp",
+    env: {},
     scope: ["offline_access", "mcp"],
     requestedScope,
     props: {
@@ -233,6 +203,25 @@ describe("OpenSEO OAuth provider configuration", () => {
     await expect(mocks.requests[0]?.json()).resolves.toMatchObject({
       token_endpoint_auth_method: "client_secret_post",
     });
+  });
+
+  it("rejects oversized consent bodies before parsing authorization parameters", async () => {
+    const provider = createOpenSeoOAuthProvider(() => new Response("app"));
+    await dispatch(provider, new Request("https://app.openseo.so/health"));
+    const parseAuthRequest = vi.fn();
+    const response = await invokeDefaultHandler(
+      new Request("https://app.openseo.so/api/oauth/consent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://app.openseo.so",
+        },
+        body: " ".repeat(16 * 1024 + 1),
+      }),
+      { OAUTH_PROVIDER: { parseAuthRequest } },
+    );
+    expect(response.status).toBe(413);
+    expect(parseAuthRequest).not.toHaveBeenCalled();
   });
 
   it("includes the authorization-server issuer when consent is denied", async () => {

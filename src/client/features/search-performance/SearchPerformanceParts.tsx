@@ -160,6 +160,13 @@ export function TotalsTable({ report }: { report: Report }) {
   ];
   return (
     <div className="rounded-xl border border-border bg-card p-4">
+      <p className="mb-2 text-sm font-medium">
+        Google Search Console · {range.startDate} to {range.endDate}
+      </p>
+      <p className="mb-3 text-sm text-muted-foreground">
+        {deltaTitle}. A dash means there is no non-zero comparison baseline for
+        that metric.
+      </p>
       <Table>
         <TableHeader>
           <TableRow>

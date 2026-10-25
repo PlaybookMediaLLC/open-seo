@@ -1,0 +1,50 @@
+# Security audit — 2026-10-25
+
+This audit covers the Relay application and the separate marketing site in `web/` starting at revision `f1fdba29`. The fixes were then rebased onto `develop` at `37006f7a` and revalidated with its newer upstream features and dependencies. Evidence combines source review, dependency advisory checks, regression tests, builds, and local HTTP checks; production deployment is not verified by this report.
+
+## Findings and fixes
+
+Severity reflects the plausible impact of the application defects; dependency severities come from the package advisory database. Dependency findings are not proof that every advisory is exploitable through this application.
+
+| Finding                                                                                                                                                                                                            | Severity     | Remediation                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Asset HEAD requests automatically followed redirects after validating only the first URL. Preview bypass headers could follow a redirect to another host or HTTP, and redirected targets could bypass SSRF checks. | High         | Validate every redirect target, use manual redirects with a five-hop limit, apply one request deadline, and derive credential headers separately for each destination.                                                                                                                    |
+| DNS lookup errors, failed responses, and empty answers allowed outbound requests. Expanded IPv6 DNS answers could evade loopback/private-address classification.                                                   | High         | Fail closed on unverifiable DNS, canonicalize IPv6 before classification, and reject additional non-public IPv6 ranges. Mixed public/private answers are rejected.                                                                                                                        |
+| robots.txt and sitemap redirect handling screened only the literal hostname, allowing a different hostname resolving to a private address.                                                                         | High         | Apply the full URL/DNS validator to every followed redirect. Existing per-hop credential scoping remains in place.                                                                                                                                                                        |
+| Webhooks and internal/CI/OAuth endpoints buffered bodies before enforcing size limits, or had no body limit. robots.txt was truncated only after a full download.                                                  | Medium       | Add a streaming byte-limited request reader to GitHub and Autumn webhooks, signed growth endpoints, CI check creation, and OAuth consent. Cancel robots.txt reads at 500 KiB. Public newsletter and analytics requests use the existing 16 KiB bounded reader.                            |
+| User-defined split-test page patterns ran through JavaScript's backtracking regular-expression engine over up to 25,000 Search Console rows. Nested repetition could exhaust CPU.                                  | Medium       | Use the already-present RE2JS library as a direct dependency for baseline/backtest matching and validate submitted patterns with the same engine. Lookarounds and backreferences are now rejected. Existing saved patterns using those features need replacement with supported patterns. |
+| The unauthenticated newsletter endpoint could create contacts without human verification, rate limits, origin validation, or bounded request parsing.                                                              | Medium       | Reuse the site's fail-closed rate limiter and Turnstile verification with a newsletter-specific action. Add the matching form widget, request bounds, provider timeout, and redirect refusal. Avoid logging provider response bodies containing contact data.                             |
+| The analytics proxy copied incoming headers to Plausible, removing only cookies. Bearer/API/Cloudflare Access credentials could be forwarded to the third party.                                                   | Medium       | Forward only content type, user agent, and Cloudflare-derived client IP. Bound input, reject redirects, and do not copy upstream headers back onto the site's origin.                                                                                                                     |
+| Root and marketing lockfiles contained published dependency advisories.                                                                                                                                            | Critical–Low | Update MCP SDKs, Vite, Vitest, Zod, shadcn, and affected transitive dependencies. Preserve supported major ranges where possible. The scoped Effect TOML override moves to 5.0.1+ with its named `parse` export checked.                                                                  |
+
+Initial advisory counts at `f1fdba29` were **46 in the root project** (4 critical, 19 high, 19 moderate, 4 low) and **13 in the marketing project** (5 high, 7 moderate, 1 low). These are per-workspace advisory entries, not unique application vulnerabilities. Both subsequent `pnpm audit --json` results report **zero known vulnerabilities**. No advisory was suppressed. The root dependency overrides are consolidated in `pnpm-workspace.yaml` so a separate package-level override cannot replace the security floors. Updating shadcn removes its vulnerable Zod 3 dependency instead of forcing a breaking Zod override onto it.
+
+## Other reviewed controls
+
+- Hosted authentication, current organization membership checks, project-scoped server functions and MCP authorization, role checks for integration management, and hashed/revocable CI tokens.
+- TanStack server-function CSRF middleware, exact hosted MCP origins, Google OAuth single-use expiring state and PKCE, encrypted provider tokens, and verified webhook signatures.
+- Billing identity derivation, the retired arbitrary Autumn proxy, public-tool verification and spend budgets, and tenant-scoped report access.
+- HTML report sandboxing/CSP, link rendering, outbound fetch call sites, database query construction, deployment modes, Docker loopback binding, and preview workflow trust boundaries.
+- Common high-confidence credential patterns across 2,790 tracked text files. The only private-key marker was in a test that generates a fresh key; no embedded live credential was verified. This does not include Git history or a dedicated entropy scan.
+
+No additional confirmed bypass was identified in those reviewed paths. This is not a claim that every line or every possible authorization combination was exhaustively tested.
+
+## Validation
+
+- Root Vitest suite: **404 files, 3,123 tests passed**.
+- Marketing protection suite: **40 tests passed**, plus the real-SQLite concurrent budget reservation check.
+- Root and marketing TypeScript checks, BadSEO TypeScript check, root lint, Knip, plugin synchronization, and root formatting passed. Knip emits existing non-failing configuration hints.
+- All edited marketing files pass formatting. The full marketing formatting command still fails on five unchanged files: `content/blogs/two-surfaces-two-timelines.md`, `content/blogs/what-broke-the-99-dollar-ceiling.md`, `src/routes/_marketing/library/keyword-research/index.tsx`, `src/routes/_marketing/pricing.tsx`, and `tests/meta-pixel.test.ts`. Recorded in `.agents/PAPERCUTS.md`.
+
+- Both dependency audits: zero known vulnerabilities.
+- Local built marketing Worker: homepage 200; malformed newsletter JSON 400; oversized newsletter and analytics bodies 413; newsletter configuration missing protection 503. No provider-side contact was created by these checks.
+- The patched MCP test includes the protocol-version header required by the SDK; the exact-origin rejection assertions remain intact.
+- Root and marketing production builds completed successfully during the audit.
+
+## Deployment and scope limits
+
+Newsletter signup now requires the same real `VITE_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, and `BACKLINK_CHECK_RATE_LIMIT` binding already required by the public tools. Missing protection intentionally disables submission. Verify those bindings and the `newsletter` Turnstile action in staging before production rollout.
+
+DNS checking and fetching are still separate operations. A source-level DNS preflight cannot alone eliminate DNS rebinding; the production runtime must enforce public-only outbound network access. Browser-rendering providers also own their own network isolation. Those controls were not accessible for validation here.
+
+Production DNS/TLS, Cloudflare/WAF/Access policy, secret configuration, database grants, backups, live OAuth/provider callbacks, browser CAPTCHA success, PostgreSQL-specific integration runs, and authenticated multi-account production testing are outside the evidence available in this workspace. No production penetration test, deployment, migration, secret rotation, or account mutation was performed. Existing five-minute session-cookie caching and trusted `local_noauth` mode remain explicit product tradeoffs, not newly discovered authentication bypasses.

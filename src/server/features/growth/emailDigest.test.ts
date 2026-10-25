@@ -37,7 +37,7 @@ beforeAll(async () => {
   await database.prepare();
   if (!database.isPostgres)
     await database.client.executeMultiple(`
-      CREATE TABLE "user" (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, email_verified INTEGER NOT NULL, image TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, analytics_opted_out INTEGER, last_active_organization_id TEXT);
+      CREATE TABLE "user" (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, email_verified INTEGER NOT NULL, image TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, analytics_opted_out INTEGER, terms_accepted_version TEXT, terms_accepted_at INTEGER, product_updates_opt_in INTEGER, product_updates_changed_at INTEGER, last_active_organization_id TEXT);
       CREATE TABLE member (id TEXT PRIMARY KEY, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, role TEXT NOT NULL, created_at INTEGER NOT NULL);
     `);
 });

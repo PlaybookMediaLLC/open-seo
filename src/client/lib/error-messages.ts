@@ -20,6 +20,10 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   INSUFFICIENT_CREDITS:
     "You don't have enough credits for this. Upgrade your plan or buy more credits to keep going.",
   SPEND_LIMIT_REACHED: SPEND_LIMIT_MESSAGE, // playbook-seam
+  PAYMENT_METHOD_REQUIRED:
+    "We couldn't charge a card on file. Add or update your card in the billing portal, then try again.",
+  PAYMENT_ACTION_REQUIRED:
+    "Your bank needs more time or a confirmation for this charge. Check your balance in a minute; if nothing arrived, buy your first top-up with the Buy credits button, then turn on auto-reload.",
   AUDIT_RENDERING_UNAVAILABLE:
     "JavaScript rendering is not configured on this deployment. Ask your administrator to enable a renderer.",
   FORBIDDEN: "You do not have access to this resource.",
@@ -42,7 +46,7 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   AI_VISIBILITY_ERROR:
     "The AI visibility request could not be completed. Review the tracking settings and try again.",
   DATAFORSEO_AUTH_FAILED:
-    "DataForSEO rejected the API key. Check that DATAFORSEO_API_KEY is the base64 of your DataForSEO login:password.",
+    "DataForSEO rejected the credentials. Check that DATAFORSEO_API_KEY is the base64 of your DataForSEO login:password, and that the DataForSEO account is verified and has API access.",
   RATE_LIMITED: "Too many requests. Please wait and try again.",
   UPSTREAM_UNAVAILABLE:
     "The data provider is temporarily unavailable. Please retry in a moment.",

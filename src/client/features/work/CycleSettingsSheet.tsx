@@ -52,34 +52,68 @@ export function CycleSettingsSheet({
     meta: { errorToast: false },
     mutationFn: () => saveWorkSettings({ data: { projectId, ...values } }),
     onSuccess: () => {
-      toast.success("Cycle settings saved.");
+      toast.success("Weekly review settings saved.");
       setOpen(false);
       void client.invalidateQueries({ queryKey: ["this-week", projectId] });
     },
   });
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        Cycle settings
+      <Button
+        variant="outline"
+        onClick={() => {
+          setValues(settings);
+          setOpen(true);
+        }}
+      >
+        Weekly review settings
       </Button>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Cycle settings</SheetTitle>
+          <SheetTitle>Weekly review settings</SheetTitle>
           <SheetDescription>
             Next shows only items at or above the quality bar. There is no
-            weekly quota. Saving turns the weekly cycle on.
+            weekly quota. Saving does not turn the weekly review on or off.
           </SheetDescription>
         </SheetHeader>
         <div className="space-y-3 px-4 text-sm">
-          <Label htmlFor="cycle-bar">Quality bar (20 to 80)</Label>
-          <Input
-            id="cycle-bar"
-            type="number"
-            min={20}
-            max={80}
-            value={values.qualityBar}
+          <Label htmlFor="cycle-quality">Work selection</Label>
+          <select
+            id="cycle-quality"
+            className={SELECT}
+            value={
+              [20, 40, 60, 80].includes(values.qualityBar)
+                ? values.qualityBar
+                : "custom"
+            }
             onChange={(event) => set("qualityBar", event.target.value)}
-          />
+          >
+            <option value={20}>Explore more eligible work</option>
+            <option value={40}>Balanced priority</option>
+            <option value={60}>High priority</option>
+            <option value={80}>Highest priority only</option>
+            <option value="custom" disabled>
+              Custom priority score
+            </option>
+          </select>
+          <details>
+            <summary className="cursor-pointer text-sm">
+              Advanced: priority threshold
+            </summary>
+            <p className="my-2 text-sm text-muted-foreground">
+              This filters the priority score, not the probability of success.
+              Freshness, confidence and connection checks still apply.
+            </p>
+            <Label htmlFor="cycle-bar">Minimum score (20 to 80)</Label>
+            <Input
+              id="cycle-bar"
+              type="number"
+              min={20}
+              max={80}
+              value={values.qualityBar}
+              onChange={(event) => set("qualityBar", event.target.value)}
+            />
+          </details>
           <Label htmlFor="cycle-prs">Open Relay pull requests (1 to 10)</Label>
           <Input
             id="cycle-prs"
@@ -102,14 +136,15 @@ export function CycleSettingsSheet({
               </option>
             ))}
           </select>
-          <Label htmlFor="cycle-hour">Hour (0 to 23)</Label>
+          <Label htmlFor="cycle-hour">Review time</Label>
           <Input
             id="cycle-hour"
-            type="number"
-            min={0}
-            max={23}
-            value={values.cycleHour}
-            onChange={(event) => set("cycleHour", event.target.value)}
+            type="time"
+            step={3600}
+            value={`${String(values.cycleHour).padStart(2, "0")}:00`}
+            onChange={(event) =>
+              set("cycleHour", event.target.value.split(":")[0] ?? "0")
+            }
           />
           <Label htmlFor="cycle-zone">Time zone</Label>
           <Input
@@ -126,7 +161,7 @@ export function CycleSettingsSheet({
         </div>
         <SheetFooter>
           <Button pending={save.isPending} onClick={() => save.mutate()}>
-            Save
+            Save settings
           </Button>
         </SheetFooter>
       </SheetContent>

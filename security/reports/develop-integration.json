@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-25T18:31:57.233494+00:00",
+  "develop_base": "1ac33f1a281770b5647a0b207b42c802475a6136",
+  "security_assessment_commit": "0baba48a",
+  "dependency_audits": {
+    "root": {
+      "lockfile": "pnpm-lock.yaml",
+      "lockfile_sha256": "6bb0de400b5b1ff171cdf824955c6bcd1ad2bde9283eef8159752adf577676a9",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0
+        },
+        "dependencies": 1587,
+        "devDependencies": 0,
+        "optionalDependencies": 0,
+        "totalDependencies": 1587
+      },
+      "status": "passed"
+    },
+    "web": {
+      "lockfile": "web/pnpm-lock.yaml",
+      "lockfile_sha256": "1c2adbe9d4fc75386a09c55250ee4c64e95af070d91ec9ea1d344d828818c98e",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0
+        },
+        "dependencies": 575,
+        "devDependencies": 0,
+        "optionalDependencies": 0,
+        "totalDependencies": 575
+      },
+      "status": "passed"
+    },
+    "fixture": {
+      "lockfile": "tests/badseo/pnpm-lock.yaml",
+      "lockfile_sha256": "d1a73fc4387d2b6fed4073a8b2fdaab001769001854bcad7403dd6e419886771",
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0
+        },
+        "dependencies": 246,
+        "devDependencies": 0,
+        "optionalDependencies": 0,
+        "totalDependencies": 246
+      },
+      "status": "passed"
+    }
+  },
+  "validation": {
+    "application_focused_tests": {
+      "status": "passed",
+      "files": 24,
+      "tests": 115
+    },
+    "dependency_regressions": {
+      "status": "passed",
+      "tests": 2
+    },
+    "docker_build_definition_check": "passed",
+    "docker_context_regression": "passed",
+    "full_ci": "pending",
+    "full_tests": "pending",
+    "builds": "pending"
+  },
+  "coverage_notes": [
+    "This report records integration with newer develop; the original reports retain the earlier assessed tree and image snapshot.",
+    "The three historical Effect/TOML advisories are resolved by develop's compatible scoped patched dependency.",
+    "Full CodeQL/image/runtime assessments were not repeated for the 116 incoming develop commits. Missing or partial scanner coverage is not a clean-scan claim."
+  ]
+}

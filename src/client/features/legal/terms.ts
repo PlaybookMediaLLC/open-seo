@@ -7,8 +7,9 @@ import type { LegalDocument } from "./LegalPage";
  */
 export const TERMS: LegalDocument = {
   title: "Terms of Service",
-  updated: "October 15, 2026",
+  updated: "October 24, 2026",
   summary: [
+    "Relay is owned and operated by Playbook Media LLC.",
     "You keep ownership of your content and the data you connect. We use it only to run Relay for you.",
     "Relay prepares changes. You approve them. Relay never merges or deploys anything to your site.",
     "SEO data, AI answers and measured results are estimates, not promises of rankings, traffic or revenue.",
@@ -20,7 +21,7 @@ export const TERMS: LegalDocument = {
       id: "agreement",
       title: "Agreement to these terms",
       blocks: [
-        "These Terms of Service (the “Terms”) govern your use of Relay, the hosted SEO service at [relay.playbookmedia.io](https://relay.playbookmedia.io), its MCP server and API, and related websites (together, the “Service”). Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”), operates the Service. Relay was previously called Playbook Media SEO.",
+        "These Terms of Service (the “Terms”) govern your use of Relay, the hosted SEO service at [relay.playbookmedia.io](https://relay.playbookmedia.io), its MCP server and API, and related websites (together, the “Service”). Relay is owned and operated by Playbook Media LLC, a Delaware limited liability company (“Playbook Media”, “we”, “us”). Relay was previously called Playbook Media SEO.",
         "By creating an account or using the Service, you agree to these Terms and to our [Privacy Policy](/privacy). If you do not agree, do not use the Service.",
         "If you use the Service for a company or other organization, you confirm that you can bind it to these Terms, and “you” includes that organization.",
       ],

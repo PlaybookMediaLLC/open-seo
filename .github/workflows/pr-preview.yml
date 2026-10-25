@@ -44,7 +44,8 @@ env:
 jobs:
   preview:
     if: >-
-      github.repository == 'bensenescu/open-seo' &&
+      (github.repository == 'bensenescu/open-seo' ||
+      github.repository == 'every-app/private-open-seo') &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -61,7 +62,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: pnpm
 
       - name: Install dependencies

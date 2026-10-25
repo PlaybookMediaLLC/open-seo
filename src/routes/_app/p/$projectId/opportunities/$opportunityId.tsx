@@ -1,3 +1,7 @@
+import {
+  OpportunityReviewEvidence,
+  OpportunityReviewHistory,
+} from "@/client/features/opportunities/OpportunityReviewEvidence";
 import { PublishingOpportunityPanel } from "@/client/features/publishing/PublishingOpportunityPanel";
 import { PerformanceFieldResult } from "@/client/features/performance/PerformanceFieldResult";
 import { PerformanceLabCheck } from "@/client/features/performance/PerformanceLabCheck";
@@ -32,7 +36,6 @@ import {
   opportunityKeys,
   OpportunityStatusBadge,
   StaleBadge,
-  statusLabels,
   typeHelp,
   typeLabels,
 } from "@/client/features/opportunities/shared";
@@ -133,204 +136,208 @@ function OpportunityDetailPage() {
           ) : null}
         </div>
         <p className="text-sm text-muted-foreground">{typeHelp[item.type]}</p>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <OwnerSelect
-            opportunity={item}
-            canAssign={
-              access.isSuccess && access.data.canReview && !query.isError
-            }
-          />
-          <TicketSheet key={`ticket-${item.id}`} opportunity={item} />
+        <nav
+          aria-label="Review sections"
+          className="flex gap-4 text-sm xl:hidden"
+        >
+          <a href="#prepared-change" className="underline">
+            Change
+          </a>
+          <a href="#change-evidence" className="underline">
+            Evidence and review
+          </a>
+        </nav>
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+          <div id="prepared-change" className="min-w-0">
+            <PublishingOpportunityPanel
+              key={`publishing-${item.id}`}
+              opportunity={{
+                ...item,
+                accessibilityRule: query.data.accessibilityEvidence.find(
+                  (row) => row.runId === item.evidenceRunId,
+                )?.ruleId,
+                // Only a page-level item has one page to change.
+                performanceCauses:
+                  performance?.scope === "url"
+                    ? performance.causeIds
+                    : undefined,
+              }}
+              readOnly={query.isError}
+            />
+          </div>
+          <div id="change-evidence" className="min-w-0 space-y-4">
+            <OpportunityReviewEvidence item={item} />
+            {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
+            <OpportunityReview
+              key={`review-${item.id}`}
+              opportunity={item}
+              currentEvidenceReviewed={decisions.some(
+                (decision) =>
+                  decision.decision === "reviewed" &&
+                  decision.evidenceRunId === item.evidenceRunId,
+              )}
+              canReview={
+                access.isSuccess && access.data.canReview && !query.isError
+              }
+            />
+          </div>
         </div>
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <section className="rounded-xl border bg-card p-5 space-y-4">
-            <h2 className="text-lg font-semibold">Why this matters</h2>
-            <p className="text-sm leading-relaxed">{item.explanation}</p>
-            <dl className="space-y-3 text-sm">
-              <div>
-                <dt className="text-muted-foreground">
-                  Search Console property
-                </dt>
-                <dd className="break-all">{item.siteUrl}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Page</dt>
-                <dd className="break-all">{item.url}</dd>
-              </div>
-              {item.query ? (
-                <div>
-                  <dt className="text-muted-foreground">Search query</dt>
-                  <dd>{item.query}</dd>
-                </div>
-              ) : null}
-              <div>
-                <dt className="text-muted-foreground">Search intent</dt>
-                <dd>{item.searchIntent}</dd>
-              </div>
-              {item.diagnosis ? (
-                <div>
-                  <dt className="text-muted-foreground">Diagnosis</dt>
-                  <dd>{diagnosisLabels[item.diagnosis]}</dd>
-                </div>
-              ) : null}
-            </dl>
-            <div className="border-t pt-4">
-              <h3 className="text-sm font-semibold">Recommended next step</h3>
-              <p className="mt-1 text-sm leading-relaxed">
-                {item.recommendedAction}
-              </p>
+        <details id="opportunity-evidence" className="rounded-xl border p-4">
+          <summary className="cursor-pointer font-medium">
+            Evidence, preparation and review history
+          </summary>
+          <div className="mt-4 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <OwnerSelect
+                opportunity={item}
+                canAssign={
+                  access.isSuccess && access.data.canReview && !query.isError
+                }
+              />
+              <TicketSheet key={`ticket-${item.id}`} opportunity={item} />
             </div>
-          </section>
-          <section className="rounded-xl border bg-card p-5 space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Priority</p>
-              <p className="text-3xl font-semibold tabular-nums">
-                {item.priority}
-                <span className="text-base font-normal text-muted-foreground">
-                  {" "}
-                  / 100
-                </span>
-              </p>
-            </div>
-            <dl className="space-y-2 text-sm">
-              {factors.map(([label, score]) => (
-                <div key={label} className="flex justify-between gap-4">
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="tabular-nums">{score.toFixed(2)} / 1</dd>
-                </div>
-              ))}
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Estimated effort</dt>
-                <dd>~{item.effortHours} hours</dd>
-              </div>
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Heuristic confidence</dt>
-                <dd>{item.confidence.toFixed(2)} / 1</dd>
-              </div>
-            </dl>
-            <p className="border-t pt-3 text-sm leading-relaxed">
-              {item.scoreExplanation}
-            </p>
-            <div className="rounded-lg bg-muted p-3 text-sm">
-              <p className="font-medium">Uncertainty</p>
-              <p className="mt-1 text-muted-foreground">
-                {item.uncertainty} Confidence is a research heuristic, not the
-                probability of a traffic gain.
-              </p>
-            </div>
-          </section>
-        </div>
-        <CompetingPages urls={urls} />
-        <AuditAndLinkEvidence
-          detail={query.data}
-          latestRunId={item.evidenceRunId}
-        />
-        <OpportunityEvidenceHistory
-          evidence={evidence}
-          latestRunId={item.evidenceRunId}
-          query={item.query}
-        />
-        <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
-        <PaidEvidence detail={query.data} projectId={projectId} />
-        {(BRIEF_OPPORTUNITY_TYPES as readonly string[]).includes(item.type) && (
-          <ContentBriefCard
-            opportunity={item}
-            canRun={access.isSuccess && access.data.canReview && !query.isError}
-          />
-        )}
-        {item.type === "internal_link" && (
-          <AnchorDraftCard
-            opportunity={item}
-            canDraft={
-              access.isSuccess && access.data.canReview && !query.isError
-            }
-          />
-        )}
-        {performance && (
-          <PerformanceFieldResult
-            projectId={projectId}
-            opportunityId={item.id}
-            metric={performance.metric}
-          />
-        )}
-        {performance?.scope === "url" && (
-          <PerformanceLabCheck
-            projectId={projectId}
-            opportunityId={item.id}
-            metric={performance.metric}
-            canRun={access.isSuccess && access.data.canReview && !query.isError}
-          />
-        )}
-        {item.type === "declining_page" && (
-          <OpportunityInvestigation
-            projectId={projectId}
-            opportunityId={item.id}
-            canRun={access.isSuccess && access.data.canReview && !query.isError}
-          />
-        )}
-        {/* Sibling keys must differ, or React keeps stale copies of a panel. */}
-        <OpportunityReview
-          key={`review-${item.id}`}
-          opportunity={item}
-          currentEvidenceReviewed={decisions.some(
-            (decision) =>
-              decision.decision === "reviewed" &&
-              decision.evidenceRunId === item.evidenceRunId,
-          )}
-          canReview={
-            access.isSuccess && access.data.canReview && !query.isError
-          }
-        />
-        <PublishingOpportunityPanel
-          key={`publishing-${item.id}`}
-          opportunity={{
-            ...item,
-            accessibilityRule: query.data.accessibilityEvidence.find(
-              (row) => row.runId === item.evidenceRunId,
-            )?.ruleId,
-            // Only a page-level item has one page to change.
-            performanceCauses:
-              performance?.scope === "url" ? performance.causeIds : undefined,
-          }}
-          readOnly={query.isError}
-        />
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Review history</h2>
-          {decisions.length ? (
-            <ol className="divide-y rounded-xl border">
-              {decisions.map((decision) => (
-                <li key={decision.id} className="space-y-2 p-4 text-sm">
-                  <div className="flex flex-wrap justify-between gap-2">
-                    <p className="font-medium">
-                      {decision.decision === "deferred"
-                        ? "Deferred for 7 days"
-                        : `${statusLabels[decision.fromStatus]} → ${statusLabels[decision.toStatus]}`}
-                    </p>
-                    <time
-                      dateTime={decision.createdAt}
-                      className="text-muted-foreground"
-                    >
-                      {dateLabel(decision.createdAt)}
-                    </time>
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+              <section className="rounded-xl border bg-card p-5 space-y-4">
+                <h2 className="text-lg font-semibold">Why this matters</h2>
+                <p className="text-sm leading-relaxed">{item.explanation}</p>
+                <dl className="space-y-3 text-sm">
+                  <div>
+                    <dt className="text-muted-foreground">
+                      Search Console property
+                    </dt>
+                    <dd className="break-all">{item.siteUrl}</dd>
                   </div>
-                  {decision.note ? (
-                    <p className="whitespace-pre-wrap break-words">
-                      {decision.note}
-                    </p>
+                  <div>
+                    <dt className="text-muted-foreground">Page</dt>
+                    <dd className="break-all">{item.url}</dd>
+                  </div>
+                  {item.query ? (
+                    <div>
+                      <dt className="text-muted-foreground">Search query</dt>
+                      <dd>{item.query}</dd>
+                    </div>
                   ) : null}
-                  <p className="break-all text-xs text-muted-foreground">
-                    Reviewer: {decision.actorUserId} · Evidence run:{" "}
-                    {decision.evidenceRunId}
+                  <div>
+                    <dt className="text-muted-foreground">Search intent</dt>
+                    <dd>{item.searchIntent}</dd>
+                  </div>
+                  {item.diagnosis ? (
+                    <div>
+                      <dt className="text-muted-foreground">Diagnosis</dt>
+                      <dd>{diagnosisLabels[item.diagnosis]}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+                <div className="border-t pt-4">
+                  <h3 className="text-sm font-semibold">
+                    Recommended next step
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed">
+                    {item.recommendedAction}
                   </p>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
-              No review decisions yet.
-            </p>
-          )}
-        </section>
+                </div>
+              </section>
+              <section className="rounded-xl border bg-card p-5 space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Priority</p>
+                  <p className="text-3xl font-semibold tabular-nums">
+                    {item.priority}
+                    <span className="text-base font-normal text-muted-foreground">
+                      {" "}
+                      / 100
+                    </span>
+                  </p>
+                </div>
+                <dl className="space-y-2 text-sm">
+                  {factors.map(([label, score]) => (
+                    <div key={label} className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">{label}</dt>
+                      <dd className="tabular-nums">{score.toFixed(2)} / 1</dd>
+                    </div>
+                  ))}
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Estimated effort</dt>
+                    <dd>~{item.effortHours} hours</dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">
+                      Heuristic confidence
+                    </dt>
+                    <dd>{item.confidence.toFixed(2)} / 1</dd>
+                  </div>
+                </dl>
+                <p className="border-t pt-3 text-sm leading-relaxed">
+                  {item.scoreExplanation}
+                </p>
+                <div className="rounded-lg bg-muted p-3 text-sm">
+                  <p className="font-medium">Uncertainty</p>
+                  <p className="mt-1 text-muted-foreground">
+                    {item.uncertainty} Confidence is a research heuristic, not
+                    the probability of a traffic gain.
+                  </p>
+                </div>
+              </section>
+            </div>
+            <CompetingPages urls={urls} />
+            <AuditAndLinkEvidence
+              detail={query.data}
+              latestRunId={item.evidenceRunId}
+            />
+            <OpportunityEvidenceHistory
+              evidence={evidence}
+              latestRunId={item.evidenceRunId}
+              query={item.query}
+            />
+            <Ga4Evidence rows={ga4Evidence} latestRunId={item.evidenceRunId} />
+            <PaidEvidence detail={query.data} projectId={projectId} />
+            {(BRIEF_OPPORTUNITY_TYPES as readonly string[]).includes(
+              item.type,
+            ) && (
+              <ContentBriefCard
+                opportunity={item}
+                canRun={
+                  access.isSuccess && access.data.canReview && !query.isError
+                }
+              />
+            )}
+            {item.type === "internal_link" && (
+              <AnchorDraftCard
+                opportunity={item}
+                canDraft={
+                  access.isSuccess && access.data.canReview && !query.isError
+                }
+              />
+            )}
+            {performance && (
+              <PerformanceFieldResult
+                projectId={projectId}
+                opportunityId={item.id}
+                metric={performance.metric}
+              />
+            )}
+            {performance?.scope === "url" && (
+              <PerformanceLabCheck
+                projectId={projectId}
+                opportunityId={item.id}
+                metric={performance.metric}
+                canRun={
+                  access.isSuccess && access.data.canReview && !query.isError
+                }
+              />
+            )}
+            {item.type === "declining_page" && (
+              <OpportunityInvestigation
+                projectId={projectId}
+                opportunityId={item.id}
+                canRun={
+                  access.isSuccess && access.data.canReview && !query.isError
+                }
+              />
+            )}
+
+            <OpportunityReviewHistory decisions={decisions} />
+          </div>
+        </details>
       </div>
     </div>
   );
