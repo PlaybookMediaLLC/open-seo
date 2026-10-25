@@ -9,12 +9,25 @@ import type { Plugin } from "vite";
  * Mounted from vite.config.ts at a `// playbook-seam` line.
  */
 export async function relayDocs(): Promise<Plugin[]> {
-  const plugin = await mdx(await import("./source.config"));
+  const plugin = await mdx(await import("./source.config.ts"));
   const transform = plugin.transform;
   if (typeof transform === "function") {
-    plugin.transform = function (code, id, options) {
+    plugin.transform = async function (code, id, options) {
       if (new URLSearchParams(id.split("?")[1]).has("raw")) return;
-      return transform.call(this, code, id, options);
+      const result = await transform.call(this, code, id, options);
+      // Fumadocs 14 returns validated JSON expecting Vite's JSON transform
+      // to run afterwards. Vite 8 loads JSON before plugin transforms, so
+      // emit a module explicitly after Fumadocs validates collection metadata.
+      if (id.split("?")[0]?.endsWith(".json") && result) {
+        const json = typeof result === "string" ? result : result.code;
+        if (typeof json === "string")
+          return {
+            code: `export default ${json}`,
+            map: null,
+            moduleType: "js",
+          };
+      }
+      return result;
     };
   }
   return [

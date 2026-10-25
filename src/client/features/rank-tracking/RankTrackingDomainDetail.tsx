@@ -11,13 +11,13 @@ import {
   estimateRankCheckCost,
 } from "@/serverFunctions/rank-tracking";
 import { IconAlertTriangle as AlertTriangle } from "@tabler/icons-react";
+import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { QueryState } from "@/client/components/QueryState";
 import { SkeletonCard } from "@/client/components/SkeletonPresets";
-import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { useHostedPlanGate } from "@/client/features/billing/HostedPlanGate";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { FreePlanAlert } from "./FreePlanAlert";
-import { ScheduledChecksPausedAlert } from "./ScheduledChecksPausedAlert";
+import { RankTrackingChangesAlert } from "./RankTrackingChangesAlert";
 import { RankRunAlerts } from "./RankRunAlerts";
 import { RankTrackingDetailHeader } from "./RankTrackingDetailHeader";
 import { RankTrackingOverview } from "./RankTrackingOverview";
@@ -236,7 +236,7 @@ export function RankTrackingDomainDetail({
 
   return (
     <div className="space-y-3">
-      <ScheduledChecksPausedAlert />
+      <RankTrackingChangesAlert />
 
       {config.lastSkipReason === "insufficient_credits" && (
         <Alert variant="warning">

@@ -72,7 +72,6 @@ export async function runAuditPhases(
     startUrl,
     config,
     access,
-    renderUsage,
   } = params;
   const origin = getOrigin(startUrl);
   const maxPages = config.maxPages;
@@ -90,15 +89,13 @@ export async function runAuditPhases(
   // desync the frontier from already-persisted crawl batches).
   const robots = parseRobotsTxt(origin, discovery.robotsText);
   const crawl = await runCrawlPhase(step, {
-    auditId,
-    workflowInstanceId,
+    ...params,
     origin,
     maxPages,
     robots,
     seededCount: discovery.seededCount,
     renderJavaScript: config.renderJavaScript,
-    renderUsage,
-    access,
+    sitePlatform: config.sitePlatform,
   });
   await runLighthousePhase(step, {
     auditId,

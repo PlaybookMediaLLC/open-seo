@@ -10,7 +10,11 @@ import type { Plugin } from "vite";
  *
  * Fork seams that keep the rename complete (audit: `grep -rn playbook-seam`):
  * - vite.config.ts: mounts this plugin and the docs plugin.
+ * - src/client/features/ai-mcp/agentInstalls.ts: agent setup links use Relay
+ *   guides instead of marketplace listings connected to upstream.
  * - src/lib/auth-api-key.ts: new API keys start with `relay_`.
+ * - src/shared/terms.ts: acceptance links open Relay's /terms and /privacy
+ *   pages, which identify Playbook Media LLC as the operator.
  * - src/routes/__root.tsx: icon links come from src/lib/relay-icons.ts.
  * - src/routes/__root.tsx: public pages render on the server too
  *   (src/client/components/RelayClientOnly.tsx).
@@ -46,6 +50,9 @@ import type { Plugin } from "vite";
  * - src/server/mcp/server.ts and src/server/features/sam/samChatTools.ts:
  *   register the growth tools for agents (RFC-0004;
  *   src/server/mcp/tools/growth-tools.ts).
+ * - src/server/mcp/tools/google-connection-tools.ts: successful Google
+ *   property changes record audit events with the verified project and
+ *   MCP actor, matching the dashboard integration setters.
  * - src/server/features/sam/samSystemPrompt.ts: adds the growth workflow rules
  *   (src/server/features/sam/growthPrompt.ts).
  * - knip.jsonc: lists the Trigger.dev config and tasks (trigger.config.ts,

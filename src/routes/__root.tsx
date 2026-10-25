@@ -13,20 +13,12 @@ import { DefaultCatchBoundary } from "@/client/components/DefaultCatchBoundary";
 import { captureGoogleLinkError } from "@/client/features/integrations/googleLinkError";
 import { ExportToSheetsModal } from "@/client/components/table/ExportToSheetsModal";
 import { themePreferenceInitScript } from "@/client/lib/theme";
-import {
-  identifyAnalyticsUser,
-  resetAnalyticsUser,
-  startAnalyticsCapture,
-  stopAnalyticsCapture,
-} from "@/client/lib/posthog";
 import { LandingNotFound } from "@/client/features/landing/LandingNotFound"; // playbook-seam
+import { PrivacyBootstrap } from "@/client/components/PrivacyChoices";
 import { TooltipProvider } from "@/client/components/ui/tooltip";
 import appCss from "@/client/styles/app.css?url";
-import { useSession } from "@/lib/auth-client";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { Toaster } from "sonner";
 import { queryClient } from "@/client/tanstack-db";
-import { getActiveOrganizationId } from "@/lib/auth-session";
 import { relayIconLinks } from "@/lib/relay-icons"; // playbook-seam
 import { RelayClientOnly } from "@/client/components/RelayClientOnly"; // playbook-seam
 
@@ -81,34 +73,6 @@ function AppLayout() {
   return <Outlet />;
 }
 
-function PostHogBootstrap() {
-  const isHostedMode = isHostedClientAuthMode();
-  const { data: session, isPending: isSessionPending } = useSession();
-  const userId = session?.user?.id ?? null;
-  const optedOut = session?.user?.analyticsOptedOut === true;
-  const organizationId = getActiveOrganizationId(session);
-  const previousUserIdRef = React.useRef<string | null>(null);
-
-  React.useEffect(() => {
-    if (!isHostedMode || isSessionPending) {
-      return;
-    }
-
-    if (userId && !optedOut) {
-      startAnalyticsCapture();
-      identifyAnalyticsUser({ userId, organizationId });
-      previousUserIdRef.current = userId;
-    } else if (userId && optedOut) {
-      stopAnalyticsCapture();
-    } else if (previousUserIdRef.current) {
-      previousUserIdRef.current = null;
-      resetAnalyticsUser();
-    }
-  }, [isHostedMode, isSessionPending, optedOut, organizationId, userId]);
-
-  return null;
-}
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   const showDevtools =
     import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS !== "false";
@@ -125,7 +89,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <RelayClientOnly /* playbook-seam */>
           <QueryClientProvider client={queryClient}>
             <TooltipProvider>
-              <PostHogBootstrap />
+              <PrivacyBootstrap />
               {children}
               <ExportToSheetsModal />
               <Toaster position="bottom-right" mobileOffset={{ bottom: 100 }} />
