@@ -68,7 +68,7 @@ export function SidebarBrand() {
               type="button"
               onClick={toggleSidebar}
               aria-label="Expand sidebar"
-              className="group/brand relative grid size-8 place-items-center rounded-lg text-sidebar-foreground/70 outline-none hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              className="group/brand relative grid size-8 place-items-center rounded-lg text-sidebar-foreground outline-none hover:bg-sidebar-accent hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             />
           }
         >
@@ -97,7 +97,7 @@ export function SidebarBrand() {
           render={
             <SidebarTrigger
               aria-label="Collapse sidebar"
-              className="hidden size-7 text-sidebar-foreground/45 hover:text-sidebar-foreground md:inline-flex"
+              className="hidden size-7 text-sidebar-foreground hover:text-sidebar-foreground md:inline-flex"
             />
           }
         />
