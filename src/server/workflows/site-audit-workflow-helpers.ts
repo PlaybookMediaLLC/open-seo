@@ -213,6 +213,9 @@ export async function crawlPage(
       }
     }
 
+    if (throttled && fetchClass === "ok" && statusCode < 400)
+      await throttle.recovered(url);
+
     if (!isHtml || fetchClass !== "ok" || statusCode >= 400) {
       return emptyPageResult({
         url,
