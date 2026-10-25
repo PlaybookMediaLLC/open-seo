@@ -2,10 +2,9 @@ import { useLayoutEffect } from "react";
 import zoomCss from "./appZoom.css?raw";
 
 /**
- * Playbook fork: renders the signed-in app at 80% on desktop. The authenticated
+ * Scope native-scale tokens to app layouts. The authenticated and agent
  * layouts set it while mounted (at `// playbook-seam` lines), so the landing
- * page and docs stay at 100%. The attribute on <html> only scopes the rules in
- * appZoom.css; the zoom itself sits on the shell root and on popup content.
+ * page keeps its own design tokens.
  */
 export function useAppZoom() {
   useLayoutEffect(() => {

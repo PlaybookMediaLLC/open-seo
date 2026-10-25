@@ -28,6 +28,13 @@ export const getSplitTest = createServerFn({ method: "POST" })
     service.get(context, { ...data, projectId: context.projectId }),
   );
 
+export const previewSplitTestPattern = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(backtestPatternSchema)
+  .handler(({ context, data }) =>
+    service.previewPattern(context, { ...data, projectId: context.projectId }),
+  );
+
 export const createSplitTest = createServerFn({ method: "POST" })
   .middleware(requireProjectContext)
   .validator(createSplitTestSchema)

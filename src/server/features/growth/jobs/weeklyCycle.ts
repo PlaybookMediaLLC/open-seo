@@ -58,7 +58,7 @@ export async function weeklyCycleJob(context: JobContext) {
     organizationId: context.organizationId,
     projectId,
     kind: "weekly_cycle",
-    title: `This week: ${next ? `${next} next` : "nothing worth changing"}`,
+    title: `This week: ${waiting ? `${waiting} need review` : next ? `${next} next` : "no new work ready"}`,
     body: [
       summary,
       list("waiting", "Waiting on you"),

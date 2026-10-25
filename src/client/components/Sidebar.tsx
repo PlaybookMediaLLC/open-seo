@@ -18,6 +18,7 @@ import { clearLastProjectId } from "@/client/lib/active-project";
 import {
   connectNavGroup,
   getProjectNavGroups,
+  getProjectNavGroup,
 } from "@/client/navigation/items";
 import { ProjectSwitcher } from "@/client/features/projects/ProjectSwitcher";
 import { NotificationsBell } from "@/client/features/notifications/NotificationsBell"; // playbook-seam
@@ -35,7 +36,6 @@ import {
   SidebarFooter as UiSidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -62,19 +62,21 @@ import {
 // Quiet rows that brighten on hover; the active row is a soft raised pill.
 // In the collapsed rail the same rows become 32px icon buttons.
 const navButtonClass =
-  "h-8 gap-2.5 rounded-lg px-2.5 text-[13px] text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4 [&_svg]:opacity-70 data-active:[&_svg]:opacity-100 hover:[&_svg]:opacity-100";
+  "h-10 gap-2.5 rounded-lg px-2.5 text-sm text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4 [&_svg]:opacity-70 data-active:[&_svg]:opacity-100 hover:[&_svg]:opacity-100";
 
 function SidebarNavLink({
   icon: Icon,
   label,
   linkProps,
   placeholder = false,
+  active = false,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   linkProps: LinkOptions;
   /** Show the row without its link, while its project is still unknown. */
   placeholder?: boolean;
+  active?: boolean;
 }) {
   const { setOpenMobile } = useSidebar();
   const matchRoute = useMatchRoute();
@@ -112,10 +114,10 @@ function SidebarNavLink({
           }}
           onClick={() => setOpenMobile(false)}
           inactiveProps={
-            isPromptHistory ? { "aria-current": "page" } : undefined
+            isPromptHistory || active ? { "aria-current": "page" } : undefined
           }
         >
-          {({ isActive }) => row(isActive || isPromptHistory)}
+          {({ isActive }) => row(isActive || isPromptHistory || active)}
         </Link>
       )}
     </SidebarMenuItem>
@@ -142,6 +144,9 @@ export function Sidebar({
       ? getProjectNavGroups(projectId ?? "")
       : [connectNavGroup];
   const { pathname } = useLocation();
+  const activeGroup = projectId
+    ? getProjectNavGroup(projectId, pathname)
+    : undefined;
   const { setOpenMobile } = useSidebar();
   // SAM is hidden from navigation: the chat route is only reachable by URL,
   // and while it is open its chat list takes the nav's place.
@@ -178,33 +183,28 @@ export function Sidebar({
             aria-label="Main navigation"
             aria-busy={navPlaceholder || undefined}
           >
-            {navGroups.map((group) => (
-              <SidebarGroup
-                key={group.label}
-                // In the rail, a hairline replaces each group's label.
-                className="px-3 py-1.5 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:not-first:mt-1 group-data-[collapsible=icon]:not-first:pt-2.5 group-data-[collapsible=icon]:not-first:before:absolute group-data-[collapsible=icon]:not-first:before:inset-x-4 group-data-[collapsible=icon]:not-first:before:top-0 group-data-[collapsible=icon]:not-first:before:h-px group-data-[collapsible=icon]:not-first:before:bg-sidebar-border"
-              >
-                <SidebarGroupLabel className="h-7 px-2.5 text-[11px] font-medium text-sidebar-foreground/40">
-                  {group.label}
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SidebarMenu className="gap-px group-data-[collapsible=icon]:items-center">
-                    {group.items.map((item) => {
-                      const { icon, label, ...linkProps } = item;
-                      return (
-                        <SidebarNavLink
-                          key={linkProps.to}
-                          icon={icon}
-                          label={label}
-                          linkProps={linkProps}
-                          placeholder={navPlaceholder}
-                        />
-                      );
-                    })}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
-            ))}
+            {navGroups.map((group) => {
+              const { icon, label: _label, ...linkProps } = group.items[0];
+              const active = group.label === activeGroup?.label;
+              return (
+                <SidebarGroup
+                  key={group.label}
+                  className="px-3 py-1 group-data-[collapsible=icon]:px-0"
+                >
+                  <SidebarGroupContent>
+                    <SidebarMenu className="group-data-[collapsible=icon]:items-center">
+                      <SidebarNavLink
+                        icon={icon}
+                        label={group.label}
+                        linkProps={linkProps}
+                        active={active}
+                        placeholder={navPlaceholder}
+                      />
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              );
+            })}
           </nav>
         )}
       </SidebarContent>
@@ -245,6 +245,11 @@ function AccountFooter({ ready, rail }: { ready: boolean; rail: boolean }) {
     <UiSidebarFooter className="gap-0 px-3 pb-safe pt-2 group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pb-3">
       <SidebarMenu className="gap-px group-data-[collapsible=icon]:items-center">
         <NotificationsBell /> {/* playbook-seam */}
+        <SidebarNavLink
+          icon={connectNavGroup.items[0].icon}
+          label="Agents"
+          linkProps={connectNavGroup.items[0]}
+        />
         <SidebarNavLink
           icon={CircleHelp}
           label="Help & Community"

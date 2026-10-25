@@ -259,6 +259,7 @@ export type ProposalWithHistory = {
 };
 export type PublishingOpportunityState = {
   configured: boolean;
+  appRevoked: boolean;
   canManage: boolean;
   connection: PublishingConnection | null;
   proposals: ProposalWithHistory[];

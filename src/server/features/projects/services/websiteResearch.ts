@@ -1,3 +1,4 @@
+import { WEBSITE_RESEARCH_ESTIMATED_CREDITS } from "@/shared/research-costs";
 import {
   generateText,
   NoObjectGeneratedError,
@@ -146,7 +147,7 @@ export async function researchWebsite(
   });
   // playbook-seam: RFC-0009 holds the estimate inside the limits.
   const hold = await holdResearch(customer, {
-    estimatedCredits: 200,
+    estimatedCredits: WEBSITE_RESEARCH_ESTIMATED_CREDITS,
     ledgerFeature: "ai_research",
   });
   try {

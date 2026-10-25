@@ -94,34 +94,50 @@ function ProjectOpportunities({ projectId }: { projectId: string }) {
           title="Opportunities"
           description="Growth Operations · Evidence-led improvements for your current project."
           actions={
-            <div className="flex flex-wrap gap-2">
-              {query.data?.connected ? (
-                <>
-                  <ConversionRunButton projectId={projectId} />
-                  <DocsRunButton projectId={projectId} />
-                  <ContentGapSheet projectId={projectId} />
-                </>
-              ) : null}
-              <Button
-                onClick={() => detection.mutate()}
-                pending={detection.isPending}
-                disabled={detection.isPending || !query.data?.connected}
-              >
-                <Search data-icon="inline-start" />
-                Run detection
-              </Button>
-            </div>
+            <details className="rounded-lg border bg-card p-3">
+              <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium">
+                <Search className="size-4" />
+                Find opportunities
+              </summary>
+              <div className="mt-3 flex max-w-lg flex-wrap gap-2">
+                <Button
+                  onClick={() => detection.mutate()}
+                  pending={detection.isPending}
+                  disabled={!query.data?.connected}
+                >
+                  Analyze connected search data
+                </Button>
+                {query.data?.connected ? (
+                  <>
+                    <ConversionRunButton projectId={projectId} />
+                    <DocsRunButton projectId={projectId} />
+                    <ContentGapSheet projectId={projectId} />
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Connect Search Console to analyze this project.
+                  </p>
+                )}
+              </div>
+            </details>
           }
         />
         <div className="rounded-xl border bg-card p-4 text-sm space-y-1">
-          <p className="font-medium">Research first. Review before action.</p>
-          <p className="text-muted-foreground">
-            Detection makes at most 5 free Search Console requests, 1 GA4
-            request and 10 URL inspections. Results are cached for 24 hours. It
-            makes no paid calls. Content gaps and live results checks use paid
-            data and show the cost first. Nothing is published or changed on
-            your site.
+          <p className="font-medium">
+            Uses connected data. Does not publish or change your site.
           </p>
+          <details>
+            <summary className="cursor-pointer text-muted-foreground">
+              Sources and usage details
+            </summary>
+            <p className="text-muted-foreground">
+              Detection makes at most 5 free Search Console requests, 1 GA4
+              request and 10 URL inspections. Results are cached for 24 hours.
+              It makes no paid calls. Content gaps and live results checks use
+              paid data and show the cost first. Nothing is published or changed
+              on your site.
+            </p>
+          </details>
         </div>
         {detection.isError ? (
           <p

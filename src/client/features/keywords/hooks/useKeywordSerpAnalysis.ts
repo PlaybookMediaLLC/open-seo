@@ -1,3 +1,4 @@
+import { KEYWORD_SERP_INITIAL_DEPTH } from "@/shared/research-costs";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import {
@@ -8,7 +9,7 @@ import { getSerpAnalysis } from "@/serverFunctions/keywords";
 
 const SERP_PAGE_SIZE = 10;
 /** Depth every SERP panel opens at — two pages of results, ~5 credits. */
-const SERP_INITIAL_DEPTH = 20;
+const SERP_INITIAL_DEPTH = KEYWORD_SERP_INITIAL_DEPTH;
 /**
  * Depth we buy when a user pages past what's loaded. Google has no offset, so
  * this re-crawls the top of the SERP: the deeper snapshot replaces the shallow

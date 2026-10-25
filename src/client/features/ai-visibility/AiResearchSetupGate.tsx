@@ -1,5 +1,7 @@
+import { AiSetupCostNote } from "./AiSetupCostNote";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { NavTab, NavTabs } from "@/client/components/NavTabs";
 import { IconSparkles as Sparkles } from "@tabler/icons-react";
 import { Alert, AlertDescription } from "@/client/components/ui/alert";
 import { Button } from "@/client/components/ui/button";
@@ -134,7 +136,36 @@ export function AiResearchSetupGate({
         }}
       />
     );
-  if (status === "ready" && !finishing) return children;
+  if (status === "ready" && !finishing)
+    return (
+      <>
+        <div className="mb-5 overflow-x-auto">
+          <NavTabs label="AI visibility workspace">
+            <NavTab
+              to="/p/$projectId/ai-visibility/research"
+              params={{ projectId }}
+            >
+              Discover prompts
+            </NavTab>
+            <NavTab to="/p/$projectId/prompt-explorer" params={{ projectId }}>
+              Explore answers
+            </NavTab>
+            <NavTab
+              to="/p/$projectId/ai-visibility"
+              params={{ projectId }}
+              activeOptions={{ exact: true, includeSearch: false }}
+            >
+              Track &amp; results
+            </NavTab>
+          </NavTabs>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Discover questions, inspect answers, then track changes for this
+            project. Your project setup is shared across these views.
+          </p>
+        </div>
+        {children}
+      </>
+    );
   if (setup.data.review)
     return (
       <div className="grid min-h-[calc(100dvh-8rem)] place-items-center">
@@ -209,6 +240,7 @@ export function AiResearchSetupGate({
             </Field>
           )}
           <div className="space-y-3">
+            <AiSetupCostNote />
             <Button
               size="lg"
               className="w-full"
@@ -217,12 +249,10 @@ export function AiResearchSetupGate({
                 overview.trim() ? saveOverview.mutate() : start.mutate()
               }
             >
-              {failed ? "Try again" : "Start research"}
+              {failed
+                ? "Retry research and setup"
+                : "Start research and tracking"}
             </Button>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              Research and a first run of your prompts use a small amount of
-              usage credits.
-            </p>
           </div>
         </CardContent>
       </Card>

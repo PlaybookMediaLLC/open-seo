@@ -76,6 +76,7 @@ export function QueryState<TData>({
     <QueryError
       error={query.error}
       fallback={errorFallback}
+      title={errorFallback}
       onRetry={() => void query.refetch()}
       isRetrying={query.isFetching}
     />

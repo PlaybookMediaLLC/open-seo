@@ -7,7 +7,13 @@ import {
   getProjectSpend,
   saveProjectLimit,
 } from "@/serverFunctions/spendLimits";
-import { BILLING_ROUTE } from "@/shared/billing";
+import { useCreditBalance } from "@/client/features/billing/useCreditBalance";
+import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { QueryError } from "@/client/components/QueryState";
+import {
+  AUTUMN_SEO_DATA_CREDITS_PER_USD,
+  BILLING_ROUTE,
+} from "@/shared/billing";
 import { credits, LimitSheet, LimitUsage } from "./spendParts";
 
 export const projectSpendQuery = (projectId: string) => ({
@@ -18,6 +24,7 @@ export const projectSpendQuery = (projectId: string) => ({
 /** RFC-0009 5.5: the project's monthly limit and this month's spend. */
 export function ProjectSpending({ projectId }: { projectId: string }) {
   const client = useQueryClient();
+  const balance = useCreditBalance();
   const spend = useQuery(projectSpendQuery(projectId));
   const save = useMutation({
     mutationFn: (monthlyLimitCredits: number | null) =>
@@ -48,6 +55,32 @@ export function ProjectSpending({ projectId }: { projectId: string }) {
       }
     >
       <div className="space-y-3">
+        {isHostedClientAuthMode() && (
+          <div className="border-b pb-3 text-sm">
+            <p className="font-medium">Available organization balance</p>
+            {balance.accountQuery.data ? (
+              <p>
+                {credits(
+                  balance.totalRemaining * AUTUMN_SEO_DATA_CREDITS_PER_USD,
+                )}{" "}
+                credits (${balance.totalRemaining.toFixed(2)}), shared by all
+                projects.
+              </p>
+            ) : balance.accountQuery.isError ? (
+              <QueryError
+                error={balance.accountQuery.error}
+                fallback="Could not load the credit balance"
+              />
+            ) : (
+              <p role="status">Loading balance…</p>
+            )}
+            <p className="mt-1 text-muted-foreground">
+              The project limit caps monthly usage. It does not add credits to
+              your balance. Actions must fit both the available balance and the
+              remaining limits.
+            </p>
+          </div>
+        )}
         <LimitUsage committed={committed} limit={limit} />
         {organization && (
           <p className="text-sm text-muted-foreground">

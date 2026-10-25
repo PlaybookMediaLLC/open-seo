@@ -172,7 +172,7 @@ export function DashboardPage({
               Your website
             </p>
             <h1 className="text-2xl font-semibold">
-              {activation.domain || "Dashboard"}
+              {activation.domain || "Home"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Search visibility, links and site health in one place.
@@ -189,10 +189,6 @@ export function DashboardPage({
         </div>
 
         <ThisWeekCard projectId={projectId} /* playbook-seam */ />
-        {isHostedClientAuthMode() &&
-        getStepStatus(activation, "mcp") === "todo" ? (
-          <DashboardAgentCard projectId={projectId} />
-        ) : null}
 
         <WorkspaceMergeBanner />
 
@@ -214,11 +210,22 @@ export function DashboardPage({
           />
         ) : null}
 
-        <DashboardOnboarding
-          key={projectId}
-          projectId={projectId}
-          activation={activation}
-        />
+        <details className="rounded-xl border bg-card p-4">
+          <summary className="cursor-pointer text-sm font-medium">
+            Project setup and optional connections
+          </summary>
+          <div className="mt-4 space-y-4">
+            {isHostedClientAuthMode() &&
+            getStepStatus(activation, "mcp") === "todo" ? (
+              <DashboardAgentCard projectId={projectId} />
+            ) : null}
+            <DashboardOnboarding
+              key={projectId}
+              projectId={projectId}
+              activation={activation}
+            />
+          </div>
+        </details>
 
         <Tabs
           value={tab}

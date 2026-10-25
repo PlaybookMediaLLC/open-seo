@@ -1,3 +1,4 @@
+import { KeywordCostPreview } from "./KeywordCostPreview";
 import {
   IconInfoCircle as Info,
   IconSearch as Search,
@@ -115,6 +116,9 @@ export function KeywordResearchSearchBar({ controller }: Props) {
             </Button>
           </div>
         </form>
+        <controlsForm.Subscribe selector={(state) => state.values}>
+          {(values) => <KeywordCostPreview values={values} />}
+        </controlsForm.Subscribe>
         <controlsForm.Field name="keyword">
           {(field) => {
             const keywordError = getFieldError(field.state.meta.errors);

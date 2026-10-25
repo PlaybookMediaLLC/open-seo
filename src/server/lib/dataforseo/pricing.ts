@@ -1,3 +1,4 @@
+import { labsUsd, GOOGLE_ADS_LIVE_TASK_USD } from "@/shared/research-costs";
 import {
   fetchBusinessListingsSearch,
   fetchMyBusinessInfo,
@@ -81,11 +82,8 @@ import {
 // per task + per returned row, doubled with include_clickstream_data. The
 // spec 0004 figures ($0.01 + $0.0001) predate a price rise; web/pricing.tsx
 // ("150-300 rows = $0.030-$0.048 raw", Jul 2026) matches these.
-const LABS_TASK_USD = 0.012;
-const LABS_ROW_USD = 0.00012;
 
 // Keywords Data Google Ads, live mode (dataforseo.com/pricing/keywords-data/google-ads).
-const GOOGLE_ADS_LIVE_TASK_USD = 0.09;
 
 // Backlinks API, uniform across endpoints (dataforseo.com/pricing/backlinks/backlinks).
 const BACKLINKS_TASK_USD = 0.024;
@@ -161,10 +159,6 @@ function priced<I>(
   estimate: ProviderUsdEstimator<I>,
 ): ProviderUsdEstimator<I> {
   return estimate;
-}
-
-function labsUsd(rows: number, clickstream?: boolean) {
-  return (LABS_TASK_USD + rows * LABS_ROW_USD) * (clickstream ? 2 : 1);
 }
 
 function backlinksUsd(rows: number) {
