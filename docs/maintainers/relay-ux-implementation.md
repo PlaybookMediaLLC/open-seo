@@ -18,7 +18,7 @@ Implements the 20 findings from the 25 October 2026 audit. Existing project URLs
 | F12     | One Find opportunities disclosure with four methods; advanced filters collapsed                                                                       | Detection browser flow                                     |
 | F13     | Saved collection has an actionable empty state without empty table controls                                                                           | Mobile browser check                                       |
 | F14     | Search Performance labels periods, load time, missing metrics and sparse evidence                                                                     | Component and source-field review                          |
-| F15     | Latest completed audit opens on issues; history/new audit remain available; issue briefs are copyable                                                 | Type checks and audit result/navigation review             |
+| F15     | Latest completed audit opens on issues; history/new audit remain available; issue briefs are copyable                                                 | Browser check of latest/linked audit, history and reload   |
 | F16     | Business context language, labeled schedule/quality fields, split-test examples and affected-page preview                                             | Preview service tests, tenant checks                       |
 | F17     | Shared native-scale radius and existing control variants                                                                                              | Visual review                                              |
 | F18     | Skip link, accessible control names and directional table sort state                                                                                  | Keyboard browser check, responsive reflow check            |
@@ -31,7 +31,7 @@ Implements the 20 findings from the 25 October 2026 audit. Existing project URLs
 - `pnpm build` passed for app, report widgets and audit worker.
 - Final full Vitest run: all 3,099 tests across 402 files passed (45.6 seconds).
 - A fresh, disposable PostgreSQL 16 database was migrated, passed 20 work/split-test cases, and was stopped. SQLite is exercised by the main suite.
-- Both browser tests passed (19.5 seconds): the full publishing workflow, project scope, keyboard skip link, native-scale Home, 390px reflow, task search, cost preview without a query, and saved-keyword empty state.
+- All three browser tests passed: the full publishing workflow, project scope, keyboard skip link, native-scale Home, 390px reflow, task search, cost preview without a query, saved-keyword empty state, and returning from latest/linked audits to history after reload.
 - Browser captures use local provider fixtures. They do not demonstrate live Google/GitHub/provider behavior or a production deployment. Not every error/setup state has a screenshot, and this is not a participant usability study or a formal accessibility certification.
 - Code graph and Gauntlet were unavailable in this environment; direct code/caller review and the repository checks were used.
 

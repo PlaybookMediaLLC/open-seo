@@ -11,12 +11,16 @@ import { useHostedPlanGate } from "@/client/features/billing/HostedPlanGate";
 type LaunchViewProps = {
   projectId: string;
   initialUrl: string;
+  showHistory: boolean;
+  onShowHistory: () => void;
   onAuditStarted: (auditId: string) => void;
 };
 
 export function LaunchView({
   projectId,
   initialUrl,
+  showHistory,
+  onShowHistory,
   onAuditStarted,
 }: LaunchViewProps) {
   // The plan only sets the page limit, so the form stays usable while the
@@ -29,7 +33,6 @@ export function LaunchView({
     onAuditStarted,
   });
 
-  const [showHistory, setShowHistory] = useState(false);
   const [tab, setTab] = useState<"issues" | "pages" | "performance">("issues");
   const latest = controller.historyQuery.data?.find(
     (audit) => audit.status === "completed",
@@ -41,7 +44,7 @@ export function LaunchView({
         auditId={latest.id}
         tab={tab}
         onTabChange={setTab}
-        onBack={() => setShowHistory(true)}
+        onBack={onShowHistory}
       />
     );
   }

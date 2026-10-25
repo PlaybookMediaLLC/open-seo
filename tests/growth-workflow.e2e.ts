@@ -1,4 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 
 // The growth workflow end to end (RFC-0001 S4). The dev server runs with
 // VITE_E2E_GROWTH_FIXTURES=1, so the worker's Google and GitHub calls reach
@@ -207,4 +209,41 @@ test("workspaces retain project scope, keyboard access and research drafts", asy
     path: "test-results/relay-library-mobile.png",
     fullPage: true,
   });
+});
+
+test("All audits returns to history from both latest and linked audits", async ({
+  page,
+}) => {
+  await page.goto("/app");
+  await page.waitForURL(/\/p\/[^/]+/);
+  const projectId = /\/p\/([\w-]+)(?:\/|$|\?)/.exec(page.url())?.[1];
+  expect(projectId).toBeTruthy();
+  const auditId = randomUUID();
+  // Seed only the local dev database; no crawler or paid provider is needed.
+  execFileSync("pnpm", [
+    "exec",
+    "wrangler",
+    "d1",
+    "execute",
+    "DB",
+    "--local",
+    "--command",
+    `INSERT INTO audits (id, project_id, started_by_user_id, start_url, status, pages_crawled, pages_total, config) VALUES ('${auditId}', '${projectId}', 'e2e', 'https://audit-history.example/', 'completed', 2, 2, '{"maxPages":50,"lighthouseStrategy":"none"}')`,
+  ]);
+
+  for (const search of ["", `?auditId=${auditId}`]) {
+    await page.goto(`/p/${projectId}/audit${search}`);
+    await expect(
+      page.getByRole("heading", { name: "audit-history.example", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByRole("tab", { name: /Issues/ })).toBeVisible();
+    await page.getByRole("button", { name: "All audits", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Previous Audits" }),
+    ).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("heading", { name: "Previous Audits" }),
+    ).toBeVisible();
+  }
 });
