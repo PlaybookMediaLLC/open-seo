@@ -2,6 +2,7 @@
   "date": "2026-10-25T18:31:57.233494+00:00",
   "develop_base": "1ac33f1a281770b5647a0b207b42c802475a6136",
   "security_assessment_commit": "0baba48a",
+  "validated_integration_commit": "00a98e09fb6e176992294a77d6874ebec174a824",
   "dependency_audits": {
     "root": {
       "lockfile": "pnpm-lock.yaml",
@@ -70,9 +71,28 @@
     },
     "docker_build_definition_check": "passed",
     "docker_context_regression": "passed",
-    "full_ci": "pending",
-    "full_tests": "pending",
-    "builds": "pending"
+    "full_ci": "passed",
+    "full_tests": {
+      "status": "passed",
+      "files": 407,
+      "tests": 3130
+    },
+    "website_protections": {
+      "status": "passed",
+      "files": 3,
+      "tests": 40,
+      "free_tool_budget_check": "passed"
+    },
+    "website_types": "passed",
+    "builds": {
+      "application": "passed",
+      "website": "passed"
+    },
+    "security_pipeline_tests": {
+      "status": "passed",
+      "python_tests": 18
+    },
+    "workflow_actionlint": "passed"
   },
   "coverage_notes": [
     "This report records integration with newer develop; the original reports retain the earlier assessed tree and image snapshot.",
