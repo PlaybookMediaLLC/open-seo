@@ -125,9 +125,15 @@ describe("audit crawler access", () => {
       vi.fn().mockImplementation((url: string) =>
         Promise.resolve(
           String(url).includes("dns-query")
-            ? new Response(JSON.stringify({ Status: 0, Answer: [] }), {
-                status: 200,
-              })
+            ? new Response(
+                JSON.stringify({
+                  Status: 0,
+                  Answer: [{ type: 1, data: "93.184.216.34" }],
+                }),
+                {
+                  status: 200,
+                },
+              )
             : new Response(null, {
                 status: 200,
                 headers: { "powered-by": "Shopify" },
@@ -157,8 +163,11 @@ describe("audit crawler access", () => {
 
   it("records a signed store as Shopify when the probe itself is throttled", async () => {
     // Shopify's edge 429 carries no `powered-by` header.
-    vi.mocked(fetch).mockImplementation(() =>
-      Promise.resolve(new Response(null, { status: 429 })),
+    const defaultFetch = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation((url, init) =>
+      String(url).includes("dns-query")
+        ? defaultFetch(url, init)
+        : Promise.resolve(new Response(null, { status: 429 })),
     );
 
     const resolved = await startAndResolve();

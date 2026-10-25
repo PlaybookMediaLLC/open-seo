@@ -193,15 +193,32 @@ export async function linkStatus(url: string, access: CrawlerAccess | null) {
  */
 export async function assetSize(url: string, access: CrawlerAccess | null) {
   try {
-    await normalizeAndValidateStartUrl(url);
-    const response = await fetch(url, {
-      method: "HEAD",
-      redirect: "follow",
-      headers: { "User-Agent": USER_AGENT, ...crawlerHeadersFor(url, access) },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    const length = Number(response.headers.get("content-length"));
-    return response.ok && Number.isFinite(length) && length > 0 ? length : null;
+    const signal = AbortSignal.timeout(TIMEOUT_MS);
+    let current = url;
+    for (let hop = 0; hop <= 5; hop++) {
+      current = await normalizeAndValidateStartUrl(current);
+      const response = await fetch(current, {
+        method: "HEAD",
+        redirect: "manual",
+        headers: {
+          "User-Agent": USER_AGENT,
+          ...crawlerHeadersFor(current, access),
+        },
+        signal,
+      });
+      await response.body?.cancel();
+      if ([301, 302, 303, 307, 308].includes(response.status)) {
+        const location = response.headers.get("location");
+        if (!location) return null;
+        current = new URL(location, current).href;
+        continue;
+      }
+      const length = Number(response.headers.get("content-length"));
+      return response.ok && Number.isFinite(length) && length > 0
+        ? length
+        : null;
+    }
+    return null;
   } catch {
     return null;
   }

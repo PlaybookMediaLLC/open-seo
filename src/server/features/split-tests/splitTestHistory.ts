@@ -1,4 +1,5 @@
 import { sortBy } from "remeda";
+import { RE2JS } from "re2js";
 import { shiftGa4Date } from "@/server/features/ga4/services/Ga4Dates";
 import { GscService } from "@/server/features/gsc/services/GscService";
 import { literalPrefix } from "./splitTestBaseline";
@@ -16,7 +17,7 @@ export async function pastClicks(
   const half = shiftGa4Date(start, 28);
   const baselineEnd = shiftGa4Date(start, 55);
   const observation = shiftGa4Date(start, 63);
-  const regex = new RegExp(pattern);
+  const regex = RE2JS.compile(pattern);
   const result = await GscService.getPerformance({
     projectId,
     dimensions: ["page", "date"],

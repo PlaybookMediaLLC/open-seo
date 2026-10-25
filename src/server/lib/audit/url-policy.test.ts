@@ -15,11 +15,18 @@ describe("normalizeAndValidateStartUrl", () => {
   });
 
   it("adds https when protocol is missing and strips hash", async () => {
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(JSON.stringify({ Status: 0, Answer: [] }), {
-        status: 200,
-        headers: { "content-type": "application/dns-json" },
-      }),
+    vi.mocked(fetch).mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify({
+            Status: 0,
+            Answer: [{ type: 1, data: "93.184.216.34" }],
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/dns-json" },
+          },
+        ),
     );
 
     await expect(
@@ -35,13 +42,45 @@ describe("normalizeAndValidateStartUrl", () => {
       } satisfies Partial<AppError>);
     },
   );
+
+  it.each([
+    { Status: 2 },
+    { Status: 0, Answer: [] },
+    { Status: 0, Answer: [{ type: 28, data: "0:0:0:0:0:0:0:1" }] },
+    { Status: 0, Answer: [{ type: 28, data: "0:0:0:0:0:ffff:7f00:1" }] },
+    {
+      Status: 0,
+      Answer: [
+        { type: 1, data: "93.184.216.34" },
+        { type: 1, data: "10.0.0.1" },
+      ],
+    },
+  ])(
+    "fails closed on unsafe or unverifiable DNS answers %j",
+    async (answer) => {
+      vi.mocked(fetch).mockImplementation(async () => Response.json(answer));
+      await expect(
+        normalizeAndValidateStartUrl("https://example.com"),
+      ).rejects.toMatchObject({ code: "CRAWL_TARGET_BLOCKED" });
+    },
+  );
+
+  it("fails closed when DNS verification is unavailable", async () => {
+    vi.mocked(fetch).mockRejectedValue(new Error("DNS timeout"));
+    await expect(
+      normalizeAndValidateStartUrl("https://example.com"),
+    ).rejects.toMatchObject({ code: "CRAWL_TARGET_BLOCKED" });
+  });
 });
 
 const dnsOk = () =>
-  new Response(JSON.stringify({ Status: 0, Answer: [] }), {
-    status: 200,
-    headers: { "content-type": "application/dns-json" },
-  });
+  new Response(
+    JSON.stringify({ Status: 0, Answer: [{ type: 1, data: "93.184.216.34" }] }),
+    {
+      status: 200,
+      headers: { "content-type": "application/dns-json" },
+    },
+  );
 const redirect = (location: string) =>
   new Response(null, { status: 301, headers: { location } });
 

@@ -1,5 +1,9 @@
 minimumReleaseAge: 11520
 minimumReleaseAgeExclude:
+  # October security fixes inside the release-age window; remove after 2026-10-31.
+  - "fast-uri@3.1.9"
+  - "body-parser@2.4.0"
+  - "shadcn@4.22.1"
   - "@every-app/*"
   # TEMPORARY (remove after 2026-10-01): DOMPurify security fix, GHSA-p98j-92pf-mc4p.
   - "dompurify@3.4.16"
@@ -50,6 +54,11 @@ minimumReleaseAgeExclude:
 # To prune once a parent catches up: delete the line, run `pnpm install`, and
 # keep it deleted if `pnpm audit` stays clean.
 overrides:
+  "ws@8": "^8.21.0"
+  seroval: "^1.6.3"
+  proxy-addr: "^2.0.8"
+  source-map-js: "^1.2.2"
+  "zod@4": "4.6.7"
   # GHSA-4x5r-pxfx-6jf8 — waiting on @tanstack/devtools-vite
   "@babel/core": "^7.29.6"
   # September 2026 recursion/CPU DoS fixes plus earlier advisories — just-bash/shadcn
@@ -57,35 +66,35 @@ overrides:
   # GHSA-737v-mqg7-c878 — waiting on better-auth
   defu: "^6.1.5"
   # GHSA-p98j-92pf-mc4p plus earlier XSS advisories — waiting on posthog-js
-  dompurify: "^3.4.16"
+  dompurify: "^3.4.17"
   # GHSA-v2hh-gcrm-f6hx, GHSA-7p8r-x3mc-p8w7, GHSA-4c8g-83qw-93j6 — waiting on @modelcontextprotocol/sdk
-  fast-uri: "^3.1.6"
+  fast-uri: "^3.1.9"
   # 9 advisories incl. GHSA-88fw-hqm2-52qc (CORS) — waiting on @modelcontextprotocol/sdk
-  hono: "^4.13.5"
+  hono: "^4.13.11"
   # GHSA-mwp4-54f8-5fhr plus September 2026 subnet/classification fixes
-  ip-address: "^10.7.1"
+  ip-address: "^10.7.4"
   # GHSA-5p4m-2wfm-xmqj — waiting on @tanstack/start-plugin-core
   js-yaml: "^4.3.2"
   # GHSA-v6wh-96g9-6wx3 — waiting on @tanstack/devtools-vite
-  launch-editor: "^2.14.1"
+  launch-editor: "^2.14.2"
   # GHSA-qx2v-qp2m-jg93, GHSA-r28c-9q8g-f849 — waiting on vite
   postcss: "^8.5.23"
   # GHSA-q8mj-m7cp-5q26 — waiting on @modelcontextprotocol/sdk
   qs: "^6.16.0"
   # GHSA-w7jw-789q-3m8p — waiting on @tanstack/devtools-vite
-  shell-quote: "^1.8.4"
+  shell-quote: "^1.11.0"
   # GHSA-v3rj-xjv7-4jmq — waiting on knip
-  smol-toml: "^1.7.1"
+  smol-toml: "^1.9.0"
   # September 2026 TLS/cache/DoS fixes plus earlier advisories — cheerio/miniflare
-  undici: "^7.29.1"
+  undici: "^7.30.1"
   # GHSA-67mh-4wv8-2f99 — update drizzle-kit's legacy loader instead of ignoring it.
   "@esbuild-kit/core-utils>esbuild": "^0.25.12"
-  # GHSA-rgj7-g3m4-5g8c — Miniflare 4 pins 0.34.5; 0.35.4 fixes bundled libheif.
-  "miniflare>sharp": "0.35.4"
+  # GHSA-rgj7-g3m4-5g8c — Miniflare 4 pins 0.34.5; 0.35.5 also fixes bundled librsvg.
+  "miniflare>sharp": "0.35.5"
   # September 2026 advisories: keep these fixes within each supported major.
   "@ai-sdk/provider-utils@4": "^4.0.33"
   "@hono/node-server@1": "^1.19.15"
-  "body-parser@2": "^2.3.0"
+  "body-parser@2": "^2.4.0"
   browserslist: "^4.28.7"
   baseline-browser-mapping: "^2.11.0"
   # autumn-js uses query-string 9, which supports the patched ESM decoder.
@@ -93,7 +102,8 @@ overrides:
   "fflate@0.4": "~0.4.9"
   mysql2: "^3.23.1"
   "nanoid@3": "^3.3.18"
-  "toml@4": "^4.2.0"
+  # toml 5 retains parse(); its Node >=20 floor matches Effect and this project.
+  "effect>toml": "^5.0.1"
 
 # Cloudflare echoes targeted placement back as `{ mode: "targeted" }` without
 # `region`; 0.28.2's response schema requires it, so alchemy fails a deploy

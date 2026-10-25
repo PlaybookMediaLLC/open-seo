@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RE2JS } from "re2js";
 import { SPLIT_TEST_FIELDS } from "@/db/split-tests.schema";
 
 // RFC-0011 5.9: the split test forms.
@@ -39,11 +40,12 @@ export const createSplitTestSchema = project.extend({
     )
     .refine((value) => {
       try {
-        return new RegExp(value).source.length > 0;
+        RE2JS.compile(value);
+        return true;
       } catch {
         return false;
       }
-    }, "Enter a valid regular expression."),
+    }, "Enter a valid RE2 pattern (lookarounds and backreferences are not supported)."),
   // RFC-0012 phase 2: test the chosen conversion instead of clicks.
   metric: z.enum(["clicks", "conversions"]).default("clicks"),
 });

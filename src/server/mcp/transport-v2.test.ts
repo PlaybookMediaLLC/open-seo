@@ -143,6 +143,7 @@ describe("Agents SDK v2 MCP transport", () => {
       handleAuthenticatedOpenSeoMcpRequest(
         request("POST", modernToolsList, {
           "Mcp-Method": "tools/list",
+          "MCP-Protocol-Version": "2026-07-28",
           ...(origin ? { Origin: origin } : {}),
         }),
         props,
@@ -150,9 +151,10 @@ describe("Agents SDK v2 MCP transport", () => {
         { ...ctx, props },
       );
 
-    await expect(
-      call("chrome-extension://pghallcbnfabbgfijhbcldaapmgidnaa"),
-    ).resolves.toMatchObject({ status: 200 });
+    const extensionResponse = await call(
+      "chrome-extension://pghallcbnfabbgfijhbcldaapmgidnaa",
+    );
+    expect(extensionResponse.status, await extensionResponse.text()).toBe(200);
     await expect(call("https://open-seo.test")).resolves.toMatchObject({
       status: 200,
     });

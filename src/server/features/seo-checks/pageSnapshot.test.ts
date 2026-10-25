@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { fetchSnapshot } from "./pageSnapshot";
+import { assetSize, fetchSnapshot } from "./pageSnapshot";
 
 const mocks = vi.hoisted(() => ({ validate: vi.fn() }));
 vi.mock("@/server/lib/audit/url-policy", () => ({
@@ -76,4 +76,67 @@ it("reads the page facts and each JSON-LD block", async () => {
       { parses: false, types: [] },
     ],
   });
+});
+
+it("validates asset redirects before contacting the next host", async () => {
+  const fetch = vi
+    .fn<(url: string, init: RequestInit) => Promise<Response>>()
+    .mockResolvedValue(
+      new Response(null, {
+        status: 302,
+        headers: { location: "http://10.0.0.1/" },
+      }),
+    );
+  vi.stubGlobal("fetch", fetch);
+  mocks.validate.mockImplementation(async (url: string) => {
+    if (url === "http://10.0.0.1/") throw new Error("CRAWL_TARGET_BLOCKED");
+    return url;
+  });
+  expect(await assetSize("https://example.com/asset", null)).toBeNull();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch.mock.calls[0][1].redirect).toBe("manual");
+});
+
+it.each(["https://cdn.example/asset", "http://preview.example/asset"])(
+  "does not forward preview credentials to %s",
+  async (target) => {
+    const fetch = vi
+      .fn<(url: string, init: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: target } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(null, { headers: { "content-length": "123" } }),
+      );
+    vi.stubGlobal("fetch", fetch);
+    expect(
+      await assetSize("https://preview.example/asset", {
+        host: "preview.example",
+        headers: { "x-vercel-protection-bypass": "secret" },
+        expiresAt: null,
+      }),
+    ).toBe(123);
+    expect(
+      new Headers(fetch.mock.calls[0][1].headers).get(
+        "x-vercel-protection-bypass",
+      ),
+    ).toBe("secret");
+    expect(
+      new Headers(fetch.mock.calls[1][1].headers).has(
+        "x-vercel-protection-bypass",
+      ),
+    ).toBe(false);
+  },
+);
+
+it("bounds an asset redirect loop", async () => {
+  const fetch = vi.fn().mockResolvedValue(
+    new Response(null, {
+      status: 302,
+      headers: { location: "/asset" },
+    }),
+  );
+  vi.stubGlobal("fetch", fetch);
+  expect(await assetSize("https://example.com/asset", null)).toBeNull();
+  expect(fetch).toHaveBeenCalledTimes(6);
 });
