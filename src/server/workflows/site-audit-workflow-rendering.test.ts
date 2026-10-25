@@ -136,6 +136,28 @@ describe("crawlPage with JavaScript rendering", () => {
     },
   );
 
+  it.each([
+    ["a readable page", renderedHtml, 0],
+    ["another challenge", "<title>Just a moment...</title>", 2],
+  ])(
+    "resets consecutive refusals only when rendering returns %s",
+    async (_label, html, expectedRefusals) => {
+      stubFetch({ status: 429 });
+      const fresh = createCrawlThrottle(Date.now() + 90_000);
+      const throttle = createCrawlThrottle(Date.now() + 90_000, {
+        ...fresh.state,
+        givenUpRun: 2,
+      });
+
+      await crawlPage(PAGE_URL, 0, false, throttle, {
+        render: rendered(html),
+        renderThrottled: true,
+      });
+
+      expect(throttle.state.givenUpRun).toBe(expectedRefusals);
+    },
+  );
+
   it("keeps a failed render as an unread page rather than auditing the HTML shell", async () => {
     stubFetch({ status: 200 });
     const render = rendered();

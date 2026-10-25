@@ -1,4 +1,4 @@
-import { AppError } from "@/server/lib/errors";
+import { AppError, describeError } from "@/server/lib/errors";
 import { assertSpendRoom } from "@/server/billing/spendAdmission"; // playbook-seam
 import { pruneAiVisibility } from "./aiVisibilityRetention";
 import { AiVisibilityRepository as repo } from "../repositories/AiVisibilityRepository";
@@ -70,7 +70,7 @@ export async function runScheduledAiVisibility() {
       if (!(error instanceof AiVisibilityError))
         console.error("[ai-visibility] scheduled check failed to start", {
           trackerId: tracker.id,
-          error,
+          error: describeError(error),
         });
       await repo
         .updateTracker(tracker.id, {
