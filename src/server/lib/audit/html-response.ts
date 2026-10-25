@@ -28,7 +28,8 @@ export async function readTextUpTo(
       parts.push(decoder.decode(chunk, { stream: true }));
 
       if (bytesRead >= maxBytes) {
-        await reader.cancel();
+        // A cloned stream waits for its other reader before cancellation settles.
+        void reader.cancel().catch(() => {});
         break;
       }
     }
