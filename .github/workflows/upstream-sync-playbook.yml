@@ -94,7 +94,7 @@ jobs:
         if: steps.merge.outputs.clean == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.23.4
           cache: pnpm
 
       - name: Run CI checks on the merged code

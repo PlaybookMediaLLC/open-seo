@@ -2,9 +2,9 @@
 # The scanner builds this with network access, then analyses the image offline on
 # a 2-CPU / 8 GB machine, so everything a test or a local run needs is fetched here.
 #
-# Full node:22 (not slim) on purpose: the scanner's own layer apt-installs curl,
+# Full node:22.23.4 (not slim) on purpose: the scanner's own layer apt-installs curl,
 # git, python3 and bash on top, and workerd wants a real CA trust store.
-FROM node:22
+FROM node:22.23.4
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
