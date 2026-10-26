@@ -105,7 +105,7 @@ export function ThisWeekPage({ projectId }: { projectId: string }) {
   });
   return (
     <div className="overflow-auto page-pad">
-      <div className="mx-auto max-w-5xl space-y-5">
+      <div className="mx-auto max-w-7xl space-y-5">
         <PageHeader
           title="Work"
           description={
