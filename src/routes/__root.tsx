@@ -14,6 +14,7 @@ import { captureGoogleLinkError } from "@/client/features/integrations/googleLin
 import { ExportToSheetsModal } from "@/client/components/table/ExportToSheetsModal";
 import { themePreferenceInitScript } from "@/client/lib/theme";
 import { LandingNotFound } from "@/client/features/landing/LandingNotFound"; // playbook-seam
+import { runtimeAuthModeScript } from "@/lib/auth-mode";
 import { PrivacyBootstrap } from "@/client/components/PrivacyChoices";
 import { TooltipProvider } from "@/client/components/ui/tooltip";
 import appCss from "@/client/styles/app.css?url";
@@ -83,6 +84,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script
           dangerouslySetInnerHTML={{ __html: themePreferenceInitScript }}
         />
+        <script dangerouslySetInnerHTML={{ __html: runtimeAuthModeScript() }} />
         <HeadContent />
       </head>
       <body>
