@@ -10,10 +10,12 @@ import {
 import type { ResearchSpend } from "@/server/billing/researchSpend"; // playbook-seam
 import { holdResearch, settleResearch } from "@/server/billing/researchHold"; // playbook-seam
 import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
+import {
+  buildChatAgentModel,
+  requireOpenRouterAccess,
+} from "@/server/lib/openrouter";
 import {
   getOptionalEnvValue,
-  getRequiredEnvValue,
   isHostedServerAuthMode,
 } from "@/server/lib/runtime-env";
 import { AppError } from "@/server/lib/errors";
@@ -82,7 +84,7 @@ export async function generateAiPrompts(
   });
   const result = await generateText({
     model: buildChatAgentModel(
-      await getRequiredEnvValue("OPENROUTER_API_KEY"),
+      await requireOpenRouterAccess(),
       await getOptionalEnvValue("OPENROUTER_MODEL"),
       "low",
     ),
