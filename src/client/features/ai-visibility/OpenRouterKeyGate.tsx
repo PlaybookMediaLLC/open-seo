@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { IconKey as KeyRound } from "@tabler/icons-react";
 import { GateCard } from "@/client/components/GateCard";
@@ -6,21 +7,35 @@ import { QueryError } from "@/client/components/QueryState";
 import { SkeletonPageContent } from "@/client/components/SkeletonPresets";
 import { Button } from "@/client/components/ui/button";
 import { useSamAccess } from "@/client/features/sam/useSamAccess";
+import { aiResearchSetupQueryOptions } from "./shared";
 
 /**
  * AI visibility setup researches the brand and suggests prompts through
  * OpenRouter, so a self-hosted install without a key would only fail after
  * the user starts research. Ask for the key first (hosted always has one).
+ * With `untilSetupReady`, a project whose setup is done passes: its tracking
+ * results and Prompt Explorer run on DataForSEO alone. Prompt research still
+ * calls OpenRouter, so it gates without it.
  */
 export function OpenRouterKeyGate({
   projectId,
+  untilSetupReady = false,
   children,
 }: {
   projectId: string;
+  untilSetupReady?: boolean;
   children: ReactNode;
 }) {
+  const setup = useQuery({
+    ...aiResearchSetupQueryOptions(projectId),
+    enabled: untilSetupReady,
+  });
   const access = useSamAccess(projectId);
   if (access.status === "ready") return children;
+  if (untilSetupReady) {
+    if (setup.data?.status === "ready") return children;
+    if (setup.isPending) return <SkeletonPageContent />;
+  }
   if (access.status === "checking") return <SkeletonPageContent />;
   if (access.status === "error")
     return (
