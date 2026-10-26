@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SPLIT_TEST_FIELDS } from "@/db/split-tests.schema";
+import { isValidPathPattern } from "@/shared/path-pattern";
 
 // RFC-0011 5.9: the split test forms.
 const project = z.object({ projectId: z.string().min(1) });
@@ -37,13 +38,10 @@ export const createSplitTestSchema = project.extend({
       /^\^\//,
       "Start the pattern with ^/, for example ^/integrations/[^/]+$.",
     )
-    .refine((value) => {
-      try {
-        return new RegExp(value).source.length > 0;
-      } catch {
-        return false;
-      }
-    }, "Enter a valid regular expression."),
+    .refine(
+      isValidPathPattern,
+      "Use a valid RE2 expression without lookaround or backreferences.",
+    ),
   // RFC-0012 phase 2: test the chosen conversion instead of clicks.
   metric: z.enum(["clicks", "conversions"]).default("clicks"),
 });

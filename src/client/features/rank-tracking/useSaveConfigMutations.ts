@@ -22,6 +22,14 @@ export type SaveConfigInput = {
   scheduleTime: RankCheckScheduleTime | undefined;
 };
 
+// The same domain, market and language can be tracked only once.
+const saveMeta = {
+  errorMessages: {
+    CONFLICT:
+      "This domain is already tracked for this country, city and language.",
+  },
+};
+
 function commonFields(input: SaveConfigInput) {
   return {
     domain: input.domain,
@@ -57,6 +65,7 @@ export function useSaveConfigMutations(input: {
       toast.success("Domain added for rank tracking");
       onCreated(result.id);
     },
+    meta: saveMeta,
   });
 
   const updateMutation = useMutation({
@@ -77,6 +86,7 @@ export function useSaveConfigMutations(input: {
       toast.success("Configuration updated");
       onUpdated();
     },
+    meta: saveMeta,
   });
 
   return { createMutation, updateMutation };

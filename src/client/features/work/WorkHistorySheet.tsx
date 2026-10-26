@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/client/components/ui/sheet";
-import { dateLabel } from "@/client/features/opportunities/shared";
 import { getWorkHistory } from "@/serverFunctions/work";
 
 const LABELS = {
@@ -49,7 +48,10 @@ export function WorkHistorySheet({ projectId }: { projectId: string }) {
               className="space-y-1"
             >
               <h3 className="font-medium">
-                Week of {dateLabel(cycle.weekStart)}
+                Week of{" "}
+                {new Date(cycle.weekStart).toLocaleDateString(undefined, {
+                  timeZone: "UTC",
+                })}
                 {cycle.status === "open" ? " (current)" : ""}
               </h3>
               <p className="text-muted-foreground">

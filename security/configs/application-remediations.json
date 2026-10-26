@@ -1,0 +1,101 @@
+[
+  {
+    "sources": {
+      "src/server/features/seo-checks/pageSnapshot.ts": "7ab1600e969f4baac037323b3a92c6e57a681abc49fadca82ddcc24235a557d0",
+      "src/server/features/seo-checks/pageSnapshot.test.ts": "e7a365612cfa282ba885daa42da5f91e77fe3d7c0cb0a1dedd736e141c9a1dbc"
+    },
+    "finding": {
+      "id": "SEC-B-001",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "crawler-credentials-automatic-redirect"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "src/server/features/seo-checks/pageSnapshot.ts:195",
+      "description": "Asset-size probes followed redirects without revalidating the destination or rescoping preview credentials.",
+      "cwe_cve": ["CWE-918", "CWE-200"],
+      "evidence": "Local Semgrep crawler-credentials-automatic-redirect rule matched the original assetSize fetch. Before-patch regression reproduced a metadata-address redirect returning a size and a synthetic preview credential reaching a different host. No external targets or real credentials used.",
+      "impact": "A controlled asset redirect could reach an otherwise blocked host or disclose preview bypass headers to another origin.",
+      "recommendation": "Use bounded manual redirects, validate each destination, recompute crawlerHeadersFor each host, and share one request deadline.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: two security regression tests failed on original code; fixed pageSnapshot+seoCheckRun suites passed 13/13.",
+        "2026-10-25: targeted local Semgrep rule matched 1 before and 0 after; complete security rules rescan has no original-rule match.",
+        "2026-10-26: upstream merge rewrote assetSize with the same bounded manual-redirect, per-hop validation and per-host credentials; pageSnapshot and seoCheckRun redirect/credential regressions passed (seo-checks 62/62)."
+      ]
+    }
+  },
+  {
+    "sources": {
+      "src/shared/path-pattern.ts": "f99a9955335701b6faf4b00bb3d4fda80509ca0705d5f9387be2f57139193e05",
+      "src/types/schemas/splitTests.ts": "c4bc172230048255a81d2a6ad65db06eec0605f4debba81f0a58fc1bf0736e0c",
+      "src/server/features/split-tests/splitTestBaseline.ts": "353fc6a010eb78e2bfda2ea673b9f39c30176217618387595818736eeadfa7ec",
+      "src/server/features/split-tests/splitTestHistory.ts": "eaf920e319193d081840725589a701b36f33f99d321bc35420c93548776cfaf5",
+      "src/server/features/seo-checks/seoRules.ts": "1ef20277d5a398c4b49e13193693954934fe4f7e22bd1300c1c5a4a4da8a02b7",
+      "src/shared/releaseGate.ts": "c40e4ff9d07227b040fc7d163e0d9a6e173124ad1c9e139785bacab4fedb5095",
+      "src/server/features/seo-checks/seoCheckPlan.ts": "b4b707f901e78e5d15c214a776ffd9bf8e6657472b6f8d1e92e5cc9c8690022c",
+      "src/server/features/seo-checks/seoRules.test.ts": "e97841ff232f85ddd5ead9ba16e4f69cc6d3d7f5f03f33cd82045b613c82c7c5",
+      "src/shared/releaseGate.test.ts": "40d29eea760fec1b37e72ed5b567abaa77a025be4d6c8d678d3771d09ef4d95d",
+      "src/types/schemas/splitTests.test.ts": "fe94426fd300b04ceac36e11b483fdbc541607343913a79d37bff0f59593fecf",
+      "src/server/features/seo-checks/seoCheckRun.test.ts": "7357420950344caaa2697a9daafb3c424f6d55b0cd5ea40fcf9eed7a67ce6031"
+    },
+    "finding": {
+      "id": "SEC-B-002",
+      "scanners": [
+        {
+          "tool": "Semgrep",
+          "rule": "detect-non-literal-regexp"
+        }
+      ],
+      "severity": "medium",
+      "confidence": "high",
+      "location": "src/server/features/split-tests/splitTestBaseline.ts; src/server/features/split-tests/splitTestHistory.ts; src/server/features/seo-checks/seoRules.ts",
+      "description": "User-authored split-test and release-gate expressions ran on the native backtracking regular-expression engine.",
+      "cwe_cve": ["CWE-1333", "CWE-400"],
+      "evidence": "Official Semgrep detect-non-literal-regexp identified native dynamic matching. A safe isolated Node subprocess testing ^/(a+)+$ against a 34-character path exceeded 2 seconds and was terminated. Input validation previously checked syntax only.",
+      "impact": "An authorized project operator or repository change could exhaust the CPU budget for a backtest or release check. Length-limiting the pattern alone did not prevent exponential matching.",
+      "recommendation": "Use RE2JS matching and validate the RE2 feature set at configuration boundaries. Existing patterns using lookaround/backreferences require replacement; stored gate configuration now fails explicitly instead of silently dropping ignores.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: 1000-character adversarial input completes through public weigh entry point; unsupported backreference syntax is rejected by gate and split-test schemas.",
+        "2026-10-25: DB-backed planCheck regression rejects unsupported stored gate config; saved split-test failures use actionable INVALID_PATH_PATTERN client copy.",
+        "2026-10-25: focused regression suite 105/105 passed across 22 files. Original native-regex findings in remediated paths absent from final Semgrep rescan.",
+        "Compatibility: RE2 matching preserves ordinary path search/anchors but intentionally rejects unsupported constructs. Recreate saved split tests with supported patterns; update relay-gate.json before retrying queued runs."
+      ]
+    }
+  },
+  {
+    "sources": {
+      "scripts/release-notes.mjs": "09c6ee7b9e70412c52d188c598ce41797150d2db575490a4c7babfd156357ce0",
+      "scripts/release-notes.test.ts": "485e14b6c9e692f08aceb359dc78b991445a650b57ec463c1654a37c7abded1e"
+    },
+    "finding": {
+      "id": "SEC-B-003",
+      "scanners": [
+        {
+          "tool": "CodeQL",
+          "rule": "js/insecure-temporary-file"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": "scripts/release-notes.mjs:302",
+      "description": "Draft release notes used a predictable global temporary filename and followed pre-existing symlinks.",
+      "cwe_cve": ["CWE-377", "CWE-59"],
+      "evidence": "CodeQL js/insecure-temporary-file reported the Date.now-based filename. A subprocess regression pre-created a symlink at that predictable name; original CLI overwrote the synthetic victim. Git and gh were local stubs and no release was published.",
+      "impact": "A different local user able to precreate the guessed temporary path could cause an operator running --draft to overwrite a writable file or alter temporary release-note handling.",
+      "recommendation": "Create a random private directory, exclusively write the note file with mode 0600, and remove the directory in a finally block.",
+      "agent": "B",
+      "status": "fixed",
+      "verification": [
+        "2026-10-25: regression failed before patch by observing victim content replaced; passes after with unchanged victim,0700 directory, 0600 file, and cleanup.",
+        "2026-10-25: fresh CodeQL database and security-extended rescan no longer reports js/insecure-temporary-file."
+      ]
+    }
+  }
+]

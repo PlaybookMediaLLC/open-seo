@@ -205,6 +205,25 @@ describe("OpenSEO OAuth provider configuration", () => {
     });
   });
 
+  it("rejects oversized consent bodies before parsing authorization parameters", async () => {
+    const provider = createOpenSeoOAuthProvider(() => new Response("app"));
+    await dispatch(provider, new Request("https://app.openseo.so/health"));
+    const parseAuthRequest = vi.fn();
+    const response = await invokeDefaultHandler(
+      new Request("https://app.openseo.so/api/oauth/consent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Origin: "https://app.openseo.so",
+        },
+        body: " ".repeat(16 * 1024 + 1),
+      }),
+      { OAUTH_PROVIDER: { parseAuthRequest } },
+    );
+    expect(response.status).toBe(413);
+    expect(parseAuthRequest).not.toHaveBeenCalled();
+  });
+
   it("includes the authorization-server issuer when consent is denied", async () => {
     const provider = createOpenSeoOAuthProvider(() => new Response("app"));
     await dispatch(provider, new Request("https://app.openseo.so/health"));

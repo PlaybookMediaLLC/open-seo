@@ -276,8 +276,18 @@ function DomainRow({
           {summary.lastRunCompletedAt && (
             <>
               {" "}
-              &middot; Last:{" "}
-              {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
+              &middot;{" "}
+              {summary.lastRunStatus === "failed" ? (
+                <span className="text-destructive">
+                  Last check failed{" "}
+                  {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
+                </span>
+              ) : (
+                <>
+                  Last:{" "}
+                  {new Date(summary.lastRunCompletedAt).toLocaleDateString()}
+                </>
+              )}
             </>
           )}
         </p>

@@ -29,10 +29,21 @@ it("reports the exact reason an invalid file fails", () => {
   expect(
     reason('{"packs":{"seo":"yes"},"ignore":[{"rule":"x","path":"("}]}'),
   ).toMatch(
-    /^relay-gate\.json is invalid: packs\.seo: .+; ignore\.0\.path: Use a valid regular expression\.$/,
+    /^relay-gate\.json is invalid: packs\.seo: .+; ignore\.0\.path: Use a valid RE2 expression without lookaround or backreferences\.$/,
   );
   expect(reason("{")).toBe("relay-gate.json is not valid JSON.");
   expect(reason('{"extra":1}')).toContain("relay-gate.json is invalid");
+});
+
+it("rejects backtracking-only features before saving release-gate rules", () => {
+  const parsed = parseGateConfig(
+    JSON.stringify({
+      ignore: [{ rule: "content-shrunk", path: "^/(a+)\\1$" }],
+    }),
+  );
+  expect("error" in parsed && parsed.error).toContain(
+    "without lookaround or backreferences",
+  );
 });
 
 // RFC-0015 5.7: the trend of blocking findings, oldest run first.

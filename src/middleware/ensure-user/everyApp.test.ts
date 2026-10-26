@@ -1,9 +1,16 @@
 import { mintIdentityJwt } from "@every-app/sdk/internal";
+import type * as EveryAppSdk from "@every-app/sdk/server";
+import { GatewayRefusalError } from "@every-app/sdk/server";
 import { exportPKCS8, exportSPKI, generateKeyPair } from "jose";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
-const { workerEnv } = vi.hoisted(() => ({
+const { workerEnv, listMembers } = vi.hoisted(() => ({
   workerEnv: {} as Record<string, string>,
+  listMembers: vi.fn(),
+}));
+vi.mock("@every-app/sdk/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof EveryAppSdk>()),
+  listMembers,
 }));
 vi.mock("cloudflare:workers", () => ({ env: workerEnv }));
 vi.mock("./delegated", () => ({
@@ -13,7 +20,7 @@ vi.mock("@/server/auth/delegated-organization", () => ({
   ensureSharedWorkspaceOrganization: vi.fn(async () => "shared-workspace"),
 }));
 
-import { resolveEveryAppContext } from "./everyApp";
+import { isEveryAppMember, resolveEveryAppContext } from "./everyApp";
 
 // The fork's Worker, which the gateway mints every identity for.
 const AUDIENCE = "every-acme-openseo";
@@ -75,5 +82,31 @@ describe("AUTH_MODE=everyapp", () => {
     await expect(
       resolveEveryAppContext(await signedBy("owner", "org_2")),
     ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
+  });
+});
+
+describe("isEveryAppMember", () => {
+  it("is false once the gateway no longer lists the person", async () => {
+    listMembers.mockResolvedValue({
+      members: [{ id: "user_2", email: "", name: "", role: "member" }],
+    });
+    await expect(isEveryAppMember("user_1")).resolves.toBe(false);
+    await expect(isEveryAppMember("user_2")).resolves.toBe(true);
+  });
+
+  it("fails closed when the gateway won't answer", async () => {
+    listMembers.mockRejectedValue(new TypeError("fetch failed"));
+    await expect(isEveryAppMember("user_1")).resolves.toBe(false);
+  });
+
+  it("keeps chats working until an admin approves the capability", async () => {
+    listMembers.mockRejectedValue(
+      new GatewayRefusalError({
+        status: 403,
+        code: "capability_not_requested",
+        message: "This app doesn't list members in its capabilities.",
+      }),
+    );
+    await expect(isEveryAppMember("user_1")).resolves.toBe(true);
   });
 });

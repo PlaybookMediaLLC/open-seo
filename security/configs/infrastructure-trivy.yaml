@@ -1,0 +1,25 @@
+# Official GHCR mirrors avoid relying on mirror.gcr.io availability.
+db:
+  repository:
+    - ghcr.io/aquasecurity/trivy-db:2
+misconfiguration:
+  checks-bundle-repository: ghcr.io/aquasecurity/trivy-checks:2
+scan:
+  skip-dirs:
+    - "**/node_modules"
+    - "**/.git"
+    - "**/.wrangler"
+    - "**/dist"
+    - "**/.logs"
+    - "security/reports"
+    - "security/runs"
+    # Build harness for an offline code-analysis scanner. It is never deployed,
+    # and the scanner's own layer apt-installs on top of it as root.
+    - ".oss-scanner"
+  # Secret scanners own secret detection and redaction. Infrastructure output
+  # never collects raw secret values.
+  scanners:
+    - vuln
+    - misconfig
+pkg:
+  include-dev-deps: true

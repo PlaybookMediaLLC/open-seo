@@ -22,6 +22,7 @@ import {
 } from "@/server/features/activation/mcpActivation";
 import { markOnboardingMilestone } from "@/server/email/onboarding-drip";
 import { captureServerEvent } from "@/server/lib/posthog";
+import { readRequestText } from "@/server/lib/request-body";
 import {
   createWorkersOAuthMcpProps,
   MCP_AUTH_CONTEXT_PROP,
@@ -225,8 +226,15 @@ async function handleOAuthConsentResponse(
   }
 
   let rawBody: unknown;
+  const text = await readRequestText(request, 16 * 1024);
+  if (text === null) {
+    return jsonResponse(
+      { error: "Consent response too large" },
+      { status: 413 },
+    );
+  }
   try {
-    rawBody = await request.json();
+    rawBody = JSON.parse(text);
   } catch {
     return jsonResponse({ error: "Invalid consent response" }, { status: 400 });
   }

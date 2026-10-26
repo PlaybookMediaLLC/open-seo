@@ -1,0 +1,91 @@
+{
+  "findings": [
+    {
+      "id": "INFRA-DOCKER-CONTEXT-SECRETS",
+      "scanners": [
+        {
+          "tool": "Manual review + Docker BuildKit",
+          "rule": "COPY-context-secret-inclusion"
+        }
+      ],
+      "severity": "high",
+      "confidence": "high",
+      "location": "deploy/docker/Dockerfile.dockerignore",
+      "description": "Wrangler .dev.vars credentials were included by COPY . . in self-host Docker images.",
+      "cwe_cve": [
+        "CWE-538",
+        "CWE-200"
+      ],
+      "evidence": "Before the fix, an actual scratch Docker build using the repository ignore rules exported a synthetic .dev.vars file into its image. No real credential file was inspected or copied by this test.",
+      "impact": "Anyone able to read a locally built/published image could recover credentials from .dev.vars files present in the build context.",
+      "recommendation": "Exclude root and nested .dev.vars and environment variants from Docker contexts. If previous images were built with real secret files present, rotate the affected credentials and retire those images; removing files from a later image cannot revoke credentials.",
+      "agent": "D",
+      "status": "fixed",
+      "verification": [
+        "Before: synthetic Docker build exit0; exported .dev.vars exists=true.",
+        "Regression harness against HEAD Docker ignore rules failed with exit1; the same harness against patched rules passed with exit0.",
+        "After: python3 security/scanners/infrastructure-context-test.py passed;8 root/nested credential paths excluded;3 application/example files retained.",
+        "No claim is made that an existing published image contained credentials; rotation is conditional on historical image exposure."
+      ]
+    },
+    {
+      "id": "INFRA-WORKFLOW-TOKEN-PERMISSIONS",
+      "scanners": [
+        {
+          "tool": "Checkov",
+          "rule": "CKV2_GHA_1"
+        }
+      ],
+      "severity": "low",
+      "confidence": "high",
+      "location": ".github/workflows/{ci,sourcemaps,postgres-tests-playbook}.yml",
+      "description": "Three workflows inherited repository/organization token permissions instead of declaring the read-only permissions they require.",
+      "cwe_cve": [
+        "CWE-250"
+      ],
+      "evidence": "Checkov3.3.30 reported3 CKV2_GHA_1 failures before the change; all3 files had no top-level permissions declaration. Actual repository/organization default token policy was not inspected.",
+      "impact": "Where repository defaults permit writes, compromised build steps could receive unnecessary GitHub token write privileges.",
+      "recommendation": "Set explicit permissions: contents: read, and request maintainer review of the workflow control-plane change.",
+      "agent": "D (implemented by root)",
+      "status": "fixed",
+      "verification": [
+        "Before: security/reports/infrastructure-actions-before.json shows365 passed,3 failed,0 parsing errors.",
+        "After: security/reports/infrastructure-checkov-github-actions.json shows368 passed,0 failed,0 parsing errors.",
+        "Parent reviewed jobs and found no GitHub-token writes required; deployment credentials remain in existing explicit secrets."
+      ]
+    }
+  ],
+  "verification": {
+    "docker_context": {
+      "command": "python3 security/scanners/infrastructure-context-test.py",
+      "before_secret_file_in_image": true,
+      "after_excluded_secret_paths": 8,
+      "after_retained_nonsecret_paths": 3,
+      "status": "passed",
+      "before_command": "git show HEAD:deploy/docker/Dockerfile.dockerignore > <private-before-ignore>; python3 security/scanners/infrastructure-context-test.py <private-before-ignore>",
+      "before_exit_code": 1,
+      "after_exit_code": 0
+    }
+  },
+  "manual_review": {
+    "reviewed": [
+      "compose.yaml",
+      "wrangler.jsonc",
+      "wrangler.audit.jsonc",
+      "deploy/alchemy/alchemy.run.ts",
+      "deploy/alchemy/alchemy.access.ts",
+      "deploy/alchemy/alchemy.preview-access.run.ts",
+      "deploy/alchemy/relay-env.ts"
+    ],
+    "observations": [
+      "Compose publishes only127.0.0.1 and explicitly selects trusted-local local_noauth mode.",
+      "Cloudflare secret settings use Config.redacted/optionalSecret; auxiliary audit worker receives a bounded subset.",
+      "Custom-domain self-host deployments disable alternate workers.dev URL; audit worker url:false.",
+      "Access deployments fail closed with a nonempty email allow-list; live Cloudflare configuration was not queried.",
+      "Persistent database IDs were preserved; no deployment or schema mutation was performed."
+    ],
+    "limitations": [
+      "Native Trivy/Checkov policies do not interpret Alchemy TypeScript or Wrangler JSONC; these observations are source review only."
+    ]
+  }
+}

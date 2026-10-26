@@ -85,7 +85,7 @@ async function createConfig(input: {
   // the unique index. An already-active row is a genuine duplicate.
   if (existing?.isActive) {
     throw new AppError(
-      "VALIDATION_ERROR",
+      "CONFLICT",
       locationName
         ? "This domain + city + language combination is already being tracked"
         : "This domain + country + language combination is already being tracked",
@@ -185,6 +185,26 @@ async function updateConfig(
 
   if (input.domain !== undefined)
     updates.domain = normalizeDomain(input.domain);
+
+  // Any other row for the resulting market, archived or not, holds the unique
+  // index, so moving onto it would fail inside the database.
+  if (marketChanged || updates.domain !== undefined) {
+    const clash = await RankTrackingRepository.getConfigByProjectDomainMarket(
+      projectId,
+      updates.domain ?? existing.domain,
+      input.locationCode ?? existing.locationCode,
+      input.languageCode ?? existing.languageCode,
+      input.locationName === undefined
+        ? existing.locationName
+        : input.locationName,
+    );
+    if (clash && clash.id !== configId) {
+      throw new AppError(
+        "CONFLICT",
+        "This domain + market combination is already tracked",
+      );
+    }
+  }
   if (input.locationCode !== undefined)
     updates.locationCode = input.locationCode;
   if (input.languageCode !== undefined)

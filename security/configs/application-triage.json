@@ -1,0 +1,2385 @@
+[
+  {
+    "tool": "Semgrep",
+    "rule": "detect-redos",
+    "path": "deploy/alchemy/alchemy.run.ts",
+    "line": 332,
+    "sha256": "de1499b72a38aa1132f134e47cf1ad58bae364e0b8172d4a1bfc3243f3a5e18b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-redos audit match.",
+      "evidence": "The hostname expression separates repeated labels with literal dots outside the label character class; it has no overlapping nested repetition. Alchemy input is also operator configuration.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "react-href-var",
+    "path": "src/client/features/ai-search/components/PromptExplorerResults.tsx",
+    "line": 152,
+    "sha256": "8544f7ecf2e7b9c6fd77a65fdf8dac5b508747d4657d1d954c944bb1f2069e61",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed react-href-var audit match.",
+      "evidence": "Citation extraction calls safeHttpUrl before constructing stored/returned citations; it rejects non-http(s) schemes and embedded credentials. The component renders only that normalized citation model.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "jquery-insecure-selector",
+    "path": "src/client/features/backlinks/BacklinksTable.test.ts",
+    "line": 26,
+    "sha256": "e5d0cd68a3eea62a42d70b30da84ed1df8a74f49bb614425b6bca8b33a3c060c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed jquery-insecure-selector audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "js-open-redirect-from-function",
+    "path": "src/client/features/integrations/googleLinkError.test.ts",
+    "line": 15,
+    "sha256": "3cc769e2dd72e7472c133ecceca8af194bfb07fb46753f0ea3ecbe17d6d18953",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js-open-redirect-from-function audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/client/features/integrations/startGoogleLink.ts",
+    "line": 55,
+    "sha256": "463bf6116d485bfbcbddb4feeb10ebcaf057e13d20a86431eb070af92542fd1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "Lookup key is the closed UI provider union (gsc/ga4); values are fixed imported server-function references.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "js-open-redirect-from-function",
+    "path": "src/client/features/integrations/startGoogleLink.ts",
+    "line": 57,
+    "sha256": "463bf6116d485bfbcbddb4feeb10ebcaf057e13d20a86431eb070af92542fd1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js-open-redirect-from-function audit match.",
+      "evidence": "Navigation uses the authenticated server OAuth-start result. googleOAuth.ts constructs the provider authorization URL with a fixed Google origin and signed single-use state; caller callback paths do not replace that origin.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/client/lib/clipboard.ts",
+    "line": 45,
+    "sha256": "c53ceabefc1deead5dd786fc7f8f093bce20837aa2dafb05afff83ecb69b3b1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/client/lib/clipboard.ts",
+    "line": 46,
+    "sha256": "c53ceabefc1deead5dd786fc7f8f093bce20837aa2dafb05afff83ecb69b3b1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/client/lib/clipboard.ts",
+    "line": 49,
+    "sha256": "c53ceabefc1deead5dd786fc7f8f093bce20837aa2dafb05afff83ecb69b3b1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/client/lib/clipboard.ts",
+    "line": 52,
+    "sha256": "c53ceabefc1deead5dd786fc7f8f093bce20837aa2dafb05afff83ecb69b3b1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/client/lib/clipboard.ts",
+    "line": 60,
+    "sha256": "c53ceabefc1deead5dd786fc7f8f093bce20837aa2dafb05afff83ecb69b3b1c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Clipboard table headers/cells pass escapeHtml; hyperlinks additionally require safeHttpUrl before attribute escaping. The rule cannot follow these project-specific escaping helpers.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/lib/auth.ts",
+    "line": 160,
+    "sha256": "b62f08d816c684f807a885eb3ed7e7a428c5e89f83b13fd04a1c00d5631be27a",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "Dynamic console method is chosen from Better Auth log levels and a local debug-to-log mapping; it cannot select an arbitrary application method.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/routes/sitemap[.]xml.ts",
+    "line": 17,
+    "sha256": "5be841d32c560e6096d58d532b51356cb4b2944211ef752d1c6ffdb36a0faa0a",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Sitemap values come from fixed Relay origin plus repository-authored documentation route metadata, not request parameters or customer text.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/email/loops-client.ts",
+    "line": 112,
+    "sha256": "91d7cf5fe5ecf16feacd8de6fb2266d8a932e315d50e689d8ada93fcc0b3bc01",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/email/relay-email.ts",
+    "line": 34,
+    "sha256": "d17b8c46906c9b935d676b1daa1fdac373a502b3bfa07329035fc6784a571680",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/accessibility/AccessibilityCheckService.test.ts",
+    "line": 72,
+    "sha256": "a0af3a075acb6006a80f806a49634690b3b577f2278c22b3726eee1e46cf4b20",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/accessibility/AltTextDraftService.ts",
+    "line": 112,
+    "sha256": "ca4bb54cd5e8b83b6b94e8e9291661034889d5fc1d9eb9c4eb6cbed2a84b5486",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/accessibility/accessibilityStep.test.ts",
+    "line": 150,
+    "sha256": "ffe9ae01c8aad7d19e27e122b9bf3d178272793161b2eb69d7be48473c427ee9",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/accessibility/accessibilityStep.test.ts",
+    "line": 195,
+    "sha256": "ffe9ae01c8aad7d19e27e122b9bf3d178272793161b2eb69d7be48473c427ee9",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/accessibility/axeRun.test.ts",
+    "line": 70,
+    "sha256": "e717a3e0e58ecac8fe1d5a029ef82d00786190db6106311c498affaccf3350e1",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-search/services/brandLookup.ts",
+    "line": 151,
+    "sha256": "ab3df2e41e15d2939346b61e1400a104451e62df351d1dff6a0a6e69fed08d86",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-search/services/brandLookup.ts",
+    "line": 358,
+    "sha256": "ab3df2e41e15d2939346b61e1400a104451e62df351d1dff6a0a6e69fed08d86",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-search/services/brandLookup.ts",
+    "line": 388,
+    "sha256": "ab3df2e41e15d2939346b61e1400a104451e62df351d1dff6a0a6e69fed08d86",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-search/services/promptExplorer.ts",
+    "line": 161,
+    "sha256": "0faccc9f9bec9207cd7ceb2bb6eefd7de296e08b99c4cbcaa7a644710fa5f10b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/ai-search/services/promptExplorer.ts",
+    "line": 327,
+    "sha256": "0faccc9f9bec9207cd7ceb2bb6eefd7de296e08b99c4cbcaa7a644710fa5f10b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-search/services/promptExplorer.ts",
+    "line": 351,
+    "sha256": "0faccc9f9bec9207cd7ceb2bb6eefd7de296e08b99c4cbcaa7a644710fa5f10b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts",
+    "line": 161,
+    "sha256": "254931a27833715a5701c210bf8991059098f9c0861fcdcdeadbb39e16ecc823",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts",
+    "line": 212,
+    "sha256": "254931a27833715a5701c210bf8991059098f9c0861fcdcdeadbb39e16ecc823",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-visibility/services/aiVisibilityCollection.ts",
+    "line": 295,
+    "sha256": "254931a27833715a5701c210bf8991059098f9c0861fcdcdeadbb39e16ecc823",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/ai-visibility/services/aiVisibilityMatching.ts",
+    "line": 44,
+    "sha256": "af32454f6243ad06d41ad9aae5017c9da031abf68b66e662e66de7d8dc538d8c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/ai-visibility/services/aiVisibilityMatching.ts",
+    "line": 112,
+    "sha256": "af32454f6243ad06d41ad9aae5017c9da031abf68b66e662e66de7d8dc538d8c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/ai-visibility/services/websiteTrackingSetup.ts",
+    "line": 72,
+    "sha256": "1e58aa01d426e0de124aabe65953d6b99b30a5f66ba8651d9b43e172fb2f563f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/audit/services/AuditService.ts",
+    "line": 315,
+    "sha256": "0efbe355c5a604b1ba284240b0ffc1fac03bdbdcec94fc3a8b5191459ada5930",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/audit/services/AuditService.ts",
+    "line": 328,
+    "sha256": "0efbe355c5a604b1ba284240b0ffc1fac03bdbdcec94fc3a8b5191459ada5930",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/audit/services/auditReconciler.ts",
+    "line": 127,
+    "sha256": "6cbb121b35ca49db924627eef35563cae63c87cfd3c6e8045f93715ce06658cb",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/conversion/CopyDraftService.ts",
+    "line": 102,
+    "sha256": "76a955f829d3d7294633180a054da009fe48e3345d427e513dc0a6e47156f456",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/conversion/CopyDraftService.ts",
+    "line": 104,
+    "sha256": "76a955f829d3d7294633180a054da009fe48e3345d427e513dc0a6e47156f456",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "XML-like delimiters are sent as plain LLM prompt text, not rendered as browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/conversion/copyDraftChecks.ts",
+    "line": 79,
+    "sha256": "71f23126ad5b45ae0dd167659ae524a79ffc54c5b2395fcc65f3f97ffa2e4979",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/server/features/docs/DocsDraftService.ts",
+    "line": 148,
+    "sha256": "2ae9e8c3e573c717511f0a848979002cc9a51ce4b174a8eb390ef573267965f4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "input.kind is validated by the documentation draft discriminated union, selecting a fixed formatter from WHAT.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/docs/DocsDraftService.ts",
+    "line": 156,
+    "sha256": "2ae9e8c3e573c717511f0a848979002cc9a51ce4b174a8eb390ef573267965f4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/server/features/growth/GrowthJobService.ts",
+    "line": 189,
+    "sha256": "79a559c9dcc725139eea296771129e3fda3cff521f081bd09e282afdeef1c31b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "kind is a validated growth-job kind from the authorized schedule/workflow; GROWTH_JOBS is a fixed dispatcher with a missing-job guard.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/growth/emailDigest.ts",
+    "line": 117,
+    "sha256": "b8e17707aeaf0a1557960912ac94ed2b608a3c9135c06e1352f34460333fc39b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/growth/emailDigest.ts",
+    "line": 120,
+    "sha256": "b8e17707aeaf0a1557960912ac94ed2b608a3c9135c06e1352f34460333fc39b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Dynamic email text and link attributes pass escapeHtml. Invitation and digest link origins/paths are server-generated.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/opportunities/services/ContentBriefService.ts",
+    "line": 147,
+    "sha256": "7120afcf5406ba4ead7b781a0d601464cdcaaddfedbe40f5227fada35cd4fdca",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/server/features/opportunities/services/OpportunityService.test.ts",
+    "line": 135,
+    "sha256": "dbd6240b515420d74dc4072a9222b1a9149e9f0ed8ce9b80ddc7329d8db842fd",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/opportunities/services/detectors/shared.ts",
+    "line": 155,
+    "sha256": "c370a610acff5a032c08f6a8a6cf91de50d48df5b26a57e0ec01463717a2c7a4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/server/features/publishing/PublishingConnectionService.test.ts",
+    "line": 94,
+    "sha256": "18f3da31386ac9a2c352e7e7c6c90e0bd38859c12ad44e9b9961949a659a8b4f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/publishing/anchorDraft.ts",
+    "line": 74,
+    "sha256": "d808373ffe8f9fdafcfd81f2db36514c6f115c08efd5b26844dad5341b44bce4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/publishing/anchorDraft.ts",
+    "line": 76,
+    "sha256": "d808373ffe8f9fdafcfd81f2db36514c6f115c08efd5b26844dad5341b44bce4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "XML-like delimiters are sent as plain LLM prompt text, not rendered as browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/publishing/draftChecks.ts",
+    "line": 59,
+    "sha256": "08c178d73bf69b5546eaa1b00a6e6399d65684a77a6cd11df8b313ac0b7864aa",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "raw-html-join",
+    "path": "src/server/features/publishing/draftInputs.ts",
+    "line": 153,
+    "sha256": "61fec35c3a1b54436649f7a2df02872133a3ac6d06e7ff195134c265b5c97372",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed raw-html-join audit match.",
+      "evidence": "The joined string is an LLM input prompt passed to the structured drafting service, not an HTML/DOM rendering sink. The flagged rule concerns browser HTML injection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/publishing/pageTexts.test.ts",
+    "line": 11,
+    "sha256": "e38423615e8c8be4fadb8ce991d00b53311e4e0e67104535bfebfe52895ec594",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/publishing/pagesRouterHead.test.ts",
+    "line": 5,
+    "sha256": "491ba5279f77d1c3261be4b84476d3af6b84388cb5b5dc7db3bc45c1964d737e",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/rank-tracking/services/scheduledRankChecks.ts",
+    "line": 132,
+    "sha256": "a75c086458897c83dc50e4294e87672b247b8d83fa42a50483ea201e71b360c6",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/rank-tracking/services/scheduledRankChecks.ts",
+    "line": 189,
+    "sha256": "a75c086458897c83dc50e4294e87672b247b8d83fa42a50483ea201e71b360c6",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/features/rank-tracking/services/scheduledRankChecks.ts",
+    "line": 221,
+    "sha256": "a75c086458897c83dc50e4294e87672b247b8d83fa42a50483ea201e71b360c6",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/reports/reportRoute.test.ts",
+    "line": 80,
+    "sha256": "fab187a5d79527258d83906f7fd4f39005aee038799275901adcdfe4ef85b6bc",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/reports/reportRoute.test.ts",
+    "line": 104,
+    "sha256": "fab187a5d79527258d83906f7fd4f39005aee038799275901adcdfe4ef85b6bc",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/reports/sharePage.test.ts",
+    "line": 47,
+    "sha256": "c8878ebef02435e278aa522c7ee61773f4bb4ca7d4c6b6a8b937f88d505d2911",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/reports/sharePage.test.ts",
+    "line": 56,
+    "sha256": "c8878ebef02435e278aa522c7ee61773f4bb4ca7d4c6b6a8b937f88d505d2911",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/seo-checks/seoCheckRun.test.ts",
+    "line": 62,
+    "sha256": "7357420950344caaa2697a9daafb3c424f6d55b0cd5ea40fcf9eed7a67ce6031",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/seo-checks/urlSelection.ts",
+    "line": 60,
+    "sha256": "ddb48eb1ec6bfb601927c824d4f8c25d78eda65182402bc5761d59b68348e4b2",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Patterns are derived from route file segments, metacharacters are escaped, and each dynamic segment becomes a non-slash character class separated by a literal slash. This is not evaluation of arbitrary regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/split-tests/SplitTestService.test.ts",
+    "line": 74,
+    "sha256": "7e25d88f8514c4c68f35f408c2273a846b8a5a06e307ad7bb0cbfa89973a0f79",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/features/split-tests/splitTestRefresh.test.ts",
+    "line": 58,
+    "sha256": "bdbc15fc24c7a47d39d0d09870cf449ccebf100f79df5e54723dfb8e807aac3c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-non-literal-regexp",
+    "path": "src/server/features/support/redact.ts",
+    "line": 23,
+    "sha256": "35794e066d480b3df89a597b48faebdb4cfebb092bf55c6093aa7656864a7a39",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-non-literal-regexp audit match.",
+      "evidence": "Every variable fragment escapes regex metacharacters before interpolation. Surrounding boundary assertions are fixed source code; these calls do not execute user-provided regex syntax.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/discovery.test.ts",
+    "line": 5,
+    "sha256": "0ad3266cfc2a9a26b9b67ccfbb9a5da2458f8c98a52d1f69f22ad040430746b9",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/discovery.test.ts",
+    "line": 6,
+    "sha256": "0ad3266cfc2a9a26b9b67ccfbb9a5da2458f8c98a52d1f69f22ad040430746b9",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 213,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 234,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 238,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 241,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 257,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/server/lib/audit/page-analyzer.test.ts",
+    "line": 282,
+    "sha256": "0a16d42407cf553075319de0d5f0df06f23b00df6b38eb2e6f6bdd5187196142",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-dynamic-method",
+    "path": "src/server/lib/audit/url-policy.test.ts",
+    "line": 62,
+    "sha256": "7aea55ca57415f8758b28f4e0f319f96d06798dd203b2a13076e83c7aaefbe4a",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-dynamic-method audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/lib/chatAgent.ts",
+    "line": 19,
+    "sha256": "a6895e4fde56457a92553a1142a7452db74d70b40be692edab33a60a799e1d4f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/lib/dataforseo/envelope.ts",
+    "line": 346,
+    "sha256": "5c021634e509168f8612c3cf528a66930c399e5c55e8f6a4455b1a4bdc247f94",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/lib/dataforseo/llm-models.ts",
+    "line": 128,
+    "sha256": "9a35b7c8cf015a05c24dcfa9c145bc43cdd099181a10efcc5d0df178fcb4f0c2",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/mcp/instrumentation.ts",
+    "line": 187,
+    "sha256": "f6e02f91d4c17b5dc38c379aebdbd092893760dbd0b81294d1200bec7e2b1f66",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-redos",
+    "path": "src/server/mcp/tools/dataforseo-research-tools.ts",
+    "line": 144,
+    "sha256": "3f5b0fae0506ec0e4fc485401e17be2800483fa96565a386588ae01fdd9ff777",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-redos audit match.",
+      "evidence": "Hostname expression has disjoint literal-dot separators and a 253/255-character bound before matching; the audit rule does not model this constraint.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/AiVisibilityWorkflow.ts",
+    "line": 87,
+    "sha256": "233d9d5cf9827fb6d9cbd6e81dfde2f58f66d4dd65108f0a1e0ad9837642727b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/AiVisibilityWorkflow.ts",
+    "line": 105,
+    "sha256": "233d9d5cf9827fb6d9cbd6e81dfde2f58f66d4dd65108f0a1e0ad9837642727b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/AiVisibilityWorkflow.ts",
+    "line": 121,
+    "sha256": "233d9d5cf9827fb6d9cbd6e81dfde2f58f66d4dd65108f0a1e0ad9837642727b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/AiVisibilityWorkflow.ts",
+    "line": 156,
+    "sha256": "233d9d5cf9827fb6d9cbd6e81dfde2f58f66d4dd65108f0a1e0ad9837642727b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/RankCheckWorkflow.ts",
+    "line": 416,
+    "sha256": "284a325eb5c0eec93bdb99da4b40b4033fafd12b0beb3cb5eb98897f7aa1f688",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/SiteAuditWorkflow.ts",
+    "line": 102,
+    "sha256": "67a281b3ee0cd8aaf0110e19a5a3acea6cf7b83d68ae19262c1a743c84fd4aae",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/rankCheckPaths.ts",
+    "line": 180,
+    "sha256": "2e6ce3a9c1dd85f4ed629aba816fd7cfc9eae34f58baccf29d2f7d1c9afc6963",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/rankCheckPaths.ts",
+    "line": 295,
+    "sha256": "2e6ce3a9c1dd85f4ed629aba816fd7cfc9eae34f58baccf29d2f7d1c9afc6963",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/rankCheckPaths.ts",
+    "line": 392,
+    "sha256": "2e6ce3a9c1dd85f4ed629aba816fd7cfc9eae34f58baccf29d2f7d1c9afc6963",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/rankCheckPaths.ts",
+    "line": 441,
+    "sha256": "2e6ce3a9c1dd85f4ed629aba816fd7cfc9eae34f58baccf29d2f7d1c9afc6963",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/server/workflows/site-audit-workflow-helpers.ts",
+    "line": 247,
+    "sha256": "fbb7290bacef74c2826f053ce4f887172e80686516b6942e10ce38fa81b5bb3e",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "src/serverFunctions/rank-tracking.ts",
+    "line": 196,
+    "sha256": "f15b34204d42cb7a25bf76e451f09b8612ed369398c36c4419d2e1417ce4855f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-redos",
+    "path": "src/shared/crawler-access.ts",
+    "line": 60,
+    "sha256": "ee580acc1f083e407ea793322e81a2d6109cc41a0f0b0f4b99ae0897a881d58c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-redos audit match.",
+      "evidence": "The hostname expression separates repeated labels with literal dots outside the label character class; it has no overlapping nested repetition. Alchemy input is also operator configuration.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "hardcoded-hmac-key",
+    "path": "src/shared/gdpr-erasure.test.ts",
+    "line": 10,
+    "sha256": "eda71a3751163c71d5ba0caa6b62e5a3a8671dcdf30a72fd5222b3a3806c9ca1",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed hardcoded-hmac-key audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "src/shared/report-sandbox.ts",
+    "line": 93,
+    "sha256": "aaace209e59aeb80a236d9af49e91fce6944d4c1921893ea2163c2e44068796a",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Interpolated PRINT_SCRIPT is a static developer-authored script. Report content remains constrained by the separate report sandbox CSP and iframe policy.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "html-in-template-string",
+    "path": "web/scripts/generate-sitemap.js",
+    "line": 148,
+    "sha256": "0b5c59834199310fa3f4a0b5f3efb645df8012a14b6d2fcfad8e83202e24853a",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed html-in-template-string audit match.",
+      "evidence": "Build-time sitemap uses operator SITE_URL and repository-authored route/content metadata. No request or remotely submitted content reaches this XML template.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "react-dangerouslysetinnerhtml",
+    "path": "web/src/components/library-page.tsx",
+    "line": 79,
+    "sha256": "4542e31d9603a8aac08c9965c74bcc606bc032c4f1d615b76df7e676b98bd628",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed react-dangerouslysetinnerhtml audit match.",
+      "evidence": "Breadcrumb JSON-LD inputs are repository-authored MDX library metadata, not user/remote content. No attacker-controlled route parameter is inserted into this script.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "detect-redos",
+    "path": "web/src/lib/free-tools/server.ts",
+    "line": 38,
+    "sha256": "2a3e03fc5cfaa56ab206a5f244fd20b81c3e765a2cd80491e3e358a3c161b56c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed detect-redos audit match.",
+      "evidence": "Hostname expression has disjoint literal-dot separators and a 253/255-character bound before matching; the audit rule does not model this constraint.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "web/src/lib/free-tools/server.ts",
+    "line": 241,
+    "sha256": "2a3e03fc5cfaa56ab206a5f244fd20b81c3e765a2cd80491e3e358a3c161b56c",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "web/src/routes/api/competitor-keyword-finder.ts",
+    "line": 89,
+    "sha256": "9a0f381880cb70fa8b8d32a271b6dce6f33376121e76bb950ee47fcb21ca8f9f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "web/src/routes/api/domain-age-checker.ts",
+    "line": 160,
+    "sha256": "6b53f4db35dea4739bea351ac8f330657ca962202babb9a252f0cef0942d45fb",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "unsafe-formatstring",
+    "path": "web/src/routes/api/keyword-generator.ts",
+    "line": 87,
+    "sha256": "25482196065917cd32410278521608e867516d74e4784b4fdf475fd9df6e1ac6",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed unsafe-formatstring audit match.",
+      "evidence": "Reviewed console logging call. Interpolated values are bounded identifiers, fixed provider/tool names, or normalized URLs; JavaScript console formatting is not a code execution, SQL, or native-memory format sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/dependencies.py",
+    "line": 25,
+    "sha256": "d053ee8f5e3e02aee2e78f004aea7925a16db96920dfd1e52148a982d856785f",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/infrastructure.py",
+    "line": 50,
+    "sha256": "86c6482fd84d6bab8513a26da90598ec35341159830d477323d4c0f5d7a7a7c3",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-25: repeated all 18 official Python security rule directories after generated-output exclusion changed to security/(reports|runs); same reviewed subprocess audit match, no scan errors.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/runtime.py",
+    "line": 92,
+    "sha256": "f72072803d969de829b699f5acde267f4f81c8d8cea8261e2e3b81f40ca6ddb5",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/runtime.py",
+    "line": 142,
+    "sha256": "f72072803d969de829b699f5acde267f4f81c8d8cea8261e2e3b81f40ca6ddb5",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-tainted-env-args",
+    "path": "security/scanners/runtime.py",
+    "line": 142,
+    "sha256": "f72072803d969de829b699f5acde267f4f81c8d8cea8261e2e3b81f40ca6ddb5",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/secrets-scan.py",
+    "line": 113,
+    "sha256": "cf736dcbe80b7b8e2e82a96c9f8b34e4cd8e33a96e4672962092b77630d97423",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-tainted-env-args",
+    "path": "security/scanners/secrets-scan.py",
+    "line": 113,
+    "sha256": "cf736dcbe80b7b8e2e82a96c9f8b34e4cd8e33a96e4672962092b77630d97423",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/secrets-scan.py",
+    "line": 141,
+    "sha256": "cf736dcbe80b7b8e2e82a96c9f8b34e4cd8e33a96e4672962092b77630d97423",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-tainted-env-args",
+    "path": "security/scanners/secrets-scan.py",
+    "line": 141,
+    "sha256": "cf736dcbe80b7b8e2e82a96c9f8b34e4cd8e33a96e4672962092b77630d97423",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/secrets-test.py",
+    "line": 61,
+    "sha256": "f7b341552b71e84f8a7b1503c9d85098981baa365a2db5a631bf5eeff538bcdd",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Test-only fixture or local test harness; the matched values are synthetic and never run as a deployed request handler.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/application.py",
+    "line": 192,
+    "sha256": "d9266284db0217c792cb6702649a2ab9b4afeef4bc4b247bca880db09e43f313",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/application.py",
+    "line": 214,
+    "sha256": "d9266284db0217c792cb6702649a2ab9b4afeef4bc4b247bca880db09e43f313",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-tainted-env-args",
+    "path": "security/scanners/application.py",
+    "line": 214,
+    "sha256": "d9266284db0217c792cb6702649a2ab9b4afeef4bc4b247bca880db09e43f313",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-audit",
+    "path": "security/scanners/application.py",
+    "line": 233,
+    "sha256": "d9266284db0217c792cb6702649a2ab9b4afeef4bc4b247bca880db09e43f313",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-audit audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "dangerous-subprocess-use-tainted-env-args",
+    "path": "security/scanners/application.py",
+    "line": 233,
+    "sha256": "d9266284db0217c792cb6702649a2ab9b4afeef4bc4b247bca880db09e43f313",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed dangerous-subprocess-use-tainted-env-args audit match.",
+      "evidence": "Operator-invoked local scanner runner. Commands use argument arrays with shell=False; executable paths come from trusted local scanner installation/configuration, not an HTTP request. Environment overrides are an explicit operator trust boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when the source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256.",
+        "2026-10-26: re-reviewed after the Semgrep partial-parse and Checkov terraform_plan changes; the subprocess calls are unchanged."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/incomplete-url-substring-sanitization",
+    "path": "src/server/features/seo-checks/seoCheckRun.test.ts",
+    "line": 72,
+    "sha256": "7357420950344caaa2697a9daafb3c424f6d55b0cd5ea40fcf9eed7a67ce6031",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/incomplete-url-substring-sanitization audit match.",
+      "evidence": "Test-only mock classifies synthetic preview responses; it is not the production origin check.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/incomplete-url-substring-sanitization",
+    "path": "src/server/mcp/oauth-registration.ts",
+    "line": 51,
+    "sha256": "0aacfa71b235b9ea6cbd12464da1db038ff43ee69c6efbd00cc43405983e2266",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/incomplete-url-substring-sanitization audit match.",
+      "evidence": "redirect_uris is parsed as an array of strings. Array.includes performs an exact callback-element comparison, not a URL substring check; provider redirect validation remains in the OAuth provider.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/stack-trace-exposure",
+    "path": ".agents/skills/evaluate-skill/scripts/run.mjs",
+    "line": 235,
+    "sha256": "9d1478697fff670e53c28ab4b41c77f2fb9fc18756d29f2103d365f742922f41",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/stack-trace-exposure audit match.",
+      "evidence": "Local evaluation gateway listens only on127.0.0.1 and returns String(error), not an error stack. It is an operator-invoked development harness, not a deployed API endpoint; keep it loopback-only.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/bad-tag-filter",
+    "path": "src/server/lib/scrape.ts",
+    "line": 111,
+    "sha256": "57fd70879e2005a7aeae58e6aad15bc2c86565a27f8bb03115daef38338c0334",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/bad-tag-filter audit match.",
+      "evidence": "htmlToText extracts readable plain text for an LLM, not trusted HTML for innerHTML. Browser output uses escaped React/shared Markdown rendering; this is not an HTML sanitizer security boundary.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/double-escaping",
+    "path": ".agents/skills/evaluate-skill/scripts/report-text.mjs",
+    "line": 7,
+    "sha256": "893626dfd793c6f28bce55c9c54d12ad9a01f4a053ce8d741802c9fba55771af",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/double-escaping audit match.",
+      "evidence": "Operator-only CLI decodes report HTML into readable terminal text. The output is not treated as trusted HTML or sent to a browser rendering sink.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/double-escaping",
+    "path": "src/server/lib/scrape.ts",
+    "line": 123,
+    "sha256": "57fd70879e2005a7aeae58e6aad15bc2c86565a27f8bb03115daef38338c0334",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/double-escaping audit match.",
+      "evidence": "Entity decoding produces plain extracted text for model input; the result is not inserted as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/incomplete-multi-character-sanitization",
+    "path": ".agents/skills/evaluate-skill/scripts/report-text.mjs",
+    "line": 18,
+    "sha256": "893626dfd793c6f28bce55c9c54d12ad9a01f4a053ce8d741802c9fba55771af",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/incomplete-multi-character-sanitization audit match.",
+      "evidence": "Regex replacements format HTML as readable terminal text; this CLI is not an HTML sanitizer and its output is not rendered as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/incomplete-multi-character-sanitization",
+    "path": ".agents/skills/evaluate-skill/scripts/report-text.mjs",
+    "line": 23,
+    "sha256": "893626dfd793c6f28bce55c9c54d12ad9a01f4a053ce8d741802c9fba55771af",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/incomplete-multi-character-sanitization audit match.",
+      "evidence": "Regex replacements format HTML as readable terminal text; this CLI is not an HTML sanitizer and its output is not rendered as trusted browser HTML.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/file-system-race",
+    "path": "scripts/rank-location-repair-support.ts",
+    "line": 64,
+    "sha256": "d1c13c0a0d39e9991d7e05f483ac95afb2001209f31b4db656b3734aeb829de8",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/file-system-race audit match.",
+      "evidence": "Operator-only maintenance cache under repository .cache by default; cache contents are public location metadata. The cache directory is explicitly operator-selected, not a public shared /tmp filename or network request value.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/regex/missing-regexp-anchor",
+    "path": "tests/growth-workflow.e2e.ts",
+    "line": 68,
+    "sha256": "1beb6f06a98e1c64eaad26751933298e994b3f0b7286258a3d5cfc32689fc3ee",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/regex/missing-regexp-anchor audit match.",
+      "evidence": "End-to-end assertion on a test result, not an access-control hostname validator.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/regex/missing-regexp-anchor",
+    "path": "vite-plugin-relay-brand.ts",
+    "line": 147,
+    "sha256": "ede7c56706539dc478b46646a91c1be208d666dbdfda0dfc9bf304f6e68dfd7b",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/regex/missing-regexp-anchor audit match.",
+      "evidence": "Build-time global source-text branding replacement intentionally matches embedded repository URLs. It is not a hostname allowlist or authorization check.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/file-access-to-http",
+    "path": "scripts/migrate-d1-to-postgres.ts",
+    "line": 122,
+    "sha256": "9fc791a8324d0bd2d6d31da202784e964bcf714cdd153ba0caa92780566141c4",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/file-access-to-http audit match.",
+      "evidence": "Operator-run migration intentionally reads the non-secret D1 database ID from wrangler.jsonc and inserts it into the fixed api.cloudflare.com query endpoint. It does not send arbitrary files to an attacker-selected host.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/http-to-file-access",
+    "path": ".agents/skills/evaluate-skill/scripts/run.mjs",
+    "line": 217,
+    "sha256": "9d1478697fff670e53c28ab4b41c77f2fb9fc18756d29f2103d365f742922f41",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/http-to-file-access audit match.",
+      "evidence": "Intentional evaluation report capture after the allowed-tool and assigned-project checks. Output path is constructed from operator-selected output directory and sanitized per-run name, never from an HTTP filename/path.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "CodeQL",
+    "rule": "js/http-to-file-access",
+    "path": ".agents/skills/evaluate-skill/scripts/run.mjs",
+    "line": 227,
+    "sha256": "9d1478697fff670e53c28ab4b41c77f2fb9fc18756d29f2103d365f742922f41",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed js/http-to-file-access audit match.",
+      "evidence": "Intentional evaluation report capture after the allowed-tool and assigned-project checks. Output path is constructed from operator-selected output directory and sanitized per-run name, never from an HTTP filename/path.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain the existing control; re-review when source changes.",
+      "verification": [
+        "2026-10-25: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "react-insecure-request",
+    "path": "scripts/celld/runtime/import.mjs",
+    "line": 25,
+    "sha256": "873a2e476e5e51e20bb2b264c9724db528563c214261dac36f90af2b00cd8526",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed react-insecure-request match.",
+      "evidence": "The standalone import script runs inside the runtime container and posts to the app on 127.0.0.1:8080 in the same container; the plain-HTTP request never leaves loopback, so TLS adds no protection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain loopback-only use; re-review if the endpoint moves off loopback or the source changes.",
+      "verification": [
+        "2026-10-26: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  },
+  {
+    "tool": "Semgrep",
+    "rule": "react-insecure-request",
+    "path": "scripts/celld/runtime/import.mjs",
+    "line": 49,
+    "sha256": "873a2e476e5e51e20bb2b264c9724db528563c214261dac36f90af2b00cd8526",
+    "assessment": {
+      "status": "false_positive",
+      "confidence": "high",
+      "description": "Reviewed react-insecure-request match.",
+      "evidence": "The standalone import script runs inside the runtime container and posts to the app on 127.0.0.1:8080 in the same container; the plain-HTTP request never leaves loopback, so TLS adds no protection.",
+      "impact": "No exploitable security defect established at this exact reviewed location.",
+      "recommendation": "Retain loopback-only use; re-review if the endpoint moves off loopback or the source changes.",
+      "verification": [
+        "2026-10-26: source-to-sink review; decision bound to exact source-file SHA-256."
+      ]
+    }
+  }
+]

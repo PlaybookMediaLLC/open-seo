@@ -1,0 +1,38 @@
+[
+  {
+    "check_type": "dockerfile",
+    "summary": {
+      "passed": 68,
+      "failed": 1,
+      "skipped": 0,
+      "parsing_errors": 0,
+      "resource_count": 1,
+      "checkov_version": "3.3.30"
+    },
+    "failed_checks": [
+      {
+        "check_id": "CKV_DOCKER_3",
+        "check_name": "Ensure that a user for the container has been created",
+        "file_path": "/deploy/docker/Dockerfile",
+        "file_line_range": [
+          1,
+          43
+        ],
+        "severity": null,
+        "guideline": null
+      }
+    ]
+  },
+  {
+    "check_type": "github_actions",
+    "summary": {
+      "passed": 372,
+      "failed": 0,
+      "skipped": 0,
+      "parsing_errors": 0,
+      "resource_count": 0,
+      "checkov_version": "3.3.30"
+    },
+    "failed_checks": []
+  }
+]

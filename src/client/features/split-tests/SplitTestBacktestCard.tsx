@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { CardShell } from "@/client/components/CardShell";
 import { Button } from "@/client/components/ui/button";
 import { backtestSplitTest } from "@/serverFunctions/splitTests";
+import { getStandardErrorMessage } from "@/client/lib/error-messages";
 
 // RFC-0011 phase 3: how this test would have behaved on the site's own
 // history, with no change and with a +15% lift.
@@ -53,7 +54,7 @@ export function SplitTestBacktestCard(props: {
         )}
         {run.isError && (
           <p role="alert" className="text-destructive">
-            {run.error.message}
+            {getStandardErrorMessage(run.error)}
           </p>
         )}
       </div>

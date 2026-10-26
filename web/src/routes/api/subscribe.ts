@@ -1,16 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { env } from "cloudflare:workers";
 import { z } from "zod";
+import { guardToolRequest, readToolBody } from "@/lib/free-tools/server";
 
 const subscribeSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
+  email: z.string().trim().max(254).email("Please enter a valid email address"),
+  turnstileToken: z.string().max(2048).optional(),
 });
 
 export const Route = createFileRoute("/api/subscribe")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const body = await request.json();
+        const body = await readToolBody(request);
+        if (body instanceof Response) return body;
         const parsed = subscribeSchema.safeParse(body);
 
         if (!parsed.success) {
@@ -20,7 +23,16 @@ export const Route = createFileRoute("/api/subscribe")({
           );
         }
 
-        const loopsApiKey = (env as any).LOOPS_API_KEY as string | undefined;
+        const blocked = await guardToolRequest({
+          tool: "newsletter",
+          request,
+          turnstileToken: parsed.data.turnstileToken,
+          turnstileAction: "newsletter",
+        });
+        if (blocked) return blocked;
+
+        const loopsApiKey = (env as unknown as { LOOPS_API_KEY?: string })
+          .LOOPS_API_KEY;
 
         if (!loopsApiKey) {
           console.error("Missing LOOPS_API_KEY");
@@ -55,6 +67,8 @@ export const Route = createFileRoute("/api/subscribe")({
                 source: "openseo-waitlist",
                 ...(mailingLists ? { mailingLists } : {}),
               }),
+              redirect: "error",
+              signal: AbortSignal.timeout(10_000),
             },
           );
 
@@ -75,12 +89,14 @@ export const Route = createFileRoute("/api/subscribe")({
                     subscribed: true,
                     mailingLists,
                   }),
+                  redirect: "error",
+                  signal: AbortSignal.timeout(10_000),
                 },
               );
               if (!updateResponse.ok) {
                 console.error(
                   "Loops contact update error:",
-                  await updateResponse.json().catch(() => null),
+                  updateResponse.status,
                 );
               }
             }
@@ -91,8 +107,10 @@ export const Route = createFileRoute("/api/subscribe")({
           }
 
           if (!loopsResponse.ok) {
-            const loopsError = await loopsResponse.json().catch(() => null);
-            console.error("Loops contact creation error:", loopsError);
+            console.error(
+              "Loops contact creation error:",
+              loopsResponse.status,
+            );
             return new Response(
               JSON.stringify({
                 error: "Failed to subscribe. Please try again.",

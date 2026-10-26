@@ -1,0 +1,19 @@
+{
+  "results": [],
+  "experimental_config": {
+    "licenses": {
+      "summary": false,
+      "allowlist": null
+    }
+  },
+  "scan_complete": false,
+  "exit_code": 127,
+  "limitations": [
+    "Vulnerability matching failed: api.osv.dev returned Forbidden through the configured proxy. Empty results must not be interpreted as a clean scan."
+  ],
+  "parsed_package_counts": {
+    "pnpm-lock.yaml": 1539,
+    "web/pnpm-lock.yaml": 562,
+    "tests/badseo/pnpm-lock.yaml": 247
+  }
+}

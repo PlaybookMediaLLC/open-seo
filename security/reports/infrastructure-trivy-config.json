@@ -1,0 +1,53 @@
+{
+  "SchemaVersion": 2,
+  "Results": [
+    {
+      "Target": "pnpm-lock.yaml",
+      "Class": "lang-pkgs",
+      "Type": "pnpm",
+      "PackageCount": 1525,
+      "Vulnerabilities": [],
+      "Misconfigurations": []
+    },
+    {
+      "Target": "tests/badseo/pnpm-lock.yaml",
+      "Class": "lang-pkgs",
+      "Type": "pnpm",
+      "PackageCount": 245,
+      "Vulnerabilities": [],
+      "Misconfigurations": []
+    },
+    {
+      "Target": "web/pnpm-lock.yaml",
+      "Class": "lang-pkgs",
+      "Type": "pnpm",
+      "PackageCount": 562,
+      "Vulnerabilities": [],
+      "Misconfigurations": []
+    },
+    {
+      "Target": "deploy/docker/Dockerfile",
+      "Class": "config",
+      "Type": "dockerfile",
+      "MisconfSummary": {
+        "Successes": 26,
+        "Failures": 1
+      },
+      "PackageCount": 0,
+      "Vulnerabilities": [],
+      "Misconfigurations": [
+        {
+          "ID": "DS-0002",
+          "Type": "Dockerfile Security Check",
+          "Title": "Image user should not be 'root'",
+          "Description": "Running containers with 'root' user can lead to a container escape situation. It is a best practice to run containers as non-root users, which can be done by adding a 'USER' statement to the Dockerfile.",
+          "Message": "Specify at least 1 USER command in Dockerfile with non-root user as argument",
+          "Resolution": "Add 'USER <non root user name>' line to the Dockerfile",
+          "Severity": "HIGH",
+          "Status": "FAIL",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ds-0002"
+        }
+      ]
+    }
+  ]
+}

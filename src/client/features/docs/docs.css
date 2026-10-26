@@ -57,8 +57,8 @@ body {
   overflow: visible !important;
 }
 
-/* The app's own stylesheet also loads, and styles body for the app's theme
-   and square corners. Give docs their own text, font and radius. */
+/* The app stylesheet also loads. Keep the docs' text, font and radius
+   independent of the app theme. */
 :root {
   --radius: 0.375rem;
 }

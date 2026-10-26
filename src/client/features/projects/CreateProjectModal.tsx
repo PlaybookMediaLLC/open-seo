@@ -35,7 +35,7 @@ const createProjectSchema = z.object({
 });
 
 // The server sends only the error code, so the field messages live here.
-const SERVER_FIELD_ERRORS: Record<string, Record<string, string>> = {
+export const SERVER_FIELD_ERRORS: Record<string, Record<string, string>> = {
   VALIDATION_ERROR: { domain: "Enter a valid domain, like acme.com." },
   CONFLICT: {
     name: 'A project named "Default" with no domain already exists. Pick a different name or add a domain.',

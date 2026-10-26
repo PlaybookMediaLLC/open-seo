@@ -3,7 +3,13 @@
 // @ts-check
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -289,11 +295,10 @@ process.stdout.write(`${notes}\n`);
 if (values.draft) {
   const tag = values.draft;
   const releaseTitle = tag.startsWith("v") ? tag : `v${tag}`;
-  const tmpFile = path.join(
-    os.tmpdir(),
-    `quick-eagle-release-notes-${Date.now()}.md`,
+  const tmpDirectory = mkdtempSync(
+    path.join(os.tmpdir(), "relay-release-notes-"),
   );
-  writeFileSync(tmpFile, notes);
+  const tmpFile = path.join(tmpDirectory, "notes.md");
 
   const args = [
     "release",
@@ -307,7 +312,12 @@ if (values.draft) {
   ];
   if (repo) args.push("--repo", repo);
 
-  gh(args);
+  try {
+    writeFileSync(tmpFile, notes, { mode: 0o600, flag: "wx" });
+    gh(args);
+  } finally {
+    rmSync(tmpDirectory, { recursive: true, force: true });
+  }
   process.stderr.write(
     `Draft release created: ${releaseTitle}${repo ? ` (${repo})` : ""}\n`,
   );

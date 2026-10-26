@@ -1,0 +1,137 @@
+{
+  "actions": [],
+  "advisories": {
+    "1242862": {
+      "findings": [
+        {
+          "version": "4.3.0",
+          "paths": [
+            ".>effect>toml"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/BinaryMuse/toml-node/security/advisories/GHSA-4qx8-w7c3-pj3p\n- https://nvd.nist.gov/vuln/detail/CVE-2026-114141\n- https://github.com/BinaryMuse/toml-node/commit/609c873fffea0a27ebe5b4dd098eed2b3daf3606\n- https://github.com/BinaryMuse/toml-node/releases/tag/v5.0.1\n- https://github.com/advisories/GHSA-4qx8-w7c3-pj3p",
+      "created": "2026-10-22T16:38:44.000Z",
+      "id": 1242862,
+      "npm_advisory_id": null,
+      "overview": "## Summary\n\n`toml.parse()` is vulnerable to a quadratic-complexity (O(n\u00b2)) denial-of-service via many\narray-of-tables (`[[name]]`) headers. `addTableArray()` in `lib/compiler.js` rescans two\nentire bookkeeping Sets on every `[[name]]` header without pruning unrelated or distinct\nentries, so a document containing n such headers costs O(n\u00b2) compiler work. A ~321KB document\nof 20,000 distinct-named `[[name]]` blocks takes ~10.3 seconds to parse \u2014 a completely\nordinary-looking TOML shape (a flat settings block plus one or more array-of-tables sections),\nnot a contrived edge case. This is a separate, unpatched code path from the previously fixed\nstack-overflow DoS (`GHSA-82x6-q7mm-w9cf`) and requires no key nesting or dotted keys at all.\n\n## Affected component / version\n\n- Package: `toml` (npm), repository `BinaryMuse/toml-node`\n- Function: `addTableArray()` in `lib/compiler.js`\n- Confirmed present in the audited checkout at commit `1b2ac40` (2026-07-16), one commit past\n  the `v5.0.0` tag (a changelog-only change) \u2014 i.e. present in `v5.0.0`, the latest release.\n  Not exhaustively verified against every prior release, but the affected function is\n  unrelated to `v5.0.0`'s BigInt/Temporal changes (per `CHANGELOG.md`), so the defect likely\n  predates that release as well.\n\n## Details\n\n`toml.parse(input, options)` (`index.js:5-9`) forwards the caller-supplied string to\n`parser.parse()` and then `compiler.compile()` with no length or structural validation. Every\n`[[name]]` (array-of-tables) header is routed (`reduce()`, `lib/compiler.js:43`) to\n`addTableArray()` (`lib/compiler.js:218-245`), which performs two full linear scans on every\ncall:\n\n```js\nassignedPaths.forEach(function(p) {\n  if (isSameOrSubPath(p, quotedPath)) assignedPaths.delete(p);\n});\nvalueAssignments.forEach(function(p) {\n  if (isSameOrSubPath(p, quotedPath)) valueAssignments.delete(p);\n});\n```\n(`lib/compiler.js:228-233`)\n\n`assignedPaths` and `valueAssignments` accumulate one entry per top-level key/table/array path\never assigned in the entire document. Each scan prunes only entries matching the *currently\nreopened* path via `isSameOrSubPath()` (`lib/compiler.js:319-321`: `path === prefix ||\npath.indexOf(prefix + \".\") === 0`); anything else \u2014 an unrelated top-level key, or simply a\n*different* array-of-tables name \u2014 is never removed and is rescanned in full on every\nsubsequent `[[name]]` header for the rest of the parse. `Set.prototype.forEach` has no early\nexit, so this is unconditionally O(current Set size) on every call, giving O(n\u00b2) total work\nfor n such headers.\n\n## Proof of Concept\n\nThe sharpest reproduction needs no unrelated keys at all \u2014 just N array-of-tables headers with\nN *distinct* names, since nothing is ever pruned when no name repeats:\n\n```js\nconst toml = require('toml');\n\nfunction distinctArrayHeaders(n) {\n  let out = '';\n  for (let i = 0; i < n; i++) out += `[[a${i}]]\\nv = 1\\n`;\n  return out;\n}\n\n// ~321 KB input -- takes ~10.3 seconds\ntoml.parse(distinctArrayHeaders(20000));\n```\n\nMeasured timings (Node, direct execution against this repo):\n\n| Variant | n | input size | time |\n|---|---|---|---|\n| N distinct-named `[[name]]` headers, no unrelated keys | 20,000 | 321 KB | 10.3 s |\n| Same N with all-same-name headers (self-pruning, control) | 20,000 | 240 KB | 78 ms |\n| M unrelated top-level keys + N same-name `[[name]]` headers | M=N=32,000 | 906 KB | 42.3 s |\n\nThe ~130x gap between the distinct-name and same-name cases at identical N and comparable\ninput size isolates the mechanism precisely: the bug is unbounded Set growth from never-pruned\nentries, not string length or any other confound. A product-law check (varying M and N\nindependently in the mixed variant) further confirmed genuine O(M\u00b7N) complexity.\n\n## Impact\n\nNode.js is single-threaded \u2014 this synchronous, multi-second-to-tens-of-seconds compile blocks\nthe entire process event loop, standard uncontested Node.js behavior. The triggering document\nshape \u2014 flat top-level config keys plus one or more array-of-tables sections (e.g. a `[db]`\nsettings block plus a `[[servers]]` list) \u2014 is unremarkable, common real-world TOML, not an\nedge case. No authentication or special access is required; only the ability to get one TOML\nstring parsed by an application using this library.\n\n## Suggested remediation\n\nAvoid scanning the entire `assignedPaths`/`valueAssignments` Sets on every `[[name]]` header.\nIndex entries by their top-level path segment (e.g. a `Map<string, Set<string>>` keyed by the\nfirst key component) so `addTableArray()` only ever scans the bucket relevant to the path\nbeing reopened, in time proportional to that bucket's size rather than the whole document's\naccumulated path count:\n\n```js\nvar assignedByRoot = new Map(); // root segment -> Set<fullPath>\n\nfunction addTableArray(node) {\n  var path = node.value;\n  var root = path[0];\n  var bucket = assignedByRoot.get(root) || new Set();\n  bucket.forEach(function(p) {\n    if (isSameOrSubPath(p, quotedPath)) bucket.delete(p);\n  });\n  // ...rest of addTableArray unchanged, reading/writing the per-root bucket\n  // instead of the global assignedPaths/valueAssignments Sets\n}\n```\n\nAs with the sibling finding, an input-size or table-count limit would also help as\ndefense-in-depth.\n\n## Credit\n\nDiscovered and reported by SecDim Security Research\nsecdim.com | @secdim | security@secdim.com",
+      "reported_by": null,
+      "title": "toml-node: Quadratic-complexity DoS via many array-of-tables headers in toml.parse()",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-114141"
+      ],
+      "access": "public",
+      "severity": "high",
+      "module_name": "toml",
+      "vulnerable_versions": "<=5.0.0",
+      "github_advisory_id": "GHSA-4qx8-w7c3-pj3p",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "patched_versions": ">=5.0.1",
+      "updated": "2026-10-22T16:38:47.000Z",
+      "cvss": {
+        "score": 0,
+        "vectorString": null
+      },
+      "cwe": [
+        "CWE-407"
+      ],
+      "url": "https://github.com/advisories/GHSA-4qx8-w7c3-pj3p"
+    },
+    "1242863": {
+      "findings": [
+        {
+          "version": "4.3.0",
+          "paths": [
+            ".>effect>toml"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/BinaryMuse/toml-node/security/advisories/GHSA-9j65-hcg3-gc64\n- https://nvd.nist.gov/vuln/detail/CVE-2026-114143\n- https://github.com/BinaryMuse/toml-node/commit/609c873fffea0a27ebe5b4dd098eed2b3daf3606\n- https://github.com/BinaryMuse/toml-node/releases/tag/v5.0.1\n- https://github.com/advisories/GHSA-9j65-hcg3-gc64",
+      "created": "2026-10-22T16:38:06.000Z",
+      "id": 1242863,
+      "npm_advisory_id": null,
+      "overview": "## Summary\n\n`toml.parse()` is vulnerable to a quadratic-complexity (O(n\u00b2)) denial-of-service via a single\nlong dotted key, table header, or inline-table key. A ~100KB crafted document causes a\nmulti-second synchronous hang; a ~200KB document crashes the Node.js process outright with an\nuncatchable out-of-memory error. This is a separate, unpatched code path from the previously\nfixed stack-overflow DoS (`GHSA-82x6-q7mm-w9cf`) \u2014 it requires no array/inline-table nesting at\nall, and is confirmed unaffected by the `maxDepth` option that fixed that earlier issue.\n\n## Affected component / version\n\n- Package: `toml` (npm), repository `BinaryMuse/toml-node`\n- Functions: `assign()`, `deepRef()`, `setNestedKey()` in `lib/compiler.js`\n- Confirmed present in the audited checkout at commit `1b2ac40` (2026-07-16), one commit past\n  the `v5.0.0` tag (a changelog-only change) \u2014 i.e. present in `v5.0.0`, the latest release.\n  Not exhaustively verified against every prior release, but the affected functions are\n  unrelated to `v5.0.0`'s BigInt/Temporal changes (per `CHANGELOG.md`), so the defect likely\n  predates that release as well.\n\n## Details\n\n`toml.parse(input, options)` (`index.js:5-9`) forwards the caller-supplied string to\n`parser.parse()` and then `compiler.compile()` with no length or structural validation.\nInside `lib/compiler.js`, three separate functions each walk a dotted key's segments in a\n`for` loop and, on **every** iteration, recompute the full path-prefix string from scratch:\n\n- `assign()` (lines 69-107, the sink at line 81): `var intermediatePath =\n  makeFullPath(keys.slice(0, i + 1));` \u2014 reached for top-level dotted-key assignments like\n  `a.b.c = 1`.\n- `deepRef()` (lines 247-281, the sink at line 252): the identical pattern via\n  `pathKey(keys.slice(0, i + 1))` \u2014 reached from table headers `[a.b.c]` and array-of-tables\n  `[[a.b.c]]` via `setPath()`/`addTableArray()`.\n- `setNestedKey()` (lines 184-202, the sink at line 187): the identical pattern \u2014 reached from\n  inline-table dotted keys like `t = { a.b.c = 1 }`.\n\n`keys.slice(0, i + 1)` allocates a new array of length `i`; `pathKey()`/`makeFullPath()`\n(lines 311-317) then does `.map(quoteDottedString).join(\".\")`, also O(i). Since this runs on\nevery one of the `n` segments of a dotted key, total work is `O(1 + 2 + ... + n) = O(n\u00b2)`, not\n`O(n)`. The string is computed unconditionally on the happy path (only ever *used* if an error\nis about to be thrown), so there is no early exit that makes this cheap in practice.\n\nNo limit exists anywhere on dotted-key segment count: `dot_ended_table_key_part+` and\n`inline_dot_key_part+` in `src/toml.pegjs` (lines 122, 311) are unbounded `+` repetitions,\nparsed iteratively rather than through the grammar's `value` rule \u2014 so the existing\n`MAX_DEPTH`/`maxDepth` nesting guard (`src/toml.pegjs:141-151`, enforced in the generated\n`lib/parser.js:1022`) does not apply to key length at all. We confirmed this directly: setting\n`options.maxDepth: 1` (the strictest possible value) against a 16,000-segment key produced no\nmeasurable timing difference from the unrestricted case.\n\n## Proof of Concept\n\n```js\nconst toml = require('toml');\n\n// n-segment dotted key: \"k0.k1.k2. ... .k{n-1} = 1\"\nfunction segKey(n) {\n  const parts = [];\n  for (let i = 0; i < n; i++) parts.push('k' + i);\n  return parts.join('.') + ' = 1\\n';\n}\n\n// ~100.9 KB input -- takes ~6.6-6.8 seconds\ntoml.parse(segKey(16000));\n\n// ~200 KB input -- crashes the Node process:\n// \"FATAL ERROR: Ineffective mark-compacts near heap limit - JavaScript heap out of memory\"\ntoml.parse(segKey(32000));\n```\n\nMeasured timings (Node v22, direct execution against this repo):\n\n| n (segments) | input size | time |\n|---|---|---|\n| 1,000 | ~4.9 KB | 34 ms |\n| 8,000 | ~46.9 KB | 1.6 s |\n| 16,000 | ~100.9 KB | 6.8 s |\n| 32,000 | ~200 KB | **process crash (OOM)** |\n\nDoubling `n` from 8,000\u219216,000 roughly quadruples runtime (~4.2x), the signature of O(n\u00b2)\nrather than the expected O(n) (~2x). Independently reproduced with the identical scaling\nsignature for the table-header variant (`[k0. ... .k15999]`, exercising `deepRef()`) and the\ninline-table variant (`t = { k0. ... .k15999 = 1 }`, exercising `setNestedKey()`).\n\nWe also generalized this into a property-based fuzzing harness (fast-check, run under Node)\nthat automatically tests the \"doubling input size should not more than roughly double parse\ntime\" invariant across 12 structural dimensions of the grammar/compiler; it independently\nre-flags all three code paths above on every run, with no additional dimension confirmed\nvulnerable after follow-up investigation. The harness is available on request.\n\n## Impact\n\nNode.js is single-threaded \u2014 a synchronous multi-second-to-crashing `parse()` call blocks the\nentire event loop of the process calling it, stalling every other request/operation that\nprocess is handling, not just the attacker's own. At the upper end this is not merely a hang:\nan uncaught, process-terminating out-of-memory crash from a ~200KB attacker-supplied string is\na full denial of service requiring no authentication \u2014 just the ability to get one string\nparsed by an application using this library (config upload, API request body, imported\nmanifest, or any of this library's intended use cases).\n\n## Suggested remediation\n\nBuild the path prefix as an incrementally-extended string as the loop walks each segment\n(append one already-quoted segment per iteration to a running string) instead of re-slicing an\narray and re-joining the entire prefix from scratch on every iteration. For example, in\n`assign()`:\n\n```js\nfunction assign(node) {\n  var keys = node.key;\n  var value = node.value;\n  var off = node.offset;\n  if (!Array.isArray(keys)) keys = [keys];\n  var reduced = reduceValueNode(value);\n\n  var target = context;\n  var pathStr = pathKey(currentPath); // computed once, not per segment\n  for (var i = 0; i < keys.length - 1; i++) {\n    var k = keys[i];\n    var quotedK = quoteDottedString(k);\n    var intermediatePath = pathStr ? pathStr + \".\" + quotedK : quotedK; // O(new segment), not O(i)\n    pathStr = intermediatePath;\n    // ...same conditional logic as today, using intermediatePath\n    target = target[k];\n  }\n  // ...\n}\n```\n\nThe identical treatment applies to `deepRef()` and `setNestedKey()`. As defense-in-depth,\nconsider also capping total key-segment count or overall input size, the same way `maxDepth`\nalready caps nesting.\n\n\n## Credit\n\nDiscovered and reported by SecDim Security Research\nsecdim.com | @secdim | security@secdim.com",
+      "reported_by": null,
+      "title": "toml-node: Quadratic-complexity DoS via long dotted keys or table paths in toml.parse()",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-114143"
+      ],
+      "access": "public",
+      "severity": "high",
+      "module_name": "toml",
+      "vulnerable_versions": "<=5.0.0",
+      "github_advisory_id": "GHSA-9j65-hcg3-gc64",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "patched_versions": ">=5.0.1",
+      "updated": "2026-10-22T16:38:06.000Z",
+      "cvss": {
+        "score": 0,
+        "vectorString": null
+      },
+      "cwe": [
+        "CWE-407"
+      ],
+      "url": "https://github.com/advisories/GHSA-9j65-hcg3-gc64"
+    },
+    "1242864": {
+      "findings": [
+        {
+          "version": "4.3.0",
+          "paths": [
+            ".>effect>toml"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://github.com/BinaryMuse/toml-node/security/advisories/GHSA-9qmh-m7c6-f92p\n- https://nvd.nist.gov/vuln/detail/CVE-2026-114144\n- https://github.com/BinaryMuse/toml-node/commit/9d52e384f6030932174d1afb0d910154dd62dead\n- https://github.com/BinaryMuse/toml-node/releases/tag/v5.0.1\n- https://github.com/advisories/GHSA-9qmh-m7c6-f92p",
+      "created": "2026-10-22T16:36:50.000Z",
+      "id": 1242864,
+      "npm_advisory_id": null,
+      "overview": "### Summary\n`toml.parse()` converts integer literals (hex, octal, binary, and decimal) to `BigInt` without first bounding the length of the digit sequence. Since `BigInt(string)` construction from a very long numeric string runs in super-linear time, a single small, well-formed TOML document containing one long integer literal can pin a Node.js process's event loop at 100% CPU for several seconds \u2014 a denial of service for any application that parses attacker-supplied or third-party TOML. No authentication or complex crafting is required.\n\n### Details\nIn `lib/parser.js`, the grammar actions that build integer nodes call `BigInt()` directly on the matched digit text, with no upper bound on its length:\n\n- `lib/parser.js:326` \u2014 hex: `BigInt('0x' + stripUnderscores(digits))`\n- `lib/parser.js:327` \u2014 octal: `BigInt('0o' + stripUnderscores(digits))`\n- `lib/parser.js:328` \u2014 binary: `BigInt('0b' + stripUnderscores(digits))`\n- `lib/parser.js:329` \u2014 decimal: `BigInt(stripUnderscores(text))`\n\nThe parser does enforce a nesting-depth limit (`MAX_DEPTH`, default 500, `lib/parser.js:4343`) to guard against stack overflow from deeply nested arrays/inline tables (per GHSA-82x6-q7mm-w9cf). However, that guard only bounds *structural nesting* \u2014 it does not bound the length of a single scalar token.\n\nThe subsequent 64-bit range check in `lib/compiler.js` (`reduceInteger`, lines 143\u2013150, comparing against `INT64_MIN` / `INT64_MAX` defined at lines 3\u20134) happens **after** the expensive `BigInt()` conversion has already completed. It therefore provides no protection against this cost \u2014 the CPU time is already spent by the time the value is rejected as out of range.\n\n### PoC\n\n```js\nconst toml = require('toml');\n\nconst N = 5_000_000; // ~5 MB request body\nconst doc = 'x = 0x' + 'f'.repeat(N);\n\nconst start = Date.now();\ntry {\n  toml.parse(doc); // eventually throws \"outside the 64-bit signed integer range\" \u2014\n                    // but only after the costly conversion has run\n} catch (e) {}\n\nconsole.log('elapsed:', Date.now() - start, 'ms');\n```\n\n**Measured results:**\n\n| Digits (hex) | Approx. payload size | Parse time |\n|---:|---:|---:|\n| 200,000 | ~200 KB | 141 ms |\n| 400,000 | ~400 KB | 276 ms |\n| 800,000 | ~800 KB | 685 ms |\n| 1,600,000 | ~1.6 MB | 1,761 ms |\n| 5,000,000 | ~5 MB | 6,061 ms |\n\nGrowth is clearly super-linear. The same behavior reproduces for plain decimal literals (3,000,000 `'9'` digits \u2192 ~6.3 s).\n\n### Impact\nAny application that calls `toml.parse()` on untrusted or third-party input \u2014 config upload endpoints, CI/CD tools ingesting user-supplied `.toml` files, package managers, linters, editors/language servers \u2014 is exposed.\n\nDuring the conversion, the event loop is fully blocked. In a typical single-threaded Node.js server this stalls **all** concurrent request handling, not just the request containing the malicious payload. A single ~5 MB request is sufficient to cause several seconds of full CPU denial of service.\n\n**Suggested fix:** Reject digit sequences above a reasonable length *before* calling `BigInt()`, analogous to the existing `maxDepth` option. A 64-bit signed integer requires at most 20 decimal digits or 16 hex digits, so any digit sequence significantly longer than that is guaranteed to fail the existing range check anyway, and can be rejected with a cheap `.length` comparison instead of paying for the full `BigInt` conversion.",
+      "reported_by": null,
+      "title": "toml-node: Uncontrolled resource consumption (CPU DoS) via unbounded-length integer literals in toml.parse()",
+      "metadata": null,
+      "cves": [
+        "CVE-2026-114144"
+      ],
+      "access": "public",
+      "severity": "high",
+      "module_name": "toml",
+      "vulnerable_versions": "<=5.0.0",
+      "github_advisory_id": "GHSA-9qmh-m7c6-f92p",
+      "recommendation": "Upgrade to version 5.0.1 or later",
+      "patched_versions": ">=5.0.1",
+      "updated": "2026-10-22T16:36:51.000Z",
+      "cvss": {
+        "score": 7.5,
+        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+      },
+      "cwe": [
+        "CWE-400",
+        "CWE-770"
+      ],
+      "url": "https://github.com/advisories/GHSA-9qmh-m7c6-f92p"
+    }
+  },
+  "muted": [],
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 3,
+      "critical": 0
+    },
+    "dependencies": 1526,
+    "devDependencies": 0,
+    "optionalDependencies": 0,
+    "totalDependencies": 1526
+  }
+}

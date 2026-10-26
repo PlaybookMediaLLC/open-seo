@@ -84,6 +84,13 @@ export default {
     // (Every App → Settings → Connected accounts); Search Console and GA4
     // reads go through it with the member's token (src/server/features/
     // google/gatewayGoogle.ts). Without it the Google cards say so.
+    // SAM checks each chat turn against it, so removing someone from the
+    // organization also ends a chat they already had open
+    // (src/middleware/ensure-user/everyApp.ts).
+    members: {
+      access: "read",
+      why: "Ends an open SAM chat when its person is removed from the organization.",
+    },
     "google-workspace": {
       // "read" is what OpenSEO needs (the three sets below are read-only and
       // the gateway holds every call to them); the published CLI (0.3.0-rc.3)

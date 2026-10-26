@@ -1,0 +1,10 @@
+# Image scans must inspect installed packages under node_modules. Do not reuse
+# the source-tree exclusions from infrastructure-trivy.yaml here.
+db:
+  repository:
+    - ghcr.io/aquasecurity/trivy-db:2
+misconfiguration:
+  checks-bundle-repository: ghcr.io/aquasecurity/trivy-checks:2
+scan:
+  scanners:
+    - vuln

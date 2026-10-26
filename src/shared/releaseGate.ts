@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidPathPattern } from "./path-pattern";
 
 // RFC-0015 5.4: relay-gate.json, the release gate settings that live in the
 // repository and are reviewed like code. Project settings give the
@@ -46,13 +47,10 @@ const gateConfigSchema = z
               .string()
               .min(1)
               .max(300)
-              .refine((pattern) => {
-                try {
-                  return RegExp(pattern) instanceof RegExp;
-                } catch {
-                  return false;
-                }
-              }, "Use a valid regular expression."),
+              .refine(
+                isValidPathPattern,
+                "Use a valid RE2 expression without lookaround or backreferences.",
+              ),
           })
           .strict(),
       )

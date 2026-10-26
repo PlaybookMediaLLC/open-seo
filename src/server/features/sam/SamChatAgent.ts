@@ -35,9 +35,11 @@ import {
 } from "@/server/features/sam/samTurnTelemetry";
 import { buildSamChatModel } from "@/server/lib/openrouter";
 import {
+  isEveryAppServerAuthMode,
   isHostedServerAuthMode,
   usesBetterAuthServer,
 } from "@/server/lib/runtime-env";
+import { isEveryAppMember } from "@/middleware/ensure-user/everyApp";
 import {
   checkUsageCreditsDepleted,
   trackUsageCreditSpend,
@@ -363,7 +365,13 @@ export class SamChatAgent extends Think {
         ctx.row.userId,
         organizationId,
       );
-      if ((await usesBetterAuthServer()) && !membership) {
+      // Every App has no member rows either: the gateway's member list is
+      // the source, so a person removed there loses the open chat too.
+      const removed = (await usesBetterAuthServer())
+        ? !membership
+        : (await isEveryAppServerAuthMode()) &&
+          !(await isEveryAppMember(ctx.row.userId));
+      if (removed) {
         turn.refusal = "no_access";
         return this.refusalTurn(
           "You no longer have access to this organization, so I can't continue this chat.",

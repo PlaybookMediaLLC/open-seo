@@ -1,0 +1,31 @@
+{
+  "status": "reviewed_fragments_only",
+  "scanner_status_unchanged": "partial/error",
+  "observations": [
+    {
+      "files": [
+        "src/client/components/chat/ChatMessage.tsx",
+        "src/client/features/experiments/ExperimentDetailPage.tsx",
+        "src/client/features/split-tests/SplitTestPage.tsx",
+        "src/routes/_app/support.tsx"
+      ],
+      "observation": "Warning locations are literal JSX text containing ampersands. They do not interpolate input at the warned fragment."
+    },
+    {
+      "files": [
+        "src/server/lib/scrape.ts"
+      ],
+      "observation": "Warned fragment removes HTML comments during text extraction; it is a regular-expression literal, not dynamic code construction. This review does not replace complete Semgrep parsing."
+    },
+    {
+      "files": [
+        "src/worker-configuration.d.ts"
+      ],
+      "observation": "Warnings point to generated/hand-preserved type-only Workflow/Parameters/import declarations, with no executable code at those fragments."
+    }
+  ],
+  "limitations": [
+    "The six warnings remain recorded and blocking as incomplete Semgrep coverage; no source rewrite, parser-error suppression or successful-scan claim was introduced.",
+    "CodeQL separately analyzed the repository. Exact snapshot timing and later focused scans are recorded in application-verification.json."
+  ]
+}

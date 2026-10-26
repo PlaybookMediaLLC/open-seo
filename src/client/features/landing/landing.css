@@ -18,7 +18,7 @@
   background: #000;
   color: #fafafa;
   color-scheme: dark;
-  /* The app's Eigenn theme sets --radius to 0. */
+  /* Keep the landing page's corner scale independent of the app theme. */
   --radius: 0.5rem;
   -webkit-font-smoothing: antialiased;
 

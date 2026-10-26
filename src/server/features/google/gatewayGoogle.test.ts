@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as EveryAppSdk from "@every-app/sdk/server";
 
 const mocks = vi.hoisted(() => ({
   integrationStatus: vi.fn(),
@@ -7,8 +8,10 @@ const mocks = vi.hoisted(() => ({
   env: {} as Record<string, unknown>,
 }));
 
-vi.mock("@every-app/sdk/server", () => ({
-  ConfigurationError: class ConfigurationError extends Error {},
+// Partial mock: the real ConfigurationError, so the `instanceof` guards are
+// exercised against the class production code sees.
+vi.mock("@every-app/sdk/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof EveryAppSdk>()),
   integrationStatus: mocks.integrationStatus,
   integrationFetch: mocks.integrationFetch,
   connectUrl: mocks.connectUrl,

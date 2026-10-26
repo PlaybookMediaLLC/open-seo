@@ -1,4 +1,5 @@
 import type { GatePack } from "@/shared/releaseGate";
+import { createPathMatcher } from "@/shared/path-pattern";
 import type { SecurityHeaders } from "./securityRules";
 import { sort } from "remeda";
 
@@ -290,14 +291,17 @@ export function weigh(
     ignores: Array<{ rule: string; pathPattern?: string; pathRegex?: string }>;
   },
 ): Finding[] {
+  const ignores = options.ignores.map((ignore) => ({
+    rule: ignore.rule,
+    matchesPath: createPathMatcher(
+      ignore.pathRegex ??
+        `^${(ignore.pathPattern ?? "").replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*")}$`,
+    ),
+  }));
   const ignored = (finding: Finding) =>
-    options.ignores.some(
+    ignores.some(
       (ignore) =>
-        ignore.rule === finding.rule &&
-        new RegExp(
-          ignore.pathRegex ??
-            `^${(ignore.pathPattern ?? "").replace(/[.+?^${}()|[\]\\]/g, "\\$&").replaceAll("*", ".*")}$`,
-        ).test(finding.path),
+        ignore.rule === finding.rule && ignore.matchesPath(finding.path),
     );
   return findings
     .filter((finding) => !ignored(finding))

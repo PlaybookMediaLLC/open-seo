@@ -1,0 +1,198 @@
+{
+  "alerts": [
+    {
+      "pluginId": "10021",
+      "alert": "X-Content-Type-Options Header Missing",
+      "risk": "Low",
+      "confidence": "Medium",
+      "cweid": "693",
+      "path": "/api/auth/get-session"
+    },
+    {
+      "pluginId": "10021",
+      "alert": "X-Content-Type-Options Header Missing",
+      "risk": "Low",
+      "confidence": "Medium",
+      "cweid": "693",
+      "path": "/api/health"
+    },
+    {
+      "pluginId": "10021",
+      "alert": "X-Content-Type-Options Header Missing",
+      "risk": "Low",
+      "confidence": "Medium",
+      "cweid": "693",
+      "path": "/.well-known/oauth-authorization-server"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Failure to Define Directive with No Fallback",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Failure to Define Directive with No Fallback",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Wildcard Directive",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Wildcard Directive",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: script-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: script-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: style-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Failure to Define Directive with No Fallback",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/.git/config"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: style-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: Wildcard Directive",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/.git/config"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: script-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/.git/config"
+    },
+    {
+      "pluginId": "10055",
+      "alert": "CSP: style-src unsafe-inline",
+      "risk": "Medium",
+      "confidence": "High",
+      "cweid": "693",
+      "path": "/.git/config"
+    },
+    {
+      "pluginId": "10019",
+      "alert": "Content-Type Header Missing",
+      "risk": "Informational",
+      "confidence": "Medium",
+      "cweid": "345",
+      "path": "/.env"
+    },
+    {
+      "pluginId": "10109",
+      "alert": "Modern Web Application",
+      "risk": "Informational",
+      "confidence": "Medium",
+      "cweid": "-1",
+      "path": "/.git/config"
+    },
+    {
+      "pluginId": "10109",
+      "alert": "Modern Web Application",
+      "risk": "Informational",
+      "confidence": "Medium",
+      "cweid": "-1",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10021",
+      "alert": "X-Content-Type-Options Header Missing",
+      "risk": "Low",
+      "confidence": "Medium",
+      "cweid": "693",
+      "path": "/sign-in"
+    },
+    {
+      "pluginId": "10021",
+      "alert": "X-Content-Type-Options Header Missing",
+      "risk": "Low",
+      "confidence": "Medium",
+      "cweid": "693",
+      "path": "/"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/sign-in",
+      "status": 200
+    },
+    {
+      "path": "/api/health",
+      "status": 200
+    },
+    {
+      "path": "/api/auth/get-session",
+      "status": 200
+    },
+    {
+      "path": "/.well-known/oauth-authorization-server",
+      "status": 200
+    },
+    {
+      "path": "/mcp",
+      "status": 401
+    },
+    {
+      "path": "/.git/config",
+      "status": 404
+    },
+    {
+      "path": "/.env",
+      "status": 403
+    }
+  ]
+}

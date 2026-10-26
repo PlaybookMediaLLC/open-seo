@@ -1,0 +1,62 @@
+# Core app flows end to end: pages load cleanly at desktop and phone width,
+# and save flows keep input and name the problem. No provider keys needed.
+name: E2E core flows
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: e2e-core-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  e2e-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.4
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Migrate the local D1 database
+        run: pnpm db:migrate:local
+
+      # The worker reads AUTH_MODE from .env.local, as in local development.
+      # A shell variable reaches only the client build.
+      - name: Use local no-auth mode
+        run: printf 'AUTH_MODE=local_noauth\n' > .env.local
+
+      - name: Run the core flows spec
+        run: pnpm exec playwright test -c tests/playwright.core.config.ts
+        env:
+          PLAYWRIGHT_CHANNEL: chromium
+
+      - name: Upload the failure trace
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-core-results
+          path: test-results/
+          retention-days: 7

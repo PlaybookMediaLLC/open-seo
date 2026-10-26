@@ -159,6 +159,14 @@ it("accepts only signed deliveries, once each", async () => {
   });
 });
 
+it("bounds webhook bytes before verifying or claiming a delivery", async () => {
+  const body = JSON.stringify({ value: "é".repeat(1024 * 1024) });
+  expect(await verifyWebhook(await signed(body, crypto.randomUUID()))).toEqual({
+    ok: false,
+    status: 413,
+  });
+});
+
 it("starts an App run for a preview of an open pull request", async () => {
   const projectId = await connect();
   // A production deployment of the same commit starts nothing.

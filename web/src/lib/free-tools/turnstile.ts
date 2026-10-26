@@ -48,6 +48,7 @@ export function useTurnstile(
   siteKey: string,
   onToken: (token?: string) => void,
   onError: () => void,
+  action = "free_tool",
 ) {
   const container = useRef<HTMLDivElement>(null);
   const widget = useRef<{ api: TurnstileApi; id: string } | null>(null);
@@ -69,7 +70,7 @@ export function useTurnstile(
         if (cancelled || !container.current) return;
         const id = api.render(container.current, {
           sitekey: siteKey,
-          action: "free_tool",
+          action,
           appearance: "interaction-only",
           callback: updateToken,
           "expired-callback": () => updateToken(),
@@ -85,7 +86,7 @@ export function useTurnstile(
       if (widget.current) widget.current.api.remove(widget.current.id);
       widget.current = null;
     };
-  }, [siteKey, attempt]);
+  }, [siteKey, attempt, action]);
 
   return {
     container,

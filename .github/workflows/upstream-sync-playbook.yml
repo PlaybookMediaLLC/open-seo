@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   sync:
-    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    if: github.repository == 'PlaybookMediaLLC/relay'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:

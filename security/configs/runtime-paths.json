@@ -1,0 +1,10 @@
+[
+  "/",
+  "/sign-in",
+  "/api/health",
+  "/api/auth/get-session",
+  "/.well-known/oauth-authorization-server",
+  "/mcp",
+  "/.git/config",
+  "/.env"
+]

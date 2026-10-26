@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import type { UseQueryResult } from "@tanstack/react-query";
 import {
@@ -5,6 +6,7 @@ import {
   IconTrash as Trash2,
 } from "@tabler/icons-react";
 import type { getAuditHistory } from "@/serverFunctions/audit";
+import { ConfirmDialog } from "@/client/components/ConfirmDialog";
 import { EmptyState } from "@/client/components/EmptyState";
 import { QueryState } from "@/client/components/QueryState";
 import { RowActionsMenu } from "@/client/components/RowActionsMenu";
@@ -123,6 +125,7 @@ function HistoryActions({
   auditId: string;
   onDelete: (auditId: string) => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
   return (
     <div className="flex items-center justify-end gap-2">
       <Button
@@ -141,12 +144,26 @@ function HistoryActions({
       <RowActionsMenu label="Audit actions">
         <DropdownMenuItem
           variant="destructive"
-          onClick={() => onDelete(auditId)}
+          onClick={() => setConfirming(true)}
         >
           <Trash2 />
           Delete audit
         </DropdownMenuItem>
       </RowActionsMenu>
+      {confirming ? (
+        <ConfirmDialog
+          title="Delete this audit?"
+          confirmLabel="Delete audit"
+          destructive
+          onConfirm={() => {
+            setConfirming(false);
+            onDelete(auditId);
+          }}
+          onClose={() => setConfirming(false)}
+        >
+          Its pages and issues are removed for good. A running audit stops.
+        </ConfirmDialog>
+      ) : null}
     </div>
   );
 }
