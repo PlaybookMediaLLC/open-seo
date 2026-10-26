@@ -10,6 +10,8 @@ data, or sensitive paths.
 
 ## Open
 
+- [ ] `2026-10-26T11:54:25Z` — `codex` — `actionlint .github/workflows/release.yml` reports SC2016 on the single-quoted install hint containing a GitHub expression. GitHub expands the expression before the shell runs; use a step environment variable or a narrow ShellCheck annotation to remove this false positive.
+
 - [ ] `2026-10-17T14:00:00Z` — `claude` — Knip reports exports of `src/db/opportunities.schema.ts` as unused when a test imports that module as `import * as opportunities` (the namespace name equals one of its exports); renaming the namespace (`opportunitiesSchema`) clears it. Name schema namespaces with a `Schema` suffix.
 - [ ] `2026-10-16T16:10:00Z` — `claude` — With `OPPORTUNITY_TEST_PG_URL` set, running `src/server/features/publishing/` and `src/server/features/opportunities/` together fails 1 to 2 tests at random (`opportunityQueue.test.ts` "flags items that the latest run...", and "blocks stale-property approval..."); each file passes alone. Run the Postgres suite with `--no-file-parallelism`, or find the shared row the files race on.
 - [ ] `2026-10-16T17:45:00Z` — `claude` — `pnpm db:generate:d1` emitted `ALTER TABLE ... ADD audit_id text REFERENCES audits(id)` without the schema's `onDelete: "set null"` (drizzle/sqlite/0069_colossal_blue_shield.sql), while the snapshot and the Postgres SQL keep it; check every generated SQLite `ADD ... REFERENCES` line and hand-add the `ON DELETE` clause, or a later parent delete fails on D1.

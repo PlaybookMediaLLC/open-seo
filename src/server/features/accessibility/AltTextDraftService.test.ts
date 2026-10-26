@@ -32,7 +32,10 @@ vi.mock("@/server/lib/runtime-env", () => ({
   getRequiredEnvValue: async () => "test-key",
   getOptionalEnvValue: async () => undefined,
 }));
-vi.mock("@/server/lib/openrouter", () => ({ buildChatAgentModel: () => ({}) }));
+vi.mock("@/server/lib/openrouter", () => ({
+  buildChatAgentModel: () => ({}),
+  requireOpenRouterAccess: async () => ({ apiKey: "test-key" }),
+}));
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: async (url: string) => url,
 }));

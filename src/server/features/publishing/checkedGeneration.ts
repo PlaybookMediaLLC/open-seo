@@ -4,11 +4,11 @@ import { holdResearch, settleResearch } from "@/server/billing/researchHold";
 import type { ResearchSpend } from "@/server/billing/researchSpend";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { requireOpenRouterCostUsd } from "@/server/lib/chatAgent";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
 import {
-  getOptionalEnvValue,
-  getRequiredEnvValue,
-} from "@/server/lib/runtime-env";
+  buildChatAgentModel,
+  requireOpenRouterAccess,
+} from "@/server/lib/openrouter";
+import { getOptionalEnvValue } from "@/server/lib/runtime-env";
 
 // RFC-0004: one model call with deterministic checks, retried once with the
 // failure reasons. RFC-0009: the call holds its estimate inside the monthly
@@ -29,7 +29,7 @@ export async function generateChecked<T>(options: {
   images?: URL[];
 }) {
   const model = buildChatAgentModel(
-    await getRequiredEnvValue("OPENROUTER_API_KEY"),
+    await requireOpenRouterAccess(),
     await getOptionalEnvValue("OPENROUTER_MODEL"),
     "low",
   );
