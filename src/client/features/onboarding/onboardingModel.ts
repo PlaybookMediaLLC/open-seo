@@ -1,10 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { getOnboardingAnswers } from "@/serverFunctions/onboarding";
 
-// Keep website and search_console first: Google's OAuth return lands on the
-// Search Console step by its index in the URL. Agent setup is last so leaving
-// to paste the prompt into an agent doesn't skip a step.
+// Google's OAuth return lands on the Search Console step by its index in the
+// URL, so don't reorder steps casually. Agent setup is last so leaving to
+// paste the prompt into an agent doesn't skip a step.
 export const ONBOARDING_STEPS = [
+  "welcome", // playbook-seam
   "website",
   "search_console",
   "analytics",

@@ -23,6 +23,7 @@ import { getErrorCode } from "@/client/lib/error-messages";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { Button } from "@/client/components/ui/button";
 import { Spinner as SpinnerIcon } from "@/client/components/ui/spinner";
+import { OnboardingStepHeader } from "@/client/features/onboarding/OnboardingLayout";
 import { WizardFooter } from "@/client/features/onboarding/WizardFooter";
 
 const GRANT_STATUS_KEY = ["gscGrantStatus"];
@@ -43,15 +44,11 @@ export function SearchConsoleOnboardingStep(props: NavigationProps) {
   const project = projectsQuery.data?.[0];
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Connect Google Search Console
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          See which Google searches bring people to your site.
-        </p>
-      </div>
+    <div>
+      <OnboardingStepHeader
+        title="Connect Google Search Console"
+        description="Your queries, pages and clicks, synced every day. This is the data OpenSEO turns into your to-do list."
+      />
 
       {project ? (
         <GscConnect key={project.id} projectId={project.id} {...props} />

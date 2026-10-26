@@ -30,7 +30,9 @@ export function WizardFooter({
   return (
     <div
       className={cn(
-        "mt-8 flex flex-wrap items-center justify-between gap-3",
+        // Sticks to the bottom of the onboarding content column, so the
+        // actions stay on screen when a step is taller than the viewport.
+        "sticky bottom-0 z-10 mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background py-4",
         className,
       )}
     >
@@ -46,7 +48,7 @@ export function WizardFooter({
       ) : (
         <span />
       )}
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
         {onSkip ? (
           <Button
             type="button"
