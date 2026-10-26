@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PromptExplorerPage } from "@/client/features/ai-search/PromptExplorerPage";
 import { AiResearchSetupGate } from "@/client/features/ai-visibility/AiResearchSetupGate";
 import { aiResearchSetupQueryOptions } from "@/client/features/ai-visibility/shared";
+import { OpenRouterKeyGate } from "@/client/features/ai-visibility/OpenRouterKeyGate";
 import { ProjectWebsiteGate } from "@/client/features/projects/ProjectWebsiteGate";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 import {
@@ -43,29 +44,31 @@ function PromptExplorerRoute() {
   return (
     <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-7xl space-y-5" key={projectId}>
-        <ProjectWebsiteGate projectId={projectId}>
-          <AiResearchSetupGate projectId={projectId}>
-            <PromptExplorerPage
-              projectId={projectId}
-              urlState={urlState}
-              onSubmit={(values) => {
-                void navigate({
-                  search: {
-                    q: values.prompt,
-                    models: values.models,
-                    web: values.webSearch ? undefined : false,
-                    cc: values.webSearchCountryCode,
-                    hb: values.highlightBrand || undefined,
-                  },
-                  replace: true,
-                });
-              }}
-              onClear={() => {
-                void navigate({ search: {}, replace: true });
-              }}
-            />
-          </AiResearchSetupGate>
-        </ProjectWebsiteGate>
+        <OpenRouterKeyGate projectId={projectId} untilSetupReady>
+          <ProjectWebsiteGate projectId={projectId}>
+            <AiResearchSetupGate projectId={projectId}>
+              <PromptExplorerPage
+                projectId={projectId}
+                urlState={urlState}
+                onSubmit={(values) => {
+                  void navigate({
+                    search: {
+                      q: values.prompt,
+                      models: values.models,
+                      web: values.webSearch ? undefined : false,
+                      cc: values.webSearchCountryCode,
+                      hb: values.highlightBrand || undefined,
+                    },
+                    replace: true,
+                  });
+                }}
+                onClear={() => {
+                  void navigate({ search: {}, replace: true });
+                }}
+              />
+            </AiResearchSetupGate>
+          </ProjectWebsiteGate>
+        </OpenRouterKeyGate>
       </div>
     </div>
   );

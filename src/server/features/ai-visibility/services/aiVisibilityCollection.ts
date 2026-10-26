@@ -328,10 +328,15 @@ export async function collectAiRound(
 ): Promise<{ pending: AiPendingTask[]; retry: AiTaskBatch[] }> {
   const brands = await runBrands(runId);
   if (!brands) return { pending: [], retry: [] };
+  // A retried or timed-out step hands back answers an earlier attempt already
+  // saved or failed. Skip them, so each attempt continues where the last one
+  // stopped instead of saving every answer again.
+  const stillPending = new Set(await repo.listPendingObservationIds(runId));
+  const unsaved = tasks.filter((task) => stillPending.has(task.tag));
   const pending: AiPendingTask[] = [];
   const retry: AiPendingTask[] = [];
-  for (let i = 0; i < tasks.length; i += TASK_GET_CONCURRENCY) {
-    const chunk = tasks.slice(i, i + TASK_GET_CONCURRENCY);
+  for (let i = 0; i < unsaved.length; i += TASK_GET_CONCURRENCY) {
+    const chunk = unsaved.slice(i, i + TASK_GET_CONCURRENCY);
     const outcomes = await Promise.allSettled(
       chunk.map((task) => fetchAiTrackingTaskResult(task)),
     );
