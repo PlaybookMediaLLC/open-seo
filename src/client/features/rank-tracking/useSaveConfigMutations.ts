@@ -5,10 +5,6 @@ import {
   updateRankTrackingConfig,
 } from "@/serverFunctions/rank-tracking";
 import { captureClientEvent } from "@/client/lib/posthog";
-import {
-  getErrorCode,
-  getStandardErrorMessage,
-} from "@/client/lib/error-messages";
 import type {
   RankCheckScheduleTime,
   RankTrackingConfig,
@@ -26,13 +22,13 @@ export type SaveConfigInput = {
   scheduleTime: RankCheckScheduleTime | undefined;
 };
 
-function showSaveError(error: Error) {
-  toast.error(
-    getErrorCode(error) === "CONFLICT"
-      ? "This domain is already tracked for this country, city and language."
-      : getStandardErrorMessage(error),
-  );
-}
+// The same domain, market and language can be tracked only once.
+const saveMeta = {
+  errorMessages: {
+    CONFLICT:
+      "This domain is already tracked for this country, city and language.",
+  },
+};
 
 function commonFields(input: SaveConfigInput) {
   return {
@@ -69,7 +65,7 @@ export function useSaveConfigMutations(input: {
       toast.success("Domain added for rank tracking");
       onCreated(result.id);
     },
-    onError: showSaveError,
+    meta: saveMeta,
   });
 
   const updateMutation = useMutation({
@@ -90,7 +86,7 @@ export function useSaveConfigMutations(input: {
       toast.success("Configuration updated");
       onUpdated();
     },
-    onError: showSaveError,
+    meta: saveMeta,
   });
 
   return { createMutation, updateMutation };

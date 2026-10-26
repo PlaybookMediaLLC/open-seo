@@ -67,7 +67,11 @@ function createAuthenticatedFetch(
   maxServerErrorRetries = DATAFORSEO_MAX_RETRIES,
 ) {
   return async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
-    const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY");
+    // A missing key is a setup gap, not a fault: retrying can't help, so the
+    // client gets a code that says what to set.
+    const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY").catch(() => {
+      throw new AppError("DATAFORSEO_NOT_CONFIGURED");
+    });
     const headers = new Headers(init?.headers);
     headers.set("Authorization", `Basic ${apiKey}`);
     // Resolve the signal once so retries share the overall request timeout

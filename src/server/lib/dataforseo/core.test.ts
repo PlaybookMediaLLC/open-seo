@@ -5,6 +5,7 @@ vi.mock("@/server/lib/runtime-env", () => ({
 }));
 
 import { dataforseoPost } from "@/server/lib/dataforseo/core";
+import { getRequiredEnvValue } from "@/server/lib/runtime-env";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -28,6 +29,20 @@ describe("DataForSEO transport", () => {
     expect(new Headers(init?.headers).get("Authorization")).toBe(
       "Basic encoded-credentials",
     );
+  });
+
+  // A self-hoster without a key saw "something went wrong" and retried.
+  it("maps a missing API key to DATAFORSEO_NOT_CONFIGURED without calling out", async () => {
+    vi.mocked(getRequiredEnvValue).mockRejectedValueOnce(
+      new Error("Missing required environment variable: DATAFORSEO_API_KEY"),
+    );
+    const fetchMock = vi.fn<typeof fetch>();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      dataforseoPost("/v3/backlinks/summary/live", []),
+    ).rejects.toMatchObject({ code: "DATAFORSEO_NOT_CONFIGURED" });
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   // An unverified account answers with HTTP 403 (status_code 40104). Left as
