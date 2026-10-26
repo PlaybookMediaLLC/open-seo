@@ -89,15 +89,15 @@ const makeResources = (stage: string, usesD1: boolean) => {
   // them.
   const keep = Alchemy.RemovalPolicy.retain(prod);
   return {
-    // Postgres deploys never touch D1: no database, binding, or SQLite
-    // migrations. Dropping it forgets (never deletes) the retained prod D1.
-    ...(usesD1
+    // Keep Playbook D1 for rollback after the PostgreSQL cutover, without migrating it.
+    // Hosted production retains its former D1 through its removal policy.
+    ...(usesD1 || stage === "playbook"
       ? {
           DB: Cloudflare.D1.Database("DB", {
             name: prod ? PROD_NAMES.d1 : `open-seo-db-${stage}`,
             // drizzle-generated SQL migrations; tracked in the same
             // wrangler-compatible table prod already uses.
-            migrationsDir: "drizzle/sqlite",
+            ...(usesD1 ? { migrationsDir: "drizzle/sqlite" } : {}),
             migrationsTable: "d1_migrations",
           }).pipe(keep),
         }
@@ -332,7 +332,10 @@ export default Alchemy.Stack(
       Config.withDefault("cloudflare_access"),
     );
     const databaseProvider = yield* optionalVar("DATABASE_PROVIDER");
-    const hyperdriveId = prod ? yield* Config.string("HYPERDRIVE_ID") : "";
+    const hyperdriveId =
+      databaseProvider === "postgres"
+        ? yield* Config.string("HYPERDRIVE_ID")
+        : "";
     if (prod && (authMode !== "hosted" || databaseProvider !== "postgres")) {
       return yield* Effect.die(
         new Error(
@@ -475,7 +478,7 @@ export default Alchemy.Stack(
       },
     }).pipe(Alchemy.RemovalPolicy.retain(prod));
 
-    if (prod) {
+    if (databaseProvider === "postgres") {
       yield* auditWorker.bind("hyperdrive", hyperdriveBinding(hyperdriveId));
     }
 
@@ -604,7 +607,7 @@ export default Alchemy.Stack(
       Alchemy.RemovalPolicy.retain(prod),
     );
 
-    if (prod) {
+    if (databaseProvider === "postgres") {
       yield* app.bind("hyperdrive", hyperdriveBinding(hyperdriveId));
     }
 

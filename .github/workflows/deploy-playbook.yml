@@ -5,8 +5,7 @@ name: Deploy (Playbook Media)
 # (deploy/alchemy/alchemy.run.ts), using the dedicated stage "playbook".
 #
 # The stage owns its own resources, created on first deploy and adopted
-# afterwards: D1 `open-seo-db-playbook` (migrations from drizzle/sqlite applied
-# on every deploy), KV `open-seo-kv-playbook` and `open-seo-oauth-kv-playbook`,
+# afterwards: Hyperdrive PostgreSQL, retained D1 `open-seo-db-playbook`, KV `open-seo-kv-playbook` and `open-seo-oauth-kv-playbook`,
 # R2 `open-seo-r2-playbook`, workers `open-seo-playbook` and
 # `open-seo-playbook-audit`, and stage-suffixed Workflows. See
 # docs/maintainers/playbook-deployment.md.
@@ -48,7 +47,7 @@ env:
 
 jobs:
   checks:
-    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    if: github.repository == 'PlaybookMediaLLC/relay'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -66,7 +65,7 @@ jobs:
 
   deploy:
     needs: checks
-    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    if: github.repository == 'PlaybookMediaLLC/relay'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
@@ -89,16 +88,20 @@ jobs:
           fi
 
       - name: Write .env.playbook
-        run: printf '%s' "$ENV_PLAYBOOK" > .env.playbook
+        run: |
+          printf '%s' "$ENV_PLAYBOOK" > .env.playbook
+          printf '\nDATABASE_PROVIDER=postgres\nHYPERDRIVE_ID=%s\n' "$HYPERDRIVE_ID" >> .env.playbook
         env:
           ENV_PLAYBOOK: ${{ secrets.ENV_PLAYBOOK }}
+          HYPERDRIVE_ID: ${{ vars.RELAY_HYPERDRIVE_ID }}
 
       # Fail in seconds on a misconfigured secret instead of after the build.
       - name: Validate deployment configuration
         run: |
           get() { grep "^$1=" .env.playbook | tail -1 | cut -d= -f2-; }
           [ "$(get CUSTOM_DOMAIN)" = "relay.playbookmedia.io" ] || { echo "::error::ENV_PLAYBOOK must set CUSTOM_DOMAIN=relay.playbookmedia.io"; exit 1; }
-          [ "$(get DATABASE_PROVIDER)" = "d1" ] || { echo "::error::ENV_PLAYBOOK must set DATABASE_PROVIDER=d1"; exit 1; }
+          [ "$(get DATABASE_PROVIDER)" = "postgres" ] || { echo "::error::DATABASE_PROVIDER must be postgres"; exit 1; }
+          [ -n "$(get HYPERDRIVE_ID)" ] || { echo "::error::Set the RELAY_HYPERDRIVE_ID repository variable"; exit 1; }
           case "$(get AUTH_MODE)" in
             cloudflare_access) [ -n "$(get ACCESS_ALLOWED_EMAILS)" ] || { echo "::error::cloudflare_access needs ACCESS_ALLOWED_EMAILS"; exit 1; } ;;
             hosted)
@@ -109,6 +112,11 @@ jobs:
           secret=$(get BETTER_AUTH_SECRET)
           [ ${#secret} -ge 32 ] || { echo "::error::BETTER_AUTH_SECRET must be a stable value of at least 32 characters"; exit 1; }
           [ -n "$(get DATAFORSEO_API_KEY)" ] || { echo "::error::DATAFORSEO_API_KEY is required by the deploy stack"; exit 1; }
+
+      - name: Apply PostgreSQL migrations
+        run: pnpm db:migrate:pg
+        env:
+          POSTGRES_DATABASE_URL: ${{ secrets.RELAY_POSTGRES_DATABASE_URL }}
 
       - name: Build and deploy stage
         run: |
