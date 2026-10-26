@@ -79,9 +79,18 @@ def publish(raw_paths, tool_results, reports):
         for tool in tool_results:
             if tool["name"] == "Semgrep":
                 tool["scanned_files"] = len(raw.get("paths", {}).get("scanned", []))
-                if safe_errors:
+                # A partial parse still scans the file; only the span Semgrep's
+                # parser rejects (valid TSX such as a bare `&` in JSX text) is
+                # skipped. Record those spans as a coverage limit. Anything else
+                # (timeouts, fatal or error-level problems) leaves the scan incomplete.
+                partial = [e for e in safe_errors if e["level"] == "warn"
+                           and isinstance(e["type"], list) and e["type"][:1] == ["PartialParsing"]]
+                if partial:
+                    tool["limitations"].append("Partially parsed, unparsed spans not analyzed: "
+                                               + ", ".join(sorted({e["path"] for e in partial})) + ".")
+                if len(partial) < len(safe_errors):
                     tool["status"] = "error"
-                    tool["limitations"].append(f"Partial scan: {len(safe_errors)} parser/timeout/other errors; see sanitized JSON.")
+                    tool["limitations"].append(f"Partial scan: {len(safe_errors) - len(partial)} parser/timeout/other errors; see sanitized JSON.")
 
     for codeql_tool in (t for t in tool_results if t["name"] == "CodeQL"):
         language = codeql_tool.get("language", "javascript")
