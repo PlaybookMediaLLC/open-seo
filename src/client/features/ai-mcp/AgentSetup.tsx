@@ -6,10 +6,12 @@ import {
 } from "@tabler/icons-react";
 import { AgentList } from "./AgentList";
 import { AGENT_SETUP_LINKS } from "./agentInstalls";
-import { AgentSetupPanel, AGENT_SETUP_DESCRIPTION } from "./AgentSetupPanel";
+import { AgentSetupPanel } from "./AgentSetupPanel";
 import { getAgentSetupPrompt } from "./agentSetupPrompt";
 import { captureClientEvent } from "@/client/lib/posthog";
+import { OnboardingStepHeader } from "@/client/features/onboarding/OnboardingLayout";
 import { WizardFooter } from "@/client/features/onboarding/WizardFooter";
+import { Spinner as SpinnerIcon } from "@/client/components/ui/spinner";
 import { Button } from "@/client/components/ui/button";
 import { getMcpAuthorizedAt } from "@/serverFunctions/onboarding";
 
@@ -46,15 +48,12 @@ export function AgentSetup({
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Set up your agent
-        </h1>
-        <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground">
-          {AGENT_SETUP_DESCRIPTION}
-        </p>
+      <OnboardingStepHeader
+        title="Hand the work to your agent"
+        description="Paste one prompt into your agent. It connects to OpenSEO, then runs the research and audits and ships the fixes for you."
+      >
         <AgentList />
-      </div>
+      </OnboardingStepHeader>
       <AgentSetupPanel
         prompt={prompt}
         copyVariant={startedSetup ? "outline" : "default"}
@@ -88,37 +87,39 @@ export function AgentSetup({
         {connected ? (
           <p
             role="status"
-            className="mt-3 flex items-center justify-center gap-1.5 text-sm font-medium text-success"
+            className="mt-4 flex items-center justify-center gap-2 rounded-lg border border-success/30 bg-success/10 p-3 text-sm font-medium text-success"
           >
             <Check className="size-4" aria-hidden />
-            Connected
+            Connected. Taking you to your dashboard…
           </p>
         ) : copied ? (
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Paste it into your agent and approve the connection.
+          <p
+            role="status"
+            className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+          >
+            <SpinnerIcon className="size-3.5" />
+            Paste it into your agent and approve the connection. We'll move on
+            once it connects.
           </p>
         ) : null}
       </AgentSetupPanel>
-      <div className="mt-7 border-t border-border pt-5">
-        <WizardFooter
-          className="mt-0"
-          onBack={onBack}
-          continueAction={
-            <Button
-              type="button"
-              variant={startedSetup ? "default" : "ghost"}
-              className={
-                startedSetup
-                  ? "font-semibold"
-                  : "h-8 gap-2 px-3 text-xs font-semibold"
-              }
-              onClick={onFinish}
-            >
-              Go to dashboard <ArrowRight className="size-4" />
-            </Button>
-          }
-        />
-      </div>
+      <WizardFooter
+        onBack={onBack}
+        continueAction={
+          <Button
+            type="button"
+            variant={startedSetup ? "default" : "ghost"}
+            className={
+              startedSetup
+                ? "font-semibold"
+                : "h-8 gap-2 px-3 text-xs font-semibold"
+            }
+            onClick={onFinish}
+          >
+            Go to dashboard <ArrowRight className="size-4" />
+          </Button>
+        }
+      />
     </div>
   );
 }

@@ -125,6 +125,10 @@ import type { Plugin } from "vite";
  *   SPEND_LIMIT_REACHED code and its copy (src/shared/spendLimits.ts).
  * - src/client/navigation/items.ts: adds "This week" first in the project
  *   navigation (RFC-0018; src/client/features/work/ThisWeekPage.tsx).
+ * - src/routes/_authenticated.tsx and
+ *   src/client/features/onboarding/onboardingModel.ts: onboarding opens on a
+ *   welcome step and draws its own full-page layout instead of the centered
+ *   auth card (src/client/features/onboarding/OnboardingLayout.tsx).
  * - src/client/features/dashboard/DashboardPage.tsx: shows the This week
  *   card at the top of the project home
  *   (src/client/features/work/ThisWeekCard.tsx).
