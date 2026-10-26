@@ -1,5 +1,6 @@
-import { and, asc, count, eq, inArray, notInArray } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne, notInArray } from "drizzle-orm";
 import { db } from "@/db";
+import { AppError } from "@/server/lib/errors";
 import { runBatch } from "@/db/runBatch";
 import {
   savedKeywordTagAssignments,
@@ -341,6 +342,19 @@ async function updateSavedKeywordTag(params: {
     if (!normalizedTag) return null;
     updates.name = normalizedTag.name;
     updates.normalizedName = normalizedTag.normalizedName;
+    // Another tag already holds this name; the unique index would reject it.
+    const [taken] = await db
+      .select({ id: savedKeywordTags.id })
+      .from(savedKeywordTags)
+      .where(
+        and(
+          eq(savedKeywordTags.projectId, params.projectId),
+          eq(savedKeywordTags.normalizedName, normalizedTag.normalizedName),
+          ne(savedKeywordTags.id, params.tagId),
+        ),
+      )
+      .limit(1);
+    if (taken) throw new AppError("CONFLICT", "Tag name already in use");
   }
   if (params.color !== undefined) {
     updates.color = params.color;

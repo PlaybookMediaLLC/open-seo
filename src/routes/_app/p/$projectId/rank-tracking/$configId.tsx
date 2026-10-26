@@ -38,6 +38,10 @@ function RankTrackingConfigRoute() {
     void queryClient.invalidateQueries({
       queryKey: ["rankTrackingConfigSummaries", projectId],
     });
+    // Devices and depth change the per-check cost shown in the header.
+    void queryClient.invalidateQueries({
+      queryKey: ["rankTrackingCostEstimate", projectId, configId],
+    });
   };
 
   const handleBack = () => {

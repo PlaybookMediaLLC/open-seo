@@ -360,7 +360,7 @@ function SavedKeywordsPage() {
                 selectedTagIds={selectedTagIds}
                 busyTagIds={tagManage.busyTagIds}
                 onSelectedTagIdsChange={setSelectedTagIds}
-                onUpdateTag={(input) => void tagManage.updateTag(input)}
+                onUpdateTag={tagManage.updateTag}
                 onDeleteTag={(tagId) => void handleDeleteTag(tagId)}
               />
             }

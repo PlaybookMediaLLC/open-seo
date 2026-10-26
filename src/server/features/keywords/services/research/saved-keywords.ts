@@ -1,5 +1,6 @@
 import { KeywordResearchRepository } from "@/server/features/keywords/repositories/KeywordResearchRepository";
 import { jsonCodec } from "@/shared/json";
+import { AppError } from "@/server/lib/errors";
 import type {
   DeleteSavedKeywordTagInput,
   ExportSavedKeywordsInput,
@@ -268,19 +269,12 @@ export async function deleteSavedKeywordTag(input: DeleteSavedKeywordTagInput) {
     tagId: input.tagId,
   });
   if (result.status === "in_use") {
-    throw new TagInUseError(result.assignmentCount);
+    throw new AppError(
+      "CONFLICT",
+      `Tag is attached to ${result.assignmentCount} keywords`,
+    );
   }
   return { success: result.status === "deleted" };
-}
-
-class TagInUseError extends Error {
-  readonly code = "TAG_IN_USE" as const;
-  constructor(readonly assignmentCount: number) {
-    super(
-      `Tag is attached to ${assignmentCount} keyword${assignmentCount === 1 ? "" : "s"}. Remove the tag from those keywords first.`,
-    );
-    this.name = "TagInUseError";
-  }
 }
 
 export async function removeSavedKeywords(

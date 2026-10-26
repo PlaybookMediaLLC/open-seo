@@ -133,8 +133,10 @@ export function SeoCheckSetup({
             className="mt-2 flex gap-2"
             onSubmit={(event) => {
               event.preventDefault();
-              act.mutate(() => addPreviewHost({ data: { ...data_, host } }));
-              setHost("");
+              // Clear only after it saved, so a rejected host can be fixed.
+              act.mutate(() => addPreviewHost({ data: { ...data_, host } }), {
+                onSuccess: () => setHost(""),
+              });
             }}
           >
             <Input
