@@ -27,7 +27,7 @@ permissions:
 jobs:
   deploy:
     if: >-
-      github.repository == 'PlaybookMediaLLC/open-seo' &&
+      github.repository == 'PlaybookMediaLLC/relay' &&
       (github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
