@@ -34,7 +34,7 @@ export function SavedKeywordsFilters({
     tagId: string;
     name?: string;
     color?: TagColorKey | null;
-  }) => void;
+  }) => Promise<boolean>;
   onDeleteTag: (tagId: string) => void;
 }) {
   return (

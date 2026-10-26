@@ -74,7 +74,11 @@ export async function getDataforseoFetch(): Promise<typeof fetch> {
     }
     return providerFetch;
   }
-  const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY");
+  // A missing key is a setup gap, not a fault: retrying can't help, so the
+  // client gets a code that says what to set.
+  const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY").catch(() => {
+    throw new AppError("DATAFORSEO_NOT_CONFIGURED");
+  });
   return withAuthorization(`Basic ${apiKey}`);
 }
 

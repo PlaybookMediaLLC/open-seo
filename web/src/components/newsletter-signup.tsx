@@ -1,4 +1,9 @@
 import { type FormEvent, useState } from "react";
+import { useTurnstile } from "@/lib/free-tools/turnstile";
+
+const SITE_KEY =
+  import.meta.env.VITE_TURNSTILE_SITE_KEY?.trim() ||
+  (import.meta.env.DEV ? "1x00000000000000000000AA" : "");
 
 /** Newsletter subscribe form. Shared by the marketing footer and home page. */
 export function NewsletterSignup() {
@@ -7,16 +12,36 @@ export function NewsletterSignup() {
     "idle" | "loading" | "success" | "error"
   >("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [token, setToken] = useState("");
+  const [verificationFailed, setVerificationFailed] = useState(!SITE_KEY);
+  const widget = useTurnstile(
+    SITE_KEY,
+    (value = "") => {
+      setToken(value);
+      setVerificationFailed(false);
+    },
+    () => {
+      setToken("");
+      setVerificationFailed(true);
+    },
+    "newsletter",
+  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (status === "loading" || !token) return;
+    if (widget.isExpired()) {
+      setToken("");
+      widget.reset();
+      return;
+    }
     setStatus("loading");
     setErrorMessage("");
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken: token }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -31,6 +56,9 @@ export function NewsletterSignup() {
       setErrorMessage(
         err instanceof Error ? err.message : "Something went wrong",
       );
+    } finally {
+      setToken("");
+      widget.reset();
     }
   };
 
@@ -58,12 +86,28 @@ export function NewsletterSignup() {
         />
         <button
           type="submit"
-          disabled={status === "loading"}
+          disabled={status === "loading" || !token}
           className="h-10 shrink-0 rounded-lg bg-neutral-950 px-5 text-sm font-medium text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
         >
           {status === "loading" ? "..." : "Subscribe"}
         </button>
       </div>
+      {SITE_KEY ? <div ref={widget.container} /> : null}
+      {verificationFailed ? (
+        <p role="alert" className="mt-2 text-xs text-red-600">
+          Browser verification failed.{" "}
+          <button
+            type="button"
+            className="underline"
+            onClick={() => {
+              setVerificationFailed(false);
+              widget.reset();
+            }}
+          >
+            Retry verification
+          </button>
+        </p>
+      ) : null}
       {status === "error" && (
         <p className="mt-2 text-xs text-red-600">{errorMessage}</p>
       )}

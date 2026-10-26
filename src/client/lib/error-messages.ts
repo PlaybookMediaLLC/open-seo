@@ -40,9 +40,12 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   AUDIT_ALREADY_RUNNING:
     "You've reached the limit of audits running at once. Wait for one to finish or delete it before starting another.",
   VALIDATION_ERROR: "Please check your input and try again.",
+  INVALID_PATH_PATTERN:
+    "This page pattern is not supported. Create a new split test using an RE2 expression without lookaround or backreferences.",
   UNKNOWN_LOCATION:
     "We couldn't find that city, county, or region. Pick a location from the list, or clear the field to search the whole country.",
-  CRAWL_TARGET_BLOCKED: "This crawl target is blocked by security policy.",
+  CRAWL_TARGET_BLOCKED:
+    "We can't crawl that address. Check the domain is spelled right and is a public website, not a private or local one.",
   BACKLINKS_BILLING_ISSUE:
     "The connected DataForSEO account has a billing or balance issue.",
   AI_SEARCH_BILLING_ISSUE:
@@ -52,6 +55,8 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
   DATAFORSEO_AUTH_FAILED: isEveryAppClientAuthMode()
     ? "DataForSEO isn't set up on your Every App gateway yet, or rejected the key it holds. An owner or admin sets it with pnpm everyapp secret set DATAFORSEO_API_KEY."
     : "DataForSEO rejected the credentials. Check that DATAFORSEO_API_KEY is the base64 of your DataForSEO login:password, and that the DataForSEO account is verified and has API access.",
+  DATAFORSEO_NOT_CONFIGURED:
+    "DataForSEO isn't set up on this server yet. Add DATAFORSEO_API_KEY to the server's environment, then try again.",
   RATE_LIMITED: "Too many requests. Please wait and try again.",
   UPSTREAM_UNAVAILABLE:
     "The data provider is temporarily unavailable. Please retry in a moment.",

@@ -1,7 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getStandardErrorMessage } from "@/client/lib/error-messages";
+import {
+  getErrorCode,
+  getStandardErrorMessage,
+} from "@/client/lib/error-messages";
 import {
   deleteSavedKeywordTag,
   updateSavedKeywordTag,
@@ -28,10 +31,10 @@ export function useTagManage(projectId: string) {
     tagId: string;
     name?: string;
     color?: TagColorKey | null;
-  }) => {
+  }): Promise<boolean> => {
     markBusy(input.tagId, true);
     try {
-      await updateSavedKeywordTag({
+      const result = await updateSavedKeywordTag({
         data: {
           projectId,
           tagId: input.tagId,
@@ -39,10 +42,20 @@ export function useTagManage(projectId: string) {
           color: input.color ?? undefined,
         },
       });
+      if (!result.success) {
+        toast.error("Could not update tag");
+        return false;
+      }
       await invalidate();
       toast.success("Tag updated");
+      return true;
     } catch (error) {
-      toast.error(getStandardErrorMessage(error, "Could not update tag"));
+      toast.error(
+        getErrorCode(error) === "CONFLICT"
+          ? "Another tag already has that name."
+          : getStandardErrorMessage(error, "Could not update tag"),
+      );
+      return false;
     } finally {
       markBusy(input.tagId, false);
     }
@@ -57,10 +70,9 @@ export function useTagManage(projectId: string) {
       return true;
     } catch (error) {
       toast.error(
-        getStandardErrorMessage(
-          error,
-          "Could not delete tag. Detach it from all keywords and try again.",
-        ),
+        getErrorCode(error) === "CONFLICT"
+          ? "This tag is still on some keywords. Remove it from them first."
+          : getStandardErrorMessage(error, "Could not delete tag"),
       );
       return false;
     } finally {

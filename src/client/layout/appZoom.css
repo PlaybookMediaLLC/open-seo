@@ -1,7 +1,4 @@
 /* Keep authenticated surfaces at native scale, including portaled controls. */
-html[data-app-zoom] {
-  --radius: 0.5rem;
-}
 
 html[data-app-zoom] [data-slot="sidebar-wrapper"] {
   font-size: 1rem;

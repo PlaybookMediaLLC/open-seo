@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-25",
+  "agent": "B",
+  "regression_before": {
+    "asset_redirect_tests": "2 security assertions failed on original code; synthetic targets/credentials only",
+    "regex_cpu": "Native ^/(a+)+$ against a 34-character path exceeded isolated 2-second deadline and was terminated",
+    "release_tempfile": "Original CLI followed a pre-created symlink and overwrote a synthetic victim; git/gh stubbed, no external writes"
+  },
+  "regression_after": {
+    "command": "pnpm exec vitest run src/server/features/seo-checks src/server/features/split-tests src/shared/releaseGate.test.ts src/types/schemas/splitTests.test.ts scripts/release-notes.test.ts src/server/lib/errors.test.ts",
+    "test_files_passed": 22,
+    "tests_passed": 105,
+    "scanner_report_tests": "python3 -m unittest discover -s security/tests -p test_application.py -v: 2/2 passed",
+    "sarif_validation": "All 3 sanitized CodeQL SARIF files validate against SARIF 2.1.0 JSON schema"
+  },
+  "coverage": {
+    "semgrep_targets": 2821,
+    "semgrep_security_findings": 119,
+    "semgrep_partial_parser_warnings": 6,
+    "codeql_javascript": {
+      "eligible": 2001,
+      "scanned": 2001,
+      "security_queries": 105,
+      "raw_findings": 14
+    },
+    "codeql_python": {
+      "eligible": 13,
+      "scanned": 13,
+      "security_queries": 52,
+      "raw_findings": 0
+    },
+    "last_infrastructure_auth_mode_change": "Focused Semgrep scan 0 findings/0 errors after one-line compatibility change.",
+    "last_infrastructure_output_exclusion_change": {
+      "completed_at_utc": "2026-10-25T18:08:54.557232+00:00",
+      "path": "security/scanners/infrastructure.py",
+      "sha256": "116d775f8dd2ea00b5e488ddd14c73880f2b23e050f35724a638d584a37f0f4f",
+      "change": "Only the generated-output exclusion changed from security/reports to security/(reports|runs).",
+      "semgrep_official_python_security_directories": 18,
+      "semgrep_findings": 1,
+      "semgrep_false_positives": 1,
+      "semgrep_errors": 0,
+      "codeql_timing": "Python CodeQL scanned the preceding source snapshot; no rerun for this exclusion constant. Exact-source Semgrep triage refreshed after the change."
+    },
+    "last_infrastructure_smoke_port_change": {
+      "completed_at_utc": "2026-10-25T18:13:08.446091+00:00",
+      "path": "security/scanners/infrastructure-smoke.py",
+      "sha256": "ae7d81e315795ef58af5854fe0a23e03ab03d748b7b249377efb5d700b14ad36",
+      "change": "Reread Docker port after restart; validate refreshed address is loopback before health check.",
+      "semgrep_official_python_security_directories": 18,
+      "semgrep_findings": 0,
+      "semgrep_errors": 0,
+      "codeql_timing": "Python CodeQL scanned the preceding source snapshot; no rerun for this local smoke-helper change. Final helper received a focused Semgrep scan and code-path review."
+    },
+    "last_report_aggregation_change": {
+      "completed_at_utc": "2026-10-25T18:22:26.400931+00:00",
+      "path": "security/report.py",
+      "sha256": "169468caf404a6040119977bffef65597e07bf5ad5486542c1dae754890ffb48",
+      "change": "Preserve per-source observations and promote remaining-open component location/evidence/remediation during deduplication.",
+      "semgrep_official_python_security_directories": 18,
+      "semgrep_findings": 0,
+      "semgrep_errors": 0,
+      "codeql_timing": "Python CodeQL scanned the preceding source snapshot; no rerun for this local report aggregation change. Final aggregator received a focused Semgrep scan and code-path review."
+    }
+  },
+  "status_counts_before_deduplication": {
+    "false_positive": 133,
+    "fixed": 3
+  }
+}

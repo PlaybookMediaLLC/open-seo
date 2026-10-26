@@ -44,7 +44,7 @@ function PromptExplorerRoute() {
   return (
     <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-7xl space-y-5" key={projectId}>
-        <OpenRouterKeyGate projectId={projectId}>
+        <OpenRouterKeyGate projectId={projectId} untilSetupReady>
           <ProjectWebsiteGate projectId={projectId}>
             <AiResearchSetupGate projectId={projectId}>
               <PromptExplorerPage

@@ -51,7 +51,7 @@ export function SavedKeywordsTagFilter({
   selectedTagIds: string[];
   busyTagIds: Set<string>;
   onSelectedTagIdsChange: (tagIds: string[]) => void;
-  onUpdateTag: (input: UpdateTagInput) => void;
+  onUpdateTag: (input: UpdateTagInput) => Promise<boolean>;
   onDeleteTag: (tagId: string) => void;
 }) {
   const anchor = useComboboxAnchor();
@@ -143,7 +143,7 @@ function TagManagerDialog({
 }: {
   tags: SavedKeywordTagSummary[];
   busyTagIds: Set<string>;
-  onUpdateTag: (input: UpdateTagInput) => void;
+  onUpdateTag: (input: UpdateTagInput) => Promise<boolean>;
   onDeleteTag: (tagId: string) => void;
   onClose: () => void;
 }) {
@@ -196,8 +196,10 @@ function TagManagerDialog({
                     tag={tag}
                     isBusy={busyTagIds.has(tag.id)}
                     onSave={(input) => {
-                      onUpdateTag({ tagId: tag.id, ...input });
-                      setEditingTagId(null);
+                      // Keep the editor open on failure so the name isn't lost.
+                      void onUpdateTag({ tagId: tag.id, ...input }).then(
+                        (ok) => ok && setEditingTagId(null),
+                      );
                     }}
                     onDelete={() => {
                       onDeleteTag(tag.id);

@@ -1,20 +1,22 @@
 # Relay RFC delivery plan
 
-**Updated:** October 23, 2026
+**Updated:** October 25, 2026
 
 **Strategy:** [Company](../../../company.md) · [Vision](../../../vision.md)
 
 **Evidence:** [Current codebase audit](../relay-release-assurance-audit.md), baseline `0f09f36a`
 
-The north star is accountable organic growth work: identify what matters, prepare an approved change, verify what happened in production, measure what can be measured, and retain the context. **The initial commercial product is release assurance for GitHub-managed Next.js marketing sites.**
+The north star is **SaaS customer-facing operations**: keep what a business promises, publishes, and delivers aligned as its product changes. The [company strategy](../../../company.md) defines three proposed offers: **Protect → Sync → Launch**, built on a shared Product Reality Engine. SEO remains an acquisition capability.
 
-This plan replaces the earlier “retention core” release order. Start with a bounded paid pilot, confirmed production regressions, and human-reviewed repairs. Broader campaigns, content creation, portfolio management, and delegated execution follow repeat paid demand. Research tools and existing integrations remain useful foundations.
+**The active engineering sequence below completes Relay Protect**, starting with release assurance for GitHub-managed Next.js marketing sites. Begin with a bounded paid pilot, confirmed production regressions, and human-reviewed repairs. Research tools and existing integrations remain useful foundations.
 
-RFC IDs and filenames remain stable because code, PRs, and design records already reference them. **Delivery order is the sequence below, not numeric order.** Existing closure and acceptance history is preserved. “Done” in an older RFC may mean its code scope was closed with explicit follow-ups; it does not prove a complete paid customer workflow.
+After Protect validation, prioritize versioned product facts and cross-system claim verification for Sync, then coordinated Launch workflows. These require new design contracts; existing facts and launch RFCs are reusable pieces, not complete specifications of those products. The [north-star roadmap](../../../vision.md#evidence-gated-roadmap) governs expansion. The later SEO backlog below is retained for reuse, not as a requirement to finish growth campaigns before Sync.
+
+RFC IDs and filenames remain stable because code, PRs, and design records already reference them. **Protect delivery follows orders 1–7 below, not RFC numeric order.** Existing closure and acceptance history is preserved. “Done” in an older RFC may mean its code scope was closed with explicit follow-ups; it does not prove a complete paid customer workflow.
 
 ## Ordered delivery backlog
 
-Stages are gates, not promises of dates. Commercial discovery can run alongside implementation. A later consumer is not a prerequisite for its producer: monitoring does not wait for the weekly report, previews do not wait for autonomy, and facts do not wait for generated pages.
+Orders 1–7 are the active Protect sequence. Orders 8–13 retain the earlier expansion backlog and must be reprioritized against the north-star roadmap before implementation. Stages are gates, not promises of dates. Commercial discovery can run alongside implementation. A later consumer is not a prerequisite for its producer: monitoring does not wait for the weekly report, previews do not wait for autonomy, and facts do not wait for generated pages.
 
 | Order | Smallest useful increment                                                           | RFC / prerequisites                                                                                                                     | Exit evidence                                                                                                                                        |
 | ----- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -32,7 +34,7 @@ Stages are gates, not promises of dates. Commercial discovery can run alongside 
 | 12    | Individually reviewed new pages from verified facts                                 | [0021 phases 1–2](0021-new-pages-from-verified-facts.md); orders 10–11, supported preview/publisher                                     | One useful page at a time, sourced claims, preview and launch checks, customer approval, and observed outcomes.                                      |
 | 13    | Competitor response, track records, and portfolio expansion                         | [0022](0022-competitor-change-response.md), [0024 phase 2](0024-change-history-and-learning.md), [0007](0007-portfolio-operations.md)   | Explicit customer demand and each RFC's entry/data/tenancy gates. These can proceed independently once their actual dependencies are met.            |
 
-The first paid service is orders 1–7. A detection-and-ticket pilot can operate after order 3 with its limits disclosed. The source proposal, preview, and verification contracts should be reviewed together, but their increments ship in orders 4–6.
+The first paid service is orders 1–7. Orders 8–13 do not gate Sync or the broader Launch product. A detection-and-ticket pilot can operate after order 3 with its limits disclosed. The source proposal, preview, and verification contracts should be reviewed together, but their increments ship in orders 4–6.
 
 ### Optional later tracks
 
@@ -52,7 +54,9 @@ flowchart LR
   E --> F[0028: production verification]
   F --> G[0018 1b + 0026 B: report and paid service]
   G --> H[0024: history]
-  H --> I[0020: existing-page campaigns]
+  H --> I[Product facts and claim mapping: Sync]
+  I --> J[Coordinated Launch]
+  J --> K[Broader Growth and Convert]
 ```
 
 Existing implemented foundations support each node. The arrows do not reopen all historical RFC scopes or require every optional feature to ship.

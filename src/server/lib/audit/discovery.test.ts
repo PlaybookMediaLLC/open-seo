@@ -50,6 +50,30 @@ describe("discoverUrls", () => {
     expect(urls).toEqual(["https://example.com/a"]);
   });
 
+  it("cancels oversized robots.txt responses while keeping the permitted prefix", async () => {
+    const cancel = vi.fn();
+    const prefix = "User-agent: *\nDisallow: /private\n#";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (!url.endsWith("/robots.txt"))
+          return new Response(null, { status: 404 });
+        return new Response(
+          new ReadableStream({
+            start(controller) {
+              controller.enqueue(
+                new TextEncoder().encode(prefix + "x".repeat(500 * 1024)),
+              );
+            },
+            cancel,
+          }),
+        );
+      }),
+    );
+    const result = await discoverUrls("https://example.com", 2);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(result.robotsText?.length).toBe(500 * 1024);
+  });
   // Seeding the frontier is what sets a page's in-sitemap flag, so a URL
   // dropped here reports inSitemap: false once the crawl reaches it through a
   // link. Real sitemaps bury the homepage in the middle of the list

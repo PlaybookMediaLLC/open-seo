@@ -1,0 +1,23 @@
+id: openseo-response-headers
+info:
+  name: Application HTML response hardening
+  author: openseo-security
+  severity: low
+  description: Missing defense-in-depth headers require deployment-context triage.
+  tags: passive,headers
+http:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+      - "{{BaseURL}}/sign-in"
+    redirects: false
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words: ["text/html"]
+      - type: word
+        part: header
+        words: ["x-content-type-options:"]
+        case-insensitive: true
+        negative: true

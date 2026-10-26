@@ -1,4 +1,5 @@
 import { getOptionalEnvValue } from "@/server/lib/runtime-env";
+import { readRequestText } from "@/server/lib/request-body";
 
 // RFC-0008 5.4: the internal endpoints accept only a fresh HMAC-SHA256
 // signature of `{timestamp}.{rawBody}`. Any failure looks like a missing page.
@@ -50,8 +51,8 @@ export async function readSignedBody(request: Request): Promise<unknown> {
     return null;
   if (Math.abs(Date.now() / 1000 - Number(timestamp)) > MAX_SKEW_SECONDS)
     return null;
-  const raw = await request.text();
-  if (encoder.encode(raw).byteLength > MAX_BODY_BYTES) return null;
+  const raw = await readRequestText(request, MAX_BODY_BYTES);
+  if (raw === null) return null;
   // Two secrets for one deploy allow a rotation without failed jobs.
   const secrets = [
     await getOptionalEnvValue("GROWTH_JOBS_SECRET"),

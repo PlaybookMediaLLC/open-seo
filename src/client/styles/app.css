@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 /* shadcn components here are built on Base UI. The shadcn variables below are
    the source of truth for theme colors. */
@@ -9,21 +11,11 @@
 
 @theme {
   --container-8xl: 88rem;
-  /* Eigenn typography: SF Pro system stack, JetBrains Mono, -0.15px tracking. */
-  --font-sans:
-    "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display:
-    "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
   --font-mono:
-    "JetBrains Mono", "SF Mono", Monaco, ui-monospace, SFMono-Regular, Menlo,
-    Consolas, monospace;
-  --tracking-ui: -0.15px;
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 0px 15px rgba(0 0 0 / 0.04), 0 0px 2px rgba(0 0 0 / 0.06);
-  --shadow-lg: 0 0px 20px rgba(0 0 0 / 0.04), 0 0px 5px rgba(0 0 0 / 0.06);
-  --shadow-xl: 0 0px 30px rgba(0 0 0 / 0.04), 0 0px 10px rgba(0 0 0 / 0.06);
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @theme inline {
@@ -65,106 +57,130 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-active: var(--sidebar-active);
-  /* At --radius 0.5rem this scale equals Tailwind's defaults, so existing
-     rounded-* classes do not change. Fields (rounded-lg) are 0.5rem and cards
-     (rounded-xl) are 0.75rem. */
-  --radius-sm: calc(var(--radius) * 0.5);
-  --radius-md: calc(var(--radius) * 0.75);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.5);
-  --radius-2xl: calc(var(--radius) * 2);
-  --radius-3xl: calc(var(--radius) * 3);
-  --radius-4xl: calc(var(--radius) * 4);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* Eigenn theme (core-utilities/packages/themes/eigenn.css), mapped onto the
-   shadcn tokens this app reads. Eigenn stores bare HSL channels; they are
-   wrapped in hsl() here because these variables are consumed as full colors. */
+/* Adapted from PlaybookMediaLLC/kaneo apps/web/src/index.css (MIT).
+   See kaneo.LICENSE. Keep Relay's data-theme selectors for saved preferences
+   and embedded widgets; both themes use Kaneo's shared component tokens. */
 :where(:root),
 [data-theme="openseo"] {
   color-scheme: light;
-  --radius: 0rem;
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(0 0% 16%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(0 0% 16%);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: hsl(0 0% 16%);
-  --primary: hsl(0 0% 0%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(0 0% 96.5%);
-  --secondary-foreground: hsl(0 0% 16%);
-  --muted: hsl(0 0% 96.5%);
-  --muted-foreground: hsl(0 0% 36.5%);
-  --accent: hsl(0 0% 96.5%);
-  --accent-foreground: hsl(0 0% 0%);
-  --destructive: hsl(359 100% 61%);
-  --success: hsl(162 72% 37%);
-  --success-foreground: hsl(0 0% 100%);
-  --warning: hsl(38 92% 50%);
-  --warning-foreground: hsl(0 0% 0%);
-  --info: hsl(221.2 83.2% 53.3%);
-  --info-foreground: hsl(0 0% 100%);
-  --border: hsl(0 0% 91%);
-  --input: hsl(0 0% 91%);
-  --ring: hsl(0 0% 75%);
-  --chart-1: hsl(221.2 83.2% 53.3%);
-  --chart-2: hsl(162 72% 37%);
-  --chart-3: hsl(38 92% 50%);
-  --chart-4: hsl(359 100% 61%);
-  --chart-5: hsl(0 0% 40%);
-  --sidebar: hsl(0 0% 97.5%);
-  --sidebar-foreground: hsl(0 0% 0%);
-  --sidebar-primary: hsl(221.2 83.2% 53.3%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(0 0% 93%);
-  --sidebar-accent-foreground: hsl(0 0% 0%);
-  --sidebar-border: hsl(0 0% 88%);
-  --sidebar-ring: hsl(0 0% 75%);
-  /* The raised pill behind the active nav row and the account card. */
-  --sidebar-active: hsl(0 0% 100%);
+  --radius: 0.625rem;
+  --accent: --alpha(var(--color-black) / 4%);
+  --accent-foreground: var(--color-neutral-800);
+  --background: var(--color-white);
+  --border: --alpha(var(--color-black) / 8%);
+  --card: var(--color-white);
+  --card-foreground: var(--color-neutral-800);
+  --destructive: var(--color-red-500);
+  --foreground: var(--color-neutral-800);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-700);
+  --input: --alpha(var(--color-black) / 10%);
+  --muted: --alpha(var(--color-black) / 4%);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-500) 90%,
+    var(--color-black)
+  );
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-neutral-800);
+  --primary: var(--color-neutral-800);
+  --primary-foreground: var(--color-neutral-50);
+  --ring: var(--color-neutral-400);
+  --secondary: --alpha(var(--color-black) / 4%);
+  --secondary-foreground: var(--color-neutral-800);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-700);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-700);
+  --chart-1: var(--color-orange-600);
+  --chart-2: var(--color-teal-600);
+  --chart-3: var(--color-cyan-900);
+  --chart-4: var(--color-amber-400);
+  --chart-5: var(--color-amber-500);
+  --sidebar: var(--color-neutral-50);
+  --sidebar-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-800) 64%,
+    var(--sidebar)
+  );
+  --sidebar-primary: var(--color-neutral-800);
+  --sidebar-primary-foreground: var(--color-neutral-50);
+  --sidebar-accent: --alpha(var(--color-black) / 4%);
+  --sidebar-accent-foreground: var(--color-neutral-800);
+  --sidebar-border: --alpha(var(--color-black) / 6%);
+  --sidebar-ring: var(--color-neutral-400);
+  --sidebar-active: var(--card);
 }
 
 [data-theme="openseo-dark"] {
   color-scheme: dark;
-  --background: hsl(0 0% 0%);
-  --foreground: hsl(0 0% 96%);
-  --card: hsl(0 0% 4%);
-  --card-foreground: hsl(0 0% 96%);
-  --popover: hsl(0 0% 4%);
-  --popover-foreground: hsl(0 0% 96%);
-  --primary: hsl(0 0% 100%);
-  --primary-foreground: hsl(0 0% 0%);
-  --secondary: hsl(0 0% 7%);
-  --secondary-foreground: hsl(0 0% 96%);
-  --muted: hsl(0 0% 9%);
-  --muted-foreground: hsl(0 0% 46%);
-  --accent: hsl(0 0% 9%);
-  --accent-foreground: hsl(0 0% 96%);
-  --destructive: hsl(359 100% 61%);
-  --success: hsl(162 72% 37%);
-  --success-foreground: hsl(0 0% 100%);
-  --warning: hsl(38 92% 50%);
-  --warning-foreground: hsl(0 0% 0%);
-  --info: hsl(221.2 83.2% 53.3%);
-  --info-foreground: hsl(0 0% 100%);
-  --border: hsl(0 0% 13%);
-  --input: hsl(0 0% 13%);
-  --ring: hsl(0 0% 30%);
-  --chart-1: hsl(221.2 83.2% 60%);
-  --chart-2: hsl(162 72% 45%);
-  --chart-3: hsl(38 92% 55%);
-  --chart-4: hsl(359 100% 66%);
-  --chart-5: hsl(0 0% 60%);
-  --sidebar: hsl(0 0% 2.5%);
-  --sidebar-foreground: hsl(0 0% 96%);
-  --sidebar-primary: hsl(221.2 83.2% 53.3%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(0 0% 7%);
-  --sidebar-accent-foreground: hsl(0 0% 96%);
-  --sidebar-border: hsl(0 0% 13%);
-  --sidebar-ring: hsl(0 0% 30%);
-  --sidebar-active: hsl(0 0% 8%);
+  --accent: --alpha(var(--color-white) / 4%);
+  --accent-foreground: var(--color-neutral-100);
+  --background: color-mix(
+    in srgb,
+    var(--color-neutral-950) 96%,
+    var(--color-white)
+  );
+  --border: --alpha(var(--color-white) / 6%);
+  --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --card-foreground: var(--color-neutral-100);
+  --destructive: color-mix(
+    in srgb,
+    var(--color-red-500) 90%,
+    var(--color-white)
+  );
+  --foreground: var(--color-neutral-100);
+  --info: var(--color-blue-500);
+  --info-foreground: var(--color-blue-400);
+  --input: --alpha(var(--color-white) / 8%);
+  --muted: --alpha(var(--color-white) / 4%);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-500) 90%,
+    var(--color-white)
+  );
+  --popover: color-mix(in srgb, var(--background) 98%, var(--color-white));
+  --popover-foreground: var(--color-neutral-100);
+  --primary: var(--color-neutral-100);
+  --primary-foreground: var(--color-neutral-800);
+  --ring: var(--color-neutral-500);
+  --secondary: --alpha(var(--color-white) / 4%);
+  --secondary-foreground: var(--color-neutral-100);
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-400);
+  --warning: var(--color-amber-500);
+  --warning-foreground: var(--color-amber-400);
+  --chart-1: var(--color-blue-700);
+  --chart-2: var(--color-emerald-500);
+  --chart-3: var(--color-amber-500);
+  --chart-4: var(--color-purple-500);
+  --chart-5: var(--color-rose-500);
+  --sidebar: color-mix(
+    in srgb,
+    var(--color-neutral-950) 97%,
+    var(--color-white)
+  );
+  --sidebar-foreground: color-mix(
+    in srgb,
+    var(--color-neutral-100) 64%,
+    var(--sidebar)
+  );
+  --sidebar-primary: var(--color-neutral-100);
+  --sidebar-primary-foreground: var(--color-neutral-800);
+  --sidebar-accent: --alpha(var(--color-white) / 4%);
+  --sidebar-accent-foreground: var(--color-neutral-100);
+  --sidebar-border: --alpha(var(--color-white) / 5%);
+  --sidebar-ring: var(--color-neutral-400);
+  --sidebar-active: var(--accent);
 }
 
 :root {
@@ -181,7 +197,7 @@ html,
 body {
   @apply m-0 bg-background text-foreground;
   font-family: var(--font-sans);
-  letter-spacing: var(--tracking-ui);
+  letter-spacing: normal;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -212,19 +228,10 @@ select:not([data-slot]) {
   }
 }
 
-/* Shell chrome (sidebar, top bar, the inset frame) uses soft corners, while
-   page content keeps Eigenn's square ones. Radius utilities read --radius, so
-   re-scoping it here changes only the chrome. */
-[data-slot="sidebar-inner"],
-[data-slot="sidebar"][data-mobile="true"],
-[data-shell-chrome] {
-  --radius: 0.625rem;
-}
-
 /* Icons: every @tabler/icons-react glyph renders <svg class="tabler-icon ...">.
    Change the tokens below to restyle all icons at once. Size utilities on an
    icon (size-4, size-5...) still win because they sit in the utilities layer.
-   Eigenn sizing: 14px in navigation, 20px on cards, 16px elsewhere. */
+   Shared sizing: 14px in navigation, 20px on cards, 16px elsewhere. */
 :root {
   --icon-size: 1rem;
   --icon-stroke: 1.5;
@@ -233,6 +240,10 @@ select:not([data-slot]) {
 }
 
 @layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
   .tabler-icon {
     width: var(--icon-size);
     height: var(--icon-size);

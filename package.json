@@ -4,7 +4,7 @@
   "sideEffects": false,
   "version": "0.1.18",
   "type": "module",
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.34.8",
   "scripts": {
     "postinstall": "[ ! -f source.config.ts ] || fumadocs-mdx",
     "predev": "pnpm build:report-widgets",
@@ -48,6 +48,7 @@
     "test:ci": "vitest run --reporter=dot",
     "test:standalone:gateway": "node --test scripts/celld/runtime/crawl-gateway.test.mjs",
     "test:e2e": "playwright test -c tests/playwright.config.ts",
+    "test:e2e:core": "playwright test -c tests/playwright.core.config.ts",
     "test:e2e:free-tools": "playwright test -c tests/playwright.free-tools.config.ts",
     "test:e2e:mcp-isolation": "playwright test -c tests/playwright.mcp-isolation.config.ts",
     "test:e2e:domain": "playwright test -c tests/playwright.config.ts tests/domain-overview-filters.spec.ts",
@@ -66,7 +67,11 @@
     "deploy:postgres": "npm run db:migrate:pg && pnpm build && pnpm alchemy deploy deploy/alchemy/alchemy.run.ts --env-file .env.production --stage hosted-prod --adopt",
     "standalone:admin": "docker compose -f deploy/standalone/compose.yaml exec -T runtime node /opt/standalone/admin.mjs",
     "selfhost:admin": "node --env-file=.env.selfhost scripts/celld/runtime/admin.mjs",
-    "ci:check": "prettier --check . && knip && tsc --noEmit && tsc --noEmit -p tests/badseo/tsconfig.json && tsc --noEmit -p tsconfig.report-widgets.json && oxlint . --type-aware && pnpm sync-plugin-skills && test -z \"$(git status --porcelain -- plugins/openseo/skills)\""
+    "ci:check": "prettier --check . && knip && tsc --noEmit && tsc --noEmit -p tests/badseo/tsconfig.json && tsc --noEmit -p tsconfig.report-widgets.json && oxlint . --type-aware && pnpm sync-plugin-skills && test -z \"$(git status --porcelain -- plugins/openseo/skills)\"",
+    "security:install": "bash security/install.sh",
+    "security:scan": "bash security/scan.sh fast",
+    "security:full": "bash security/scan.sh full",
+    "security:dast": "bash security/scan.sh dast"
   },
   "cloudflare": {
     "bindings": {
@@ -98,10 +103,10 @@
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",
     "@fontsource-variable/inter": "^5.3.0",
-    "@modelcontextprotocol/client": "2.0.0",
+    "@modelcontextprotocol/client": "2.3.0",
     "@modelcontextprotocol/ext-apps": "2.0.3",
-    "@modelcontextprotocol/sdk": "1.30.0",
-    "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/sdk": "1.32.0",
+    "@modelcontextprotocol/server": "2.3.0",
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "@tabler/icons-react": "^3.49.0",
     "@tanstack/query-core": "^5.103.2",
@@ -142,6 +147,7 @@
     "react-dom": "^19.0.0",
     "react-leaflet": "^5.0.0",
     "react-markdown": "^10.1.0",
+    "re2js": "^1.3.3",
     "recharts": "^3.8.0",
     "remark-gfm": "^4.0.1",
     "remeda": "^2.33.6",
@@ -188,16 +194,11 @@
     "oxlint-tsgolint": "^0.15.0",
     "portless": "^0.5.2",
     "prettier": "^3.6.2",
-    "shadcn": "^4.21.0",
+    "shadcn": "^4.22.1",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3",
     "vite": "^8.3.4",
     "vitest": "^5.0.4",
     "wrangler": "^4.149.0"
-  },
-  "pnpm": {
-    "overrides": {
-      "zod@4": "4.6.7"
-    }
   }
 }

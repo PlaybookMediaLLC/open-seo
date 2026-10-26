@@ -16,6 +16,7 @@ import {
   installationToken,
 } from "@/server/features/publishing/githubApp";
 import { getOptionalEnvValue } from "@/server/lib/runtime-env";
+import { readRequestText } from "@/server/lib/request-body";
 import { AppError } from "@/server/lib/errors";
 import { gateSummary, gateTrend, parseGateConfig } from "@/shared/releaseGate";
 import { queueCheck, recentBlocking } from "./CheckApi";
@@ -40,14 +41,15 @@ function hexBytes(hex: string) {
 export async function verifyWebhook(request: Request) {
   const secret = await getOptionalEnvValue("GITHUB_APP_WEBHOOK_SECRET");
   if (!secret) return { ok: false as const, status: 404 };
-  const body = await request.text();
   const signature = request.headers
     .get("x-hub-signature-256")
     ?.match(/^sha256=([0-9a-f]{64})$/)?.[1];
   const delivery = request.headers.get("x-github-delivery");
   const event = request.headers.get("x-github-event");
-  if (!signature || !delivery || !event || body.length > MAX_BODY_BYTES)
+  if (!signature || !delivery || !event)
     return { ok: false as const, status: 401 };
+  const body = await readRequestText(request, MAX_BODY_BYTES);
+  if (body === null) return { ok: false as const, status: 413 };
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),

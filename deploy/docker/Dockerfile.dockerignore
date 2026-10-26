@@ -10,4 +10,14 @@
 .env
 .env.*
 !.env.example
+# Wrangler bindings are credentials too, including per-environment variants.
+.dev.vars
+.dev.vars.*
+**/.dev.vars
+**/.dev.vars.*
+**/.env
+**/.env.*
+!**/.env.example
 .alchemy/
+security/reports/
+security/runs/

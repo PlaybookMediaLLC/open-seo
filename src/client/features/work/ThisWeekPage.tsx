@@ -110,7 +110,7 @@ export function ThisWeekPage({ projectId }: { projectId: string }) {
           title="Work"
           description={
             week
-              ? `Week of ${dateLabel(week.weekStart)}. ${week.snapshotAt ? `Weekly snapshot written ${dateLabel(week.snapshotAt)}; the lists below are live.` : "The lists below are live; no weekly snapshot yet."}`
+              ? `Week of ${new Date(week.weekStart).toLocaleDateString(undefined, { timeZone: "UTC" })}. ${week.snapshotAt ? `Weekly snapshot written ${dateLabel(week.snapshotAt)}; the lists below are live.` : "The lists below are live; no weekly snapshot yet."}`
               : "Completed, measuring and next, from real records."
           }
           actions={

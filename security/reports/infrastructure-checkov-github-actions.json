@@ -1,0 +1,14 @@
+[
+  {
+    "check_type": "github_actions",
+    "summary": {
+      "passed": 372,
+      "failed": 0,
+      "skipped": 0,
+      "parsing_errors": 0,
+      "resource_count": 0,
+      "checkov_version": "3.3.30"
+    },
+    "failed_checks": []
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "template-id": "openseo-response-headers",
+    "path": "/",
+    "severity": "low"
+  },
+  {
+    "template-id": "openseo-response-headers",
+    "path": "/sign-in",
+    "severity": "low"
+  }
+]

@@ -1,0 +1,624 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "CodeQL",
+          "version": "2.27.3",
+          "rules": [
+            {
+              "id": "js/enabling-electron-insecure-content"
+            },
+            {
+              "id": "js/disabling-electron-websecurity"
+            },
+            {
+              "id": "js/identity-replacement"
+            },
+            {
+              "id": "js/redos"
+            },
+            {
+              "id": "js/polynomial-redos"
+            },
+            {
+              "id": "js/angular/insecure-url-whitelist"
+            },
+            {
+              "id": "js/angular/disabling-sce"
+            },
+            {
+              "id": "js/angular/double-compilation"
+            },
+            {
+              "id": "js/tainted-format-string"
+            },
+            {
+              "id": "js/unsafe-dynamic-method-access"
+            },
+            {
+              "id": "js/bad-code-sanitization"
+            },
+            {
+              "id": "js/code-injection"
+            },
+            {
+              "id": "js/xpath-injection"
+            },
+            {
+              "id": "js/insecure-randomness"
+            },
+            {
+              "id": "js/request-forgery"
+            },
+            {
+              "id": "js/missing-token-validation"
+            },
+            {
+              "id": "js/insufficient-password-hash"
+            },
+            {
+              "id": "js/xml-bomb"
+            },
+            {
+              "id": "js/cors-permissive-configuration"
+            },
+            {
+              "id": "js/template-object-injection"
+            },
+            {
+              "id": "js/system-prompt-injection"
+            },
+            {
+              "id": "js/clear-text-cookie"
+            },
+            {
+              "id": "js/jwt-missing-verification"
+            },
+            {
+              "id": "js/incomplete-url-substring-sanitization"
+            },
+            {
+              "id": "js/overly-large-range"
+            },
+            {
+              "id": "js/incomplete-hostname-regexp"
+            },
+            {
+              "id": "js/useless-regexp-character-escape"
+            },
+            {
+              "id": "js/incomplete-url-scheme-check"
+            },
+            {
+              "id": "js/incorrect-suffix-check"
+            },
+            {
+              "id": "js/insecure-helmet-configuration"
+            },
+            {
+              "id": "js/biased-cryptographic-random"
+            },
+            {
+              "id": "js/weak-cryptographic-algorithm"
+            },
+            {
+              "id": "js/second-order-command-line-injection"
+            },
+            {
+              "id": "js/command-line-injection"
+            },
+            {
+              "id": "js/shell-command-constructed-from-input"
+            },
+            {
+              "id": "js/shell-command-injection-from-environment"
+            },
+            {
+              "id": "js/unnecessary-use-of-cat"
+            },
+            {
+              "id": "js/missing-rate-limiting"
+            },
+            {
+              "id": "js/resource-exhaustion"
+            },
+            {
+              "id": "js/exposure-of-private-files"
+            },
+            {
+              "id": "js/insecure-dependency"
+            },
+            {
+              "id": "js/stack-trace-exposure"
+            },
+            {
+              "id": "js/prototype-polluting-assignment"
+            },
+            {
+              "id": "js/prototype-pollution-utility"
+            },
+            {
+              "id": "js/prototype-pollution"
+            },
+            {
+              "id": "js/xxe"
+            },
+            {
+              "id": "js/bad-tag-filter"
+            },
+            {
+              "id": "js/unsafe-html-expansion"
+            },
+            {
+              "id": "js/incomplete-html-attribute-sanitization"
+            },
+            {
+              "id": "js/double-escaping"
+            },
+            {
+              "id": "js/incomplete-sanitization"
+            },
+            {
+              "id": "js/incomplete-multi-character-sanitization"
+            },
+            {
+              "id": "js/cors-misconfiguration-for-credentials"
+            },
+            {
+              "id": "js/path-injection"
+            },
+            {
+              "id": "js/zipslip"
+            },
+            {
+              "id": "js/insecure-download"
+            },
+            {
+              "id": "js/disabling-certificate-validation"
+            },
+            {
+              "id": "js/type-confusion-through-parameter-tampering"
+            },
+            {
+              "id": "js/functionality-from-untrusted-source"
+            },
+            {
+              "id": "js/functionality-from-untrusted-domain"
+            },
+            {
+              "id": "js/sql-injection"
+            },
+            {
+              "id": "js/build-artifact-leak"
+            },
+            {
+              "id": "js/clear-text-logging"
+            },
+            {
+              "id": "js/clear-text-storage-of-sensitive-data"
+            },
+            {
+              "id": "js/server-crash"
+            },
+            {
+              "id": "js/regex-injection"
+            },
+            {
+              "id": "js/unvalidated-dynamic-method-call"
+            },
+            {
+              "id": "js/cross-window-information-leak"
+            },
+            {
+              "id": "js/client-side-unvalidated-url-redirection"
+            },
+            {
+              "id": "js/server-side-unvalidated-url-redirection"
+            },
+            {
+              "id": "js/unsafe-deserialization"
+            },
+            {
+              "id": "js/sensitive-get-query"
+            },
+            {
+              "id": "js/unsafe-jquery-plugin"
+            },
+            {
+              "id": "js/xss-through-dom"
+            },
+            {
+              "id": "js/xss-through-exception"
+            },
+            {
+              "id": "js/reflected-xss"
+            },
+            {
+              "id": "js/html-constructed-from-input"
+            },
+            {
+              "id": "js/xss"
+            },
+            {
+              "id": "js/stored-xss"
+            },
+            {
+              "id": "js/resource-exhaustion-from-deep-object-traversal"
+            },
+            {
+              "id": "js/insufficient-key-size"
+            },
+            {
+              "id": "js/client-exposed-cookie"
+            },
+            {
+              "id": "js/case-sensitive-middleware-path"
+            },
+            {
+              "id": "js/host-header-forgery-in-email-generation"
+            },
+            {
+              "id": "js/loop-bound-injection"
+            },
+            {
+              "id": "js/session-fixation"
+            },
+            {
+              "id": "js/unsafe-code-construction"
+            },
+            {
+              "id": "js/file-system-race"
+            },
+            {
+              "id": "js/empty-password-in-configuration-file"
+            },
+            {
+              "id": "js/client-side-request-forgery"
+            },
+            {
+              "id": "js/hardcoded-data-interpreted-as-code"
+            },
+            {
+              "id": "js/missing-origin-check"
+            },
+            {
+              "id": "js/regex/missing-regexp-anchor"
+            },
+            {
+              "id": "js/indirect-command-line-injection"
+            },
+            {
+              "id": "js/file-access-to-http"
+            },
+            {
+              "id": "js/user-controlled-bypass"
+            },
+            {
+              "id": "js/log-injection"
+            },
+            {
+              "id": "js/remote-property-injection"
+            },
+            {
+              "id": "js/insecure-temporary-file"
+            },
+            {
+              "id": "js/http-to-file-access"
+            },
+            {
+              "id": "js/samesite-none-cookie"
+            },
+            {
+              "id": "js/summary/lines-of-code"
+            },
+            {
+              "id": "js/summary/lines-of-user-code"
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "js/incomplete-url-substring-sanitization",
+          "level": "warning",
+          "message": {
+            "text": "js/incomplete-url-substring-sanitization"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/features/seo-checks/seoCheckRun.test.ts"
+                },
+                "region": {
+                  "startLine": 72,
+                  "startColumn": 21,
+                  "endColumn": 44
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/incomplete-url-substring-sanitization",
+          "level": "warning",
+          "message": {
+            "text": "js/incomplete-url-substring-sanitization"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/mcp/oauth-registration.ts"
+                },
+                "region": {
+                  "startLine": 51,
+                  "startColumn": 24,
+                  "endColumn": 80
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/stack-trace-exposure",
+          "level": "warning",
+          "message": {
+            "text": "js/stack-trace-exposure"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/run.mjs"
+                },
+                "region": {
+                  "startLine": 235,
+                  "startColumn": 15,
+                  "endColumn": 51
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/bad-tag-filter",
+          "level": "warning",
+          "message": {
+            "text": "js/bad-tag-filter"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/lib/scrape.ts"
+                },
+                "region": {
+                  "startLine": 111,
+                  "startColumn": 15,
+                  "endColumn": 48
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/double-escaping",
+          "level": "warning",
+          "message": {
+            "text": "js/double-escaping"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/report-text.mjs"
+                },
+                "region": {
+                  "startLine": 7,
+                  "startColumn": 3,
+                  "endLine": 9,
+                  "endColumn": 28
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/double-escaping",
+          "level": "warning",
+          "message": {
+            "text": "js/double-escaping"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/server/lib/scrape.ts"
+                },
+                "region": {
+                  "startLine": 123,
+                  "startColumn": 10,
+                  "endLine": 124,
+                  "endColumn": 28
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/incomplete-multi-character-sanitization",
+          "level": "warning",
+          "message": {
+            "text": "js/incomplete-multi-character-sanitization"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/report-text.mjs"
+                },
+                "region": {
+                  "startLine": 18,
+                  "startColumn": 7,
+                  "endColumn": 48
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/incomplete-multi-character-sanitization",
+          "level": "warning",
+          "message": {
+            "text": "js/incomplete-multi-character-sanitization"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/report-text.mjs"
+                },
+                "region": {
+                  "startLine": 23,
+                  "startColumn": 14,
+                  "endColumn": 39
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/file-system-race",
+          "level": "warning",
+          "message": {
+            "text": "js/file-system-race"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/rank-location-repair-support.ts"
+                },
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 3,
+                  "endColumn": 53
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/regex/missing-regexp-anchor",
+          "level": "warning",
+          "message": {
+            "text": "js/regex/missing-regexp-anchor"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/growth-workflow.e2e.ts"
+                },
+                "region": {
+                  "startLine": 68,
+                  "startColumn": 31,
+                  "endColumn": 52
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/regex/missing-regexp-anchor",
+          "level": "warning",
+          "message": {
+            "text": "js/regex/missing-regexp-anchor"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "vite-plugin-relay-brand.ts"
+                },
+                "region": {
+                  "startLine": 147,
+                  "startColumn": 4,
+                  "endColumn": 39
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/file-access-to-http",
+          "level": "warning",
+          "message": {
+            "text": "js/file-access-to-http"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "scripts/migrate-d1-to-postgres.ts"
+                },
+                "region": {
+                  "startLine": 122,
+                  "startColumn": 5,
+                  "endColumn": 97
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/http-to-file-access",
+          "level": "warning",
+          "message": {
+            "text": "js/http-to-file-access"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/run.mjs"
+                },
+                "region": {
+                  "startLine": 217,
+                  "startColumn": 11,
+                  "endLine": 218,
+                  "endColumn": 17
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "js/http-to-file-access",
+          "level": "warning",
+          "message": {
+            "text": "js/http-to-file-access"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": ".agents/skills/evaluate-skill/scripts/run.mjs"
+                },
+                "region": {
+                  "startLine": 227,
+                  "startColumn": 13,
+                  "endColumn": 67
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

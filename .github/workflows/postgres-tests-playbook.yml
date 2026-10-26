@@ -1,5 +1,8 @@
 name: Postgres real-SQL tests (Playbook)
 
+permissions:
+  contents: read
+
 # The opportunity, publishing, experiment and tenancy suites run on SQLite in
 # CI. This job runs the same files against a real Postgres, as RFC-0007 asks.
 on:

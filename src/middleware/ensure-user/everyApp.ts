@@ -2,6 +2,8 @@ import { env } from "cloudflare:workers";
 import {
   ConfigurationError,
   getEveryAppUser,
+  listMembers,
+  refusalFromError,
   type EveryAppUser,
 } from "@every-app/sdk/server";
 import { ensureSharedWorkspaceOrganization } from "@/server/auth/delegated-organization";
@@ -69,4 +71,30 @@ export async function resolveEveryAppUserContext(
     organizationId,
     role,
   };
+}
+
+/**
+ * Whether the gateway still lets `userId` open OpenSEO. Requests carry a fresh
+ * signed identity, but an open SAM socket was authorized once, so each turn
+ * asks the gateway's member list instead. A gateway that won't answer counts
+ * as no. `everyapp dev` pins no organization and has no member directory, so
+ * it trusts the signed-in user. An install whose admin hasn't approved the
+ * `members` capability yet keeps the connect-time check alone, as before the
+ * capability existed, rather than refusing every chat until they do.
+ */
+export async function isEveryAppMember(userId: string): Promise<boolean> {
+  if (!env.EVERY_APP_ORG_ID) return true;
+  try {
+    const { members } = await listMembers({ env, for: { background: true } });
+    return members.some((member) => member.id === userId);
+  } catch (error) {
+    if (refusalFromError(error)?.code === "capability_not_requested") {
+      console.warn(
+        "[openseo] the members capability isn't approved on this install, so SAM can't end a removed member's open chat; approve it with everyapp install",
+      );
+      return true;
+    }
+    console.error("Every App member check failed:", error);
+    return false;
+  }
 }

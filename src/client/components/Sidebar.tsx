@@ -67,7 +67,7 @@ import {
 // Quiet rows that brighten on hover; the active row is a soft raised pill.
 // In the collapsed rail the same rows become 32px icon buttons.
 const navButtonClass =
-  "h-10 gap-2.5 rounded-lg px-2.5 text-sm text-sidebar-foreground/65 transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4 [&_svg]:opacity-70 data-active:[&_svg]:opacity-100 hover:[&_svg]:opacity-100";
+  "h-10 gap-2.5 rounded-lg px-2.5 text-sm text-sidebar-foreground transition-colors hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground data-active:bg-sidebar-active data-active:font-medium data-active:text-sidebar-accent-foreground data-active:shadow-[0_1px_2px_rgb(0_0_0/0.06),inset_0_0_0_1px_var(--sidebar-border)] [&_svg]:size-4";
 
 function SidebarNavLink({
   icon: Icon,
@@ -326,13 +326,13 @@ function AccountFooter({ ready, rail }: { ready: boolean; rail: boolean }) {
                     {session?.user?.name || email}
                   </span>
                   <span
-                    className="truncate text-[11px] text-sidebar-foreground/50"
+                    className="truncate text-[11px] text-sidebar-foreground"
                     data-ph-mask
                   >
                     {email}
                   </span>
                 </span>
-                <Selector className="!size-3.5 text-sidebar-foreground/40" />
+                <Selector className="!size-3.5 text-sidebar-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 side={rail ? "right" : "top"}

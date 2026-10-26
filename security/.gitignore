@@ -1,0 +1,5 @@
+# Scan runs may contain sensitive evidence. Only reviewed assessment summaries
+# and metadata-only reports are versioned; CI publishes an explicit allowlist.
+/runs/
+__pycache__/
+*.pyc

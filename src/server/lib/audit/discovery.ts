@@ -3,9 +3,9 @@
  */
 import robotsParser from "robots-parser";
 import { XMLParser } from "fast-xml-parser";
-import { readBodyCapped } from "./html-response";
+import { readBodyCapped, readTextUpTo } from "./html-response";
 import { isSameOrigin, normalizeUrl } from "./url-utils";
-import { isCrawlableUrl } from "./url-policy";
+import { isCrawlableUrl, normalizeAndValidateStartUrl } from "./url-policy";
 import { publicFetch } from "@/server/lib/public-fetch";
 import { createRateLimitWait, type RateLimitWait } from "./crawl-throttle";
 import type { CrawlerAccess } from "@/shared/crawler-access";
@@ -61,7 +61,7 @@ async function fetchRobotsTxtText(
       fetched = await fetchRobots();
     }
     if (!fetched?.response.ok) return null;
-    return (await fetched.response.text()).slice(0, MAX_ROBOTS_TXT_BYTES);
+    return await readTextUpTo(fetched.response, MAX_ROBOTS_TXT_BYTES);
   } catch (error) {
     console.warn("Failed to fetch robots.txt:", error);
     return null;
@@ -105,7 +105,7 @@ async function fetchFollowingRedirects(
       return null;
     }
     if (!isCrawlableUrl(next)) return null;
-    current = next;
+    current = await normalizeAndValidateStartUrl(next);
   }
   return null;
 }

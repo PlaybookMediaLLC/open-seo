@@ -191,10 +191,10 @@ export function AutomationSettings({ projectId }: { projectId: string }) {
         <EditSchedule
           schedule={editing}
           onClose={() => setEditing(null)}
-          onSave={(schedule) => {
-            save.mutate(schedule);
-            setEditing(null);
-          }}
+          onSave={(schedule) =>
+            // Close only once saved, so a failed save keeps the edit.
+            save.mutate(schedule, { onSuccess: () => setEditing(null) })
+          }
         />
       )}
       {logsFor && (

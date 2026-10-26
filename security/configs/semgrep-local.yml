@@ -1,0 +1,23 @@
+rules:
+  - id: crawler-credentials-automatic-redirect
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: >-
+      Automatic redirects bypass URL validation and can forward host-scoped
+      crawler credentials. Validate every redirect target and rebuild headers
+      for that target before requesting it.
+    metadata:
+      category: security
+      confidence: HIGH
+      cwe:
+        - "CWE-918: Server-Side Request Forgery (SSRF)"
+        - "CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"
+      owasp: A10:2021 - Server-Side Request Forgery
+    patterns:
+      - pattern: 'fetch($URL, { ..., redirect: "follow", ... })'
+      - pattern-inside: |
+          async function $F(...) {
+            ...
+            crawlerHeadersFor(...)
+            ...
+          }

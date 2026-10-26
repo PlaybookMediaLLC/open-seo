@@ -217,11 +217,11 @@ function NewSplitTestSheet(props: { projectId: string; onClose: () => void }) {
             onChange={(event) => setPagePattern(event.target.value)}
           />
           <p id="split-pattern-help" className="text-sm text-muted-foreground">
-            Match URL paths with a regular expression. For example,{" "}
+            Match URL paths with an RE2 expression. For example,{" "}
             <code>^/integrations/[^/]+$</code> includes{" "}
             <code>/integrations/slack</code> and excludes{" "}
-            <code>/blog/slack</code>. Check the matching pages before creating a
-            test.
+            <code>/blog/slack</code>. Lookaround and backreferences are not
+            supported. Check the matching pages before creating a test.
           </p>
           <Button
             variant="outline"

@@ -1,65 +1,175 @@
 # Relay — vision and path to the north star
 
-**Updated:** October 23, 2026
+**Updated:** October 25, 2026
 
-Relay becomes the ongoing organic growth operations system for software businesses: identify what matters, get an approved change implemented, establish what happened in production, and preserve that knowledge for the next decision.
+**Relay keeps everything a SaaS business promises, publishes, and delivers aligned as its product changes.**
 
-The initial promise is website release assurance for developer-led B2B SaaS teams. A customer connects a GitHub-managed Next.js marketing site, chooses important pages, and receives evidence of harmful changes, reviewable repairs, and verified resolutions through its existing release process. The commercial rationale and validation thresholds are in [company.md](company.md).
+The long-term direction is the operating system for SaaS customer-facing operations: understand what changed, identify the affected customers and systems, coordinate approved work, verify completion, and retain the evidence for the next decision.
+
+Website release assurance is the first commercial entry point, under **Relay Protect**. **Relay Sync** extends into product-information integrity. **Relay Launch** coordinates the commercial work created by releases. SEO remains a valuable acquisition capability throughout. The buyer, price hypotheses, and paid-validation program are in [company.md](company.md).
+
+This document describes the intended product and architecture. Planned capabilities and planning horizons are not shipped features or delivery commitments.
 
 ## The north-star experience
 
-An owner can open Relay at any time and answer:
+Whenever something changes, an owner can ask Relay:
 
-- Which important pages are protected, and when were they last checked successfully?
-- What changed, what failed, and how certain are we about the cause?
-- What exact correction is proposed, and what needs a person's decision?
-- Has the approved correction reached production and resolved the original problem?
-- What do subsequent search and conversion observations show, and what remains inconclusive?
-- What should happen next, given the site's previous decisions and results?
+1. What actually changed, and which evidence establishes it?
+2. Which customers, pages, journeys, assets, and published claims are affected?
+3. What needs to happen in each connected system, and who owns it?
+4. Which exact actions are authorized, and which need a person's decision?
+5. Did the work reach its destination, resolve the issue, and produce a measurable result?
 
-The loop is **connect → baseline → detect → investigate → prepare → approve → verify production → observe outcomes → retain context**. A quiet week, an unsupported repair, or insufficient data is an explicit result.
+The loop is **observe → establish facts → determine impact → prepare → approve → execute → verify → learn**. A quiet period, an unsupported action, conflicting evidence, and insufficient outcome data are explicit results.
 
-## What exists and what is missing
+The browser is the place to inspect evidence, review incidents, authorize work, and understand results. The core should be API-first and MCP-accessible so CI, agents, and existing team tools can use the same facts and permissions.
 
-The [October 23 codebase audit](docs/maintainers/relay-release-assurance-audit.md) finds substantial working foundations: research and audits, first-party analytics, opportunities, exact-change publishing, deployment signals, measurement, CI checks, and a weekly work view.
+## The Product Reality Engine
 
-The repository does not yet implement the complete release-assurance loop. It lacks a durable production baseline and regression lifecycle, a repair path independent of Search Console opportunity records, general verification of the original failure, and a validated protected-site service. Customer previews are checked today, but proposal-bound preview orchestration is still planned. Basic cooldown and negative-result filters already exist; persistent page history and learning remain incomplete.
+Build one shared change lifecycle and evidence model. Each commercial workflow should become more useful because it understands the work and facts used by the others.
 
-## Incremental delivery
+| Capability              | Responsibility                                                                                                           | Evidence and controls                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Observe changes         | Connect GitHub, deployments, feature flags, billing configuration, analytics, support, and website observations.         | Record source identity, version, observation time, tenant, and collection health. A missing signal is not proof that nothing changed. |
+| Establish product facts | Describe features, plans, limits, integrations, APIs, availability, audiences, and effective dates.                      | Version evidence and source authority; preserve rollout segments, exceptions, and unresolved conflicts.                               |
+| Determine impact        | Map facts and changes to pages, docs, offers, support answers, sales assets, onboarding, campaigns, and customer groups. | Keep source-to-claim links explicit. Distinguish a confirmed contradiction from a possible inconsistency.                             |
+| Prepare and execute     | Draft supported PRs, content edits, corrected assets, launch tasks, or workflow repairs.                                 | Bind approval to the exact action and version; revalidate source state and authority before execution.                                |
+| Verify and learn        | Check production behavior, published claims, delivery receipts, adoption, conversions, and prior decisions.              | Separate publication, technical resolution, and commercial outcome. Retain failed work and inconclusive results.                      |
 
-RFC numbers are stable identifiers. The [RFC index](docs/maintainers/rfcs/README.md) defines delivery order and dependencies; numeric order is not priority.
+### Connected records
 
-| Stage                          | Customer value                                                                             | Work                                                          | Exit evidence                                                                                                                                             |
-| ------------------------------ | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0. Qualify a paid pilot        | An agreed problem, protected scope, owner, and price                                       | RFC-0026 phase A; relevant open RFC-0001/0007/0009 follow-ups | Three paid pilot commitments; production identity and permission/readiness checks recorded. No claim of automatic protection before activation.           |
-| 1. Observe production reliably | Confirmed regressions on agreed pages, with honest coverage and actionable tickets         | RFC-0019 phases 1a–1b; reuse RFC-0008/0010/0015               | Known-good snapshots, confirmation and deduplication, visible failed/stale runs, and reviewed alert quality on authorized sites.                          |
-| 2. Complete a reviewed repair  | A proven source edit, checks for that commit, and a resolved production failure            | RFC-0027 → RFC-0025 phase 1a → RFC-0028; RFC-0019 phase 1c    | Two approved, deployed, verified repairs across separate customer organizations. Merge alone never counts as resolution.                                  |
-| 3. Deliver a recurring service | Clear weekly work and coverage, reliable operations, and a defensible renewal decision     | RFC-0018 reporting integration; RFC-0026 phase B              | A four-week operational record, measured service costs, actual payment and renewal evidence where due. Target 8–10 paying sites in the validation period. |
-| 4. Improve existing pages      | Limited, measurable growth work informed by past outcomes                                  | RFC-0024, then RFC-0020; reuse RFC-0006/0012/0016 as eligible | Repeat paid demand for protection, adequate data, customer-approved campaigns, and honest positive, negative, or inconclusive outcomes.                   |
-| 5. Expand from proven demand   | Facts-backed pages, launches, competitor responses, portfolios, optional delegated actions | RFC-0021/0023/0022/0007; later RFC-0018 and RFC-0025 phases   | Explicit customer demand, supported adapters, trustworthy verification, bounded costs, and a reviewed permission model for each expansion.                |
+The planned model connects:
 
-Discovery can run alongside engineering. Each engineering increment must be independently useful: a detection-and-ticket pilot does not need automatic repair; a reviewed repair does not need standing approvals; a customer-hosted preview does not need a Relay build platform.
+```mermaid
+flowchart LR
+  Change[Product change] --> Fact[Versioned product fact]
+  Fact --> Claim[Published claim]
+  Claim --> Asset[Customer-facing asset or journey]
+  Change --> Action[Proposed action]
+  Asset --> Action
+  Action --> Approval[Exact-version approval]
+  Approval --> Execution[Execution record]
+  Execution --> Verification[Destination verification]
+  Verification --> Outcome[Outcome observation]
+```
 
-## Product principles
+These are domain concepts to design, not a claim that new database tables already exist. Reuse existing approvals, proposals, deployment signals, and measurement records where they satisfy the contract.
 
-**Production evidence is authoritative about observed behavior.** Keep production observations, source commits, suspected causes, approvals, previews, deployments, and outcomes linked but distinct. A fetched page does not prove which commit produced it. A successful deployment event does not prove a rule passed.
+A **ProductFact** may establish that an integration is available on the Business plan, in the US, after a particular rollout date. A **PublishedClaim** may identify a page that promises it to everyone. That is a confirmed contradiction only when the authoritative evidence, audience, time, and claim meaning are comparable. Ambiguous wording, stale evidence, or an unknown rollout segment needs review.
 
-**Repairs must be narrow and explainable.** Restore a source literal only when it can be mapped to the observed behavior. Inherited title templates, metadata helpers, headers, dynamic routes, and rewrites require explicit handling or a ticket. Never paste a rendered title back into source without understanding its transformation.
+Facts need an authority policy and provenance, not just an embedding or an LLM summary. A source commit establishes intent; production observations establish observed behavior. Neither alone proves availability for every customer. Grandfathered plans and regional or staged rollouts remain first-class constraints.
 
-**Authority remains explicit.** The initial service requires a person to approve the exact repository change and merge it. Customer CI, branch protection, deployment, and rollback remain in force. Agents can investigate and draft within their existing permissions. Limited standing approvals may be evaluated after paid validation; unrestricted autonomous publishing is outside the vision.
+### One pricing change, connected work
 
-**Protection and growth have different evidence clocks.** Technical repair verification follows production deployment. Search and conversion measurement waits for complete, sufficient observations. An existing low-traffic page can still suffer a real indexing regression. It cannot support an invented traffic or revenue impact estimate.
+A hypothetical new pricing model can require:
 
-**Reuse the foundation.** Retain upstream attribution, core integrations, tenant checks, dual SQLite/Postgres support, exact-change approval, spend controls, and audit records. Add the missing connections rather than rebuilding the SEO platform.
+| System                  | Required work                                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------------- |
+| Billing                 | Compare configured prices and entitlements with the approved policy.                                |
+| Website                 | Find stale plan references on pricing, product, landing, and comparison pages.                      |
+| Documentation           | Update limits, upgrade instructions, FAQs, and examples.                                            |
+| Sales and support       | Prepare revised briefs, feature matrices, and saved replies.                                        |
+| Onboarding              | Find tutorials and upgrade messages that still describe old plans.                                  |
+| Customer communications | Prepare notices for the authorized, affected groups, respecting grandfathered accounts.             |
+| Acquisition             | Check advertising destinations, search snippets, and observable AI-search answers for stale claims. |
+| Conversion              | Test the advertised purchase path through a safe, agreed journey.                                   |
+| Verification            | Confirm each approved correction is live and report unresolved work.                                |
 
-**Bound the service.** Every plan states its monitored set, cadence, limits, and support expectations. Exhausted research credits must not silently disable included basic checks; an inactive plan, exhausted operational budget, revoked connection, or failed run must show lost coverage and a next step.
+All actions share one change identity and one approved set of facts. Observing an external search answer does not imply Relay can directly edit it.
 
-**Learn from completed work.** Preserve failed experiments and customer decisions as well as successful repairs. Counts and before/after comparisons should remain descriptive unless a suitable experimental design supports causal attribution.
+## Commercial sequence
+
+Sell three understandable workflows first:
+
+- **Protect:** Keep revenue-critical website surfaces and supported customer journeys working.
+- **Sync:** Keep what customers are told consistent with verified product capabilities.
+- **Launch:** Turn meaningful releases into coordinated commercial launches.
+
+A hypothetical integration release should become one launch operation. Relay establishes capability, permissions, eligible plans, rollout, and affected users; then prepares integration-page updates, setup instructions, example checks, screenshots through **Shots**, a changelog, announcements, and sales materials. Authorized CRM or support data can identify customers who requested it. Publication evidence and activation instrumentation belong to that same release.
+
+Each destination has its own approval and verification contract. Generating a launch packet is not equivalent to publishing it, delivering a message, or proving customer adoption.
+
+## Longer-term capability map
+
+These are possible product areas built on the common engine, not twelve independently scheduled products or currently available modules.
+
+| Area          | Work Relay could own                                                                                                             | Customer value                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Guard**     | Production page and journey checks, tracking, metadata, redirects, accessibility, reproducible incidents, and supported repairs. | Prevent lost leads and failed purchases.                                          |
+| **Truth**     | Reconcile pricing, entitlements, features, screenshots, integration claims, and docs.                                            | Reduce inaccurate promises.                                                       |
+| **Launch**    | Coordinate release notes, pages, announcements, product imagery, and sales briefs.                                               | Make shipped capabilities commercially usable.                                    |
+| **Docs**      | Maintain guides and API instructions, address support-driven gaps, and verify published answers.                                 | Reduce repeated support and broken instructions.                                  |
+| **Growth**    | Research demand, improve pages, repair technical SEO, monitor AI citations, and measure organic acquisition.                     | Create qualified demand from existing capabilities.                               |
+| **Convert**   | Find broken forms and journeys, prepare landing-page improvements, run experiments, and verify tracking to CRM or purchase.      | Improve qualified conversion.                                                     |
+| **Activate**  | Align onboarding, tours, tutorials, and lifecycle messages with deployed features.                                               | Help customers reach their first useful result.                                   |
+| **Enable**    | Maintain briefs, feature matrices, demo assets, objection responses, and account-specific updates.                               | Give sales and customer success current information.                              |
+| **Ecosystem** | Track APIs and SDKs, verify integration instructions, and maintain partner listings.                                             | Reduce integration failures and missed partner demand.                            |
+| **Revenue**   | Compare pricing, billing configuration, and entitlements; check purchase paths and revenue-event delivery.                       | Find inconsistent plans, checkout failures, and reporting errors.                 |
+| **Trust**     | Check accessibility, security claims, policy references, status links, and certification evidence.                               | Identify stale or unsupported customer-facing claims; do not imply certification. |
+| **Learn**     | Connect authorized support, usage, reviews, and feedback to recurring problems and verified corrective work.                     | Turn complaints into improvements that reach customers.                           |
+
+Protect initially draws on Guard; Sync draws on Truth and Docs; Launch consumes the same facts, assets, and verification services. Other areas expand only when a buyer pays for a repeatable workflow.
+
+## Foundation and current gaps
+
+The [October 23 codebase audit](docs/maintainers/relay-release-assurance-audit.md) records reusable foundations. Its implementation evidence is not acceptance of the broader platform.
+
+| Foundation                                                  | Current position                             | Next extension                                                      |
+| ----------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------- |
+| SEO research, audits, backlinks, AI visibility              | Substantial implementation                   | Acquisition intelligence attached to business changes               |
+| Search Console and GA4                                      | Existing integrations                        | Change-linked observations with honest data coverage                |
+| Source access and reviewed GitHub proposals                 | Supported edits implemented                  | More evidence sources and explicitly supported change classes       |
+| Documentation indexing and Markdown edits                   | Existing foundation                          | Product facts and published-claim verification                      |
+| Experiments and revenue attribution                         | Existing code with acceptance requirements   | Outcome measurement for additional workflows                        |
+| CI and supplied-preview checks                              | Existing checks                              | Bind checks to the exact proposed commit                            |
+| Jobs, spending controls, notifications                      | Existing infrastructure                      | Reuse for recurring operational work                                |
+| Durable production baselines and repair verification        | Still planned in the audited Protect roadmap | Common monitoring and verification services                         |
+| Complete revenue-critical browser journeys                  | Not established as a complete product        | Build or integrate bounded, safe browser checks                     |
+| Cross-system fact and impact model                          | New core work                                | Versioned authority, affected assets, and a shared change lifecycle |
+| Multichannel publishing, CRM execution, adoption automation | Substantial new work                         | Add selective integrations after paid demand                        |
+
+## Evidence-gated roadmap
+
+These horizons are relative planning ranges, not dates or delivery promises. Each expansion depends on evidence from the preceding work.
+
+| Horizon          | Main investment                                                                                                                                                 | Evidence required before expanding                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **0–3 months**   | Complete Protect: known-good baselines, consequential regressions, safe repairs, production verification, paid pilots, and technically feasible journey checks. | Paying customers, accepted fixes, low false-positive rates, visible coverage, and manageable service costs. |
+| **3–6 months**   | First Product Reality Engine and Sync around pricing, plans, integration availability, docs, and marketing pages.                                               | Repeated verified inconsistencies that customers pay to resolve.                                            |
+| **6–12 months**  | Launch: release interpretation, coordinated packets, docs, sales assets, authorized announcements, and destination verification.                                | Companies repeatedly run launches through Relay.                                                            |
+| **12–18 months** | Expand Growth and Convert: content improvement, acquisition workflows, lead-flow checks, experiments, and attribution integrity.                                | Measurable outcomes with sufficient evidence, repeated use, and renewal.                                    |
+| **18–30 months** | Activate, Enable, and Learn through adoption integrations, education, support-to-product work, and sales-content integrity.                                     | Regular use across departments, identifiable budget owners, and incremental revenue.                        |
+| **30–60 months** | Portfolio and enterprise operations: governance, regional content, policy-controlled actions, partner ecosystems, and broad API access.                         | Proven enterprise demand, reliable controls, viable economics, and sustainable support capacity.            |
+
+The [RFC delivery plan](docs/maintainers/rfcs/README.md) remains the detailed sequence for Protect: pilot scope → production baseline → confirmed incident → source proposal → reviewed PR and commit-bound preview → production verification → recurring service.
+
+Existing history, facts, documentation, and launch RFCs provide reusable pieces. They do not already specify the full Product Reality Engine, Sync, or coordinated Launch product. Define those contracts as separate future increments before implementation. The previous SEO expansion backlog no longer determines the company's long-term priority.
+
+## Product and engineering principles
+
+**Preserve explicit authority.** The initial service requires a person to approve the exact repository change and merge it. Customer CI, branch protection, deployment, and rollback controls remain in force. Agents can investigate and draft within their permissions. Future standing approvals must be scoped, revocable, and revalidated; unrestricted autonomous publishing is outside the vision.
+
+**Verify the destination.** Keep source, preview, deployment, live behavior, and outcome observations linked but distinct. A merge is not a production resolution. A delivery receipt is not proof that a customer read a message. Recheck the original failure or claim, not just a generic health endpoint.
+
+**Keep repairs narrow.** Map observed behavior to supported source edits. Inherited title templates, metadata helpers, dynamic routes, headers, and rewrites need explicit handling or a ticket. Never paste a rendered title into source without understanding its transformation.
+
+**Integrate established systems.** Consume analytics, billing, feature flags, CRM, help-desk, and adoption facts through authorized connections. Do not rebuild those products. Use Shots for visual production.
+
+**Keep core records independent of SEO.** Relay is now outside OpenSEO's GitHub fork network. Retain MIT attribution and useful services, watch upstream security fixes, and review incoming changes. The sync workflow remains configured. Let the facts and change lifecycle drive boundaries when they require separation; avoid a premature platform rewrite.
+
+**Protect tenants and bound execution.** Preserve tenant checks, dual SQLite/Postgres compatibility, spending controls, idempotent execution, and audit records. Every service states scope, cadence, limits, and support expectations. Revoked access, exhausted operational budgets, or stale checks must show lost coverage and a next step.
+
+**Use the right evidence clock.** Technical verification follows publication or deployment. Adoption, search, conversion, and revenue measurement need sufficient observations over appropriate windows. Record positive, negative, and inconclusive results; descriptive changes are not automatically causal gains.
 
 ## Measuring the north star
 
-The primary product metric to validate is **weekly active protected paying websites**: a paying website with an agreed monitored set, successful checks within its promised cadence, and a current coverage/work report. Count each website once per week. Failed or overdue coverage does not qualify merely because a schedule is enabled. Define the operational events and exclusions in RFC-0026 before treating this as a dashboard metric.
+The company metric to validate is **weekly paying businesses with verified coverage or completed customer-facing work**. Count each business once per week when it has an active paid scope and either:
 
-Pair it with production-verified resolutions, actionable-alert precision, missed seeded regressions, time from detection to resolution, review time, and renewal. Guard against false alerts, stale coverage, unsafe writes, unsupported repairs, and poor gross margin. Quiet weeks qualify through observed protection, not a quota of generated work.
+- Its agreed monitoring ran successfully within cadence and its current coverage report is available; or
+- A customer-authorized correction or launch action reached its destination and passed its defined verification.
 
-Long-term growth value also includes approved improvements that reach production and receive a completed measurement or an explicit insufficient-data outcome. That is accountable work; it is not a guarantee of ranking or revenue growth.
+A generated draft, open PR, enabled schedule, failed check, stale fact, or unverified publication does not qualify by itself. Report protected businesses and completed-work businesses separately alongside the deduplicated total. This is a proposed metric contract, not an existing dashboard claim.
+
+During Protect validation, retain **weekly active protected paying websites** as the operational measure: each paying site has an agreed monitored set, successful checks within the promised cadence, and a current coverage/work report. Define events and exclusions in RFC-0026 before treating it as instrumented.
+
+Pair these measures with verified resolutions, accepted claim corrections, repeated launches, alert precision, missed seeded regressions, time to completion, review burden, renewals, and gross margin. Quiet weeks qualify through observed coverage. An outcome report may honestly conclude that the data is insufficient.
