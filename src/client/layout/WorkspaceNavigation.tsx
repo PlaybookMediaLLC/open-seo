@@ -37,11 +37,7 @@ export function WorkspaceNavigation({ projectId }: { projectId: string }) {
                   item.to !== "/p/$projectId/prompt-explorer",
               )
               .map(({ icon: _icon, label, ...item }) => (
-                <NavTab
-                  key={item.to}
-                  {...item}
-                  className="shrink-0 whitespace-nowrap"
-                >
+                <NavTab key={item.to} {...item}>
                   {label}
                 </NavTab>
               ))}

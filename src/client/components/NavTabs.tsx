@@ -11,7 +11,12 @@ export function NavTabs({
   children: ReactNode;
 }) {
   return (
-    <nav aria-label={label} className="flex gap-1 border-b border-border">
+    // Scrolls sideways when the tabs outgrow a phone screen. The border is an
+    // inset shadow so the scroll box doesn't clip the active underline.
+    <nav
+      aria-label={label}
+      className="flex gap-1 overflow-x-auto shadow-[inset_0_-1px_0_var(--color-border)]"
+    >
       {children}
     </nav>
   );
@@ -23,8 +28,8 @@ function NavTabAnchor({ className, ...props }: ComponentProps<"a">) {
   return (
     <a
       className={cn(
-        "relative inline-flex h-9 items-center px-3 text-sm font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/50 data-[status=active]:text-foreground",
-        "after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 data-[status=active]:after:opacity-100",
+        "relative inline-flex h-9 shrink-0 items-center px-3 whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:rounded-md focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset data-[status=active]:text-foreground",
+        "after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-foreground after:opacity-0 data-[status=active]:after:opacity-100",
         className,
       )}
       {...props}
