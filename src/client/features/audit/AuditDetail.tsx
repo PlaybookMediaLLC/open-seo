@@ -104,18 +104,16 @@ export function AuditDetail({
   const failedWithoutResults =
     isFailed && resultsQuery.isSuccess && !failedWithResults;
   const results = resultsQuery.data;
-  // A completed crawl that reached one page or none was blocked by the site,
-  // unless that page is an app shell or was rate limited, which the results
-  // explain instead. A failed audit stopped on our side, so it gets the error
-  // code instead.
+  // A completed crawl that reached one page or none was blocked by the site
+  // only when no page came back or the one that did was a bot challenge. A
+  // single page that loaded fine is just a one-page site, and an app shell or
+  // a rate-limited page is explained by the results instead. A failed audit
+  // stopped on our side, so it gets the error code instead.
   const siteBlocked =
     isComplete &&
     status.pagesCrawled <= 1 &&
     results !== undefined &&
-    !results.issues.some(
-      (issue) => issue.issueType === "javascript-rendering-suspected",
-    ) &&
-    !results.pages.some((page) => page.fetchClass === "rate_limited");
+    results.pages.every((page) => page.fetchClass === "blocked");
 
   return (
     <div className="page-pad overflow-auto">

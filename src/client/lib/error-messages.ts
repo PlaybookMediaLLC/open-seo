@@ -38,7 +38,8 @@ const STANDARD_MESSAGES: Record<ErrorCode, string> = {
     "This page pattern is not supported. Create a new split test using an RE2 expression without lookaround or backreferences.",
   UNKNOWN_LOCATION:
     "We couldn't find that city, county, or region. Pick a location from the list, or clear the field to search the whole country.",
-  CRAWL_TARGET_BLOCKED: "This crawl target is blocked by security policy.",
+  CRAWL_TARGET_BLOCKED:
+    "We can't crawl that address. Check the domain is spelled right and is a public website, not a private or local one.",
   BACKLINKS_BILLING_ISSUE:
     "The connected DataForSEO account has a billing or balance issue.",
   AI_SEARCH_BILLING_ISSUE:

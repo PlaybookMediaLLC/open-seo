@@ -60,11 +60,18 @@ export function MoreMenu({
           <MoreHorizontal />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-60">
-          <DropdownMenuItem onClick={onCheckNow} disabled={checkBusy}>
+          <DropdownMenuItem
+            onClick={onCheckNow}
+            disabled={checkBusy || trackedKeywordCount === 0}
+          >
             <Play />
             <ItemText
               label={checkBusy ? "Running..." : "Check rankings"}
-              description="Fetch current Google positions"
+              description={
+                trackedKeywordCount === 0
+                  ? "Add keywords first"
+                  : "Fetch current Google positions"
+              }
             />
           </DropdownMenuItem>
           <DropdownMenuItem

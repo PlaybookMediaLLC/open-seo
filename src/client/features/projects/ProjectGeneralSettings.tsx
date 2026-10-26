@@ -14,6 +14,11 @@ import {
   getLastProjectId,
 } from "@/client/lib/active-project";
 import { toastInitialAudit } from "@/client/features/projects/initialAuditToast";
+import { SERVER_FIELD_ERRORS } from "@/client/features/projects/CreateProjectModal";
+import {
+  getErrorCode,
+  getStandardErrorMessage,
+} from "@/client/lib/error-messages";
 import { archiveProject, updateProject } from "@/serverFunctions/projects";
 import type { ProjectSummary } from "./types";
 
@@ -61,6 +66,8 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
           ...values.market,
         },
       }),
+    // The form shows field errors inline and toasts the rest itself.
+    meta: { errorToast: false },
     onSuccess: async (saved) => {
       await queryClient.invalidateQueries({
         queryKey: projectsQueryOptions().queryKey,
@@ -88,7 +95,14 @@ function GeneralSection({ project }: { project: ProjectSummary }) {
     validationLogic: revalidateLogic(),
     validators: { onDynamic: generalSchema },
     onSubmit: async ({ value, formApi }) => {
-      await updateMutation.mutateAsync(value);
+      try {
+        await updateMutation.mutateAsync(value);
+      } catch (error) {
+        const fields = SERVER_FIELD_ERRORS[getErrorCode(error) ?? ""];
+        if (fields) formApi.setErrorMap({ onSubmit: { fields } });
+        else toast.error(getStandardErrorMessage(error));
+        return;
+      }
       // The saved values are the new baseline, so Save disables again. An edit
       // made while the save ran replaces the values object, and then the form
       // keeps that edit and Save stays on.

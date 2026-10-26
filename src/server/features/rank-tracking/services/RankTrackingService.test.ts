@@ -122,7 +122,7 @@ describe("RankTrackingService.createConfig", () => {
 
     await expect(
       RankTrackingService.createConfig(baseInput),
-    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    ).rejects.toMatchObject({ code: "CONFLICT" });
     expect(mocks.updateConfig).not.toHaveBeenCalled();
     expect(mocks.createConfig).not.toHaveBeenCalled();
   });
@@ -253,6 +253,20 @@ describe("RankTrackingService.updateConfig schedule", () => {
       "project_1",
       { scheduleInterval: "weekly", nextCheckAt: "2026-03-16T09:30:00.000Z" },
     );
+  });
+
+  it("rejects moving onto a domain another config already tracks", async () => {
+    mocks.getConfigByProjectDomainMarket.mockResolvedValue({
+      ...archivedConfig,
+      id: "config_other",
+    });
+
+    await expect(
+      RankTrackingService.updateConfig("config_archived", "project_1", {
+        domain: "other.com",
+      }),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+    expect(mocks.updateConfig).not.toHaveBeenCalled();
   });
 
   it.each([
