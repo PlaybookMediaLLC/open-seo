@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   check:
-    if: github.repository == 'PlaybookMediaLLC/open-seo'
+    if: github.repository == 'PlaybookMediaLLC/relay'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
