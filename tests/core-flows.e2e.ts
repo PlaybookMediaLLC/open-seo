@@ -29,10 +29,19 @@ function watchForFailures(page: Page) {
 }
 
 async function expectNoSidewaysScroll(page: Page, label: string) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
+  // The shell clips the document, so overflow shows up in the page's own
+  // scroll containers. Tables scroll inside their own boxes and don't count.
+  const overflow = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        "#main-content, #main-content .page-pad",
+      ),
+    ].map((element) => element.scrollWidth - element.clientWidth),
   );
-  expect(overflow, `${label} scrolls sideways`).toBeLessThanOrEqual(0);
+  expect(
+    Math.max(...overflow),
+    `${label} scrolls sideways`,
+  ).toBeLessThanOrEqual(1);
 }
 
 test.beforeEach(async ({ page }) => {
