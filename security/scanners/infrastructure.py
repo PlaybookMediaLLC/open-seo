@@ -186,7 +186,9 @@ with tempfile.TemporaryDirectory(prefix="openseo-infrastructure-") as temporary:
             if name == "github-actions":
                 command += ["--framework", "github_actions"]
             else:
-                command += ["--skip-framework", "secrets", "sca_package", "sca_image",
+                # terraform_plan reads every JSON file and fails on JSONC such as
+                # tsconfig*.json; the repository has no Terraform plans.
+                command += ["--skip-framework", "secrets", "sca_package", "sca_image", "terraform_plan",
                             "--skip-path", r"(^|/)(node_modules|\.git|\.wrangler|dist|\.logs|security/(reports|runs))(/|$)"]
             code, output = execute(command)
             good = code in (0, 1)

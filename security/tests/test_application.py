@@ -25,6 +25,21 @@ class ApplicationReports(unittest.TestCase):
                 result = application.publish({"semgrep": native, "codeql-javascript": native}, tools, reports)
                 self.assertEqual([tool["status"] for tool in result["tools"]], ["error", "error"])
 
+    def test_only_partial_parses_keep_semgrep_successful(self):
+        partial = {"type": ["PartialParsing", []], "level": "warn", "path": "page.tsx"}
+        timeout = {"type": "Timeout", "level": "error", "path": "big.ts"}
+        for errors, status in (([partial], "success"), ([partial, timeout], "error")):
+            with self.subTest(errors=errors), tempfile.TemporaryDirectory() as directory:
+                reports = Path(directory)
+                native = reports / "raw.json"
+                native.write_text(json.dumps({
+                    "version": "test", "paths": {"scanned": ["page.tsx"]}, "results": [], "errors": errors,
+                }))
+                tools = [{"name": "Semgrep", "status": "success", "limitations": []}]
+                result = application.publish({"semgrep": native}, tools, reports)
+                self.assertEqual(result["tools"][0]["status"], status)
+                self.assertIn("page.tsx", " ".join(result["tools"][0]["limitations"]))
+
     def test_source_snippets_and_match_values_are_not_published(self):
         with tempfile.TemporaryDirectory() as directory:
             reports = Path(directory)

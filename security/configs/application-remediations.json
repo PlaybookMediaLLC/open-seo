@@ -1,8 +1,8 @@
 [
   {
     "sources": {
-      "src/server/features/seo-checks/pageSnapshot.ts": "80b41fb51ebf3270e8a36b64ae72956dec862f2d430d225b7ab38b3af29de8a1",
-      "src/server/features/seo-checks/pageSnapshot.test.ts": "f4f0adcda997d2e398d7091dc5d58dd813e75ffb286c2269102aeaa7aaa5b651"
+      "src/server/features/seo-checks/pageSnapshot.ts": "7ab1600e969f4baac037323b3a92c6e57a681abc49fadca82ddcc24235a557d0",
+      "src/server/features/seo-checks/pageSnapshot.test.ts": "e7a365612cfa282ba885daa42da5f91e77fe3d7c0cb0a1dedd736e141c9a1dbc"
     },
     "finding": {
       "id": "SEC-B-001",
@@ -24,7 +24,8 @@
       "status": "fixed",
       "verification": [
         "2026-10-25: two security regression tests failed on original code; fixed pageSnapshot+seoCheckRun suites passed 13/13.",
-        "2026-10-25: targeted local Semgrep rule matched 1 before and 0 after; complete security rules rescan has no original-rule match."
+        "2026-10-25: targeted local Semgrep rule matched 1 before and 0 after; complete security rules rescan has no original-rule match.",
+        "2026-10-26: upstream merge rewrote assetSize with the same bounded manual-redirect, per-hop validation and per-host credentials; pageSnapshot and seoCheckRun redirect/credential regressions passed (seo-checks 62/62)."
       ]
     }
   },
