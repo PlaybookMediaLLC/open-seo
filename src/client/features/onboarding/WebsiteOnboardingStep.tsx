@@ -17,6 +17,7 @@ import {
   CollapsibleTrigger,
 } from "@/client/components/ui/collapsible";
 import { Spinner as SpinnerIcon } from "@/client/components/ui/spinner";
+import { OnboardingStepHeader } from "@/client/features/onboarding/OnboardingLayout";
 import { WizardFooter } from "@/client/features/onboarding/WizardFooter";
 import { ProjectMarketFields } from "@/client/features/projects/ProjectMarketFields";
 import { projectsQueryOptions } from "@/client/features/projects/projectQueries";
@@ -35,10 +36,12 @@ import { saveOnboardingWebsite } from "@/serverFunctions/projects";
  */
 export function WebsiteOnboardingStep({
   onNext,
+  onBack,
   onSkip,
   suggestedDomain,
 }: {
   onNext: () => void;
+  onBack: () => void;
   onSkip: () => void;
   suggestedDomain?: string;
 }) {
@@ -47,20 +50,17 @@ export function WebsiteOnboardingStep({
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          What’s your website?
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          We’ll start a site audit for you.
-        </p>
-      </div>
+      <OnboardingStepHeader
+        title="Which site are we growing?"
+        description="Add your domain and the first site audit starts as soon as you save."
+      />
       {project ? (
         <WebsiteForm
           key={project.id}
           project={project}
           suggestedDomain={suggestedDomain}
           onNext={onNext}
+          onBack={onBack}
           onSkip={onSkip}
         />
       ) : projectsQuery.isError ? (
@@ -86,11 +86,13 @@ function WebsiteForm({
   project,
   suggestedDomain,
   onNext,
+  onBack,
   onSkip,
 }: {
   project: ProjectSummary;
   suggestedDomain?: string;
   onNext: () => void;
+  onBack: () => void;
   onSkip: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -175,6 +177,7 @@ function WebsiteForm({
         </Collapsible>
         <WizardFooter
           className="mt-4"
+          onBack={onBack}
           onSkip={onSkip}
           skipLabel="Skip for now"
           continueAction={

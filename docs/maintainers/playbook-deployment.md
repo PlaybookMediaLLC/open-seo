@@ -279,3 +279,15 @@ Keep `BETTER_AUTH_SECRET` stable. Changing it invalidates sessions and the store
 | Trigger.dev                                                                   | Scheduler    | Only for scheduled jobs                                            | `TRIGGER_SECRET_KEY`, `GROWTH_JOBS_SECRET`, `GROWTH_JOBS_MODE`                                                   |
 | GitHub Actions                                                                | CI/CD        | Yes                                                                | `deploy-playbook.yml`, `ci.yml`                                                                                  |
 | Alchemy state store                                                           | Deploy state | Yes                                                                | One-time bootstrap in the account                                                                                |
+
+## Azure PostgreSQL
+
+Playbook production uses the externally managed Hyperdrive configuration in the
+`RELAY_HYPERDRIVE_ID` repository variable. Both the app and audit Worker bind it
+as `HYPERDRIVE`. The deploy workflow sets `DATABASE_PROVIDER=postgres` and applies
+PostgreSQL migrations with the `RELAY_POSTGRES_DATABASE_URL` repository secret.
+Keep the migration URI secret. The former Playbook D1 database remains allocated
+for rollback and receives no further SQLite migrations while PostgreSQL is active.
+
+The infrastructure monorepo also owns the staging Hyperdrive configuration.
+There is currently no separate Playbook staging Worker deployment.

@@ -34,7 +34,7 @@ export function SplitTestPage(props: { projectId: string; testId: string }) {
     ((variantClicks + controlClicks) / 2 || 1);
   return (
     <div className="overflow-auto page-pad">
-      <div className="mx-auto max-w-5xl space-y-5">
+      <div className="mx-auto max-w-7xl space-y-5">
         <Link
           className="text-sm text-muted-foreground hover:underline"
           to="/p/$projectId/experiments"

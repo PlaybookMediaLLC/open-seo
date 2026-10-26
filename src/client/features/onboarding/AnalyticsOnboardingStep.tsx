@@ -8,6 +8,7 @@ import {
   updatePrivacyChoices,
   usePrivacyChoices,
 } from "@/client/components/PrivacyChoices";
+import { OnboardingStepHeader } from "@/client/features/onboarding/OnboardingLayout";
 import { WizardFooter } from "@/client/features/onboarding/WizardFooter";
 import { useSession } from "@/lib/auth-client";
 import { setProductUpdatesOptIn } from "@/serverFunctions/product-updates";
@@ -61,29 +62,30 @@ export function AnalyticsOnboardingStep({
     productUpdates ?? session?.user.productUpdatesOptIn === true;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Help make OpenSEO better
-        </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          You can change these anytime in Settings. See our{" "}
-          <a
-            href={PRIVACY_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-foreground underline underline-offset-2"
-          >
-            Privacy Policy
-          </a>
-          .
-        </p>
-      </div>
-      <div className="flex items-start justify-between gap-6">
+    <div>
+      <OnboardingStepHeader
+        title="Two quick choices"
+        description={
+          <>
+            Change either one anytime in Settings. See our{" "}
+            <a
+              href={PRIVACY_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-foreground underline underline-offset-2"
+            >
+              Privacy Policy
+            </a>
+            .
+          </>
+        }
+      />
+      <div className="flex items-start justify-between gap-6 rounded-xl border border-border bg-card p-5">
         <div>
-          <p className="text-sm">Usage analytics</p>
+          <p className="text-sm font-medium">Usage analytics</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Share usage analytics and session replays to help improve OpenSEO.
+            Share usage analytics and session replays so we can fix what slows
+            you down.
           </p>
         </div>
         <Switch
@@ -92,9 +94,9 @@ export function AnalyticsOnboardingStep({
           aria-label="Share usage analytics"
         />
       </div>
-      <div className="flex items-start justify-between gap-6">
+      <div className="mt-3 flex items-start justify-between gap-6 rounded-xl border border-border bg-card p-5">
         <div>
-          <p className="text-sm">Product updates</p>
+          <p className="text-sm font-medium">Product updates</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Occasional emails about new features and tips. Unsubscribe anytime.
           </p>
