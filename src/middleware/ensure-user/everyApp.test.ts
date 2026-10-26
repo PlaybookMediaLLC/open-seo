@@ -1,5 +1,6 @@
 import { mintIdentityJwt } from "@every-app/sdk/internal";
 import type * as EveryAppSdk from "@every-app/sdk/server";
+import { GatewayRefusalError } from "@every-app/sdk/server";
 import { exportPKCS8, exportSPKI, generateKeyPair } from "jose";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -94,7 +95,18 @@ describe("isEveryAppMember", () => {
   });
 
   it("fails closed when the gateway won't answer", async () => {
-    listMembers.mockRejectedValue(new Error("capability_not_requested"));
+    listMembers.mockRejectedValue(new TypeError("fetch failed"));
     await expect(isEveryAppMember("user_1")).resolves.toBe(false);
+  });
+
+  it("keeps chats working until an admin approves the capability", async () => {
+    listMembers.mockRejectedValue(
+      new GatewayRefusalError({
+        status: 403,
+        code: "capability_not_requested",
+        message: "This app doesn't list members in its capabilities.",
+      }),
+    );
+    await expect(isEveryAppMember("user_1")).resolves.toBe(true);
   });
 });
