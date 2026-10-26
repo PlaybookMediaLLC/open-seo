@@ -11,6 +11,7 @@ data, or sensitive paths.
 ## Open
 
 - [ ] `2026-10-25T17:33:29Z` — `codex` — `pnpm --dir web run format:check` fails on five unchanged files on current `develop`: `content/blogs/two-surfaces-two-timelines.md`, `content/blogs/what-broke-the-99-dollar-ceiling.md`, `src/routes/_marketing/library/keyword-research/index.tsx`, `src/routes/_marketing/pricing.tsx`, and `tests/meta-pixel.test.ts`. Format those files in a dedicated cleanup; security-audit edits pass a targeted check.
+- [ ] `2026-10-26T11:54:25Z` — `codex` — `actionlint .github/workflows/release.yml` reports SC2016 on the single-quoted install hint containing a GitHub expression. GitHub expands the expression before the shell runs; use a step environment variable or a narrow ShellCheck annotation to remove this false positive.
 
 - [ ] `2026-10-17T14:00:00Z` — `claude` — Knip reports exports of `src/db/opportunities.schema.ts` as unused when a test imports that module as `import * as opportunities` (the namespace name equals one of its exports); renaming the namespace (`opportunitiesSchema`) clears it. Name schema namespaces with a `Schema` suffix.
 - [ ] `2026-10-16T16:10:00Z` — `claude` — With `OPPORTUNITY_TEST_PG_URL` set, running `src/server/features/publishing/` and `src/server/features/opportunities/` together fails 1 to 2 tests at random (`opportunityQueue.test.ts` "flags items that the latest run...", and "blocks stale-property approval..."); each file passes alone. Run the Postgres suite with `--no-file-parallelism`, or find the shared row the files race on.

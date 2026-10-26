@@ -151,6 +151,9 @@ describe("AI answer collection", () => {
         }),
       ]),
     );
+    // A retried step skips the answer an earlier attempt already saved.
+    await collectAiRound(runId, [pendingTask], true);
+    expect(dataforseo.fetchTaskResult).toHaveBeenCalledTimes(1);
   });
 
   it("fails the answers DataForSEO did not accept and collects the rest", async () => {
@@ -412,10 +415,7 @@ describe("AI answer collection", () => {
   });
 
   it("fails answers that never arrived and finishes the run as partial", async () => {
-    dataforseo.fetchTaskResult.mockResolvedValue({
-      status: "completed",
-      result: { markdown: "OpenSEO", sources: [] },
-    });
+    dataforseo.fetchTaskResult.mockResolvedValue(liveAnswer.value);
     await collectAiRound(runId, [pendingTask], true);
 
     await finalizeAiRun(runId);
