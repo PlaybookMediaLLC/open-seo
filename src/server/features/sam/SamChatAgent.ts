@@ -15,8 +15,7 @@ import type {
 } from "@cloudflare/think";
 import { clearChatTerminal } from "agents/chat";
 import { createCompactFunction } from "agents/experimental/memory/utils";
-import { generateText } from "ai";
-import type { UIMessage } from "ai";
+import { generateText, type UIMessage } from "ai";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, withPgClient } from "@/db";
@@ -34,11 +33,13 @@ import {
   SamTelemetry,
   type SamTurnStats,
 } from "@/server/features/sam/samTurnTelemetry";
-import { buildChatAgentModel } from "@/server/lib/openrouter";
+import { buildSamChatModel } from "@/server/lib/openrouter";
 import {
-  getEnvValueSync,
+  isEveryAppServerAuthMode,
   isHostedServerAuthMode,
+  usesBetterAuthServer,
 } from "@/server/lib/runtime-env";
+import { isEveryAppMember } from "@/middleware/ensure-user/everyApp";
 import {
   checkUsageCreditsDepleted,
   trackUsageCreditSpend,
@@ -198,15 +199,7 @@ export class SamChatAgent extends Think {
   }
 
   private buildModel(reasoningEffort: "max" | "low") {
-    const apiKey = getEnvValueSync(this.env, "OPENROUTER_API_KEY");
-    if (!apiKey) {
-      throw new Error("OPENROUTER_API_KEY is required for the SAM agent");
-    }
-    return buildChatAgentModel(
-      apiKey,
-      getEnvValueSync(this.env, "OPENROUTER_MODEL"),
-      reasoningEffort,
-    );
+    return buildSamChatModel(this.env, reasoningEffort);
   }
 
   override getSkills() {
@@ -362,16 +355,23 @@ export class SamChatAgent extends Think {
       const baseUrl =
         (await this.ctx.storage.get<string>(PUBLIC_ORIGIN_KEY)) ??
         "https://app.openseo.so";
-      // Delegated/self-host orgs have no member rows — implicit owner. In
-      // hosted mode a missing member row means the user was removed from the
-      // workspace; fail closed instead of letting the open socket keep
-      // owner-level tools (WebSockets authorize at connect time only, so this
-      // per-turn check is what actually revokes a removed member's chat).
+      // Delegated/self-host orgs have no member rows — implicit owner. With
+      // real accounts (hosted and password modes) a missing member row means the
+      // user was removed from the workspace; fail closed instead of letting
+      // the open socket keep owner-level tools (WebSockets authorize at
+      // connect time only, so this per-turn check is what actually revokes a
+      // removed member's chat).
       const membership = await AuthRepository.getMembership(
         ctx.row.userId,
         organizationId,
       );
-      if (hosted && !membership) {
+      // Every App has no member rows either: the gateway's member list is
+      // the source, so a person removed there loses the open chat too.
+      const removed = (await usesBetterAuthServer())
+        ? !membership
+        : (await isEveryAppServerAuthMode()) &&
+          !(await isEveryAppMember(ctx.row.userId));
+      if (removed) {
         turn.refusal = "no_access";
         return this.refusalTurn(
           "You no longer have access to this organization, so I can't continue this chat.",

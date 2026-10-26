@@ -4,6 +4,7 @@ import {
   aiResearchSetupQueryOptions,
   aiTrackerQueryOptions,
 } from "@/client/features/ai-visibility/shared";
+import { OpenRouterKeyGate } from "@/client/features/ai-visibility/OpenRouterKeyGate";
 import { ProjectWebsiteGate } from "@/client/features/projects/ProjectWebsiteGate";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 
@@ -25,11 +26,13 @@ function AiVisibilityLayout() {
   return (
     <div className="overflow-auto page-pad">
       <div className="mx-auto max-w-7xl space-y-5" key={projectId}>
-        <ProjectWebsiteGate projectId={projectId}>
-          <AiResearchSetupGate projectId={projectId}>
-            <Outlet />
-          </AiResearchSetupGate>
-        </ProjectWebsiteGate>
+        <OpenRouterKeyGate projectId={projectId} untilSetupReady>
+          <ProjectWebsiteGate projectId={projectId}>
+            <AiResearchSetupGate projectId={projectId}>
+              <Outlet />
+            </AiResearchSetupGate>
+          </ProjectWebsiteGate>
+        </OpenRouterKeyGate>
       </div>
     </div>
   );

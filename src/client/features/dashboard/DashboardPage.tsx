@@ -36,7 +36,7 @@ import {
   getDashboardOverview,
 } from "@/serverFunctions/dashboard";
 import { Skeleton } from "@/client/components/ui/skeleton";
-import { isHostedClientAuthMode } from "@/lib/auth-mode";
+import { usesBetterAuthClient } from "@/lib/auth-mode";
 
 export function DashboardPage({
   projectId,
@@ -215,7 +215,7 @@ export function DashboardPage({
             Project setup and optional connections
           </summary>
           <div className="mt-4 space-y-4">
-            {isHostedClientAuthMode() &&
+            {usesBetterAuthClient() &&
             getStepStatus(activation, "mcp") === "todo" ? (
               <DashboardAgentCard projectId={projectId} />
             ) : null}

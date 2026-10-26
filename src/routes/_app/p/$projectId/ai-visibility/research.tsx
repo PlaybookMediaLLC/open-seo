@@ -8,6 +8,7 @@ import { z } from "zod";
 import { PromptResearchPage } from "@/client/features/ai-visibility/PromptResearchPage";
 import { PromptTrackingWithoutUpgradeButton } from "@/client/features/ai-visibility/shared";
 import { PaidPlanGate } from "@/client/features/billing/PaidPlanGate";
+import { OpenRouterKeyGate } from "@/client/features/ai-visibility/OpenRouterKeyGate";
 
 export const Route = createFileRoute(
   "/_app/p/$projectId/ai-visibility/research",
@@ -44,7 +45,9 @@ function AiResearchRoute() {
       features={PROMPT_RESEARCH_FEATURES}
       alternative={<PromptTrackingWithoutUpgradeButton projectId={projectId} />}
     >
-      <PromptResearchPage key={projectId} projectId={projectId} keyword={q} />
+      <OpenRouterKeyGate projectId={projectId}>
+        <PromptResearchPage key={projectId} projectId={projectId} keyword={q} />
+      </OpenRouterKeyGate>
     </PaidPlanGate>
   );
 }

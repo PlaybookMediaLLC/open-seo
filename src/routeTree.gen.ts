@@ -37,6 +37,7 @@ import { Route as AcceptInvitationIdRouteImport } from './routes/accept-invitati
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPrivacyRegionRouteImport } from './routes/api/privacy-region'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
+import { Route as ApiSignUpStatusRouteImport } from './routes/api/sign-up-status'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as MediaNameRouteImport } from './routes/media.$name'
 import { Route as RReportIdRouteImport } from './routes/r/$reportId'
@@ -245,6 +246,11 @@ const ApiPrivacyRegionRoute = ApiPrivacyRegionRouteImport.update({
 const ApiSearchRoute = ApiSearchRouteImport.update({
   id: '/api/search',
   path: '/api/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSignUpStatusRoute = ApiSignUpStatusRouteImport.update({
+  id: '/api/sign-up-status',
+  path: '/api/sign-up-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
@@ -651,6 +657,7 @@ export interface FileRoutesByFullPath {
   '/api/health': typeof ApiHealthRoute
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
+  '/api/sign-up-status': typeof ApiSignUpStatusRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -746,6 +753,7 @@ export interface FileRoutesByTo {
   '/api/health': typeof ApiHealthRoute
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
+  '/api/sign-up-status': typeof ApiSignUpStatusRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -841,6 +849,7 @@ export interface FileRoutesById {
   '/api/health': typeof ApiHealthRoute
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
+  '/api/sign-up-status': typeof ApiSignUpStatusRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -939,6 +948,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/privacy-region'
     | '/api/search'
+    | '/api/sign-up-status'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1034,6 +1044,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/privacy-region'
     | '/api/search'
+    | '/api/sign-up-status'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1128,6 +1139,7 @@ export interface FileRouteTypes {
     | '/api/health'
     | '/api/privacy-region'
     | '/api/search'
+    | '/api/sign-up-status'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1217,6 +1229,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiPrivacyRegionRoute: typeof ApiPrivacyRegionRoute
   ApiSearchRoute: typeof ApiSearchRoute
+  ApiSignUpStatusRoute: typeof ApiSignUpStatusRoute
   DocsSplatRoute: typeof DocsSplatRoute
   MediaNameRoute: typeof MediaNameRoute
   RReportIdRoute: typeof RReportIdRoute
@@ -1436,6 +1449,13 @@ declare module '@tanstack/react-router' {
       path: '/api/search'
       fullPath: '/api/search'
       preLoaderRoute: typeof ApiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sign-up-status': {
+      id: '/api/sign-up-status'
+      path: '/api/sign-up-status'
+      fullPath: '/api/sign-up-status'
+      preLoaderRoute: typeof ApiSignUpStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/$': {
@@ -2172,6 +2192,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiPrivacyRegionRoute: ApiPrivacyRegionRoute,
   ApiSearchRoute: ApiSearchRoute,
+  ApiSignUpStatusRoute: ApiSignUpStatusRoute,
   DocsSplatRoute: DocsSplatRoute,
   MediaNameRoute: MediaNameRoute,
   RReportIdRoute: RReportIdRoute,
