@@ -141,6 +141,7 @@ Add `admitSpend({ customer, feature, provider, estimatedCredits, idempotencyKey 
 5. Debt 1 is fixed once, in `parseTaskItems`: a billed task with an invalid payload throws `DataforseoChargedTaskError` with its cost, which the metering wrapper already settles. One test at that function replaces the per-caller tests.
 6. Debt 2: `reconcileSpend` claims each attempt with a conditional update, so two runs never charge one row. It also releases `admitted` rows whose hold expired without a settlement, such as an assistant turn that never ended. Until the Trigger.dev account exists (RFC-0008 follow-up), the task does not run.
 7. Debt 3: the hold is atomic in Autumn, so parallel requests cannot all pass one balance reading. The limit side is covered by the part A race test; the balance side is checked live (section 11).
+8. Hosted page rendering (site audits, SEO checks, the accessibility pack and fix checks) admits its worst-case estimate in `lockRenderingCredits` before the Autumn hold, with provider `rendering` and one ledger row per lock, and `settleRenderingLocks` records each lock's real charge. A rendering lock lives up to 24 hours, so `reconcileSpend` keys its hold window on the provider and leaves `rendering` rows alone until the lock expires.
 
 ### 5.4 Billing debt fixes
 
@@ -246,7 +247,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 ### 5.8 Rate limits on paid actions
 
 1. Use the Cloudflare Workers rate limiting binding. Declare `PAID_ACTION_RATE_LIMIT` in `deploy/alchemy/alchemy.run.ts`, next to the existing `MCP_RATE_LIMIT`, with its own namespace id and a 60-second period. The `wrangler.jsonc` surfaces skip the check when the binding is absent, as `MCP_RATE_LIMIT` does.
-2. Key: `{userId}:{feature}`. Limit: 30 paid actions per minute per user and feature.
+2. Key: `{organizationId}:{userId}:{feature}`. Limit: 30 paid actions per minute per organization, user and feature, so automated runs (`system`) are limited per tenant.
 3. Apply it in `admitSpend` before the ledger insert. Return `RATE_LIMITED` with the retry time.
 4. Self-hosted installs without the binding skip this check and log one warning at startup.
 5. MCP API keys keep their existing per-user limit (`MCP_RATE_LIMIT`, 5,000 requests per minute, in `src/server/mcp/api-key-auth.ts`). The Better Auth plugin limiter stays disabled.
@@ -384,5 +385,5 @@ Each follow-up names its trigger. Check it here when it passes.
 1. An owner set a 200-credit project limit in **Project settings → Spending**. The Activity page listed "Set the monthly credit limit to 200 credits".
 2. Three keyword lookups made 9 settled ledger rows (147 credits), each linked to its Autumn hold.
 3. The fourth lookup admitted one more call (163 credits in all) and refused the next one before the provider call, with "This project or organization reached its monthly credit limit. An owner can change it in Billing." The ledger has one `refused` row. Past 80%, the bell got one notification ("This project used 87% of its monthly credit limit") and the project showed the amber banner "This project is close to its monthly credit limit (163 of 200 credits)".
-4. Autumn: the balance fell from $0.36 to $0.19 and the 30-day usage rose from $0.64 to $0.81, both about $0.17. The ledger holds $0.163 (163 credits). They match within the cents rounding of the Billing page.
+4. Autumn: the balance and the 30-day usage moved by the same amount as the ledger total (163 credits), within the cents rounding of the Billing page.
 5. The owner removed the limit. The Activity page listed "Removed the monthly credit limit".

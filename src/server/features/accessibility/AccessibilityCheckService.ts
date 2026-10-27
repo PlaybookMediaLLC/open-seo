@@ -1,6 +1,5 @@
 import { env } from "cloudflare:workers";
 import { chunk } from "remeda";
-import { assertSpendRoom } from "@/server/billing/spendAdmission";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import { ExperimentRepository } from "@/server/features/experiments/repositories/ExperimentRepository";
 import { OpportunityRepository } from "@/server/features/opportunities/repositories/OpportunityRepository";
@@ -14,7 +13,6 @@ import {
   settleRenderingLocks,
 } from "@/server/lib/audit/rendering-billing";
 import { AppError } from "@/server/lib/errors";
-import { estimateRenderingCredits } from "@/shared/audit-rendering";
 import type { AccessibilityFixCheck } from "@/types/schemas/accessibility";
 import type { ExperimentInput } from "@/types/schemas/experiments";
 import { AccessibilityCheckRepository } from "./accessibilityChecks";
@@ -89,10 +87,6 @@ async function check(
       userEmail: context.userEmail,
       projectId: input.projectId,
     };
-    await assertSpendRoom(
-      { organizationId: context.organizationId, projectId: input.projectId },
-      estimateRenderingCredits(urls.length).high,
-    );
     const locks = await lockRenderingCredits({
       customer,
       auditId: evidence.auditId,

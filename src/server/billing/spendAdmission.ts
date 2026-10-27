@@ -17,7 +17,7 @@ import {
 // project's monthly limits before any provider call. No limit row means
 // that only the Autumn balance applies.
 
-type Provider = "dataforseo" | "openrouter";
+type Provider = "dataforseo" | "openrouter" | "rendering";
 const WARN_SHARE = 0.8;
 
 /** True when no limit row for the scope would be exceeded. */
@@ -85,10 +85,14 @@ async function warnNearLimit(
 let warnedNoLimiter = false;
 
 /**
- * RFC-0009 5.8: 30 paid actions a minute per user and feature. Installs
+ * RFC-0009 5.8: 30 paid actions a minute per organization, user and feature,
+ * so automated runs (`userId: "system"`) get one bucket per tenant. Installs
  * without the binding skip the check and warn once.
  */
-async function assertPaidActionRate(userId: string, feature: string) {
+async function assertPaidActionRate(
+  customer: BillingCustomerContext,
+  feature: string,
+) {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- declared as a rate limiter in deploy/alchemy/alchemy.run.ts; absent outside hosted prod
   const limiter = (env as { PAID_ACTION_RATE_LIMIT?: RateLimit })
     .PAID_ACTION_RATE_LIMIT;
@@ -97,7 +101,9 @@ async function assertPaidActionRate(userId: string, feature: string) {
     warnedNoLimiter = true;
     return;
   }
-  const { success } = await limiter.limit({ key: `${userId}:${feature}` });
+  const { success } = await limiter.limit({
+    key: `${customer.organizationId}:${customer.userId}:${feature}`,
+  });
   if (!success)
     throw new AppError(
       "RATE_LIMITED",
@@ -118,7 +124,7 @@ export async function admitSpend(input: {
   now?: Date;
 }) {
   const { customer, estimatedCredits } = input;
-  await assertPaidActionRate(customer.userId, input.feature ?? input.provider);
+  await assertPaidActionRate(customer, input.feature ?? input.provider);
   const now = input.now ?? new Date();
   const periodMonth = periodOf(now);
   const id = crypto.randomUUID();

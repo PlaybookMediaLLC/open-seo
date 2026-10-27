@@ -10,7 +10,6 @@ import {
   auditAccessibilityViolations,
   auditPages,
 } from "@/db/schema";
-import { assertSpendRoom } from "@/server/billing/spendAdmission";
 import type { BillingCustomerContext } from "@/server/billing/subscription";
 import { urlJoinKey } from "@/server/features/opportunities/services/detectors/shared";
 import { ProjectContextRepository } from "@/server/features/project-context/repositories/ProjectContextRepository";
@@ -21,7 +20,6 @@ import {
 import { detectUrlTemplate } from "@/server/lib/audit/url-utils";
 import { pgStep } from "@/server/workflows/pgStep";
 import { DB_STEP } from "@/server/workflows/auditStepConfigs";
-import { estimateRenderingCredits } from "@/shared/audit-rendering";
 import { clusterKey, loadAxe, runAxe } from "./axeRun";
 
 // RFC-0013 5.2: after Lighthouse, axe-core checks the pages that matter:
@@ -154,13 +152,6 @@ export async function runAccessibilityStep(
   if (!pages.length) return;
   const hold = await pgStep(step, "accessibility-hold", DB_STEP, async () => {
     try {
-      await assertSpendRoom(
-        {
-          organizationId: billingCustomer.organizationId,
-          projectId: input.projectId,
-        },
-        estimateRenderingCredits(pages.length).high,
-      );
       return {
         locks: await lockRenderingCredits({
           customer: billingCustomer,

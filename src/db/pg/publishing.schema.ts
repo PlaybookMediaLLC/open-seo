@@ -3,6 +3,7 @@ import {
   index,
   integer,
   pgTable,
+  primaryKey,
   text,
   uniqueIndex,
   type AnyPgColumn,
@@ -320,4 +321,18 @@ export const githubAppInstallations = pgTable(
       t.installationId,
     ),
   ],
+);
+
+// The repositories of an installation that the person who linked it could
+// reach with their GitHub user token at setup. Only these can be listed or
+// connected; a repository added to the installation later needs a new link.
+export const githubAppInstallationRepositories = pgTable(
+  "github_app_installation_repositories",
+  {
+    installationRef: text("installation_ref")
+      .notNull()
+      .references(() => githubAppInstallations.id, { onDelete: "cascade" }),
+    repositoryId: text("repository_id").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.installationRef, t.repositoryId] })],
 );

@@ -38,25 +38,65 @@ export async function stripeGet<T>(
   return parsed.data;
 }
 
+// The create endpoints that move money or bill a customer. A restricted
+// key grants write per resource, so one create covers its updates too.
+const WRITE_PROBES = {
+  Customers: "/customers",
+  Charges: "/charges",
+  PaymentIntents: "/payment_intents",
+  Refunds: "/refunds",
+  Invoices: "/invoices",
+  "Credit Notes": "/credit_notes",
+  Subscriptions: "/subscriptions",
+  "Checkout Sessions": "/checkout/sessions",
+  "Payment Links": "/payment_links",
+  Payouts: "/payouts",
+  Transfers: "/transfers",
+  "Top-ups": "/topups",
+};
+
 /**
- * Stripe has no API that lists a key's permissions. Relay sends a create
+ * Stripe has no API that lists a key's permissions. Relay sends each create
  * request with an unknown parameter, so nothing can be created: a key
  * without write access answers 403, and a key with it answers 400 for the
- * parameter. The 403 message names the account.
+ * parameter. The 403 message names the account. Returns the resources the
+ * key can write; any other answer is not proof either way, so it throws.
  */
 export async function probeWriteAccess(key: string) {
-  const response = await fetch(`${API}/customers`, {
-    method: "POST",
-    headers: {
-      ...headers(key),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "relay_read_only_probe=1",
-    signal: AbortSignal.timeout(TIMEOUT_MS),
-  });
-  const text = await response.text();
+  const answers = await Promise.all(
+    Object.entries(WRITE_PROBES).map(async ([name, path]) => {
+      const response = await fetch(`${API}${path}`, {
+        method: "POST",
+        headers: {
+          ...headers(key),
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "relay_read_only_probe=1",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      return {
+        name,
+        path,
+        status: response.status,
+        text: await response.text(),
+      };
+    }),
+  );
+  const unclear = answers.find(
+    (answer) => answer.status !== 400 && answer.status !== 403,
+  );
+  if (unclear)
+    throw new AppError(
+      unclear.status === 429 ? "RATE_LIMITED" : "UPSTREAM_UNAVAILABLE",
+      `Stripe answered ${unclear.status} for ${unclear.path}.`,
+    );
   return {
-    readOnly: response.status === 403,
-    accountId: /\b(acct_[A-Za-z0-9]+)\b/.exec(text)?.[1] ?? null,
+    writable: answers
+      .filter((answer) => answer.status === 400)
+      .map((answer) => answer.name),
+    accountId:
+      answers
+        .map((answer) => /\b(acct_[A-Za-z0-9]+)\b/.exec(answer.text)?.[1])
+        .find(Boolean) ?? null,
   };
 }

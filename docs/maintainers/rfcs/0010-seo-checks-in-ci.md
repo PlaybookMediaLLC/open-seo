@@ -31,7 +31,7 @@ It works for any framework, because it checks rendered HTML. Developers can inst
 | Rate limits         | `MCP_RATE_LIMIT` in `deploy/alchemy/alchemy.run.ts`                                       | Pattern for a CI token limit.                                                                       |
 | Background tasks    | RFC-0008 Trigger.dev tasks and signed internal endpoints                                  | Run the check outside the request.                                                                  |
 
-Preview deployments differ by host. Vercel adds `X-Robots-Tag: noindex` to preview deployments by default. Relay's own previews sit behind Cloudflare Access. Test site S1 deploys a staging copy to `www-staging.yoanyomba.workers.dev`.
+Preview deployments differ by host. Vercel adds `X-Robots-Tag: noindex` to preview deployments by default. Relay's own previews sit behind Cloudflare Access. Test site S1 deploys a staging copy to a `workers.dev` host.
 
 ## 3. Goals
 
@@ -93,7 +93,7 @@ Check at most 100 URLs per run. Record why each URL was chosen.
 
 1. **Hosts.** The base host must be the project's domain. The preview host must be on the project's allowlist: the project domain and its subdomains, `*.vercel.app`, `*.netlify.app`, `*.pages.dev`, `*.workers.dev`, and hosts that an owner adds. Anything else is refused, so Relay cannot be used as an open fetch proxy.
 2. **Safety.** Check every URL and every redirect hop with the URL policy. Follow at most 3 hops.
-3. **Protected previews.** An owner can store one access method per project, encrypted with the RFC-0009 key: a header name and value (for example `x-vercel-protection-bypass`), or a Cloudflare Access service token pair. Send it only to the preview host.
+3. **Protected previews.** An owner can store one access method per project, encrypted with the RFC-0009 key: a header name and value (for example `x-vercel-protection-bypass`), or a Cloudflare Access service token pair. Send it only to the preview host, and only when the owner vouched for that host: the project domain or a subdomain, an exact host the owner added, or an owner wildcard under one platform account (`*.myproj.pages.dev`, not `*.pages.dev`). On any other platform host the check runs without it.
 4. **Limits.** 4 parallel requests per host. 10-second timeout. 2 MB maximum body. HTML responses only.
 5. **Identity.** User agent `RelaySEOCheck/1.0 (+https://relay.playbookmedia.io/docs/seo-checks)`.
 6. Fetch `robots.txt` and the sitemap (from `robots.txt`, or `/sitemap.xml`) on both hosts.
@@ -209,13 +209,13 @@ For pages flagged `content-shrunk` or `javascript-rendering-suspected`, render b
 ### 5.14 Use it ourselves
 
 1. Add the action to Relay's own preview workflow (S3), with a Cloudflare Access service token.
-2. Add it to the monorepo workflow for S1, against the staging deployment.
+2. Add it to S1's workflow, against the staging deployment.
 
 ## 6. Security
 
 1. CI tokens are hashed, scoped to one project, revocable, and shown once.
 2. The host allowlist and the URL policy stop Relay from fetching arbitrary hosts.
-3. Preview access secrets are encrypted and sent only to the preview host.
+3. Preview access secrets are encrypted and sent only to the preview host, and only when that host is the project domain or one the owner added (a platform-wide wildcard such as `*.vercel.app` does not count), so a CI caller cannot point the secret at a platform host it controls.
 4. Stored values are short snippets (at most 300 characters). Full pages are never stored.
 5. The action needs no repository write permission.
 
@@ -249,7 +249,7 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 - [x] Composite action repository with a tagged `v1` release and a README. `PlaybookMediaLLC/relay-seo-check`, release v1.0.0; a production smoke test passed through it.
 - [x] SEO checks tab with tokens, hosts, access, ignores and history.
 - [x] `content/docs/seo-checks.mdx` with setup for Vercel, Netlify, Cloudflare and GitHub Actions previews.
-- [ ] Installed on Relay's own previews and on the monorepo for S1. Follow-up in section 12.
+- [ ] Installed on Relay's own previews and on S1's repository. Follow-up in section 12.
 
 ### Phase 2
 
@@ -266,7 +266,7 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 
 ### Phase 1
 
-**Sites:** S1 (the monorepo's staging deployment as the preview) and S3 (Relay's own previews behind Cloudflare Access).
+**Sites:** S1 (its staging deployment as the preview) and S3 (Relay's own previews behind Cloudflare Access).
 
 **Steps:**
 
@@ -329,7 +329,7 @@ No paid providers. Each run uses one Trigger.dev task of about 30 to 90 seconds 
 
 **Adoption**
 
-- The check runs on every pull request of Relay and the monorepo for 2 weeks, with no manual retry.
+- The check runs on every pull request of Relay and S1 for 2 weeks, with no manual retry.
 
 **Met now (2026-10-18):**
 
@@ -345,9 +345,9 @@ Each follow-up names its trigger. Check it here when it passes.
 - [ ] Phase 2 live check (section 10). Trigger: the owner adds the webhook URL, the `GITHUB_APP_WEBHOOK_SECRET`, the "Deployment status" event and Checks write to the App, following `playbook-deployment.md`, and a Vercel test repository has the App installed.
 - [x] Phase 3 live check: a flagged page renders on both hosts and the run settles its rendering hold. Trigger: a client-rendered site with previews is connected to a project. Done on 2026-10-18 on the Relay Lab project: run `54db68f5` checked 5 URLs, and `/spa-check` (an empty shell that a script fills) rendered on both hosts (`pagesRendered` 1). The rendering hold settles in the step's `finally`. The first try rendered 0 pages because the site redirected bare paths to their trailing-slash form; the check now uses the slash form that most sitemap paths use.
 - [ ] Sites that mix both forms: a page whose path form differs from most sitemap paths redirects on both hosts and is skipped. Trigger: a user's site mixes trailing-slash and bare paths.
-- [ ] Phase 1 acceptance on S1 and S3 (section 10) and the detection and speed criteria of section 11. Trigger: the monorepo's GitHub billing is fixed (S1), and Relay has previews (S3, RFC-0025).
+- [ ] Phase 1 acceptance on S1 and S3 (section 10) and the detection and speed criteria of section 11. Trigger: S1's GitHub Actions run (S1), and Relay has previews (S3, RFC-0025).
 - [ ] Usability: a developer new to Relay installs the action from the docs in under 10 minutes. Trigger: the first outside install.
-- [ ] Adoption: the check runs on every pull request of Relay and the monorepo for 2 weeks with no manual retry. Trigger: the S1 and S3 installs.
+- [ ] Adoption: the check runs on every pull request of Relay and S1 for 2 weeks with no manual retry. Trigger: the S1 and S3 installs.
 
 **Smoke tests, production (Playbook Media project, preview `https://playbookmedia.io`):**
 

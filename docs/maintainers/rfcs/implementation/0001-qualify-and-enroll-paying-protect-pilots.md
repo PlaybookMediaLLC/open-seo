@@ -14,7 +14,7 @@ Read the linked source RFC in full, including its safety decisions, persistence 
 
 ## Acceptance gate
 
-Record actual paid or declined pilot commitments, permission scope, agreed pages and cadence, reviewer identity, and a reproducible activation checklist. A connection without healthy checks is not an active protected site.
+Record actual paid or declined pilot commitments, permission scope, agreed pages and cadence, reviewer identity, and a reproducible activation checklist. A connection without healthy checks is not an active protected site. Commercial evidence stays in the private sales record; the public completion note and PR say only **met** or **not met**, with no names, prices, payment references or costs.
 
 ## Explicit boundary
 

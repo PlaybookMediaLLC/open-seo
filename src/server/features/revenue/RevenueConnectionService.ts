@@ -63,10 +63,10 @@ async function connect(
     );
   }
   const probe = await probeWriteAccess(key);
-  if (!probe.readOnly)
+  if (probe.writable.length)
     throw new AppError(
       "VALIDATION_ERROR",
-      "The key can write to Stripe. Relay accepts read-only keys only.",
+      `The key can write to ${probe.writable.join(", ")} in Stripe. Relay accepts read-only keys only.`,
     );
   const { encryptedToken, tokenKeyVersion } = await encryptToken(key);
   const hashSalt = crypto.randomUUID();

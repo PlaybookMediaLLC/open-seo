@@ -27,7 +27,7 @@ Relay brings organic visitors, but it cannot see whether they convert or fix pag
 | Publishing             | RFC-0005                                                   | Exact-change approval, pull requests, deployment signals.                                                                     |
 | Split tests            | RFC-0011                                                   | Controlled tests on page groups.                                                                                              |
 
-Test site S1 keeps its page copy in `apps/www/lib/content.ts`, which page files import. Many marketing sites store copy in content modules, Markdown or JSX text in the same way.
+Test site S1 keeps its page copy in a shared content module, which page files import. Many marketing sites store copy in content modules, Markdown or JSX text in the same way.
 
 ## 3. Goals
 
@@ -103,9 +103,9 @@ This is a new publishing change kind, `copy_text`. RFC-0013, RFC-0014 and RFC-00
 - `proposal_text_edits`: `id`, `proposal_id` (FK cascade), `ordinal`, `file_path`, `node_kind`, `before_blob_sha`, `after_blob_sha`, `before_text`, `after_text`, `before_snippet`, `after_snippet`. A proposal holds at most 5 edits in at most 3 files.
 - Fingerprint version 3 hashes every edit, plus the blob SHA of the page file.
 
-On S1, the `/approach` hero text resolves to `apps/www/lib/content.ts`.
+On S1, the `/approach` hero text resolves to that content module.
 
-**As built (part C1).** "Change page text" in the publishing panel of an approved opportunity reads the live page once, without following a redirect, and lists up to 100 headings, links, buttons, form labels and paragraphs of 300 characters or fewer. It uses the page analyzer's streaming HTML parser, because `analyzeHtml` keeps headings only. The locator starts at the page file that RFC-0004 finds. It resolves relative imports and `@/` from the root directory, tries the usual extensions and `index` files, and skips type-only imports. Files over GitHub's 32 KB read limit are skipped. In Markdown, a node is one heading, list item, quote or paragraph line without markup. The S1 hero title carries an underscore accent in the source, so it is markup and the locator refuses it; the hero introduction resolves to `apps/www/lib/content.ts`. The sharing check reads the app directory's file list in one request and up to 30 other page files. A page shares the text when it imports the module that holds it, and the export that holds it, if there is one. Nothing is written in this step.
+**As built (part C1).** "Change page text" in the publishing panel of an approved opportunity reads the live page once, without following a redirect, and lists up to 100 headings, links, buttons, form labels and paragraphs of 300 characters or fewer. It uses the page analyzer's streaming HTML parser, because `analyzeHtml` keeps headings only. The locator starts at the page file that RFC-0004 finds. It resolves relative imports and `@/` from the root directory, tries the usual extensions and `index` files, and skips type-only imports. Files over GitHub's 32 KB read limit are skipped. In Markdown, a node is one heading, list item, quote or paragraph line without markup. The S1 hero title carries an underscore accent in the source, so it is markup and the locator refuses it; the hero introduction resolves to S1's content module. The sharing check reads the app directory's file list in one request and up to 30 other page files. A page shares the text when it imports the module that holds it, and the export that holds it, if there is one. Nothing is written in this step.
 
 **As built (part C2).** After the locator finds the text, the person enters the new text in the same sheet. When other pages share the text, the person must confirm that they change too, and the proposal's risk lists them. A copy change can be prepared for any approved opportunity, because the text picker works on any page. The sheet sends one edit; the service accepts up to 5 edits in up to 3 files. Each edit escapes the new text for its node: quotes in string literals, backticks and `${` in template literals. It refuses `{`, `}`, `<` and `>` in JSX text, and Markdown markup in Markdown text. The edited file must parse again with the new text in the same node. Versions 3 to 5 of the fingerprint were already taken by metadata changes, so a copy change uses version 6: it binds the change kind, every edit, and the blob SHA of the page file. Execution builds the edits again from the base commit and refuses any difference. It then writes one commit with every changed file through the Git trees API, points the new branch at that commit, checks that the commit changes exactly those files, and opens one pull request. Relay does not prepare a revert for a copy change; the owner uses the pull request's Revert button in GitHub.
 
@@ -181,7 +181,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - [x] Four detectors with boundary tests, and the skip reason when form events are missing.
 - [x] Evidence columns added in D1 and Postgres, with the parity test.
 - [x] Value text with the "not a forecast" label.
-- [x] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's `lib/content.ts`). The test copy is trimmed, because S1's repository is private and this one is public.
+- [x] Copy locator: import walk, limits, single-match rule, shared-module warning (tests with a copy of S1's content module). The test copy is trimmed, because S1's repository is private and this one is public.
 - [x] `change_kind`, `proposal_text_edits` and fingerprint version 3. Built as version 6, because metadata changes already use versions 3 to 5.
 - [x] Execution writes the text edits in one commit (test against the GitHub mock).
 - [x] Conversion drafting with one test per dark-pattern rule.
@@ -218,7 +218,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 - The gate gives a clear pass, or a precise list of what to fix.
 - The owner judges at least 70% of items worth acting on.
 - Checked numbers match GA4 within 2%.
-- The S1 proposal edits `apps/www/lib/content.ts` and nothing else, and lists the other pages that use the text, if any.
+- The S1 proposal edits the content module and nothing else, and lists the other pages that use the text, if any.
 - No draft contains a dark pattern or an unsupported claim (the owner checks each one).
 - The S2 experiment shows conversion metrics with the caveats.
 
@@ -261,7 +261,7 @@ GA4 requests are free. Drafts cost model credits, as in RFC-0004.
 Each follow-up names its trigger. Check it here when it passes.
 
 - [ ] Phase 1 acceptance on S2 (section 10, steps 1 to 4 and 6): the gate, the detector counts, the owner's review of every item, three items checked against a GA4 Exploration, and one approved copy change that ships and is tracked. Trigger: the owner connects GA4 to the S2 project, with a key event for demo or sign-up requests. On 2026-10-18 no production project had GA4 connected.
-- [ ] Phase 1 acceptance on S1 (section 10, step 5): the `/approach` hero introduction resolves to `apps/www/lib/content.ts`, a draft and the proposal. The hero title carries an underscore accent in the source, so the locator refuses it as markup. Trigger: the GitHub App is installed again on PlaybookMediaLLC; both production connections use it.
+- [ ] Phase 1 acceptance on S1 (section 10, step 5): the `/approach` hero introduction resolves to the content module, a draft and the proposal. The hero title carries an underscore accent in the source, so the locator refuses it as markup. Trigger: the GitHub App is installed again on PlaybookMediaLLC; both production connections use it.
 - [ ] Phase 2 acceptance (section 10): a split test on the chosen conversion with a clear yes or no on eligibility, and a label with an interval. Trigger: a site with a template group of 30 or more pages, 1,000 conversions in 56 days and GA4 connected.
 - [ ] Completion criteria (section 11): accuracy against GA4 Explorations, usefulness reviews, the copy locator on 10 text blocks, and 20 rated drafts including 5 staging pages seeded with fake urgency and fake reviews. Trigger: the S2 acceptance above.
 - [ ] Phase 3, visitor-level tests (section 5.7). Trigger: the owner approves a separate security and SEO review. Then the middleware snippet, the consent hook, the GA4 custom dimension guide and the two-proportion analysis.

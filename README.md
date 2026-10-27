@@ -51,7 +51,7 @@ The [RFC plan](docs/maintainers/rfcs/README.md) delivers Protect in useful incre
 
 Use [Relay](https://relay.playbookmedia.io). Repository configuration defines a free research tier with $1 in monthly usage credits and a $10/month Base Plan with $10 in monthly credits, plus paid top-ups. Paid research consumes credits.
 
-Proposed price tests are **$79–$149/site/month for Protect**, **$299–$999/month for Sync**, and **$399–$1,499/month for Launch**. These are unvalidated hypotheses, not available subscriptions or changes to current billing. See [company.md](company.md) for scope and evidence gates and [RFC-0026](docs/maintainers/rfcs/0026-protected-site-pilots-and-service.md) for Protect pilots.
+Proposed price tests are **a per-site monthly price for Protect, set per pilot**, **$299–$999/month for Sync**, and **$399–$1,499/month for Launch**. These are unvalidated hypotheses, not available subscriptions or changes to current billing. See [company.md](company.md) for scope and evidence gates and [RFC-0026](docs/maintainers/rfcs/0026-protected-site-pilots-and-service.md) for Protect pilots.
 
 Self-hosted users supply their own provider credentials and pay their providers and hosting directly. See the [DataForSEO API key guide](docs/DATAFORSEO_API_KEY.md).
 

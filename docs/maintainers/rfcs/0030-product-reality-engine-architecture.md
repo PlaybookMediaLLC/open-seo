@@ -166,7 +166,7 @@ An integration capability must be explicitly enabled for each customer project. 
 | 3     | Human-review work item and existing GitHub proposal integration                            | No write until exact approval and current-source revalidation                                       |
 | 4     | Independent production/content verification and full timeline                              | An observed customer fix and a Relay-generated fix are attributed separately                        |
 
-Do not gate the existing Protect pilot on completion of the whole PRE. Integrate Protect events incrementally after their original acceptance tests pass.
+Do not gate the proposed Protect pilot (RFC-0026) on completion of the whole PRE. Integrate Protect events incrementally after their original acceptance tests pass.
 
 ## 9. Security, cost, and operational limits
 
