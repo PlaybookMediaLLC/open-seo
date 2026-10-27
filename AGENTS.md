@@ -9,11 +9,79 @@
 - Keep product data normalized and relationships explicit. Do not encode relational data in JSON or text merely to avoid joins.
 - For new application-backed backend functionality, default to: TanStack server function → service → repository.
 - Keep schema changes, queries, and mutations compatible with both SQLite and Postgres.
-- Use idiomatic TypeScript. Use Zod to validate untrusted data and narrow runtime values at trust boundaries.
 - Prefer established project helpers and libraries over hand-rolled implementations.
 - Prefer idiomatic TanStack Query, Router, and Form patterns for server state, routing, and submitted forms.
 - shadcn components in `src/client/components/ui/` are built on Base UI, not Radix. Compose them with the `render` prop, not `asChild`.
 - Specs under `docs/maintainers/specs/` are public design records: what a feature does, how it works, the alternatives considered and why they lost. No line numbers, migration mechanics, test plans, incidents, costs, or internal infrastructure details.
+
+## TypeScript
+
+The [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) is the baseline. These rules and `.oxlintrc.json` override it where they differ, and Prettier owns formatting.
+
+### Zod at runtime boundaries
+
+- MUST define every runtime data shape as a Zod schema and derive its type with `z.infer<typeof schema>`.
+- NEVER declare a `type` or `interface` that restates a Zod schema.
+- MUST parse at the entry boundary: server function `.validator()`, API route bodies and params, MCP tool input, webhooks, Workflow and Trigger.dev payloads, Durable Object storage reads, forms, `JSON.parse` results, JSON columns, provider responses, structured AI output, and env strings you convert.
+- MUST parse once at that boundary and pass the parsed type downstream; NEVER re-parse it unless it crosses a new trust boundary.
+- MUST use `safeParse` where bad input is expected (users, webhooks, providers) and handle the failure; use `parse` only where invalid data is a bug that should throw.
+- MUST encode real constraints: string formats (`uuid`, `email`, `url`), `.int()`, `.positive()`, `z.enum`, `z.discriminatedUnion`.
+- MUST derive related schemas with `.extend()`, `.pick()`, `.omit()`, or `.partial()`; NEVER copy fields from one schema into another.
+- MUST store new money amounts as integers (credits, or cents for currency); NEVER add a float money field. Provider-reported `costUsd` is the existing exception.
+
+### Tenant and resource IDs
+
+- MUST take `organizationId`, `projectId`, and `userId` from the verified context (`requireProjectContext`, session middleware), never from client input. See [Tenant and resource scoping](docs/maintainers/review-guidelines.md#tenant-and-resource-scoping).
+- MUST name ID parameters for their kind (`projectId`, not `id`) and keep that name from server function to service to repository. The repo has no branded ID types.
+
+### Assertions and escape hatches
+
+`satisfies` and `as const` are compile-time checks: use them. `as T` and `!` are claims the compiler cannot verify: avoid them.
+
+- NEVER use `any`, `as any`, or `as unknown as T`. oxlint rejects them; a disable comment must give the invariant after `--` (see `src/db/runBatch.ts`).
+- NEVER use `@ts-ignore`, `@ts-nocheck`, or `export let`.
+- NEVER use a non-null assertion (`!`) unless an invariant the compiler cannot see guarantees the value; state it in a comment.
+- MUST fix a type error by parsing, narrowing, handling `null`, or correcting the type; NEVER assert it away.
+- MUST check a value against a type with `satisfies`. ✅ `{ ... } satisfies Record<Status, Handler>` ❌ `{ ... } as Record<Status, Handler>`
+- MUST use `as const` for lookup tables and tuples whose literals must stay narrow.
+
+### States and exhaustiveness
+
+- MUST model mutually exclusive states as a discriminated union. ✅ `{ status: "error"; error: string }` ❌ `{ loading?: boolean; error?: string; data?: T }`
+- MUST end a `switch` over a union with a `never` check: `default: { const unhandled: never = value; throw new Error(String(unhandled)); }`.
+- NEVER add a `default` branch that silently absorbs a new variant.
+
+### Contracts, inference, and immutability
+
+- MUST give exported service, repository, and billing or credit functions an explicit return type.
+- MUST let inference type locals and private helpers; NEVER restate an obvious type (`const retries: number = 3`).
+- MUST type array and object parameters the function does not mutate as `readonly` (`readonly Keyword[]`), and NEVER mutate data shared across modules.
+- MUST keep `interface` for behavioral contracts (ports, providers, repositories); NEVER use one to recreate a Zod-derived data model.
+
+### When a handwritten type is fine
+
+Runtime data shape → Zod schema + inferred type. Compile-time behavior or abstraction → handwritten type when it helps.
+
+- Function and callback types: `type Clock = () => Date`.
+- Generic type parameters and reusable generic helpers.
+- Mapped, conditional, and indexed types (`CreateProjectInput["name"]`).
+- Behavioral interfaces for ports, providers, repositories, and other service contracts.
+
+Internal data is not exempt. Derive its type from what produces it (the schema, the Drizzle table's `$inferSelect`, or the function's inferred return), not from a handwritten copy of its fields.
+
+### Errors
+
+- MUST throw `AppError` with an `ErrorCode` (`src/server/lib/errors.ts`) for expected failures, or an `Error` subclass in a leaf module (`src/server/lib/gscErrors.ts`) when callers branch on the type.
+- MUST treat caught values as `unknown` and narrow them (`instanceof`, `asAppError`) before reading fields.
+- NEVER swallow failures (`catch { return null }`); a catch may return a fallback only for the one expected failure it handles.
+- MUST keep the caught error as `cause` when translating it (`new Error(message, { cause: error })`), and log it with `describeError`.
+
+### Naming
+
+- MUST use `UpperCamelCase` for types, interfaces, and classes, and `lowerCamelCase` for values, functions, parameters, and Zod schemas (`createProjectSchema` → `CreateProjectInput`).
+- MUST use `CONSTANT_CASE` for module-level constant values (`AUTUMN_SEO_DATA_CREDITS_PER_USD`).
+- MUST write abbreviations as words: `projectId` and `apiUrl`, not `projectID` and `APIURL`.
+- NEVER prefix interfaces with `I`.
 
 ## Every App
 
