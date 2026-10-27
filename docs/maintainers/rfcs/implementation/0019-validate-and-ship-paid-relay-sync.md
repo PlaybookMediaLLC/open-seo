@@ -14,7 +14,7 @@ Read the linked source RFC in full, including its safety decisions, persistence 
 
 ## Acceptance gate
 
-A paying design partner receives an accurately detected and production-verified correction, and the buyer confirms the recurring value independently of setup enthusiasm.
+A paying design partner receives an accurately detected and production-verified correction, and the buyer confirms the recurring value independently of setup enthusiasm. Commercial evidence stays in the private sales record; the public completion note and PR say only **met** or **not met**, with no names, prices, payment references or costs.
 
 ## Explicit boundary
 

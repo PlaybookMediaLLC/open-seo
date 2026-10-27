@@ -14,7 +14,7 @@ Read the linked source RFC in full, including its safety decisions, persistence 
 
 ## Acceptance gate
 
-Reconcile reports against live records across pilot websites, including a stale monitor and no-incident week; record payments, renewals when due, support and compute costs distinctly from self-reported interest.
+Reconcile reports against live records across pilot websites, including a stale monitor and no-incident week; record payments, renewals when due, support and compute costs distinctly from self-reported interest. Commercial evidence stays in the private sales record; the public completion note and PR say only **met** or **not met**, with no names, prices, payment references or costs.
 
 ## Explicit boundary
 

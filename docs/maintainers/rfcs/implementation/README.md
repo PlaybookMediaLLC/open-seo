@@ -8,7 +8,7 @@
 
 **Work through IRFC-0001, IRFC-0002, and so on.** These numbers are the implementation order, not historical RFC IDs. RFC-0001–0017 in the parent folder already have mostly closed implementation scopes and remain as reusable foundations; they are not seventeen projects to rebuild. The old source RFC identifiers stay unchanged because code comments, prior PRs, specifications, and handoffs already depend on them.
 
-At each item: inspect current `develop`, implement only the specified slice, run its acceptance checks, and record either **verified existing**, **completed**, **blocked**, or **skipped for failed demand gate**. Optional or demand-gated items do not prevent unrelated later features from advancing. Progress is measured by verified workflows and payments, not documentation count.
+At each item: inspect current `develop`, implement only the specified slice, run its acceptance checks, and record either **verified existing**, **completed**, **blocked**, or **skipped for failed demand gate**. Optional or demand-gated items do not prevent unrelated later features from advancing. Progress is measured by verified workflows and payments, not documentation count. Commercial evidence (payments, renewals, prices, buyers, reviewers, support and compute costs) stays in the private sales record; public notes and PRs say only whether a commercial gate was met or not met, with no names, prices, payment references or costs.
 
 ## Numbered implementation queue
 

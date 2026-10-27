@@ -531,7 +531,7 @@ Each follow-up names its trigger. Check it here when it passes.
 
 **Paid run.** The owner approved on 2026-10-16 one content-gap run with up to 3 competitors (about 507 credits at 169 each), one live results check and one site audit, once a property with data is connected.
 
-- [ ] Phase 3 acceptance: record the estimate and the settled charge, run it again within 30 days at 0 credits, and the owner reviews every topic. The DataForSEO account balance was about $0.44 on 2026-10-16, and 3 competitors cost about $0.40 at the provider, so a deposit is needed first.
+- [ ] Phase 3 acceptance: record the estimate and the settled charge, run it again within 30 days at 0 credits, and the owner reviews every topic. The DataForSEO deposit must be topped up first.
 
 **RFC-0009.**
 

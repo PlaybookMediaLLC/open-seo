@@ -1,6 +1,6 @@
 # RFC-0005: GitHub execution, more change types and deployment signals
 
-- **Status:** Done. Accepted on S1 (phase 1a), 2026-10-16, PR #53. Accepted on the Relay Lab test repository (phases 1b and 2), 2026-10-16, PR #56. Built in PRs #37 to #45, with live fixes in #49, #50, #52, #54 and #55. One follow-up: repeat the CI check on S1 after the monorepo billing fix (section 12).
+- **Status:** Done. Accepted on S1 (phase 1a), 2026-10-16, PR #53. Accepted on the Relay Lab test repository (phases 1b and 2), 2026-10-16, PR #56. Built in PRs #37 to #45, with live fixes in #49, #50, #52, #54 and #55. One follow-up: repeat the CI check on S1 once its GitHub Actions run (section 12).
 - **Date:** 2026-10-15
 - **Brief section:** 6 (Feature D)
 - **Depends on:** RFC-0001 configuration. Phase 1a has no other dependency. Phase 1b uses the RFC-0004 file locator.
@@ -81,7 +81,7 @@ Relay can open a pull request that changes one meta description in a static Next
 6. The call argument must be a string literal, or a template literal without expressions. Otherwise reject with "The description is computed. Relay can only change literal text."
 7. Replace only that argument literal. Keep its quote style, and switch quotes only when that needs fewer escapes, as Prettier does. S1 runs `prettier --check` with single quotes. Parse the page again.
 8. List the other places inside the helper that use the same parameter. Show them in the risk text. On S1, `title` also feeds the Open Graph image `alt` text.
-9. Show the helper in the diff: "Changes the `description` argument of `pageMetadata` (defined in `apps/www/lib/site.ts`)."
+9. Show the helper in the diff: "Changes the `description` argument of `pageMetadata` (defined in `{helper path}`)."
 
 **Data model.** Add to `opportunity_proposals`:
 
@@ -262,12 +262,12 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Route-group URL mapping. Two groups that map to one URL fail the Next.js build, so there is no check for them (5.2).
 - [x] Helper-call support: relative import, `@/*` alias import, function declaration and arrow function (tests).
 - [x] Rejection tests: destructured parameters, a computed argument, a helper that renames the field, an unresolvable import.
-- [x] Only the target argument literal changes (test on a copy of the S1 `approach` page and `lib/site.ts`).
+- [x] Only the target argument literal changes (test on a copy of the S1 `approach` page and its metadata helper).
 - [x] `metadata_source`, `helper_path` and `helper_blob_sha` columns in D1 and Postgres.
 - [x] Test: a changed helper blob at execution fails closed.
 - [x] Diff view names the helper and lists other uses of the parameter (risk text).
-- [x] Repository CI passes on a real Relay pull request. On the public test repository, the CI of Relay's pull request passed, and Relay showed the same state. Prettier with S1's `.prettierrc.json` passes on Relay's S1 diff. Follow-up: draft PlaybookMediaLLC/monorepo#32 holds that diff, and its CI waits for the monorepo billing fix.
-- [x] Phase 1a acceptance test run in production (section 10). Search Console has no data for `playbookmedia.io`, so the run used three labeled test opportunities. All 3 S1 proposals were prepared. Each changes only the description argument of `pageMetadata` and names `apps/www/lib/site.ts`. The `[product]` refusal names the segment and offers a ticket. S4 is in another organization that the App cannot reach, so the S4 refusal was checked by the dry run.
+- [x] Repository CI passes on a real Relay pull request. On the public test repository, the CI of Relay's pull request passed, and Relay showed the same state. Prettier with S1's `.prettierrc.json` passes on Relay's S1 diff. Follow-up: a draft S1 pull request holds that diff, and its CI waits until S1's GitHub Actions run.
+- [x] Phase 1a acceptance test run in production (section 10). Search Console has no data for `playbookmedia.io`, so the run used three labeled test opportunities. All 3 S1 proposals were prepared. Each changes only the description argument of `pageMetadata` and names S1's helper file. The `[product]` refusal names the segment and offers a ticket. S4 is in another organization that the App cannot reach, so the S4 refusal was checked by the dry run.
 
 ### Phase 1b
 
@@ -285,7 +285,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Revert proposal with the "file changed" refusal test.
 - [x] Opportunity becomes `reverted` after the revert is confirmed (test).
 - [x] Token instructions list the new read permissions.
-- [x] Live check: the GitHub deployment signal and the live content signal appear after merge and deploy. Checked on the public test repository `PlaybookMediaLLC/playbookmediallc.github.io`, because the billing block stops S1 deploys. The S1 pull request monorepo#38 stays open for the same check on S1.
+- [x] Live check: the GitHub deployment signal and the live content signal appear after merge and deploy. Checked on the public test repository `PlaybookMediaLLC/playbookmediallc.github.io`, because S1's GitHub Actions do not run, which stops S1 deploys. The S1 pull request stays open for the same check on S1.
 - [x] Live check: prepare and open a revert pull request. Do not merge it unless the owner approves. The test repository's pull request #2 is the exact inverse of #1 and stays open.
 - [x] `content/docs/github-publishing.mdx` covers titles, deployment signals, checks and reverts.
 
@@ -302,7 +302,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 - [x] Pages Router adapter with tests for supported and rejected forms.
 - [x] Canonical and robots changes with the typed confirmation and the inspection step. The `technical_blocker` type exists; its detector comes with RFC-0002 phase 2, so no opportunity offers these changes yet.
 - [x] GitHub issues with exact-text approval, and a test that one approval creates one issue.
-- [x] Live check: install the App on `PlaybookMediaLLC/monorepo` only, open a pull request for S1, create an issue, then uninstall and see the revoked state. The pull request is monorepo#38 and the issue is monorepo#39. After the uninstall, the next operation showed "Reconnect the GitHub App.", wrote nothing, and revoked the installation. Settings show the revoked state since #55.
+- [x] Live check: install the App on S1's repository only, open a pull request for S1, create an issue, then uninstall and see the revoked state. Both were opened on S1's repository. After the uninstall, the next operation showed "Reconnect the GitHub App.", wrote nothing, and revoked the installation. Settings show the revoked state since #55.
 - [x] Docs cover the App install and permissions.
 
 ## 9. Open questions
@@ -316,7 +316,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 ### Phase 1a
 
-**Sites:** S1 (`PlaybookMediaLLC/monorepo`, root `apps/www`) and S4 (`apps/solomon-ai-marketing`).
+**Sites:** S1 and S4.
 
 **Steps:**
 
@@ -327,7 +327,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 **Pass when:**
 
 - All 3 S1 proposals are prepared. Each diff changes only the description argument of `pageMetadata`. The title and path arguments do not change.
-- Each diff names `apps/www/lib/site.ts` as the helper.
+- Each diff names S1's helper file as the helper.
 - The S4 proposal is refused with a message that names the dynamic segment and offers a ticket.
 
 **Value check:** Relay can change pages on a typical production Next.js site, including our own.
@@ -340,7 +340,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 1. Prepare a title and description proposal for one S1 page. Approve it.
 2. Open the pull request. Check the repository checks state in Relay.
-3. Merge it. Let the monorepo pipeline deploy production.
+3. Merge it. Let S1's pipeline deploy production.
 4. In Relay, refresh the experiment status.
 5. Prepare a revert proposal. Open the revert pull request, but do not merge it.
 
@@ -361,7 +361,7 @@ Turn on "Request user authorization (OAuth) during installation". Use no webhook
 
 **Steps:**
 
-1. Install the GitHub App on `PlaybookMediaLLC/monorepo` only.
+1. Install the GitHub App on S1's repository only.
 2. Repeat phase 1b steps 1 and 2 with the App.
 3. Create a GitHub issue from a ticket.
 4. Prepare a canonical change on a test page, with the typed confirmation.
@@ -403,7 +403,7 @@ Dry run on 2026-10-16, parser only, no pull request:
 **Phase 2: GitHub App**
 
 - The token request body asks only for the permissions of each operation (log review).
-- A token for the monorepo gets `403` on any other repository.
+- A token for S1's repository gets `403` on any other repository.
 - After uninstalling, the next operation shows the reconnect message and writes nothing.
 - On a Pages Router test repository with 5 pages, every supported form succeeds, and every unsupported form is refused with its reason.
 - A canonical change cannot proceed without the typed path. URL Inspection shows the expected canonical within 7 days of deploy.
@@ -415,15 +415,15 @@ Dry run on 2026-10-16, parser only, no pull request:
 - **Phase 1a:** a dry run prepared 9 of 9 S1 static pages, each with a one-line diff. All 19 S4 pages were refused with their reasons. Relay's `/approach` diff changes only the two `pageMetadata` arguments and keeps single quotes. Prettier with S1's config passes on it.
 - **Phase 1b:** the S1 title template `'%s | Playbook Media'` was read from the root layout. The final title "How we own software | Playbook Media" has 36 characters. S1's GitHub deployments use the environment `production`. The live parser reads the `/approach` title (with the template) and description exactly.
 - **Phase 2:** the setup callback redirects a forged state to `/` and writes nothing, in production. Unit tests cover the token request body (one repository, the operation's permissions, RS256), the forged `installation_id`, and revocation.
-- **Phase 2, live:** the first install failed. The Workers runtime rejects `fetch` with `redirect: "error"`, so every GitHub call from the worker failed, for tokens and the App. Node accepts the option, so the tests and the dry runs did not show it. `redirect: "manual"` fixes it, and the setup callback now logs why it fails. After the fix, a new install was saved for PlaybookMediaLLC with `monorepo` only. The S1 project connected through the App with root `apps/www`. A token for the monorepo with Contents write gets `403` when it tries to create a branch in another repository of the organization.
-- **Phase 1a and 1b, live:** GitHub reports `push: false` for App installation tokens, so every App proposal failed with a generic conflict until #52. After the fix, Relay opened monorepo#38 as `relay-seo`. It changes 1 file and only the two `pageMetadata` literals, and keeps single quotes. Relay showed the final title "How we own software | Playbook Media" (36 characters) before approval. A final title of 70 characters was refused before approval. Relay shows the checks as failing, the same as GitHub. One approval created exactly one issue, monorepo#39, whose body is the approved text with Relay's marker.
+- **Phase 2, live:** the first install failed. The Workers runtime rejects `fetch` with `redirect: "error"`, so every GitHub call from the worker failed, for tokens and the App. Node accepts the option, so the tests and the dry runs did not show it. `redirect: "manual"` fixes it, and the setup callback now logs why it fails. After the fix, a new install was saved for PlaybookMediaLLC with S1's repository only. The S1 project connected through the App with its site root. A token for that repository with Contents write gets `403` when it tries to create a branch in another repository of the organization.
+- **Phase 1a and 1b, live:** GitHub reports `push: false` for App installation tokens, so every App proposal failed with a generic conflict until #52. After the fix, Relay opened an S1 pull request as `relay-seo`. It changes 1 file and only the two `pageMetadata` literals, and keeps single quotes. Relay showed the final title "How we own software | Playbook Media" (36 characters) before approval. A final title of 70 characters was refused before approval. Relay shows the checks as failing, the same as GitHub. One approval created exactly one issue, whose body is the approved text with Relay's marker.
 - **Relay Lab, live:** the public test repository `PlaybookMediaLLC/playbookmediallc.github.io` is a static Next.js site that GitHub Pages deploys to the environment `github-pages`. Relay opened pull request #1 (title and description of `/about`, final title "About the lab | Relay Lab"). Its checks went from pending to passing, and Relay showed passing. After the merge, Relay recorded the GitHub deployment of the merge commit within 1 minute and the live content match. Both signals agreed. The revert pull request #2 restores the earlier literals. Two more bugs showed up and are fixed: GitHub API version 2026-03-10 removed `merge_commit_sha` from pull request responses, so merged pull requests could not be verified until #54. After an uninstall, settings still showed "Connected" until #55.
 
 ## 12. Owner actions and follow-ups
 
-1. **GitHub billing for the monorepo.** GitHub Actions jobs on `PlaybookMediaLLC/monorepo` do not start: "recent account payments have failed or your spending limit needs to be increased". Fix it in the organization's Billing settings. Then re-run the checks on draft PR #32, and close it without merging. This is a follow-up. It does not block the RFC.
+1. **S1 CI.** GitHub Actions jobs on S1's repository do not start. Once they do, re-run the checks on the draft S1 pull request, and close it without merging. This is a follow-up. It does not block the RFC.
 2. **S1 project in Relay.** Done on 2026-10-16. Search Console is connected, but it reports no rows for `playbookmedia.io`. The three opportunities labeled "RFC-0005 acceptance test" are test data. Delete them after acceptance.
 3. **GitHub connection.** The `relay-seo` App was uninstalled for the Phase 2 check. To use it again, install it from Relay on the chosen repositories, then reconnect the S1 project through the App.
-4. **Run section 10.** Done. Phase 1b ran on the test repository. monorepo#38 stays open; merge it when you choose.
+4. **Run section 10.** Done. Phase 1b ran on the test repository. The S1 pull request stays open; merge it when you choose.
 5. **Phase 2 live check.** Done.
 6. **Test data.** Delete the opportunities labeled "RFC-0005 acceptance test" in the Playbook Media and Relay Lab projects when they are no longer useful.

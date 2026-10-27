@@ -209,7 +209,7 @@ Confirm, and record in the PR:
 2. Whether Containers can enforce the required isolation and outbound controls. If trusted-network isolation or abuse/cost bounds cannot be demonstrated, do not enable Path B; retain customer previews. An absence of injected secrets alone does not prove safe execution.
 3. The Sandbox SDK methods for files, commands and ports, and the sleep setting.
 4. That an OpenNext build deploys to Workers for Platforms with static assets, and that a static site does too.
-5. Build time and cost for S1 (`PlaybookMediaLLC/monorepo`, root `apps/www`).
+5. Build time and cost for S1.
 6. The Workers for Platforms plan needed, and its limits on user Workers.
 
 ## 6. Security

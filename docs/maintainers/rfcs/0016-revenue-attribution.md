@@ -23,7 +23,7 @@ Relay measures clicks, sessions and GA4 key events. It cannot say which landing 
 | Relay billing         | Autumn over Stripe                                            | Relay's own revenue. A dogfood source.                    |
 | Scoring               | RFC-0002 commercial score                                     | Can use revenue per page.                                 |
 | Results               | RFC-0006                                                      | Can show revenue next to search metrics.                  |
-| Playbook growth tools | `PlaybookMediaLLC/monorepo` `apps/growth-attribution`         | Exists in an empty state. Check its scope before phase 3. |
+| Playbook growth tools | Playbook's internal attribution app                           | Exists in an empty state. Check its scope before phase 3. |
 
 ## 3. Goals
 
@@ -130,7 +130,7 @@ The search engine list is one constant with tests.
 ### 5.8 Phase 3
 
 1. Paddle and Lemon Squeezy connections with the same rules.
-2. Check the scope of the Playbook `growth-attribution` app. Decide whether Relay sends its revenue events there or reads from it.
+2. Check the scope of Playbook's internal attribution app. Decide whether Relay sends its revenue events there or reads from it.
 
 ## 6. Privacy and security
 
@@ -226,4 +226,4 @@ Each follow-up names its trigger. Check it here when it passes.
 - [ ] Real-site acceptance (section 10) and completion criteria (section 11) on S3: the snippet on `relay.playbookmedia.io` behind consent, three test-mode purchases, a report that matches Stripe, then 30 days in live mode with at least 80% coverage. Check whether Autumn passes checkout metadata to Stripe. Trigger: the privacy policy update above.
 - [ ] Paddle connection (phase 3). Paddle keys can be read-only, with a read permission for each entity, so the RFC's rules can apply. The owner deferred it on 2026-10-19. Trigger: a customer who bills with Paddle asks for it.
 - [ ] Lemon Squeezy connection (phase 3). No read-only key option was found, so the read-only rule cannot apply as written. The owner deferred it on 2026-10-19. Trigger: a customer asks, and the owner decides whether a full-access key is acceptable.
-- [ ] Decision on the Playbook `growth-attribution` app: does Relay send its revenue events there, or read from it? Trigger: the owner reviews the app's scope.
+- [ ] Decision on Playbook's internal attribution app: does Relay send its revenue events there, or read from it? Trigger: the owner reviews the app's scope.
