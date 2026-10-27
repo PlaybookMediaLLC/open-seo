@@ -11,10 +11,13 @@ export function SearchConsoleConnection({
   host: WidgetHost;
   data: SearchConsoleData;
 }) {
-  const input = host.snapshot!.context.arguments;
+  const snapshot = host.snapshot;
+  if (!snapshot) throw new Error("Search Console widget has no tool result.");
+  const input = snapshot.context.arguments;
   const busy = host.action.isPending;
   const connectUrl = safeHttpUrl(data.connectUrl);
   const setupUrl = safeHttpUrl(data.setupDocsUrl);
+  const openUrl = setupUrl ?? connectUrl;
   const connection = data.reason === "not_connected" || data.connectionRequired;
   return (
     <section className="space-y-4 rounded-xl border border-border bg-card p-5">
@@ -35,11 +38,8 @@ export function SearchConsoleConnection({
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
-        {(connectUrl || setupUrl) && (
-          <Button
-            disabled={busy}
-            onClick={() => host.open((setupUrl ?? connectUrl)!)}
-          >
+        {openUrl && (
+          <Button disabled={busy} onClick={() => host.open(openUrl)}>
             {setupUrl
               ? "Setup instructions"
               : connection
@@ -51,7 +51,7 @@ export function SearchConsoleConnection({
         <Button
           variant="outline"
           pending={busy}
-          onClick={() => host.call(host.snapshot!.context)}
+          onClick={() => host.call(snapshot.context)}
         >
           <RefreshCw />
           {connection ? "Check connection" : "Try again"}

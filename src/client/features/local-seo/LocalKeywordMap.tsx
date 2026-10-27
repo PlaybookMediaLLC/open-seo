@@ -37,8 +37,10 @@ export function LocalKeywordMap({
 }) {
   const query = useQuery({
     queryKey: ["localSeo", projectId, "scan", selectedScan?.id],
-    queryFn: () =>
-      getLocalScan({ data: { projectId, scanId: selectedScan!.id } }),
+    queryFn: () => {
+      if (!selectedScan) throw new Error("No local scan selected.");
+      return getLocalScan({ data: { projectId, scanId: selectedScan.id } });
+    },
     enabled: Boolean(selectedScan),
     refetchInterval: (state) =>
       state.state.data && isLocalScanActive(state.state.data.scan.status)

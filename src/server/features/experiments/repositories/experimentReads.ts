@@ -285,10 +285,10 @@ export async function hasOverlappingChanges(
       ),
     )
     .limit(20);
+  const { baselineStart, observationEnd } = experiment;
   return candidates.some(({ deployedAt }) => {
-    const day = ga4DateInTimeZone(new Date(deployedAt!), "America/Los_Angeles");
-    return (
-      day >= experiment.baselineStart! && day <= experiment.observationEnd!
-    );
+    if (!deployedAt) return false;
+    const day = ga4DateInTimeZone(new Date(deployedAt), "America/Los_Angeles");
+    return day >= baselineStart && day <= observationEnd;
   });
 }

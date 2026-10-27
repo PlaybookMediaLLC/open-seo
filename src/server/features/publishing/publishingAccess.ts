@@ -5,6 +5,7 @@ import { DataRefreshClaimRepository } from "@/server/features/dashboard/reposito
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
 import { AppError } from "@/server/lib/errors";
 import { getOptionalEnvValue } from "@/server/lib/runtime-env";
+import type { ErrorCode } from "@/shared/error-codes";
 import { MIN_BETTER_AUTH_SECRET_LENGTH } from "@/shared/selfhost-checks";
 import type {
   PublishingConnection,
@@ -148,6 +149,21 @@ export async function withPublishingClaim<T>(
   }
 }
 
+const PUBLISHING_FAILURE_MESSAGES: Partial<Record<ErrorCode, string>> = {
+  AUTH_CONFIG_MISSING:
+    "Configure a stable BETTER_AUTH_SECRET of at least 32 characters, then reconnect GitHub if the encryption key changed.",
+  VALIDATION_ERROR:
+    "This change is not supported. Use a matching static Next.js App Router page with a direct string metadata.description, and a different description of at most 320 characters.",
+  FORBIDDEN:
+    "GitHub access is unavailable. Check the selected repository and the token's Contents and Pull requests permissions.",
+  NOT_FOUND:
+    "The selected GitHub repository, branch or supported page is unavailable. Check the connection and file path.",
+  CONFLICT:
+    "The project, evidence, connection or repository changed, or another operation is running. Reload and review before retrying. Remote work may already exist and will be checked on an authorized retry.",
+  RATE_LIMITED:
+    "The bounded GitHub request allowance or provider rate limit was reached. Wait before retrying.",
+};
+
 export function publishingFailure(error: unknown): string {
   // Specific messages from the parser and checks are written for the user.
   if (
@@ -156,21 +172,10 @@ export function publishingFailure(error: unknown): string {
     error.message !== error.code
   )
     return error.message;
-  if (error instanceof AppError) {
-    switch (error.code) {
-      case "AUTH_CONFIG_MISSING":
-        return "Configure a stable BETTER_AUTH_SECRET of at least 32 characters, then reconnect GitHub if the encryption key changed.";
-      case "VALIDATION_ERROR":
-        return "This change is not supported. Use a matching static Next.js App Router page with a direct string metadata.description, and a different description of at most 320 characters.";
-      case "FORBIDDEN":
-        return "GitHub access is unavailable. Check the selected repository and the token's Contents and Pull requests permissions.";
-      case "NOT_FOUND":
-        return "The selected GitHub repository, branch or supported page is unavailable. Check the connection and file path.";
-      case "CONFLICT":
-        return "The project, evidence, connection or repository changed, or another operation is running. Reload and review before retrying. Remote work may already exist and will be checked on an authorized retry.";
-      case "RATE_LIMITED":
-        return "The bounded GitHub request allowance or provider rate limit was reached. Wait before retrying.";
-    }
-  }
+  const message =
+    error instanceof AppError
+      ? PUBLISHING_FAILURE_MESSAGES[error.code]
+      : undefined;
+  if (message) return message;
   return "GitHub work could not finish. No merge or deployment was requested. A branch or pull request may already exist. An authorized retry will check existing work before creating anything.";
 }

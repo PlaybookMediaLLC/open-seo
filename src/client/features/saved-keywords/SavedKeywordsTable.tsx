@@ -161,6 +161,7 @@ function normalizeIntent(value: string | null): KeywordIntent {
     case "navigational":
     case "unknown":
       return value;
+    case null:
     default:
       return "unknown";
   }

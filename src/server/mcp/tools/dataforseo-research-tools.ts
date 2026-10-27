@@ -552,7 +552,8 @@ function localBusinessOrderBy(
       return ["rating.value,desc"];
     case "reviews":
       return ["rating.votes_count,desc"];
-    default:
+    case "relevance":
+    case undefined:
       return undefined;
   }
 }

@@ -177,8 +177,9 @@ export function performanceIssues(
       (a, b) => b.clicks - a.clicks || compareText(a.url, b.url),
     );
     const page = sorted.find((member) => byPage.has(member.key));
-    if (page)
-      failing(template, sorted, measured(byPage.get(page.key)!), page.url);
+    const snapshots = page && byPage.get(page.key);
+    if (page && snapshots)
+      failing(template, sorted, measured(snapshots), page.url);
     else unmeasured.push(...sorted);
   }
   const site = measured(origin);

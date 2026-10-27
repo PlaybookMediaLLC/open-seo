@@ -330,6 +330,7 @@ export default {
     ]);
     for (const result of checks)
       if (result.status === "rejected") throw result.reason;
+    // oxlint-disable-next-line typescript/only-throw-error -- rethrows the caught value unchanged
     if (watchdogError) throw watchdogError;
   },
 };

@@ -41,7 +41,8 @@ function notice(trend: AiTrend, collecting: boolean) {
       return collecting
         ? "Collecting answers. Visibility appears here when the run finishes."
         : `There are no finished runs in the last ${days} days.`;
-    default:
+    case "comparable":
+    case "no_previous":
       return null;
   }
 }

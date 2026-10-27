@@ -38,9 +38,11 @@ The [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.
 
 `satisfies` and `as const` are compile-time checks: use them. `as T` and `!` are claims the compiler cannot verify: avoid them.
 
-- NEVER use `any`, `as any`, or `as unknown as T`. oxlint rejects them; a disable comment must give the invariant after `--` (see `src/db/runBatch.ts`).
+oxlint enforces the three NEVER rules below. A disable comment must give the invariant after `--` (see `src/db/runBatch.ts`).
+
+- NEVER use `any`, `as any`, or `as unknown as T`.
 - NEVER use `@ts-ignore`, `@ts-nocheck`, or `export let`.
-- NEVER use a non-null assertion (`!`) unless an invariant the compiler cannot see guarantees the value; state it in a comment.
+- NEVER use a non-null assertion (`!`) unless an invariant the compiler cannot see guarantees the value; state it in the disable comment. Test files are exempt.
 - MUST fix a type error by parsing, narrowing, handling `null`, or correcting the type; NEVER assert it away.
 - MUST check a value against a type with `satisfies`. ✅ `{ ... } satisfies Record<Status, Handler>` ❌ `{ ... } as Record<Status, Handler>`
 - MUST use `as const` for lookup tables and tuples whose literals must stay narrow.
@@ -48,8 +50,8 @@ The [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.
 ### States and exhaustiveness
 
 - MUST model mutually exclusive states as a discriminated union. ✅ `{ status: "error"; error: string }` ❌ `{ loading?: boolean; error?: string; data?: T }`
-- MUST end a `switch` over a union with a `never` check: `default: { const unhandled: never = value; throw new Error(String(unhandled)); }`.
-- NEVER add a `default` branch that silently absorbs a new variant.
+- MUST list every variant of a union in a `switch`; oxlint's `switch-exhaustiveness-check` fails the lint otherwise.
+- NEVER add a `default` branch that silently absorbs union variants; name the cases that share a branch.
 
 ### Contracts, inference, and immutability
 
@@ -72,6 +74,7 @@ Internal data is not exempt. Derive its type from what produces it (the schema, 
 ### Errors
 
 - MUST throw `AppError` with an `ErrorCode` (`src/server/lib/errors.ts`) for expected failures, or an `Error` subclass in a leaf module (`src/server/lib/gscErrors.ts`) when callers branch on the type.
+- NEVER throw a non-`Error` value; TanStack Router's `notFound()` and `redirect()` are the only exceptions oxlint allows.
 - MUST treat caught values as `unknown` and narrow them (`instanceof`, `asAppError`) before reading fields.
 - NEVER swallow failures (`catch { return null }`); a catch may return a fallback only for the one expected failure it handles.
 - MUST keep the caught error as `cause` when translating it (`new Error(message, { cause: error })`), and log it with `describeError`.

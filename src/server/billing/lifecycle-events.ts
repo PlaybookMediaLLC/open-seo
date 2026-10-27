@@ -36,11 +36,11 @@ export function deriveBillingLifecycleEvents(
   const events: BillingLifecycleEvent[] = [];
 
   if (isPricedSubscriber(next) && !isPricedSubscriber(previous)) {
-    events.push({ name: "subscription_started", planId: next.paidPlanId! });
+    events.push({ name: "subscription_started", planId: next.paidPlanId });
   }
 
   if (next.pastDue && isPricedPlan(next.paidPlanId) && !previous.pastDue) {
-    events.push({ name: "payment_failed", planId: next.paidPlanId! });
+    events.push({ name: "payment_failed", planId: next.paidPlanId });
   }
 
   const wasInGoodStanding =
@@ -51,7 +51,7 @@ export function deriveBillingLifecycleEvents(
   if (wasInGoodStanding && !isInGoodStanding) {
     events.push({
       name: "subscription_canceled",
-      planId: previous.paidPlanId!,
+      planId: previous.paidPlanId,
     });
   }
 
@@ -73,10 +73,12 @@ export function getBillingState(
   return snapshot.paidPlanStatus ?? "none";
 }
 
-function isPricedPlan(planId: string | null) {
+function isPricedPlan(planId: string | null): planId is string {
   return planId !== null && PRICED_PLAN_IDS.has(planId);
 }
 
-function isPricedSubscriber(snapshot: LifecycleSnapshot) {
+function isPricedSubscriber(
+  snapshot: LifecycleSnapshot,
+): snapshot is LifecycleSnapshot & { paidPlanId: string } {
   return snapshot.isPaying && isPricedPlan(snapshot.paidPlanId);
 }

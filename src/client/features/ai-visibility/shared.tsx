@@ -117,7 +117,10 @@ export function useAiRunProgress(projectId: string, initialRun: AiRun | null) {
   const runId = initialRun?.id;
   const query = useQuery({
     queryKey: [...aiVisibilityKey(projectId), "run", runId],
-    queryFn: () => getAiVisibilityRun({ data: { projectId, runId: runId! } }),
+    queryFn: () => {
+      if (!runId) throw new Error("No AI visibility run to read.");
+      return getAiVisibilityRun({ data: { projectId, runId } });
+    },
     enabled: Boolean(runId),
     initialData: initialRun ?? undefined,
     // A finished run never changes, so only an unfinished one is read again.

@@ -44,14 +44,13 @@ export function detectOpportunities(
   const queryPages = sort(
     input.queryPages.filter((row) => usableRow(row, 1)),
     (a, b) =>
-      compareText(a.keys![1], b.keys![1]) ||
-      compareText(a.keys![0], b.keys![0]),
+      compareText(a.keys[1], b.keys[1]) || compareText(a.keys[0], b.keys[0]),
   );
-  const nonBranded = queryPages.filter((row) => !isBranded(row.keys![0]));
+  const nonBranded = queryPages.filter((row) => !isBranded(row.keys[0]));
   const pageMetrics = new Map(
     input.currentPages
       .filter((row) => usableRow(row, 0))
-      .map((row) => [row.keys![0], metrics(row)]),
+      .map((row) => [row.keys[0], metrics(row)]),
   );
   const candidates = [
     ...strikingDistance(queryPages, context),

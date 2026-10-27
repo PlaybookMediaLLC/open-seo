@@ -308,7 +308,7 @@ export function LandingTetris({ className }: { className?: string }) {
         for (let r = rows - 3; r < rows; r++)
           for (let c = 0; c < cols; c++)
             if (Math.random() < 0.8)
-              board[r * cols + c] = SHADES[(r + c) % SHADES.length]!;
+              board[r * cols + c] = SHADES[(r + c) % SHADES.length];
         draw(0);
       }
     };
