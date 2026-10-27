@@ -96,6 +96,9 @@ async function run(
       body: { status: "skipped", summary: "The schedule no longer exists." },
     };
   const runId = crypto.randomUUID();
+  // A cron tick runs its jobs one after another, so `now` (the tick) is not
+  // when this job started; the history must show its real start and duration.
+  const startedAt = new Date().toISOString();
   const started = await repo.startRun({
     id: runId,
     projectId,
@@ -105,8 +108,8 @@ async function run(
     attempt: input.attempt,
     triggerRunId: input.triggerRunId ?? null,
     status: "running",
-    startedAt: now.toISOString(),
-    createdAt: now.toISOString(),
+    startedAt,
+    createdAt: startedAt,
   });
   if (!started)
     return {

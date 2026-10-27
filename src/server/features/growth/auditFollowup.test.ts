@@ -103,9 +103,14 @@ it("queues nothing when scheduled jobs are off", async () => {
   expect(await queued(run.projectId)).toEqual([]);
 });
 
-it("queues the follow-up for the Worker cron when Trigger.dev is not set", async () => {
+it("queues the follow-up for the Worker cron, even with a Trigger.dev key", async () => {
+  // Without GROWTH_JOBS_SECRET the mode is cron, so Trigger.dev cannot run it.
+  env.values = { TRIGGER_SECRET_KEY: "tr_test" };
+  const fetch = vi.fn();
+  vi.stubGlobal("fetch", fetch);
   const { run } = await setupRun(database.client, database.slugPrefix);
   await queueAuditFollowup(run.projectId, "audit-cron");
+  expect(fetch).not.toHaveBeenCalled();
   expect(await queued(run.projectId)).toEqual([{ windowKey: "audit-cron" }]);
 });
 

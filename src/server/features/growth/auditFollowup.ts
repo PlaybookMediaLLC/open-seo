@@ -14,14 +14,19 @@ const TRIGGER_API =
  */
 export async function queueAuditFollowup(projectId: string, auditId: string) {
   try {
-    if ((await growthJobsMode()) === "off") return;
+    const mode = await growthJobsMode();
+    if (mode === "off") return;
     const payload = {
       kind: "audit_followup",
       projectId,
       scheduleId: null,
       windowKey: auditId,
     };
-    const key = await getOptionalEnvValue("TRIGGER_SECRET_KEY");
+    // Outside trigger mode the endpoints the task calls answer 404.
+    const key =
+      mode === "trigger"
+        ? await getOptionalEnvValue("TRIGGER_SECRET_KEY")
+        : undefined;
     if (key) {
       const response = await fetch(TRIGGER_API, {
         method: "POST",
