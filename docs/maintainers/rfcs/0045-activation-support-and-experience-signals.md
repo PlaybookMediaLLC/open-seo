@@ -14,14 +14,14 @@ New features and onboarding changes can make tutorials, setup steps and support 
 
 ## 2. Capability boundaries
 
-| Capability | First slice | Later, separately gated |
-|---|---|---|
-| Setup guide integrity | Compare docs instructions to accepted product routes and capabilities | in-product step-level overlays |
-| Onboarding funnel health | Read GA4/product event aggregates with defined consent and event semantics | deeper funnel analytics integration |
-| Support question clustering | Reuse existing RFC-0017 GitHub Issues topic counts/excerpts | Intercom, Zendesk, Help Scout connectors |
-| Change impact | Identify cohorts or journeys possibly affected by released feature | account-specific workflows with consent |
-| Suggested corrections | Create reviewed docs or page PR with exact source evidence | product tours, in-app guide changes |
-| Effect measurement | Recheck docs links, supported flow, trends in ticket topics | randomized activation experiments |
+| Capability                  | First slice                                                                | Later, separately gated                  |
+| --------------------------- | -------------------------------------------------------------------------- | ---------------------------------------- |
+| Setup guide integrity       | Compare docs instructions to accepted product routes and capabilities      | in-product step-level overlays           |
+| Onboarding funnel health    | Read GA4/product event aggregates with defined consent and event semantics | deeper funnel analytics integration      |
+| Support question clustering | Reuse existing RFC-0017 GitHub Issues topic counts/excerpts                | Intercom, Zendesk, Help Scout connectors |
+| Change impact               | Identify cohorts or journeys possibly affected by released feature         | account-specific workflows with consent  |
+| Suggested corrections       | Create reviewed docs or page PR with exact source evidence                 | product tours, in-app guide changes      |
+| Effect measurement          | Recheck docs links, supported flow, trends in ticket topics                | randomized activation experiments        |
 
 A support topic with 15 tickets may warrant investigation but cannot alone prove the product is defective. Missing activation events may mean instrumentation failure. Explicitly label these alternatives.
 

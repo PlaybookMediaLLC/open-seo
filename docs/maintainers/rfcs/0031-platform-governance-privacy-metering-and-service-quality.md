@@ -23,15 +23,15 @@ Relay's new direction increases the consequences of a mistake: facts about prici
 
 ## 3. Sensitivity and minimum data policy
 
-| Data class | Examples | Default policy |
-|---|---|---|
-| Operational metadata | asset key, repository SHA, check status, timestamps | retain by project plan and erasure policy |
-| Product facts | public pricing, integration status, approved feature availability | typed versions + source references, no unrelated personal data |
-| Internal source evidence | private repo snippets, config diffs, owned docs | minimum exact bounded excerpts; short-lived protected backing object only if necessary |
-| Customer/user content | support ticket excerpts, CRM account metadata | off by default; purpose-specific consent, redaction and restricted access |
-| Secrets/identity | API keys, OAuth refresh, passwords, customer emails | existing encrypted secret storage; never copy into PRE graph/model/logs |
-| Payment/analytics | aggregates, plan metadata, Stripe references | read-only where appropriate; avoid reconstructing personal financial profiles |
-| Generated media/snapshots | browser screenshots, traces, PDFs, Shots handoffs | scoped access, redaction, short retention, explicit delete |
+| Data class                | Examples                                                          | Default policy                                                                         |
+| ------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Operational metadata      | asset key, repository SHA, check status, timestamps               | retain by project plan and erasure policy                                              |
+| Product facts             | public pricing, integration status, approved feature availability | typed versions + source references, no unrelated personal data                         |
+| Internal source evidence  | private repo snippets, config diffs, owned docs                   | minimum exact bounded excerpts; short-lived protected backing object only if necessary |
+| Customer/user content     | support ticket excerpts, CRM account metadata                     | off by default; purpose-specific consent, redaction and restricted access              |
+| Secrets/identity          | API keys, OAuth refresh, passwords, customer emails               | existing encrypted secret storage; never copy into PRE graph/model/logs                |
+| Payment/analytics         | aggregates, plan metadata, Stripe references                      | read-only where appropriate; avoid reconstructing personal financial profiles          |
+| Generated media/snapshots | browser screenshots, traces, PDFs, Shots handoffs                 | scoped access, redaction, short retention, explicit delete                             |
 
 Build a privacy inventory per connector and classify if any proposed new processing changes published terms/DPA requirements. Existing RFC-0017's GitHub Issues support flow is controlled behind a server switch and remains subject to its privacy follow-ups. Do not import full support tickets into PRE without a separate review.
 
@@ -56,16 +56,16 @@ Separate purchased research credits from the operational allowance of Protect/Sy
 
 Proposed metering dimensions:
 
-| Dimension | Meter and failure control |
-|---|---|
-| Protected pages and journeys | counted enrolled scope, successful checks, browser minutes |
-| Website fetch/render | request count, bytes, CPU/browser seconds, concurrency |
-| Source connectors | API calls, paged objects, refresh frequency and provider billable usage |
-| Fact/asset extraction | processed changed files, tokens, candidate claims, deduplicated versions |
-| Impact runs | exact comparison count, semantic candidates/embeddings where used |
-| AI drafting | input/output tokens, chosen model, per-project hold/settlement |
-| Reviewed external actions | PRs, CMS writes, destination sends, receipt lookups |
-| Support/operations | staff interventions, false alerts, retry volume and customer support minutes |
+| Dimension                    | Meter and failure control                                                    |
+| ---------------------------- | ---------------------------------------------------------------------------- |
+| Protected pages and journeys | counted enrolled scope, successful checks, browser minutes                   |
+| Website fetch/render         | request count, bytes, CPU/browser seconds, concurrency                       |
+| Source connectors            | API calls, paged objects, refresh frequency and provider billable usage      |
+| Fact/asset extraction        | processed changed files, tokens, candidate claims, deduplicated versions     |
+| Impact runs                  | exact comparison count, semantic candidates/embeddings where used            |
+| AI drafting                  | input/output tokens, chosen model, per-project hold/settlement               |
+| Reviewed external actions    | PRs, CMS writes, destination sends, receipt lookups                          |
+| Support/operations           | staff interventions, false alerts, retry volume and customer support minutes |
 
 Use the existing spend-admission/settlement discipline before paid calls; meter actual incurred provider cost even when decoding provider payload fails. Scheduled background jobs must never silently burn research credits without customer-visible policy. Quotas are explicit per plan, by project and organization; when exhausted, mark only the affected feature degraded while preserving contracted basic protection as long as it is still operationally available.
 
@@ -89,20 +89,20 @@ Cross-tenant isolated preview builds, if attempted under RFC-0025, require separ
 
 ## 8. Threat model and critical failures
 
-| Threat/failure | Required defense |
-|---|---|
-| Cross-tenant guessable record ID | membership-gated access and tenant-filtered joins; integration tests |
-| Malicious source/document prompt injection | treat all retrieved text as data; typed allowlisted tool operations; exact human approval |
-| SSRF through public URLs or webhook destination | URL policy + redirect checks + private-IP/DNS protection + network egress policy |
-| Replay/forged provider webhook | signed verification, timestamp window, event ID/hash idempotency |
-| Unknown provider write outcome | reconcile before retry; preserve external receipt and blocked state |
-| Key leak/log spill | encrypted tokens, scoped secrets, no raw headers/bodies in logs, rotation and detection |
-| Unauthorized customer messaging | no generic send tools; consent list/recipient review and separate future action class |
-| False pricing or compliance claim | authoritative typed facts, scope, strict review for financial/legal claims |
-| Model/provider outage | deterministic checks continue; AI-dependent drafting degrades visibly |
-| Broken spend settlement | durable hold and reconciliation; no unbounded retries or model work |
-| Stale deployment attribution | explicit unknown/attested state, no false verified label |
-| Excessive crawling/billing | hard per-source/time/request/byte/model budgets, backpressure and customer report |
+| Threat/failure                                  | Required defense                                                                          |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Cross-tenant guessable record ID                | membership-gated access and tenant-filtered joins; integration tests                      |
+| Malicious source/document prompt injection      | treat all retrieved text as data; typed allowlisted tool operations; exact human approval |
+| SSRF through public URLs or webhook destination | URL policy + redirect checks + private-IP/DNS protection + network egress policy          |
+| Replay/forged provider webhook                  | signed verification, timestamp window, event ID/hash idempotency                          |
+| Unknown provider write outcome                  | reconcile before retry; preserve external receipt and blocked state                       |
+| Key leak/log spill                              | encrypted tokens, scoped secrets, no raw headers/bodies in logs, rotation and detection   |
+| Unauthorized customer messaging                 | no generic send tools; consent list/recipient review and separate future action class     |
+| False pricing or compliance claim               | authoritative typed facts, scope, strict review for financial/legal claims                |
+| Model/provider outage                           | deterministic checks continue; AI-dependent drafting degrades visibly                     |
+| Broken spend settlement                         | durable hold and reconciliation; no unbounded retries or model work                       |
+| Stale deployment attribution                    | explicit unknown/attested state, no false verified label                                  |
+| Excessive crawling/billing                      | hard per-source/time/request/byte/model budgets, backpressure and customer report         |
 
 ## 9. Quality gates and test coverage
 

@@ -13,16 +13,16 @@ Organizations regularly call work “done” when a PR is merged, a CMS API retu
 
 ## 2. Independent dimensions
 
-| Dimension | Evidence | Interpretation |
-|---|---|---|
-| Proposal | fingerprint, reviewer, permission | authorized intent only |
-| Execution | external write/PR receipt | external system accepted a mutation request |
-| Delivery / publication | current Git SHA, deployment ID, CMS live revision, published URL | changed content appears in target environment |
-| Functional verification | rerun failed technical rule, scripted safe journey | exact expected postcondition holds |
-| Content verification | source-backed statement at target URL, scope, fact version | material claim is now accurate for applicable audience |
-| Communication verification | provider accepted, sent, bounced, permission states | message delivery status, **not** readership/comprehension |
-| Customer outcome | consented conversion/activation/support metrics | observed result, generally not causal attribution |
-| Commercial outcome | payment, renewal, improved cost/effort | actual customer business behavior, with provenance |
+| Dimension                  | Evidence                                                         | Interpretation                                            |
+| -------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------- |
+| Proposal                   | fingerprint, reviewer, permission                                | authorized intent only                                    |
+| Execution                  | external write/PR receipt                                        | external system accepted a mutation request               |
+| Delivery / publication     | current Git SHA, deployment ID, CMS live revision, published URL | changed content appears in target environment             |
+| Functional verification    | rerun failed technical rule, scripted safe journey               | exact expected postcondition holds                        |
+| Content verification       | source-backed statement at target URL, scope, fact version       | material claim is now accurate for applicable audience    |
+| Communication verification | provider accepted, sent, bounced, permission states              | message delivery status, **not** readership/comprehension |
+| Customer outcome           | consented conversion/activation/support metrics                  | observed result, generally not causal attribution         |
+| Commercial outcome         | payment, renewal, improved cost/effort                           | actual customer business behavior, with provenance        |
 
 A failed content check must not hide behind a successful deploy. If Relay cannot independently confirm release provenance, label it `observed` or `attested`, not `verified_by_relay`.
 
@@ -33,10 +33,21 @@ type VerificationSpec = {
   projectId: string;
   workItemId: string;
   expectedEvidenceVersion: string;
-  target: { kind: 'public_url'|'git_ref'|'repo_file'|'connector_object'; key: string };
-  rule: { kind: 'page_rule'|'typed_claim'|'link_target'|'journey_check'|
-    'provider_receipt'; version: string; expected: unknown };
-  environment: 'production'|'preview'|'external_destination';
+  target: {
+    kind: "public_url" | "git_ref" | "repo_file" | "connector_object";
+    key: string;
+  };
+  rule: {
+    kind:
+      | "page_rule"
+      | "typed_claim"
+      | "link_target"
+      | "journey_check"
+      | "provider_receipt";
+    version: string;
+    expected: unknown;
+  };
+  environment: "production" | "preview" | "external_destination";
   maxAgeSeconds: number;
   requiredConfirmations: number;
   separationSeconds: number;

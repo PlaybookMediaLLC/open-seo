@@ -42,16 +42,16 @@ Source links: `https://github.com/PlaybookMediaLLC/relay/tree/develop/`. Current
 
 ## 3. Bounded context and domain ownership
 
-| Context | Canonical record | Authoritative for | Must not claim |
-|---|---|---|---|
-| Connectors (RFC-0032) | Connected source, cursor, delivery | Provider access and observations | Truth of an inferred claim |
-| Change intake (RFC-0033) | Source event, normalized change | What source reported and when | That a release is deployed |
-| Facts (RFC-0034) | Scoped fact/version/evidence | Accepted product assertion | That all audiences see it |
-| Assets & claims (RFC-0035) | Asset, version, occurrence | What a captured surface said | That statement is correct |
-| Impact (RFC-0036) | Candidate or confirmed impact | Why an item may require work | Permission to change it |
-| Work (RFC-0037) | Work item, proposal, approval, execution | Who approved exactly what | That publication succeeded |
-| Verification (RFC-0038) | Check, run, receipt, resolution | What passed in which environment | Causal growth or revenue lift |
-| Commercial offers (0040, 0042–0046) | Product-specific configuration | Customer promise and scoped workflow | Platform-wide capability |
+| Context                             | Canonical record                         | Authoritative for                    | Must not claim                |
+| ----------------------------------- | ---------------------------------------- | ------------------------------------ | ----------------------------- |
+| Connectors (RFC-0032)               | Connected source, cursor, delivery       | Provider access and observations     | Truth of an inferred claim    |
+| Change intake (RFC-0033)            | Source event, normalized change          | What source reported and when        | That a release is deployed    |
+| Facts (RFC-0034)                    | Scoped fact/version/evidence             | Accepted product assertion           | That all audiences see it     |
+| Assets & claims (RFC-0035)          | Asset, version, occurrence               | What a captured surface said         | That statement is correct     |
+| Impact (RFC-0036)                   | Candidate or confirmed impact            | Why an item may require work         | Permission to change it       |
+| Work (RFC-0037)                     | Work item, proposal, approval, execution | Who approved exactly what            | That publication succeeded    |
+| Verification (RFC-0038)             | Check, run, receipt, resolution          | What passed in which environment     | Causal growth or revenue lift |
+| Commercial offers (0040, 0042–0046) | Product-specific configuration           | Customer promise and scoped workflow | Platform-wide capability      |
 
 Do **not** use an unrestricted `entity_id -> entity_id` graph as the primary source of truth. Use explicit foreign keys for core relations; typed linkage tables may represent extensible relationships, with target-kind constraints verified in services and tests. Never use JSON strings to hide relational joins.
 
@@ -107,22 +107,44 @@ Proposed interfaces, not code already shipped:
 ```ts
 type RealityContext = {
   projectId: string;
-  actor: { kind: 'user' | 'service'; id: string };
+  actor: { kind: "user" | "service"; id: string };
   expectedProjectVersion?: number;
 };
 
-type EvidenceRef = { kind: 'source_event' | 'observation' | 'asset_snapshot' |
-  'fact_version' | 'verification_run'; id: string; sha256: string };
+type EvidenceRef = {
+  kind:
+    | "source_event"
+    | "observation"
+    | "asset_snapshot"
+    | "fact_version"
+    | "verification_run";
+  id: string;
+  sha256: string;
+};
 
 type Decision<T> =
-  | { state: 'supported'; value: T; evidence: EvidenceRef[] }
-  | { state: 'candidate'; value: T; evidence: EvidenceRef[]; questions: string[] }
-  | { state: 'blocked'; reasonCode: string; evidence: EvidenceRef[] };
+  | { state: "supported"; value: T; evidence: EvidenceRef[] }
+  | {
+      state: "candidate";
+      value: T;
+      evidence: EvidenceRef[];
+      questions: string[];
+    }
+  | { state: "blocked"; reasonCode: string; evidence: EvidenceRef[] };
 
 interface RealityEngine {
-  assessChange(context: RealityContext, changeId: string): Promise<Decision<{impactIds: string[]}>>;
-  getChangeTimeline(context: RealityContext, changeId: string): Promise<unknown>;
-  prepareWork(context: RealityContext, impactId: string): Promise<Decision<{workItemId: string}>>;
+  assessChange(
+    context: RealityContext,
+    changeId: string,
+  ): Promise<Decision<{ impactIds: string[] }>>;
+  getChangeTimeline(
+    context: RealityContext,
+    changeId: string,
+  ): Promise<unknown>;
+  prepareWork(
+    context: RealityContext,
+    impactId: string,
+  ): Promise<Decision<{ workItemId: string }>>;
 }
 ```
 
@@ -136,13 +158,13 @@ An integration capability must be explicitly enabled for each customer project. 
 
 ## 8. Delivery sequence and measurable exits
 
-| Slice | Shipment | Exit condition |
-|---|---|---|
-| 0 | Record one manually reviewed product change, facts, asset and impact via internal services | Links persist and read back with correct tenancy and provenance, no AI needed |
-| 1 | GitHub change observations and documentation/marketing asset outlines | Deterministic replay produces same logical change, no duplicated impact work |
-| 2 | Narrow price/plan/integration claim comparison for Sync | At least one seeded contradiction found, one valid audience-specific difference not falsely flagged |
-| 3 | Human-review work item and existing GitHub proposal integration | No write until exact approval and current-source revalidation |
-| 4 | Independent production/content verification and full timeline | An observed customer fix and a Relay-generated fix are attributed separately |
+| Slice | Shipment                                                                                   | Exit condition                                                                                      |
+| ----- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| 0     | Record one manually reviewed product change, facts, asset and impact via internal services | Links persist and read back with correct tenancy and provenance, no AI needed                       |
+| 1     | GitHub change observations and documentation/marketing asset outlines                      | Deterministic replay produces same logical change, no duplicated impact work                        |
+| 2     | Narrow price/plan/integration claim comparison for Sync                                    | At least one seeded contradiction found, one valid audience-specific difference not falsely flagged |
+| 3     | Human-review work item and existing GitHub proposal integration                            | No write until exact approval and current-source revalidation                                       |
+| 4     | Independent production/content verification and full timeline                              | An observed customer fix and a Relay-generated fix are attributed separately                        |
 
 Do not gate the existing Protect pilot on completion of the whole PRE. Integrate Protect events incrementally after their original acceptance tests pass.
 

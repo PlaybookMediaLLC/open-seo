@@ -19,11 +19,16 @@ Build a replayable, privacy-minimized change-intake service. First source adapte
 type IngestEnvelope = {
   projectId: string;
   sourceId: string;
-  provider: 'github' | 'deployment' | 'manual' | 'stripe_config' | 'feature_flags';
+  provider:
+    | "github"
+    | "deployment"
+    | "manual"
+    | "stripe_config"
+    | "feature_flags";
   externalDeliveryId: string | null;
   externalObjectKey: string;
   externalRevision: string;
-  occurredAt: string | null;      // source's timestamp, not guaranteed trustworthy
+  occurredAt: string | null; // source's timestamp, not guaranteed trustworthy
   receivedAt: string;
   contentSha256: string;
   parserVersion: number;
@@ -31,22 +36,27 @@ type IngestEnvelope = {
 };
 
 type IntakeDisposition =
-  | 'accepted' | 'duplicate' | 'superseded' | 'unsupported'
-  | 'awaiting_source' | 'failed_retryable' | 'failed_permanent';
+  | "accepted"
+  | "duplicate"
+  | "superseded"
+  | "unsupported"
+  | "awaiting_source"
+  | "failed_retryable"
+  | "failed_permanent";
 ```
 
 The transport always acknowledges a valid authenticated delivery after a durable ingest record is committed, even when downstream interpretation is pending. Transient storage failure must produce a retryable response. Duplicate provider delivery IDs are no-ops only if their checksums match; conflicting reuse of an ID is a security/consistency finding, not accepted silently.
 
 ## 3. Persistence proposal
 
-| Table | Essential fields / indexes |
-|---|---|
-| `reality_sources` | `id`, `project_id`, `kind`, `external_account_key`, `enabled`, `connection_ref`, `scope_ref`, `last_success_at`, `last_error_code`; unique `(project_id,kind,external_account_key)` |
-| `reality_ingest_events` | `id`, `project_id`, `source_id`, `external_delivery_id`, `external_object_key`, `revision`, `payload_hash`, `received_at`, `occurred_at`, `status`, `parser_version`; unique per `(source_id,external_delivery_id)` where present; separate stable version uniqueness |
-| `reality_observations` | `id`, `project_id`, `event_id`, `object_kind`, `object_key`, `revision`, `observed_at`, `effective_at`, `summary`, `evidence_hash`; unique `(event_id,object_kind,object_key,revision)` |
-| `reality_changes` | `id`, `project_id`, `change_key`, `kind`, `state`, `effective_at`, `first_seen_at`, `last_seen_at`, `generation`; unique `(project_id,change_key)` |
-| `reality_change_observations` | `project_id`, `change_id`, `observation_id`, `role` (`introduced`, `corroborates`, `contradicts`, `supersedes`) with unique pair |
-| `reality_source_cursors` | `project_id`, `source_id`, `cursor`, `cursor_etag`, `scan_window_start`, `updated_at`, `lease_version` |
+| Table                         | Essential fields / indexes                                                                                                                                                                                                                                            |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reality_sources`             | `id`, `project_id`, `kind`, `external_account_key`, `enabled`, `connection_ref`, `scope_ref`, `last_success_at`, `last_error_code`; unique `(project_id,kind,external_account_key)`                                                                                   |
+| `reality_ingest_events`       | `id`, `project_id`, `source_id`, `external_delivery_id`, `external_object_key`, `revision`, `payload_hash`, `received_at`, `occurred_at`, `status`, `parser_version`; unique per `(source_id,external_delivery_id)` where present; separate stable version uniqueness |
+| `reality_observations`        | `id`, `project_id`, `event_id`, `object_kind`, `object_key`, `revision`, `observed_at`, `effective_at`, `summary`, `evidence_hash`; unique `(event_id,object_kind,object_key,revision)`                                                                               |
+| `reality_changes`             | `id`, `project_id`, `change_key`, `kind`, `state`, `effective_at`, `first_seen_at`, `last_seen_at`, `generation`; unique `(project_id,change_key)`                                                                                                                    |
+| `reality_change_observations` | `project_id`, `change_id`, `observation_id`, `role` (`introduced`, `corroborates`, `contradicts`, `supersedes`) with unique pair                                                                                                                                      |
+| `reality_source_cursors`      | `project_id`, `source_id`, `cursor`, `cursor_etag`, `scan_window_start`, `updated_at`, `lease_version`                                                                                                                                                                |
 
 Create both SQLite and PG schema versions. Use database constraints to enforce stable identity, null-handling and project FKs. For provider revisions, derive stable object keys from provider immutable IDs, not titles or filenames alone. Include a `scope_version` for account/repo/branch permission changes.
 
@@ -86,16 +96,16 @@ All scans have hard time, bytes, requests and spending limits. `ScanSummary` inc
 
 ## 7. Failure handling and safety
 
-| Failure | Required handling |
-|---|---|
-| Duplicate webhook | Return same event identity without new work |
-| Forged signature | Reject before parsing or persisting untrusted payload |
-| Delivery out of order | Preserve both; reconcile source revision/ancestry |
-| Rate limit/provider outage | Retry with jitter; mark coverage stale and expose next check |
-| Permission revoked | Disable collection and all dependent future actions; leave audit trail |
-| Unexpected huge diff | Store capped metadata; mark unsupported, do not exhaust Worker memory |
-| Prompt injection in changelog | Treat as untrusted content; strip instructions from agent context, never give it tool authority |
-| Conflicting change attribution | Show multiple possible sources; do not invent causal provenance |
+| Failure                        | Required handling                                                                               |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| Duplicate webhook              | Return same event identity without new work                                                     |
+| Forged signature               | Reject before parsing or persisting untrusted payload                                           |
+| Delivery out of order          | Preserve both; reconcile source revision/ancestry                                               |
+| Rate limit/provider outage     | Retry with jitter; mark coverage stale and expose next check                                    |
+| Permission revoked             | Disable collection and all dependent future actions; leave audit trail                          |
+| Unexpected huge diff           | Store capped metadata; mark unsupported, do not exhaust Worker memory                           |
+| Prompt injection in changelog  | Treat as untrusted content; strip instructions from agent context, never give it tool authority |
+| Conflicting change attribution | Show multiple possible sources; do not invent causal provenance                                 |
 
 Avoid raw customer identities unless required; hash or omit incidental authors and issue commenters. Never log bearer tokens, provider payloads or repository source in request/error logs.
 

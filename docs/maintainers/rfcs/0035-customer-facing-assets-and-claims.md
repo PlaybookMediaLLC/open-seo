@@ -16,15 +16,15 @@ Build a bounded, consent-based asset registry and source-backed claim occurrence
 
 Asset identity is not identical to URL identity: one GitHub file may render multiple routes; one public route may be served by dynamic code; a locale variant may have distinct claims. Model separately:
 
-| Table | Role / important constraints |
-|---|---|
-| `reality_assets` | `(project_id,kind,canonical_key)` stable identity, title, owner, audience scope, status; unique active key |
-| `reality_asset_locations` | source kind, repo/branch/path or normalized public URL, locale, environment, validity interval; explicit many-to-one mappings |
-| `reality_asset_snapshots` | immutable asset version, source revision SHA, observed URL/HTTP state, normalized hash, collection time, extraction version, coverage status |
-| `reality_claims` | canonical claim about subject/predicate/scope; may remain `unresolved` without an accepted fact |
+| Table                       | Role / important constraints                                                                                                                          |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `reality_assets`            | `(project_id,kind,canonical_key)` stable identity, title, owner, audience scope, status; unique active key                                            |
+| `reality_asset_locations`   | source kind, repo/branch/path or normalized public URL, locale, environment, validity interval; explicit many-to-one mappings                         |
+| `reality_asset_snapshots`   | immutable asset version, source revision SHA, observed URL/HTTP state, normalized hash, collection time, extraction version, coverage status          |
+| `reality_claims`            | canonical claim about subject/predicate/scope; may remain `unresolved` without an accepted fact                                                       |
 | `reality_claim_occurrences` | snapshot ID, claim ID, bounded exact quote, byte/AST span or selector, extracted typed value, scope interpretation, state, confidence, parser version |
-| `reality_claim_evidence` | claim occurrence to fact version, source observation or owner note; explanation and reviewer decision |
-| `reality_asset_ownership` | linked human or team ID, notification preference, role and effective interval |
+| `reality_claim_evidence`    | claim occurrence to fact version, source observation or owner note; explanation and reviewer decision                                                 |
+| `reality_asset_ownership`   | linked human or team ID, notification preference, role and effective interval                                                                         |
 
 Every relationship must include project scoping. Hashes alone are not asset IDs; canonical keys must survive an ordinary source edit. A rename/move emits an alias link with provenance instead of silently duplicating ownership. Dynamic routes without provable mapping remain read-only observations.
 

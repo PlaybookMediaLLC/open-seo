@@ -14,14 +14,14 @@ Relay's current commercial entry is selected-page release assurance. But a websi
 
 ## 2. Scope and supported journeys
 
-| Journey class | Supported safe v1 check | Must not do |
-|---|---|---|
-| Landing → signup | verify navigable page, enabled form controls, client validation and expected non-mutating checkpoint | create real user accounts or use unapproved email addresses |
-| Landing → demo booking | verify CTA/link destination, booking embed loads, selectable availability display when provider allows | book actual slots or send staff notifications |
-| Pricing → checkout | verify plan/card link, redirect host, disclosed plan/price, sandbox-only transaction when provider test mode exists | create live charges, start subscriptions or modify billing |
-| Contact / lead capture | verify form display, validation, and response only in a customer-owned test destination with consent | send spam leads to CRM/sales inbox |
-| Conversion tracking | verify configured tags/pixel presence and test-event transport in test/debug mode where supported | inject production conversion events that contaminate revenue reporting |
-| SEO and page quality | reuse existing rule checks and protected URLs | claim broad site coverage from a sampled set |
+| Journey class          | Supported safe v1 check                                                                                             | Must not do                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Landing → signup       | verify navigable page, enabled form controls, client validation and expected non-mutating checkpoint                | create real user accounts or use unapproved email addresses            |
+| Landing → demo booking | verify CTA/link destination, booking embed loads, selectable availability display when provider allows              | book actual slots or send staff notifications                          |
+| Pricing → checkout     | verify plan/card link, redirect host, disclosed plan/price, sandbox-only transaction when provider test mode exists | create live charges, start subscriptions or modify billing             |
+| Contact / lead capture | verify form display, validation, and response only in a customer-owned test destination with consent                | send spam leads to CRM/sales inbox                                     |
+| Conversion tracking    | verify configured tags/pixel presence and test-event transport in test/debug mode where supported                   | inject production conversion events that contaminate revenue reporting |
+| SEO and page quality   | reuse existing rule checks and protected URLs                                                                       | claim broad site coverage from a sampled set                           |
 
 No generic browser script supplied by arbitrary users runs inside the app Worker. Use a reviewed, bounded DSL plus isolated browser execution compatible with existing Cloudflare rendering/audit infrastructure. Do not grant scripts access to production secrets, local network or user cookies.
 
@@ -29,19 +29,27 @@ No generic browser script supplied by arbitrary users runs inside the app Worker
 
 ```ts
 type JourneyStep =
-  | { kind:'navigate'; urlPath:string }
-  | { kind:'assert_url'; originAlias:string; pathPattern:string }
-  | { kind:'assert_visible'; selectorKey:string }
-  | { kind:'assert_text'; selectorKey:string; text:string }
-  | { kind:'click'; selectorKey:string }
-  | { kind:'fill_fixture'; selectorKey:string; fixtureKey:string }
-  | { kind:'assert_network'; allowedEndpointAlias:string; expectedStatus:number };
+  | { kind: "navigate"; urlPath: string }
+  | { kind: "assert_url"; originAlias: string; pathPattern: string }
+  | { kind: "assert_visible"; selectorKey: string }
+  | { kind: "assert_text"; selectorKey: string; text: string }
+  | { kind: "click"; selectorKey: string }
+  | { kind: "fill_fixture"; selectorKey: string; fixtureKey: string }
+  | {
+      kind: "assert_network";
+      allowedEndpointAlias: string;
+      expectedStatus: number;
+    };
 
 type JourneyConfig = {
-  projectId:string; journeyId:string; environment:'staging'|'production';
-  targetOriginId:string; revision:number; steps:JourneyStep[];
-  sideEffectClass:'read_only'|'sandbox_side_effect';
-  approvedFixtureSetId?:string;
+  projectId: string;
+  journeyId: string;
+  environment: "staging" | "production";
+  targetOriginId: string;
+  revision: number;
+  steps: JourneyStep[];
+  sideEffectClass: "read_only" | "sandbox_side_effect";
+  approvedFixtureSetId?: string;
 };
 ```
 
