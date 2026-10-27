@@ -193,6 +193,7 @@ async function rankHistory(
   );
   const byKeyword = new Map<string, RankEvidence[]>();
   for (const entry of history.values()) {
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- keywords and history come from the same rows, so every entry's id has a keyword
     const keyword = keywords.get(entry.trackingKeywordId)!;
     byKeyword.set(keyword, [...(byKeyword.get(keyword) ?? []), entry]);
   }

@@ -129,6 +129,7 @@ function getProjectNavItems(projectId: string) {
 export function getProjectNavGroups(projectId: string) {
   const all = getProjectNavItems(projectId);
   const byPath = (path: (typeof projectNavItems)[number]["to"]) =>
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- `path` is typed to projectNavItems' routes and `all` maps every one of them, so find always matches.
     all.find((i) => i.to === path)!;
 
   return [

@@ -124,7 +124,9 @@ async function findKeyFileProblem(
     case "redirects":
     case "moved":
       return `The key file on https://${host} redirects. Upload it to https://${host} itself.`;
-    default:
+    case "found":
+    case "unknown":
+    case "unreachable":
       return null;
   }
 }

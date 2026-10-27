@@ -1,5 +1,4 @@
 import { sort } from "remeda";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type {
   OpportunityCandidate,
   OpportunityMetrics,
@@ -12,6 +11,7 @@ import {
   totals,
   urlJoinKey,
   type DetectionInput,
+  type UsableGscRow,
 } from "./shared";
 
 const CURVE_MIN_ROWS = 5;
@@ -33,7 +33,7 @@ function median(values: number[]): number {
  * The site's own click-through curve: the median CTR at each rounded position
  * from 1 to 10 that has enough rows with 100+ impressions. No external benchmark.
  */
-function clickThroughCurve(rows: GscSearchAnalyticsRow[]): Map<number, number> {
+function clickThroughCurve(rows: UsableGscRow[]): Map<number, number> {
   const byPosition = new Map<number, number[]>();
   for (const row of rows) {
     const position = Math.round(row.position);
@@ -51,25 +51,25 @@ function clickThroughCurve(rows: GscSearchAnalyticsRow[]): Map<number, number> {
 
 /** A page gets 60% or less of the clicks the site's own curve predicts. */
 export function lowCtr(
-  nonBrandedQueryPages: GscSearchAnalyticsRow[],
+  nonBrandedQueryPages: UsableGscRow[],
   pageMetrics: Map<string, OpportunityMetrics>,
   context: ScoringContext,
   serpChecks: DetectionInput["serpChecks"],
 ): OpportunityCandidate[] {
   const curve = clickThroughCurve(nonBrandedQueryPages);
-  const pages = new Map<string, GscSearchAnalyticsRow[]>();
+  const pages = new Map<string, UsableGscRow[]>();
   for (const row of nonBrandedQueryPages) {
     if (!curve.has(Math.round(row.position))) continue;
-    const rows = pages.get(row.keys![1]) ?? [];
+    const rows = pages.get(row.keys[1]) ?? [];
     rows.push(row);
-    pages.set(row.keys![1], rows);
+    pages.set(row.keys[1], rows);
   }
   const candidates: OpportunityCandidate[] = [];
   for (const [url, rows] of pages) {
     const sum = totals(rows.map(metrics));
     const expected = rows.reduce(
       (total, row) =>
-        total + row.impressions * curve.get(Math.round(row.position))!,
+        total + row.impressions * (curve.get(Math.round(row.position)) ?? 0),
       0,
     );
     if (
@@ -81,7 +81,7 @@ export function lowCtr(
     const topQueries = sort(
       rows,
       (a, b) =>
-        b.impressions - a.impressions || compareText(a.keys![0], b.keys![0]),
+        b.impressions - a.impressions || compareText(a.keys[0], b.keys[0]),
     ).slice(0, EVIDENCE_QUERIES);
     candidates.push({
       type: "low_ctr",
@@ -115,7 +115,7 @@ export function lowCtr(
         ...topQueries.map((row) => ({
           period: "current" as const,
           url: "",
-          query: row.keys![0],
+          query: row.keys[0],
           metrics: metrics(row),
         })),
       ],

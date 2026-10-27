@@ -1,11 +1,11 @@
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type { detectOpportunities } from "./detectOpportunities";
+import type { UsableGscRow } from "./detectors/shared";
 
 export const page = (path: string) => `https://example.com/${path}`;
 export function row(
   keys: string[],
-  overrides: Partial<GscSearchAnalyticsRow> = {},
-): GscSearchAnalyticsRow {
+  overrides: Partial<UsableGscRow> = {},
+): UsableGscRow {
   return {
     keys,
     clicks: 10,

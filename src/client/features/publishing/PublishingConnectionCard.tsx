@@ -40,7 +40,8 @@ export function PublishingConnectionCard({ projectId }: { projectId: string }) {
     gcTime: 0,
     meta: { errorToast: false },
     mutationFn: async () => {
-      const form = new FormData(formRef.current!);
+      if (!formRef.current) throw new Error("Repository form is not mounted.");
+      const form = new FormData(formRef.current);
       const input = connectPublishingInputSchema.safeParse({
         projectId,
         owner: form.get("owner"),

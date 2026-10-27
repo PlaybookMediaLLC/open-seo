@@ -169,6 +169,7 @@ test.describe("Domain Overview filter performance", () => {
       ).catch(() => undefined);
     }
 
+    // oxlint-disable-next-line typescript/only-throw-error -- rethrows the caught value unchanged
     if (flowError) throw flowError;
     if (!finalMetrics) throw new Error("Perf metrics were not collected");
 

@@ -111,7 +111,7 @@ export function findRedirectChainsAndLoops(pages: SlimPage[]): DetectedIssue[] {
   }
 
   const redirectTargets = new Set(
-    Array.from(redirects.values(), (page) => page.redirectUrl!),
+    Array.from(redirects.values(), (page) => page.redirectUrl),
   );
 
   const issues: DetectedIssue[] = [];

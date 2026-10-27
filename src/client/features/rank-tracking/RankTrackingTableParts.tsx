@@ -67,7 +67,7 @@ export function DeviceRankCell({
   }
 
   // Was ranking, now lost
-  if (position === null && previousPosition !== null) {
+  if (position === null) {
     return (
       <span className="inline-flex items-center gap-1.5">
         <span className="w-6 text-right font-mono text-xs text-muted-foreground">
@@ -87,7 +87,7 @@ export function DeviceRankCell({
   }
 
   // Both exist — show old → new with colored badge
-  const change = previousPosition - position!;
+  const change = previousPosition - position;
   let badgeClass = "bg-muted text-foreground";
   if (change > 0) badgeClass = "bg-success/20 text-success";
   if (change < 0) badgeClass = "bg-warning/20 text-warning";

@@ -1,11 +1,10 @@
 import { sort } from "remeda";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type {
   KeywordEvidence,
   OpportunityCandidate,
 } from "@/types/schemas/opportunities";
 import { scoreCandidate, type ScoringContext } from "./scoreCandidate";
-import { bounded, compareText } from "./shared";
+import { bounded, compareText, type UsableGscRow } from "./shared";
 
 const MAX_COMPETITOR_POSITION = 10;
 const MIN_SEARCH_VOLUME = 50;
@@ -43,7 +42,7 @@ function tokens(text: string): string[] {
 export function contentGaps(input: {
   competitorKeywords: CompetitorKeyword[];
   /** This site's usable query+page rows for the current window. */
-  queryPages: GscSearchAnalyticsRow[];
+  queryPages: UsableGscRow[];
   /** Lowercase tracked keyword to its best last position. */
   trackedPositions: Map<string, number | null>;
   siteRoot: string;
@@ -51,7 +50,7 @@ export function contentGaps(input: {
 }): OpportunityCandidate[] {
   const siteImpressions = new Map<string, number>();
   for (const row of input.queryPages) {
-    const query = row.keys![0].toLowerCase();
+    const query = row.keys[0].toLowerCase();
     siteImpressions.set(
       query,
       (siteImpressions.get(query) ?? 0) + row.impressions,
@@ -83,7 +82,9 @@ export function contentGaps(input: {
     sort(
       sort(
         tokens(keyword),
-        (a, b) => frequency.get(b)! - frequency.get(a)! || compareText(a, b),
+        (a, b) =>
+          (frequency.get(b) ?? 0) - (frequency.get(a) ?? 0) ||
+          compareText(a, b),
       ).slice(0, 2),
       compareText,
     ).join(" ");
@@ -98,7 +99,7 @@ export function contentGaps(input: {
   for (const [topic, rows] of topics) {
     const keywords = [...new Set(rows.map((row) => row.keyword.toLowerCase()))];
     const volume = keywords.reduce(
-      (sum, keyword) => sum + volumes.get(keyword)!,
+      (sum, keyword) => sum + (volumes.get(keyword) ?? 0),
       0,
     );
     if (keywords.length < MIN_TOPIC_KEYWORDS && volume < MIN_TOPIC_VOLUME)
@@ -106,11 +107,8 @@ export function contentGaps(input: {
     const topicTokens = new Set(topic.split(" "));
     const pages = new Map<string, number>();
     for (const row of input.queryPages)
-      if (tokens(row.keys![0]).some((token) => topicTokens.has(token)))
-        pages.set(
-          row.keys![1],
-          (pages.get(row.keys![1]) ?? 0) + row.impressions,
-        );
+      if (tokens(row.keys[0]).some((token) => topicTokens.has(token)))
+        pages.set(row.keys[1], (pages.get(row.keys[1]) ?? 0) + row.impressions);
     const [page] = sort(
       [...pages],
       (a, b) => b[1] - a[1] || compareText(a[0], b[0]),

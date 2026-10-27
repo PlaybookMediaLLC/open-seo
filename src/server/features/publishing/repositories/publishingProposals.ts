@@ -243,21 +243,20 @@ export async function saveProposal(input: {
         .update(opportunities)
         .set({ version: sql`${opportunities.version}` })
         .where(and(opportunity, claimExists(tx, scope))),
-      tx
-        .insert(opportunityProposals)
-        .select(
-          selectedValues(
-            opportunityProposals,
-            proposal,
-            and(
-              claimExists(tx, scope),
-              activeConnection(tx, proposal.projectId, proposal.connectionId),
-              proposal.revertsProposalId
-                ? revertEligible(tx, proposal)
-                : approvalEligible(tx, proposal),
-            )!,
-          ),
+      tx.insert(opportunityProposals).select(
+        selectedValues(
+          opportunityProposals,
+          proposal,
+          // oxlint-disable-next-line typescript/no-non-null-assertion -- and() is undefined only when every condition is, and claimExists() always returns SQL
+          and(
+            claimExists(tx, scope),
+            activeConnection(tx, proposal.projectId, proposal.connectionId),
+            proposal.revertsProposalId
+              ? revertEligible(tx, proposal)
+              : approvalEligible(tx, proposal),
+          )!,
         ),
+      ),
       // RFC-0004: a draft becomes "used" only with the proposal that used it.
       ...(proposal.draftId
         ? [

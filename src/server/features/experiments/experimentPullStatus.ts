@@ -69,11 +69,15 @@ export async function refreshPullStatus(
     )
       throw new AppError("CONFLICT");
   }
+  const checkedAt = new Date().toISOString();
   const updated: GrowthExperiment = {
     ...experiment,
     pullRequestState: pull.merged ? "merged" : pull.state,
-    pullRequestCheckedAt: new Date().toISOString(),
-    mergedAt: pull.merged ? new Date(pull.mergedAt!).toISOString() : null,
+    pullRequestCheckedAt: checkedAt,
+    mergedAt:
+      pull.merged && pull.mergedAt
+        ? new Date(pull.mergedAt).toISOString()
+        : null,
     mergeCommitSha: pull.merged ? pull.mergeCommitSha : null,
   };
   signal.throwIfAborted();
@@ -85,7 +89,7 @@ export async function refreshPullStatus(
       organizationId: context.organizationId,
       connectionId: connection.id,
       state: updated.pullRequestState,
-      checkedAt: updated.pullRequestCheckedAt!,
+      checkedAt,
       mergedAt: updated.mergedAt,
       mergeCommitSha: updated.mergeCommitSha,
     }))

@@ -118,14 +118,19 @@ async function getKeywords(projectId: string, organizationId: string) {
         });
         return {
           connected: true,
-          rows: result.rows
-            .filter((row) => row.keys?.[0])
-            .map((row) => ({
-              query: row.keys![0],
-              clicks: row.clicks,
-              impressions: row.impressions,
-              position: row.position,
-            })),
+          rows: result.rows.flatMap((row) => {
+            const query = row.keys?.[0];
+            return query
+              ? [
+                  {
+                    query,
+                    clicks: row.clicks,
+                    impressions: row.impressions,
+                    position: row.position,
+                  },
+                ]
+              : [];
+          }),
           startDate,
           endDate,
         };
@@ -202,17 +207,19 @@ async function getEmergingQueries(projectId: string, organizationId: string) {
           }),
         ]);
         const seen = new Set(baseline.rows.map((row) => row.keys?.[0]));
-        const observed = recent.rows
-          .filter(
-            (row) =>
-              row.keys?.[0] && row.impressions >= 10 && !seen.has(row.keys[0]),
-          )
-          .map((row) => ({
-            query: row.keys![0],
-            clicks: row.clicks,
-            impressions: row.impressions,
-            position: row.position,
-          }));
+        const observed = recent.rows.flatMap((row) => {
+          const query = row.keys?.[0];
+          return query && row.impressions >= 10 && !seen.has(query)
+            ? [
+                {
+                  query,
+                  clicks: row.clicks,
+                  impressions: row.impressions,
+                  position: row.position,
+                },
+              ]
+            : [];
+        });
         const rows = sort(
           observed,
           (a, b) => b.impressions - a.impressions,

@@ -40,16 +40,18 @@ export function useKeywordSerpAnalysis(
 
   const serpQuery = useQuery({
     queryKey: [...snapshotKey, requestedDepth],
-    queryFn: () =>
-      getSerpAnalysis({
+    queryFn: () => {
+      if (!serpKeyword) throw new Error("No SERP keyword selected.");
+      return getSerpAnalysis({
         data: {
           projectId,
-          keyword: serpKeyword!,
+          keyword: serpKeyword,
           locationCode,
           locationName,
           depth: requestedDepth,
         },
-      }),
+      });
+    },
     // Keep the shallow snapshot on screen while the deeper refetch runs — but
     // only when nothing except the depth changed, so a new keyword or market
     // shows the loading state instead of the previous SERP.

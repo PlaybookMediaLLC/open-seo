@@ -22,6 +22,7 @@ export async function recordSignal(
         selectedValues(
           experimentDeploymentSignals,
           input.signal,
+          // oxlint-disable-next-line typescript/no-non-null-assertion -- and() is undefined only when every condition is, and claimExists() always returns SQL
           and(
             claimExists(tx, input),
             exists(

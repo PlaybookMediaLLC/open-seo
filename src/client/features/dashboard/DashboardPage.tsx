@@ -94,7 +94,6 @@ export function DashboardPage({
     );
   }
 
-  const showBacklinks = activation.domain !== null;
   const gscConnected = activation.gsc.connected;
   const ga4Connected = activation.ga4.connected;
 
@@ -147,7 +146,7 @@ export function DashboardPage({
           },
         ]
       : []),
-    ...(showBacklinks
+    ...(activation.domain !== null
       ? [
           {
             key: "backlinks",
@@ -155,7 +154,7 @@ export function DashboardPage({
             node: (
               <DashboardLinkActivity
                 projectId={projectId}
-                domain={activation.domain!}
+                domain={activation.domain}
               />
             ),
           },

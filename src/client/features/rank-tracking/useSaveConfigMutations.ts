@@ -69,18 +69,21 @@ export function useSaveConfigMutations(input: {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (fields: SaveConfigInput) =>
-      updateRankTrackingConfig({
+    mutationFn: (fields: SaveConfigInput) => {
+      if (!existingConfig)
+        throw new Error("No rank tracking config to update.");
+      return updateRankTrackingConfig({
         data: {
           projectId,
-          configId: existingConfig!.id,
+          configId: existingConfig.id,
           ...commonFields(fields),
           // null clears a previously-set local target; undefined would leave
           // the old location_name in the DB and silently keep city targeting.
           locationName:
             fields.targetingMode === "local" ? fields.locationName : null,
         },
-      }),
+      });
+    },
     onSuccess: () => {
       captureClientEvent("rank_tracking:config_update");
       toast.success("Configuration updated");

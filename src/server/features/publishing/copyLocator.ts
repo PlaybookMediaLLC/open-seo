@@ -275,8 +275,10 @@ export async function reachableFiles(input: {
   const seen = new Set([page.path]);
   const files: SourceFile[] = [];
   let bytes = 0;
-  while (queue.length && files.length < MAX_FILES) {
-    const { depth, ...file } = queue.shift()!;
+  while (files.length < MAX_FILES) {
+    const entry = queue.shift();
+    if (!entry) break;
+    const { depth, ...file } = entry;
     bytes += new TextEncoder().encode(file.source).byteLength;
     if (bytes > MAX_BYTES) break;
     files.push(file);

@@ -32,6 +32,24 @@
     "typescript/no-unsafe-call": "error",
     "typescript/no-unsafe-return": "error",
     "typescript/no-unsafe-argument": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/ban-ts-comment": "error",
+    "typescript/switch-exhaustiveness-check": "error",
+    "typescript/no-inferrable-types": "error",
+    // TanStack Router's notFound() and redirect() are thrown by design.
+    "typescript/only-throw-error": [
+      "error",
+      {
+        "allow": [
+          {
+            "from": "package",
+            "package": "@tanstack/router-core",
+            "name": ["NotFoundError", "Redirect"]
+          }
+        ]
+      }
+    ],
+    "import/no-mutable-exports": "error",
     "eslint/no-constant-binary-expression": "error",
     "eslint/no-self-assign": "error",
     "eslint/no-unreachable-loop": "error",
@@ -61,6 +79,13 @@
     ]
   },
   "overrides": [
+    {
+      // A wrong `!` in a test fails the test, which is the point.
+      "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "tests/**"],
+      "rules": {
+        "typescript/no-non-null-assertion": "off"
+      }
+    },
     {
       "files": ["src/db/**", "src/lib/auth.ts"],
       "rules": {
