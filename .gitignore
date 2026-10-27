@@ -53,3 +53,6 @@ dist/
 # Cloudflare Vite plugin 2.x's build output and local state
 .everyapp/
 .cloudflare/
+
+# code-review-graph database (built per session)
+.code-review-graph/
