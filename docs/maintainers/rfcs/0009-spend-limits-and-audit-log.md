@@ -247,7 +247,7 @@ Indexes on (`organization_id`, `created_at`) and (`project_id`, `created_at`).
 ### 5.8 Rate limits on paid actions
 
 1. Use the Cloudflare Workers rate limiting binding. Declare `PAID_ACTION_RATE_LIMIT` in `deploy/alchemy/alchemy.run.ts`, next to the existing `MCP_RATE_LIMIT`, with its own namespace id and a 60-second period. The `wrangler.jsonc` surfaces skip the check when the binding is absent, as `MCP_RATE_LIMIT` does.
-2. Key: `{userId}:{feature}`. Limit: 30 paid actions per minute per user and feature.
+2. Key: `{organizationId}:{userId}:{feature}`. Limit: 30 paid actions per minute per organization, user and feature, so automated runs (`system`) are limited per tenant.
 3. Apply it in `admitSpend` before the ledger insert. Return `RATE_LIMITED` with the retry time.
 4. Self-hosted installs without the binding skip this check and log one warning at startup.
 5. MCP API keys keep their existing per-user limit (`MCP_RATE_LIMIT`, 5,000 requests per minute, in `src/server/mcp/api-key-auth.ts`). The Better Auth plugin limiter stays disabled.

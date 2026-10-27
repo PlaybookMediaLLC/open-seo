@@ -213,7 +213,7 @@ it("refuses the 31st paid action in a minute before the ledger", async () => {
     }),
   ).rejects.toMatchObject({ code: "RATE_LIMITED" });
   expect(mocks.limit).toHaveBeenCalledWith({
-    key: "member:keyword_research",
+    key: `${buyer.organizationId}:member:keyword_research`,
   });
   expect(await ledger(buyer.organizationId)).toEqual([]);
 });
