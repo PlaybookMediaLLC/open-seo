@@ -10,6 +10,7 @@ import {
   ciCheckIgnores,
   ciCheckRuns,
   ciPreviewAccess,
+  ciPreviewHosts,
   ciProjectSettings,
   projectKeyPages,
   projects,
@@ -18,6 +19,7 @@ import { GscService } from "@/server/features/gsc/services/GscService";
 import { openToken } from "@/server/features/publishing/tokenKeys";
 import { discoverUrls } from "@/server/lib/audit/discovery";
 import type { CrawlerAccess } from "@/shared/crawler-access";
+import { isTrustedPreviewHost } from "./previewHosts";
 import { selectUrls } from "./urlSelection";
 
 // RFC-0010 5.2 step 6: the plan of one run. Its result is durable Workflow
@@ -35,31 +37,52 @@ export const pageUrl = (origin: string, path: string, trailingSlash: boolean) =>
       : ""
   }`;
 
-/** The protected-preview access, bound to the preview host only. */
-export async function previewAccess(
-  projectId: string,
-  previewOrigin: string,
-): Promise<CrawlerAccess | null> {
+/**
+ * The protected-preview access, bound to the preview host. RFC-0010 5.4: a
+ * stored secret is withheld unless the owner vouched for that host.
+ */
+export async function previewAccess(run: {
+  projectId: string;
+  baseOrigin: string;
+  previewOrigin: string;
+}): Promise<{ access: CrawlerAccess | null; withheld: boolean }> {
   const [row] = await db
     .select()
     .from(ciPreviewAccess)
-    .where(eq(ciPreviewAccess.projectId, projectId));
-  if (!row) return null;
+    .where(eq(ciPreviewAccess.projectId, run.projectId));
+  if (!row) return { access: null, withheld: false };
+  const host = new URL(run.previewOrigin).hostname;
+  const ownerHosts = await db
+    .select({ host: ciPreviewHosts.host })
+    .from(ciPreviewHosts)
+    .where(eq(ciPreviewHosts.projectId, run.projectId));
+  // The base origin is the project's domain, set by Relay when it was queued.
+  if (
+    !isTrustedPreviewHost(
+      host,
+      new URL(run.baseOrigin).hostname,
+      ownerHosts.map((owner) => owner.host),
+    )
+  )
+    return { access: null, withheld: true };
   const { token: value } = await openToken({
     encryptedToken: row.encryptedValue,
     tokenKeyVersion: row.keyVersion,
   });
   const [clientId = "", clientSecret = ""] = value.split("\n");
   return {
-    host: new URL(previewOrigin).hostname,
-    headers:
-      row.kind === "cf_access"
-        ? {
-            "CF-Access-Client-Id": clientId,
-            "CF-Access-Client-Secret": clientSecret,
-          }
-        : { [row.headerName ?? "x-preview-access"]: value },
-    expiresAt: null,
+    access: {
+      host,
+      headers:
+        row.kind === "cf_access"
+          ? {
+              "CF-Access-Client-Id": clientId,
+              "CF-Access-Client-Secret": clientSecret,
+            }
+          : { [row.headerName ?? "x-preview-access"]: value },
+      expiresAt: null,
+    },
+    withheld: false,
   };
 }
 
@@ -107,7 +130,7 @@ export async function planCheck(runId: string) {
     .update(ciCheckRuns)
     .set({ status: "running", startedAt: new Date().toISOString() })
     .where(eq(ciCheckRuns.id, runId));
-  const access = await previewAccess(run.projectId, run.previewOrigin);
+  const { access, withheld } = await previewAccess(run);
   const [baseSite, previewSite, keyPages, traffic, [settings], [project]] =
     await Promise.all([
       discoverUrls(run.baseOrigin, MAX_SITEMAP_URLS),
@@ -166,6 +189,7 @@ export async function planCheck(runId: string) {
     organizationId: project.organizationId,
     baseOrigin: run.baseOrigin,
     previewOrigin: run.previewOrigin,
+    previewAccessWithheld: withheld,
     raiseOnHighTraffic: settings?.raiseOnHighTraffic ?? true,
     checkRobotsHeader: settings?.checkPreviewRobotsHeader ?? false,
     renderedMode: settings?.renderedMode ?? false,

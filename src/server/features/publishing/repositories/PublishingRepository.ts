@@ -16,6 +16,7 @@ import { checkpoint } from "./checkpoint";
 import { getLatestExecution, recoverOpportunity } from "./recoverOpportunity";
 import {
   getInstallation,
+  listInstallationRepositoryIds,
   listInstallations,
   revokeInstallation,
   saveInstallation,
@@ -43,6 +44,7 @@ export const PublishingRepository = {
   getTicket,
   saveInstallation,
   listInstallations,
+  listInstallationRepositoryIds,
   getInstallation,
   revokeInstallation,
 };

@@ -1,7 +1,10 @@
 import { and, eq, exists, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
-import { githubAppInstallations } from "@/db/schema";
+import {
+  githubAppInstallationRepositories,
+  githubAppInstallations,
+} from "@/db/schema";
 import {
   auditInsert,
   type AuditInput,
@@ -9,16 +12,38 @@ import {
 
 type GithubAppInstallation = typeof githubAppInstallations.$inferSelect;
 
+// D1 binds at most 100 parameters; each repository row binds two.
+const REPOSITORY_ROWS_PER_INSERT = 40;
+
 // Upserts the installation that the setup callback verified for this
-// organization. A repeat install clears an earlier revocation.
+// organization, and replaces the repositories the linking user can reach.
+// A repeat install clears an earlier revocation.
 export async function saveInstallation(
   installation: Omit<GithubAppInstallation, "id" | "revokedAt">,
+  repositoryIds: readonly string[],
   audit?: AuditInput,
-) {
+): Promise<void> {
+  const [existing] = await db
+    .select({ id: githubAppInstallations.id })
+    .from(githubAppInstallations)
+    .where(
+      and(
+        eq(githubAppInstallations.organizationId, installation.organizationId),
+        eq(githubAppInstallations.installationId, installation.installationId),
+      ),
+    );
+  // Two first links racing pick different ids; the loser's repository rows
+  // then fail the foreign key and its whole batch rolls back.
+  const id = existing?.id ?? crypto.randomUUID();
+  // A page that shifts during pagination can repeat a repository.
+  const rows = [...new Set(repositoryIds)].map((repositoryId) => ({
+    installationRef: id,
+    repositoryId,
+  }));
   await runBatch((tx) => [
     tx
       .insert(githubAppInstallations)
-      .values({ ...installation, id: crypto.randomUUID(), revokedAt: null })
+      .values({ ...installation, id, revokedAt: null })
       .onConflictDoUpdate({
         target: [
           githubAppInstallations.organizationId,
@@ -30,8 +55,36 @@ export async function saveInstallation(
           revokedAt: null,
         },
       }),
+    tx
+      .delete(githubAppInstallationRepositories)
+      .where(eq(githubAppInstallationRepositories.installationRef, id)),
+    ...Array.from(
+      { length: Math.ceil(rows.length / REPOSITORY_ROWS_PER_INSERT) },
+      (_, chunk) =>
+        tx
+          .insert(githubAppInstallationRepositories)
+          .values(
+            rows.slice(
+              chunk * REPOSITORY_ROWS_PER_INSERT,
+              (chunk + 1) * REPOSITORY_ROWS_PER_INSERT,
+            ),
+          ),
+    ),
     ...(audit ? [auditInsert(tx, audit)] : []),
   ]);
+}
+
+/** The repositories that the person who linked the installation could reach. */
+export async function listInstallationRepositoryIds(
+  installationRef: string,
+): Promise<string[]> {
+  const rows = await db
+    .select({ repositoryId: githubAppInstallationRepositories.repositoryId })
+    .from(githubAppInstallationRepositories)
+    .where(
+      eq(githubAppInstallationRepositories.installationRef, installationRef),
+    );
+  return rows.map((row) => row.repositoryId);
 }
 
 export function listInstallations(organizationId: string) {

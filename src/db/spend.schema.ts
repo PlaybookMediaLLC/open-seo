@@ -55,7 +55,7 @@ export const spendLedger = sqliteTable(
     // for DataForSEO calls that name no feature.
     feature: text("feature"),
     provider: text("provider", {
-      enum: ["dataforseo", "openrouter"],
+      enum: ["dataforseo", "openrouter", "rendering"],
     }).notNull(),
     actor: text("actor").notNull(),
     periodMonth: text("period_month").notNull(),

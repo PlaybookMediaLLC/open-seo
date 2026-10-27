@@ -17,7 +17,7 @@ import {
 // project's monthly limits before any provider call. No limit row means
 // that only the Autumn balance applies.
 
-type Provider = "dataforseo" | "openrouter";
+type Provider = "dataforseo" | "openrouter" | "rendering";
 const WARN_SHARE = 0.8;
 
 /** True when no limit row for the scope would be exceeded. */

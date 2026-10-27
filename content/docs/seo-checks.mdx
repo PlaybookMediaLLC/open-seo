@@ -53,7 +53,7 @@ If your previews need a secret, open **Preview access** and choose one method:
 - **A header**, such as Vercel's `x-vercel-protection-bypass` with its value.
 - **A Cloudflare Access service token**, with its client ID and secret.
 
-Relay encrypts the value and sends it only to the preview host.
+Relay encrypts the value and sends it only to the preview host, and only when that host is your project's domain or one of its subdomains, or a host you added under **Preview hosts**. A wildcard for a whole platform, such as `*.vercel.app` or `*.pages.dev`, does not count, because anyone can deploy there; add your exact preview host, or a wildcard for your own project such as `*.myproj.pages.dev`. On any other host, Relay checks the preview without the secret and adds the warning `preview-access-not-sent`.
 
 ## What blocks a merge
 

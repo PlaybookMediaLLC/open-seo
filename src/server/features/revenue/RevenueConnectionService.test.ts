@@ -17,7 +17,7 @@ const database = await vi.hoisted(async () => {
     await import("@/server/features/opportunities/repositories/opportunityRepositoryTestDb");
   return createOpportunityTestDatabase("revenue-connection-test-");
 });
-const mocks = vi.hoisted(() => ({ probeStatus: 403 }));
+const mocks = vi.hoisted(() => ({ writablePath: "/none" }));
 vi.mock("cloudflare:workers", () => ({
   env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
 }));
@@ -43,7 +43,7 @@ beforeAll(async () => {
     init?.method === "POST"
       ? new Response(
           `{"error":{"message":"The provided key does not have the required permissions on account 'acct_1TestAccount'."}}`,
-          { status: mocks.probeStatus },
+          { status: url.endsWith(mocks.writablePath) ? 400 : 403 },
         )
       : Response.json({ data: [] }),
   );
@@ -53,7 +53,7 @@ afterAll(async () => {
   await database.close();
 });
 beforeEach(() => {
-  mocks.probeStatus = 403;
+  mocks.writablePath = "/none";
 });
 
 async function project() {
@@ -74,11 +74,12 @@ it("accepts only a restricted key that cannot write, and stores it encrypted", a
       key: "sk_test_51AbCdEfGhIjKlMnOpQr",
     }),
   ).rejects.toThrow("secret keys");
-  mocks.probeStatus = 400;
+  // Write access to any money resource refuses the key, not only Customers.
+  mocks.writablePath = "/v1/refunds";
   await expect(
     RevenueConnectionService.connect(context, { projectId, key: KEY }),
-  ).rejects.toThrow("can write");
-  mocks.probeStatus = 403;
+  ).rejects.toThrow("can write to Refunds");
+  mocks.writablePath = "/none";
   expect(
     await RevenueConnectionService.connect(context, { projectId, key: KEY }),
   ).toEqual({ ok: true, livemode: false });

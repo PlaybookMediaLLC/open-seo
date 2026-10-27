@@ -82,11 +82,13 @@ vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
 
-// Not project-scoped by design: an App installation serves many projects,
-// a webhook delivery id is claimed before its project is known, and an email
-// digest preference belongs to a member of the organization.
+// Not project-scoped by design: an App installation and its linked
+// repositories serve many projects, a webhook delivery id is claimed before
+// its project is known, and an email digest preference belongs to a member of
+// the organization.
 const UNSCOPED_TABLES = new Set([
   "github_app_installations",
+  "github_app_installation_repositories",
   "ci_webhook_deliveries",
   "growth_email_preferences",
 ]);
@@ -146,8 +148,9 @@ afterAll(async () => {
   await database.close();
 });
 
-// Functions without a project boundary of their own: a signed App callback,
-// and the brand-term store, which its entry points authorize.
+// Functions without a project boundary of their own: the App setup callback,
+// which checks the session against its signed state and answers with a
+// redirect, and the brand-term store, which its entry points authorize.
 const services: Record<string, Record<string, unknown>> = {
   OpportunityService,
   getTicket: { getTicket },

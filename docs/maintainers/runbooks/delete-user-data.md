@@ -26,6 +26,9 @@ Put these values in an untracked file, for example `.env.local` in the repositor
 CLOUDFLARE_ACCOUNT_ID=de345701e5dc7e14d3c079da3e637448
 BETTER_AUTH_URL=https://relay.playbookmedia.io
 BETTER_AUTH_SECRET=...      # same value as production, to decrypt stored GitHub tokens
+# If production sets PUBLISHING_TOKEN_KEY, copy it, PUBLISHING_TOKEN_KEY_VERSION
+# and PUBLISHING_TOKEN_KEY_PREVIOUS too. A token no key opens is skipped with a
+# warning and is not revoked; the erasure still completes.
 GDPR_ERASURE_SECRET=...     # same value as production
 AUTUMN_SECRET_KEY=am_sk_live_...
 ```

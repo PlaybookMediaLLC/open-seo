@@ -1,4 +1,9 @@
-import { hasOrgPermission } from "@/lib/org-permissions";
+import type { githubAppInstallations } from "@/db/schema";
+import {
+  hasOrgPermission,
+  type OrgPermissionRequest,
+} from "@/lib/org-permissions";
+import { resolveUserContextFromHeaders } from "@/middleware/ensure-user/resolve";
 import { AppError } from "@/server/lib/errors";
 import {
   connectGithubAppInputSchema,
@@ -11,6 +16,7 @@ import {
   githubAppConfig,
   installationRepositories,
   installationToken,
+  userInstallationRepositoryIds,
   userInstallations,
 } from "./githubApp";
 import { consumeAppState, createAppState } from "./githubAppState";
@@ -24,6 +30,9 @@ import { PublishingRepository } from "./repositories/PublishingRepository";
 
 // GitHub App connections (RFC-0005 5.7). Personal tokens stay available.
 
+// Starting an install and completing its setup both need this permission.
+const INSTALL_PERMISSION: OrgPermissionRequest = { integration: ["manage"] };
+
 async function state(context: PublishingContext, raw: { projectId: string }) {
   await authorizePublishing(context, raw.projectId);
   const input = publishingProjectInputSchema.parse(raw);
@@ -32,9 +41,7 @@ async function state(context: PublishingContext, raw: { projectId: string }) {
   const installations = await PublishingRepository.listInstallations(
     context.organizationId,
   );
-  const canManage = hasOrgPermission(context.role, {
-    integration: ["manage"],
-  });
+  const canManage = hasOrgPermission(context.role, INSTALL_PERMISSION);
   return {
     configured: true as const,
     installUrl: canManage
@@ -54,9 +61,11 @@ async function state(context: PublishingContext, raw: { projectId: string }) {
 }
 
 /**
- * The setup callback. It trusts only the user-token check: the installation
- * must be in the installations that the signed-in GitHub user can access.
- * The URL parameters alone are never trusted. The user token is discarded.
+ * The setup callback. The signed-in Relay user must be the one who started
+ * the install, still able to manage integrations in its organization, and the
+ * installation must be one that their GitHub user token can access. The URL
+ * parameters alone are never trusted. Only the repositories that the user
+ * token can reach are saved, and the token is then discarded.
  */
 async function handleSetup(request: Request) {
   const url = new URL(request.url);
@@ -81,6 +90,21 @@ async function handleSetup(request: Request) {
     return back(payload.projectId, "failed");
   }
   try {
+    // The state is consumed first, so one presented by the wrong session is
+    // burned. Without this check, a victim who completes an attacker's
+    // install link would link the victim's installation to the attacker's
+    // organization. The organization and role come from the session.
+    const context = await resolveUserContextFromHeaders(request.headers);
+    if (
+      context.userId !== payload.userId ||
+      context.organizationId !== payload.organizationId ||
+      !hasOrgPermission(context.role, INSTALL_PERMISSION)
+    ) {
+      console.error("GitHub App setup session does not match its state", {
+        installationId,
+      });
+      return back(payload.projectId, "refused");
+    }
     const userToken = await exchangeUserCode(code);
     const installation = (await userInstallations(userToken)).find(
       (item) => item.id === installationId,
@@ -100,6 +124,7 @@ async function handleSetup(request: Request) {
         createdBy: payload.userId,
         createdAt: new Date().toISOString(),
       },
+      await userInstallationRepositoryIds(userToken, installationId),
       {
         organizationId: payload.organizationId,
         projectId: payload.projectId,
@@ -122,6 +147,22 @@ async function handleSetup(request: Request) {
   }
 }
 
+// The App token reaches every repository in the installation. Only those
+// that the linking user could access at setup are offered or connected.
+async function linkedRepositories(
+  installation: Pick<
+    typeof githubAppInstallations.$inferSelect,
+    "id" | "installationId"
+  >,
+) {
+  const [reachable, allowed] = await Promise.all([
+    installationRepositories(installation.installationId),
+    PublishingRepository.listInstallationRepositoryIds(installation.id),
+  ]);
+  const ids = new Set(allowed);
+  return reachable.filter((repository) => ids.has(repository.id));
+}
+
 async function repositories(
   context: PublishingContext,
   raw: { projectId: string },
@@ -132,9 +173,10 @@ async function repositories(
   );
   const lists = await Promise.all(
     installations.map(async (installation) =>
-      (await installationRepositories(installation.installationId)).map(
-        (repository) => ({ ...repository, installationRef: installation.id }),
-      ),
+      (await linkedRepositories(installation)).map((repository) => ({
+        ...repository,
+        installationRef: installation.id,
+      })),
     ),
   );
   return lists.flat();
@@ -157,9 +199,9 @@ async function connect(context: PublishingContext, raw: ConnectGithubAppInput) {
           installation.revokedAt
         )
           throw new AppError("NOT_FOUND");
-        const repository = (
-          await installationRepositories(installation.installationId)
-        ).find((item) => item.id === input.repositoryId);
+        const repository = (await linkedRepositories(installation)).find(
+          (item) => item.id === input.repositoryId,
+        );
         if (!repository) throw new AppError("NOT_FOUND");
         const client = createGithubClient({
           token: await installationToken({

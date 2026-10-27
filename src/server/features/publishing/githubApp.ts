@@ -195,7 +195,29 @@ export async function userInstallations(userToken: string) {
   return value.installations;
 }
 
-/** The repositories that an installation can reach. */
+/** The repositories of an installation that the signed-in GitHub user can access. */
+export async function userInstallationRepositoryIds(
+  userToken: string,
+  installationId: number,
+) {
+  const ids: string[] = [];
+  for (let page = 1; ; page++) {
+    const value = await githubJson(
+      `${API}/user/installations/${installationId}/repositories?per_page=100&page=${page}`,
+      z.object({
+        repositories: z.array(z.object({ id: z.number().int().positive() })),
+      }),
+      { token: userToken },
+    );
+    ids.push(...value.repositories.map((repository) => String(repository.id)));
+    if (value.repositories.length < 100) return ids;
+  }
+}
+
+/**
+ * The repositories that an installation can reach, with the App token. Filter
+ * by the repositories the linking user could access before offering one.
+ */
 export async function installationRepositories(installationId: number) {
   const token = await installationToken({
     installationId,

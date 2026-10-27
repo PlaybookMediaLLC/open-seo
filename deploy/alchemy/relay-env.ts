@@ -43,8 +43,10 @@ export const relayDataEnv = {
 export const relayBindings = () => ({
   // RFC-0009 5.8: 30 paid actions a minute per user and feature
   // (src/server/billing/spendAdmission.ts). Other surfaces skip the check.
+  // Namespace ids must not repeat on this Worker: upstream's alchemy.run.ts
+  // holds 1001 (MCP_RATE_LIMIT) and 1002 (AUTH_RATE_LIMIT).
   PAID_ACTION_RATE_LIMIT: Cloudflare.RateLimit("PAID_ACTION_RATE_LIMIT", {
-    namespaceId: 1002,
+    namespaceId: 1004,
     simple: { limit: 30, period: 60 },
   }),
   // RFC-0010 5.10: 10 check requests a minute per CI token

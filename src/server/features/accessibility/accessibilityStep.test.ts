@@ -40,9 +40,6 @@ vi.mock(
   "@/server/features/project-context/repositories/ProjectContextRepository",
   () => ({ ProjectContextRepository: { listKeyPages: mocks.keyPages } }),
 );
-vi.mock("@/server/billing/spendAdmission", () => ({
-  assertSpendRoom: async () => undefined,
-}));
 vi.mock("@/server/lib/audit/rendering-billing", () => ({
   lockRenderingCredits: async () => [{ lockId: "lock" }],
   settleRenderingLocks: mocks.settle,
