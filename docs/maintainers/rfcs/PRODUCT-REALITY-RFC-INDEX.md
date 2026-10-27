@@ -1,5 +1,7 @@
 # Relay RFCs 0029–0046 — implementation order
 
+> **Canonical execution queue:** [IRFC-0001–0033](implementation/README.md). This historical 0029–0046 index remains available for design dependencies; use the new sequential IRFC numbers for implementation.
+
 **Reordered:** October 27, 2026  
 **Repository:** [`PlaybookMediaLLC/relay`](https://github.com/PlaybookMediaLLC/relay), default branch `develop`  
 **Status:** Proposed design RFCs; **not** implemented, merged, deployed, or commercially validated.  
