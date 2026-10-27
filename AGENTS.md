@@ -4,15 +4,74 @@
 
 - Prefer simple, readable, flat code with minimal indirection.
 - Work on bugs a real user hit or would plausibly hit. Don't open a ticket or PR for an edge case found only by reading the code; flag it instead. Security holes and significant billing abuse are the exception.
-- Search for existing implementations and installed libraries before creating new helpers or abstractions.
-- Abstract when it prevents meaningful drift and makes the result simpler to maintain. Avoid speculative or one-use abstraction layers.
 - Keep product data normalized and relationships explicit. Do not encode relational data in JSON or text merely to avoid joins.
 - For new application-backed backend functionality, default to: TanStack server function → service → repository.
 - Keep schema changes, queries, and mutations compatible with both SQLite and Postgres.
-- Prefer established project helpers and libraries over hand-rolled implementations.
 - Prefer idiomatic TanStack Query, Router, and Form patterns for server state, routing, and submitted forms.
 - shadcn components in `src/client/components/ui/` are built on Base UI, not Radix. Compose them with the `render` prop, not `asChild`.
 - Specs under `docs/maintainers/specs/` are public design records: what a feature does, how it works, the alternatives considered and why they lost. No line numbers, migration mechanics, test plans, incidents, costs, or internal infrastructure details.
+
+## Reuse before writing new code
+
+Before you add a component, hook, Zod schema, type, query, repository, service, MCP tool, Workflow, Trigger.dev task, helper, test, or fixture, find out whether one already exists and build on it.
+
+### Find what exists
+
+Before writing an implementation, MUST:
+
+1. Read this file, any `AGENTS.md` in a directory you will touch, and the sections of [the review guidelines](docs/maintainers/review-guidelines.md) whose "Applies to" paths cover your change.
+2. Name the owner: the workspace (`src/` for the app, `web/` for the site), the feature (`src/server/features/<feature>/`, `src/client/features/<feature>/`), and the layer (route, server function, service, repository, MCP tool, Workflow, component, hook). [Where shared code lives](#where-shared-code-lives) lists the shared owners.
+3. Search for the behavior, not only the name you would give it: domain terms, table and column names, Zod field names, `ErrorCode` values, query keys, and provider endpoints. Cover the feature's client and server directories, the shared owners below, and the existing tests and fixtures.
+4. Read each candidate's source, callers, and tests. Use the code-review-graph MCP tools (`.mcp.json`) for callers, tests, and blast radius when your client has them and the graph has finished building; otherwise use `rg`. An empty graph result does not prove the code is absent.
+5. Decide with the order below.
+
+### Decide
+
+Take the first option that works:
+
+1. **Use** the existing implementation when its behavior and contract fit.
+2. **Extend** it when the new behavior belongs to its owner and every existing caller keeps its behavior and invariants.
+3. **Extract** to the shared owner when at least two real callers, in this change or already on `main`, need the same behavior and the shared API is simpler than the copies. Move the code; don't leave the old copy behind.
+4. **Write new** when the candidate does not fit: it differs in authorization, tenant scope, billing or metering, error handling, side effects (writes, provider calls, events), or cost; or reusing it would make a module import a layer or workspace it must not depend on, or tie unrelated workflows together. Give the reason in one line in your handoff. No separate approval is needed.
+
+Code that looks alike is not interchangeable until you have compared those properties.
+
+- NEVER write a second implementation because the first was hard to find or needs a reasonable extension.
+- NEVER copy a schema, query, enum, or business rule into a second place; import, extend, or extract it.
+- NEVER add a helper, wrapper, base class, factory, or option for a single caller to make code look reusable.
+- NEVER move a feature's code into a shared directory before a second feature uses it.
+
+### Where shared code lives
+
+- **UI primitives**: `src/client/components/ui/`. Add a missing primitive with the shadcn CLI; don't hand-roll a button, dialog, or select.
+- **Shared UI patterns**: `src/client/components/` (`DataTable`, `QueryState`, `PageHeader`, `EmptyState`, `ConfirmDialog`, `SafeExternalLink`) and `src/client/components/form/` (`useAppForm`). A component only one feature uses stays in that feature's `components/`.
+- **Client hooks and utilities**: `src/client/hooks/`, `src/client/lib/`.
+- **Code used by more than one of the client, server, MCP, and `web/`**: `src/shared/`, holding Zod schemas, constants, and pure logic. NEVER import `@/db`, `@/server`, `@/serverFunctions`, or `@/client` there.
+- **Business rules and provider, cache, and Workflow orchestration**: `src/server/features/<feature>/services/`. A server function and an MCP tool for the same capability call the same service.
+- **Persistence**: `src/server/features/<feature>/repositories/`, using `db` from `@/db`, tables from `@/db/schema`, and `runBatch` from `@/db/runBatch` for multi-statement writes.
+- **Sign-in and tenant context**: `requireProjectContext` and `requireAuthenticatedContext` (`src/serverFunctions/middleware.ts`), `withMcpProjectAuth` (`src/server/mcp/project-auth.ts`), and Every App identity (`src/middleware/ensure-user/everyApp.ts`).
+- **Credits, spend limits, and paid providers**: `src/server/billing/` and `createDataforseoClient` (`src/server/lib/dataforseo/`). See [Billing fails closed](docs/maintainers/review-guidelines.md#billing-fails-closed) and [Spend limits](docs/maintainers/review-guidelines.md#spend-limits-and-the-spend-ledger-playbook-fork).
+- **Errors**: `AppError` (`src/server/lib/errors.ts`) and `ErrorCode` (`src/shared/error-codes.ts`). Add a code to the existing list rather than a parallel error type.
+- **Provider clients and server utilities**: `src/server/lib/`, including GSC, GA4, OpenRouter, R2, PostHog, scraping, and URL policy (`normalizeAndValidateStartUrl`, `isCrawlableUrl`).
+- **Background work**: Cloudflare Workflows in `src/server/workflows/` (steps through `pgStep`, started with `startWorkflow` from `src/server/lib/startWorkflow.ts`) and Trigger.dev tasks in `trigger/`.
+- **MCP tools**: `src/server/mcp/tools/`, with schemas in `src/server/mcp/schemas.ts` and `src/server/mcp/output-schemas.ts`, registered through `instrumentMcpToolHandler`.
+- **Runtime config**: `src/server/lib/runtime-env.ts`, `everyapp.config.ts`, `wrangler.jsonc`, and `autumn.config.ts` for plan IDs.
+- **Test helpers**: factories beside the tests they serve (`ga4-test-fixtures.ts`, `tool-test-support.ts`) and Playwright fixtures in `tests/fixtures/`.
+
+### Boundaries
+
+- `web/` is a separate workspace with its own dependency versions. It imports pure modules from `src/` by relative path; check the library major in `web/package.json` before reusing code that depends on one. NEVER import from `web/` in `src/`.
+- Upstream OpenSEO owns the core: billing, providers, sign-in, audits, and MCP. To change core behavior for Relay, make the smallest edit to the upstream code and mark it `// playbook-seam`. NEVER fork a copy of a core module; the copy stops receiving upstream fixes.
+- Before adding a dependency, check `package.json` for one that already does the job, such as Zod, Remeda, TanStack Query, Form, and Table, `tldts`, or `papaparse`. A new dependency gets a security read ([Review posture](docs/maintainers/review-guidelines.md#review-posture)).
+
+### Changing shared code
+
+- Before changing a function, schema, or component that other code uses, list its callers. Keep their behavior or update every caller in the same change.
+- A schema change updates the SQLite and Postgres definitions and both migrations ([SQLite and Postgres parity](docs/maintainers/review-guidelines.md#sqlite-and-postgres-parity)). Cloudflare Workflow instances already running resume on the new code with their old params and step results, so keep those shapes parseable until the instances finish.
+- Import an existing enum, Zod schema, route path, plan ID, credit cost, env name, or business rule instead of restating it. Never hand-edit the generated `src/routeTree.gen.ts`.
+- Reuse the established sign-in, tenant-scoping, and input-validation paths. If a reused query lacks the scope your caller needs, add the scope to that query. NEVER fetch unscoped rows and filter them afterwards, and NEVER relax a check so a second caller fits.
+- Keep money invariants when you reuse or extend a billing path: credits stay integers, paid provider calls go through the billing seams, retries and Workflow replays neither double-charge nor skip metering, and audit events are written in the same `runBatch` as the change ([Hard invariants](docs/maintainers/review-guidelines.md#hard-invariants)).
+- Errors follow [Errors](#errors). A fallback that hides a broken path (an empty list, a default value, a skipped step) is a swallowed failure.
 
 ## TypeScript
 
@@ -99,6 +158,8 @@ OpenSEO also runs behind an Every App Gateway (`AUTH_MODE=everyapp`; how it work
 ## Testing
 
 - Don't add tests just for the sake of it. A test exists to enforce core behavior or a hard-to-spot edge case that could actually occur.
+- A change to authentication or authorization, billing or metering, persistence or queries, schema or migrations, provider serialization, Workflow retries or state transitions, or URL handling MUST include a focused behavioral test unless an existing test already covers the changed branch. A bug fix's test must fail on the old code. See [Behavioral evidence for risky changes](docs/maintainers/review-guidelines.md#behavioral-evidence-for-risky-changes).
+- Extend the existing test file, table-driven case, or fixture factory for the same behavior before adding a new one. The `test-audit` skill (`.agents/skills/test-audit/SKILL.md`) is the procedure for writing and reviewing tests.
 - Keep tests as simple as possible, and always review them looking for simplifications.
 - Test behavior at the public entry point. Assert argument forwarding to a mocked collaborator only when that mapping is the contract (billing params, telemetry events).
 - Statically import the module under test. `vi.mock` is hoisted, so per-test `await import()` and `vi.resetModules()` are banned unless module-level state must reset — comment why.
@@ -110,6 +171,18 @@ OpenSEO also runs behind an Every App Gateway (`AUTH_MODE=everyapp`; how it work
 - Don't export a function only so a test can reach it. Test through the public entry point (the service object, tool handler, or workflow); Knip fails CI on the orphaned export.
 - Vitest's `clearMocks` clears call history only. A `mockResolvedValue` or `mockImplementation` set inside a test survives into the next one, so every persistent default belongs in `beforeEach`.
 - A negative test must fail for the reason its name gives. If a different guard rejects first (hosted mode off, missing auth, an earlier validation), the test proves nothing about the behavior it names.
+
+## Checks and handoff
+
+- Before handing off a code change, MUST run `pnpm ci:check` and `pnpm test` and get both passing; `merge-ready` runs the same pair. CI (`.github/workflows/ci.yml`) also builds the Worker, the standalone server, and `web/`. When you touch those, run the matching CI step.
+- For a Markdown-only change, run `pnpm exec prettier --check` on the changed files and confirm every link and path in them resolves.
+- NEVER get a change through by disabling, skipping, or loosening a check: a lint rule, a Knip ignore, a test, or a CI step. Fix the cause. The one lint exception is a disable comment that states its invariant ([Assertions and escape hatches](#assertions-and-escape-hatches)).
+- End implementation work with a short report to the person who asked. Scale it to the change: a one-line fix needs one or two lines.
+  - **Reused**: the existing code or patterns you used or extended.
+  - **New despite a candidate**: anything you added where something similar existed, and why that candidate did not fit.
+  - **Affected**: shared code you changed and the callers or features that depend on it.
+  - **Checks**: what you ran and the result, and anything that failed or that you could not run, with the reason.
+- That report belongs in your reply, not the PR description, which keeps the `simple-issue-description` format ([Documentation audience](#documentation-audience)). Put reuse decisions the maintainer should weigh under its Extra context.
 
 ## Plugin versions
 
