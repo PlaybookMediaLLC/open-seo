@@ -24,14 +24,14 @@ Status: `candidate` → `needs_review` | `confirmed` | `dismissed` | `unsupporte
 
 ## 3. Impact rules and signal classes
 
-| Rule | Input | Evaluation | Output |
-|---|---|---|---|
-| `PRICING_VALUE_DRIFT_V1` | accepted scoped plan price version + structured pricing claim | typed money/currency/period comparison, compatible scope, effective-date check | `confirmed` claim contradiction or `needs_review` scope ambiguity |
-| `PLAN_ENTITLEMENT_DRIFT_V1` | accepted feature/plan fact + public feature matrix claim | normalized feature/plan IDs, cohort/region overlap | contradiction candidate with exact sources |
-| `INTEGRATION_AVAILABILITY_V1` | accepted integration status + docs/landing occurrence | version and availability scope overlap; runtime rollout may override code intentions | targeted docs/landing change candidate |
-| `RELEASE_DOCS_IMPACT_V1` | source change with touched API/docs path | AST/link/path relation and owner-configured release tags | probable affected docs, **not** proven stale |
-| `PROTECT_REGRESSION_V1` | confirmed RFC-0019 monitored-page incident | link incident to protected asset/journey | high-priority actionable consequence |
-| `LINK_TARGET_MOVED_V1` | verified route removal/redirect + mapped URL references | exact URL linkage and production status | affected links; no claim of product semantics |
+| Rule                          | Input                                                         | Evaluation                                                                           | Output                                                            |
+| ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `PRICING_VALUE_DRIFT_V1`      | accepted scoped plan price version + structured pricing claim | typed money/currency/period comparison, compatible scope, effective-date check       | `confirmed` claim contradiction or `needs_review` scope ambiguity |
+| `PLAN_ENTITLEMENT_DRIFT_V1`   | accepted feature/plan fact + public feature matrix claim      | normalized feature/plan IDs, cohort/region overlap                                   | contradiction candidate with exact sources                        |
+| `INTEGRATION_AVAILABILITY_V1` | accepted integration status + docs/landing occurrence         | version and availability scope overlap; runtime rollout may override code intentions | targeted docs/landing change candidate                            |
+| `RELEASE_DOCS_IMPACT_V1`      | source change with touched API/docs path                      | AST/link/path relation and owner-configured release tags                             | probable affected docs, **not** proven stale                      |
+| `PROTECT_REGRESSION_V1`       | confirmed RFC-0019 monitored-page incident                    | link incident to protected asset/journey                                             | high-priority actionable consequence                              |
+| `LINK_TARGET_MOVED_V1`        | verified route removal/redirect + mapped URL references       | exact URL linkage and production status                                              | affected links; no claim of product semantics                     |
 
 Don't add generic “LLM says probably relevant” into the confirmed ruleset. LLM retrieval may propose candidate mappings with exact citations and explicit missing-proof reasons; reviewers can accept mappings and future deterministic runs will reuse them.
 

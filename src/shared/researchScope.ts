@@ -228,7 +228,8 @@ export function urlMatchesResearchTarget(
       return path === target.path;
     case "subfolder":
       return path === target.path || path.startsWith(`${target.path}/`);
-    default:
+    case "domain":
+    case "subdomains":
       return true;
   }
 }

@@ -16,15 +16,22 @@ First adapter wave: GitHub read and approved PR write (already partly built); se
 
 ```ts
 type ConnectorCapability =
-  | 'changes.read' | 'product_facts.read' | 'assets.read' | 'metrics.read'
-  | 'releases.read' | 'issues.read' | 'repo.pr.create'
-  | 'docs.write' | 'crm.asset.write' | 'messages.send';
+  | "changes.read"
+  | "product_facts.read"
+  | "assets.read"
+  | "metrics.read"
+  | "releases.read"
+  | "issues.read"
+  | "repo.pr.create"
+  | "docs.write"
+  | "crm.asset.write"
+  | "messages.send";
 
 type ConnectorManifest = {
   provider: string;
   adapterVersion: number;
   capability: ConnectorCapability[];
-  permissionsByCapability: Record<string,string[]>;
+  permissionsByCapability: Record<string, string[]>;
   hasWebhook: boolean;
   hasCursor: boolean;
   minPollIntervalSeconds: number;
@@ -50,15 +57,32 @@ The manifest describes capabilities verified against the provider API and actual
 ```ts
 interface ReadConnector<TItem> {
   capabilities(context: ConnectorContext): Promise<CapabilityStatus>;
-  enumerate(context: ConnectorContext, cursor?: string): Promise<{
-    items: TItem[]; nextCursor?: string; coverage: 'complete'|'partial';
+  enumerate(
+    context: ConnectorContext,
+    cursor?: string,
+  ): Promise<{
+    items: TItem[];
+    nextCursor?: string;
+    coverage: "complete" | "partial";
   }>;
-  getRevision(context: ConnectorContext, externalId: string): Promise<string | null>;
+  getRevision(
+    context: ConnectorContext,
+    externalId: string,
+  ): Promise<string | null>;
 }
 interface WriteConnector<TProposal, TReceipt> {
-  preflight(context: ConnectorContext, proposal: TProposal): Promise<PreflightResult>;
-  execute(context: ApprovedActionContext, proposal: TProposal): Promise<TReceipt>;
-  reconcile(context: ConnectorContext, executionId: string): Promise<TReceipt | 'unknown'>;
+  preflight(
+    context: ConnectorContext,
+    proposal: TProposal,
+  ): Promise<PreflightResult>;
+  execute(
+    context: ApprovedActionContext,
+    proposal: TProposal,
+  ): Promise<TReceipt>;
+  reconcile(
+    context: ConnectorContext,
+    executionId: string,
+  ): Promise<TReceipt | "unknown">;
 }
 ```
 
@@ -80,16 +104,16 @@ Avoid leaking source, token, or recipient information into errors, logs, model p
 
 ## 7. Provider-specific phase decisions
 
-| Provider | Initial required capability | Outbound action gate |
-|---|---|---|
-| GitHub | immutable file/release reads; selected repo | reuse exact proposal human approval (RFC-0005/0027) |
-| GSC/GA4 | read-only analytics with consent and coverage | no analytics writes |
-| Public website | safe origin-bound read | no website write outside reviewed repo edit |
-| Stripe | only contracted plan metadata / read-only where provider access permits | no plan/entitlement/price writes |
-| Feature flag platform | read-only flag definitions, scope and rollout evidence | no flag changes |
-| Docs/KB | read approved space/article versions | later security-reviewed write adapter with exact review |
-| CRM | approved asset metadata and relevant release interest signals, where consented | never sync/send automatically in v1 |
-| Email/campaign | draft destinations and delivery receipts | send requires separate explicit approval and consent policy |
+| Provider              | Initial required capability                                                    | Outbound action gate                                        |
+| --------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| GitHub                | immutable file/release reads; selected repo                                    | reuse exact proposal human approval (RFC-0005/0027)         |
+| GSC/GA4               | read-only analytics with consent and coverage                                  | no analytics writes                                         |
+| Public website        | safe origin-bound read                                                         | no website write outside reviewed repo edit                 |
+| Stripe                | only contracted plan metadata / read-only where provider access permits        | no plan/entitlement/price writes                            |
+| Feature flag platform | read-only flag definitions, scope and rollout evidence                         | no flag changes                                             |
+| Docs/KB               | read approved space/article versions                                           | later security-reviewed write adapter with exact review     |
+| CRM                   | approved asset metadata and relevant release interest signals, where consented | never sync/send automatically in v1                         |
+| Email/campaign        | draft destinations and delivery receipts                                       | send requires separate explicit approval and consent policy |
 
 ## 8. Health, capacity and erasure
 

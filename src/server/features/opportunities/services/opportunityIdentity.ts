@@ -32,7 +32,17 @@ function identityTuple(
         candidate.performance?.template ?? null,
         candidate.performance?.metric ?? null,
       ];
-    default:
+    case "striking_distance":
+    case "declining_page":
+    case "low_ctr":
+    case "support_topic":
+    case "docs_page_underperforming":
+    case "docs_search_gap":
+    case "docs_stale_page":
+    case "cro_device_gap":
+    case "cro_form_drop_off":
+    case "cro_low_conversion":
+    case "cro_low_engagement":
       return [...base, candidate.url, candidate.query];
   }
 }

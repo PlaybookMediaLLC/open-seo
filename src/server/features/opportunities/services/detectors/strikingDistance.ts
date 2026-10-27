@@ -18,9 +18,10 @@ export function strikingDistance(
   return buildStrikingDistanceRows(queryPages, queryPages.length)
     .filter((row) => row.impressions >= 100)
     .map((row) => {
-      const current = metrics(
-        sources.get(JSON.stringify([row.query, row.page]))!,
-      );
+      // buildStrikingDistanceRows only returns query+page pairs from queryPages.
+      const source = sources.get(JSON.stringify([row.query, row.page]));
+      if (!source) throw new Error("Striking-distance row has no source row");
+      const current = metrics(source);
       return {
         type: "striking_distance",
         url: row.page,

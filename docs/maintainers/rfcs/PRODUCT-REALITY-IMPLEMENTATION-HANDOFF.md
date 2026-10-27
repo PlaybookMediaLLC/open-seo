@@ -14,16 +14,16 @@ Implementation PRs are intentionally **smaller than full RFC completion**. In pa
 
 ## 1. Workstream boundaries
 
-| Workstream | Suggested code locations | Required existing seams |
-|---|---|---|
-| Change ingestion | `src/server/features/reality/ingestion/`, `src/server/features/reality/repositories/`, `src/serverFunctions/reality.ts` | `src/server/features/growth/`, GitHub transport from publishing, existing audit |
-| Facts and authority | `src/server/features/reality/facts/`, `src/types/schemas/realityFacts.ts` | `src/db/schema.ts`, `src/db/pg`, `src/db/runBatch.ts`, company-owned source policies |
-| Assets/claims | `src/server/features/reality/assets/`, `src/client/features/reality/` | `src/server/features/docs/docsIndex.ts`, publishing file/MDX parser |
-| Impact detector | `src/server/features/reality/impacts/` | canonical typed facts/asset refs, existing opportunities view patterns |
-| Work/verification | `src/server/features/reality/work/`, `.../verification/` | `MetadataExecutionService`, publishing approval/recovery, RFC-0028 verification |
-| User experience | `src/routes/_app/p/$projectId/changes/`, `src/client/features/reality/` | project navigation, ThisWeek, opportunity detail, billing/activity views |
-| API/MCP | `src/routes/api/v1/` only when needed, `src/server/mcp/tools/reality-tools.ts` | `withMcpProjectAuth`, input/output schemas, rate/spend guards |
-| Schema | `src/db/reality-*.schema.ts` and `src/db/pg/reality-*.schema.ts` | schema/provider exports, both migration directories, parity tests |
+| Workstream          | Suggested code locations                                                                                                | Required existing seams                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Change ingestion    | `src/server/features/reality/ingestion/`, `src/server/features/reality/repositories/`, `src/serverFunctions/reality.ts` | `src/server/features/growth/`, GitHub transport from publishing, existing audit      |
+| Facts and authority | `src/server/features/reality/facts/`, `src/types/schemas/realityFacts.ts`                                               | `src/db/schema.ts`, `src/db/pg`, `src/db/runBatch.ts`, company-owned source policies |
+| Assets/claims       | `src/server/features/reality/assets/`, `src/client/features/reality/`                                                   | `src/server/features/docs/docsIndex.ts`, publishing file/MDX parser                  |
+| Impact detector     | `src/server/features/reality/impacts/`                                                                                  | canonical typed facts/asset refs, existing opportunities view patterns               |
+| Work/verification   | `src/server/features/reality/work/`, `.../verification/`                                                                | `MetadataExecutionService`, publishing approval/recovery, RFC-0028 verification      |
+| User experience     | `src/routes/_app/p/$projectId/changes/`, `src/client/features/reality/`                                                 | project navigation, ThisWeek, opportunity detail, billing/activity views             |
+| API/MCP             | `src/routes/api/v1/` only when needed, `src/server/mcp/tools/reality-tools.ts`                                          | `withMcpProjectAuth`, input/output schemas, rate/spend guards                        |
+| Schema              | `src/db/reality-*.schema.ts` and `src/db/pg/reality-*.schema.ts`                                                        | schema/provider exports, both migration directories, parity tests                    |
 
 **Important:** these paths are proposed namespaces, not files observed in the repository. Begin implementation by inspecting current `develop` and naming conventions. Existing RFC-0019/0026–0028 work may be advancing independently; do not overwrite or reimplement those services. Avoid unnecessarily coupling a broad engine migration to the current Protect commercial pilot.
 
@@ -77,15 +77,15 @@ Do not sequence RFC-0045/0046 activation and enterprise-facing enablement connec
 
 ## 7. Required test matrix for every slice
 
-| Layer | Tests |
-|---|---|
+| Layer             | Tests                                                                                                            |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- |
 | DB and migrations | SQLite+PG real-SQL queries, schema parity, FK cascade, uniqueness, broken migration rollback, idempotent retries |
-| Authorization | user/member/editor, other org, revoked user, disconnected connector, background job and MCP authentication |
-| Evidence | out-of-order events, unknown runtime deployment, expired/contradicted fact, scope and timezone windows |
-| Work | immutable diff, changed blob SHA, source revocation, approval expiry, one external write despite retry |
-| Fetch/security | bad signature, URL SSRF, redirects, oversized payload, prompt injection, provider 429 and timeout |
-| UX | exact cited evidence, stale/degraded/unknown labels, keyboard review, changed evidence before approval |
-| Costs/ops | budget exhaustion, retries, provider settlement accounting, coverage freshness, erase pending blobs |
+| Authorization     | user/member/editor, other org, revoked user, disconnected connector, background job and MCP authentication       |
+| Evidence          | out-of-order events, unknown runtime deployment, expired/contradicted fact, scope and timezone windows           |
+| Work              | immutable diff, changed blob SHA, source revocation, approval expiry, one external write despite retry           |
+| Fetch/security    | bad signature, URL SSRF, redirects, oversized payload, prompt injection, provider 429 and timeout                |
+| UX                | exact cited evidence, stale/degraded/unknown labels, keyboard review, changed evidence before approval           |
+| Costs/ops         | budget exhaustion, retries, provider settlement accounting, coverage freshness, erase pending blobs              |
 
 No live customer writes, GitHub PRs, deployments, paid provider requests, or test-message sends are performed merely by writing these RFCs.
 

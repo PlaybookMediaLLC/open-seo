@@ -64,7 +64,8 @@ export function SearchConsoleWidget({
     snapshot: WidgetSnapshot;
     pageHistory: WidgetSnapshot[];
   }>();
-  const snapshot = host.snapshot!;
+  const snapshot = host.snapshot;
+  if (!snapshot) throw new Error("Search Console widget has no tool result.");
   const input = snapshot.context.arguments;
   const busy = host.action.isPending;
   const dimensions = data.dimensions ?? [];

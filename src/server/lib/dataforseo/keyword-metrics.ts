@@ -219,11 +219,9 @@ function mergeLocalAndNationalRows(
   adsItems: AdsKeywordItem[],
   labsItems: KeywordOverviewItem[],
 ): KeywordMetricRow[] {
-  const labsByKeyword = new Map(
-    labsItems
-      .filter((item) => item.keyword)
-      .map((item) => [item.keyword!.toLowerCase(), item]),
-  );
+  const labsByKeyword = new Map<string, KeywordOverviewItem>();
+  for (const item of labsItems)
+    if (item.keyword) labsByKeyword.set(item.keyword.toLowerCase(), item);
   const rows: KeywordMetricRow[] = [];
   const covered = new Set<string>();
 

@@ -84,7 +84,9 @@ function Widget() {
 const queryClient = new QueryClient({
   defaultOptions: { mutations: { retry: false } },
 });
-createRoot(document.getElementById("root")!).render(
+const root = document.getElementById("root");
+if (!root) throw new Error("Widget page is missing its #root element.");
+createRoot(root).render(
   <QueryClientProvider client={queryClient}>
     <Widget />
   </QueryClientProvider>,

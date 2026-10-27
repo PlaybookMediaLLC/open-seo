@@ -74,12 +74,12 @@ Asset D: a French-language pricing page whose region is not specified. Its price
 
 `PRICING_VALUE_DRIFT_V1` compares compatible scope and typed money values. After effective date:
 
-| Asset | Expected result | Reason |
-|---|---|---|
-| `/pricing` | `no_issue` | agrees with accepted scoped fact |
-| `/docs/billing/faq` | `confirmed` | overlapping audience/period and mismatched minor-unit value |
-| `/legacy/plans` | `no_issue` | explicit grandfathered cohort; V2 not applicable |
-| French pricing page | `needs_review` | scope unknown and currency/audience may differ |
+| Asset               | Expected result | Reason                                                      |
+| ------------------- | --------------- | ----------------------------------------------------------- |
+| `/pricing`          | `no_issue`      | agrees with accepted scoped fact                            |
+| `/docs/billing/faq` | `confirmed`     | overlapping audience/period and mismatched minor-unit value |
+| `/legacy/plans`     | `no_issue`      | explicit grandfathered cohort; V2 not applicable            |
+| French pricing page | `needs_review`  | scope unknown and currency/audience may differ              |
 
 Before effective date, `/docs/billing/faq` can be a `scheduled_change_candidate` but not a confirmed already-live contradiction. If a deployment runs ahead of the approved effective date, record `deployed_not_effective` separately.
 

@@ -95,7 +95,11 @@ export function DashboardDataTable<T>({
             <DataTableFilterPanel activeCount={count} onReset={clear}>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {filters.map((filter) => {
-                  const column = table.getColumn(filter.id)!;
+                  const column = table.getColumn(filter.id);
+                  if (!column)
+                    throw new Error(
+                      `No table column for filter "${filter.id}".`,
+                    );
                   const value = column.getFilterValue();
                   if (filter.kind === "number") {
                     const range = Array.isArray(value)

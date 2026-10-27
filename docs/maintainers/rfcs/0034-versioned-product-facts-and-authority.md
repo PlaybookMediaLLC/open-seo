@@ -16,13 +16,13 @@ The prior RFC-0021 proposes a simple verified business-facts registry to ground 
 
 A product fact is a typed assertion about a bounded subject, predicate, value, and applicability scope. Examples:
 
-| Subject / predicate | Typed value | Required scope and evidence |
-|---|---|---|
-| `plan:business / monthly_price` | `money(4900, USD)` | billing account, market, contract term, effective window; approved pricing source |
-| `feature:sso / available_on_plan` | `plan:business` | region, cohort, release phase, observed runtime flag and owner confirmation |
-| `integration:hubspot / status` | `available` | product edition, region, verified deployment or release record |
-| `api:v2 / deprecated_after` | timestamp | versioned OpenAPI/changelog or owner policy |
-| `capability:data_export / maximum_rows` | integer | edition and time; versioned approved spec |
+| Subject / predicate                     | Typed value        | Required scope and evidence                                                       |
+| --------------------------------------- | ------------------ | --------------------------------------------------------------------------------- |
+| `plan:business / monthly_price`         | `money(4900, USD)` | billing account, market, contract term, effective window; approved pricing source |
+| `feature:sso / available_on_plan`       | `plan:business`    | region, cohort, release phase, observed runtime flag and owner confirmation       |
+| `integration:hubspot / status`          | `available`        | product edition, region, verified deployment or release record                    |
+| `api:v2 / deprecated_after`             | timestamp          | versioned OpenAPI/changelog or owner policy                                       |
+| `capability:data_export / maximum_rows` | integer            | edition and time; versioned approved spec                                         |
 
 Do not represent inferred personal traits or a customer account's sensitive status as a global product fact. Product scope is configuration and product availability, not a backdoor customer-profile database.
 
@@ -63,14 +63,29 @@ type FactQuery = {
   subjectKey: string;
   predicateKey: string;
   at: string;
-  audience: { region?: string; locale?: string; planKey?: string;
-    cohortKey?: string; releaseChannel?: string };
+  audience: {
+    region?: string;
+    locale?: string;
+    planKey?: string;
+    cohortKey?: string;
+    releaseChannel?: string;
+  };
 };
 type FactResult =
-  | { state:'accepted'; versionId:string; typedValue:unknown; proofIds:string[]; scopeId:string }
-  | { state:'ambiguous'; candidateVersionIds:string[]; conflictIds:string[] }
-  | { state:'unverified'; candidateVersionIds:string[]; missingEvidence:string[] }
-  | { state:'unknown'; reason:string };
+  | {
+      state: "accepted";
+      versionId: string;
+      typedValue: unknown;
+      proofIds: string[];
+      scopeId: string;
+    }
+  | { state: "ambiguous"; candidateVersionIds: string[]; conflictIds: string[] }
+  | {
+      state: "unverified";
+      candidateVersionIds: string[];
+      missingEvidence: string[];
+    }
+  | { state: "unknown"; reason: string };
 ```
 
 Evaluation first filters time and scope, then excludes expired/revoked evidence, then applies policy precedence. Multiple non-overlapping plans can carry different values without conflict. Two overlapping equally authoritative versions create `ambiguous` rather than arbitrary choice. Never reduce this to an embedding similarity threshold.

@@ -9,7 +9,9 @@ export default defineConfig({
   dialect: "postgresql",
   schema: "./src/db/pg/schema.ts",
   out: "./drizzle/pg",
+  // drizzle-kit rejects an empty url only for commands that connect, so
+  // `db:generate:pg` still works without one.
   dbCredentials: {
-    url: process.env.POSTGRES_DATABASE_URL!,
+    url: process.env.POSTGRES_DATABASE_URL ?? "",
   },
 });

@@ -62,7 +62,7 @@ function pageRows(rows: DetectionInput["currentPages"]) {
   return new Map(
     rows
       .filter((row) => usableRow(row, 0))
-      .map((row) => [row.keys![0], metrics(row)]),
+      .map((row) => [row.keys[0], metrics(row)]),
   );
 }
 

@@ -84,10 +84,13 @@ export type AccessibilityCluster = {
   example: { url: string; selector: string; snippet: string };
 };
 
+/** A row `usableRow` accepted: its query and page keys are present. */
+export type UsableGscRow = GscSearchAnalyticsRow & { keys: string[] };
+
 export function usableRow(
   row: GscSearchAnalyticsRow,
   pageIndex: number,
-): boolean {
+): row is UsableGscRow {
   if (
     ![row.clicks, row.impressions, row.ctr, row.position].every(
       (value) => Number.isFinite(value) && value >= 0,

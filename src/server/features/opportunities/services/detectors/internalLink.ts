@@ -1,5 +1,4 @@
 import { sort } from "remeda";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type {
   OpportunityCandidate,
   OpportunityMetrics,
@@ -12,6 +11,7 @@ import {
   metrics,
   urlJoinKey,
   type AuditSignals,
+  type UsableGscRow,
 } from "./shared";
 
 const MIN_TARGET_QUERIES = 3;
@@ -22,12 +22,12 @@ const SOURCES_PER_TARGET = 5;
 type Source = {
   url: string;
   impressions: number;
-  best: GscSearchAnalyticsRow;
+  best: UsableGscRow;
 };
 
 /** A page that ranks for a key page's queries does not link to it yet. */
 export function internalLinks(
-  nonBrandedQueryPages: GscSearchAnalyticsRow[],
+  nonBrandedQueryPages: UsableGscRow[],
   keyPages: Array<{ url: string; role: string }>,
   audit: AuditSignals,
   pageMetrics: Map<string, OpportunityMetrics>,
@@ -38,9 +38,9 @@ export function internalLinks(
       .filter((page) => page.statusCode === 200 && page.isIndexable)
       .map((page) => urlJoinKey(page.url)),
   );
-  const rowsByPage = new Map<string, GscSearchAnalyticsRow[]>();
+  const rowsByPage = new Map<string, UsableGscRow[]>();
   for (const row of nonBrandedQueryPages) {
-    const key = urlJoinKey(row.keys![1]);
+    const key = urlJoinKey(row.keys[1]);
     if (!key || row.impressions <= 0) continue;
     const rows = rowsByPage.get(key) ?? [];
     rows.push(row);
@@ -58,18 +58,18 @@ export function internalLinks(
       sort(
         targetRows,
         (a, b) =>
-          b.impressions - a.impressions || compareText(a.keys![0], b.keys![0]),
+          b.impressions - a.impressions || compareText(a.keys[0], b.keys[0]),
       )
         .slice(0, TARGET_QUERIES)
-        .map((row) => [row.keys![0], row]),
+        .map((row) => [row.keys[0], row]),
     );
     const sources = new Map<string, Source>();
     for (const row of nonBrandedQueryPages) {
-      const sourceKey = urlJoinKey(row.keys![1]);
+      const sourceKey = urlJoinKey(row.keys[1]);
       if (
         !sourceKey ||
         sourceKey === targetKey ||
-        !topQueries.has(row.keys![0]) ||
+        !topQueries.has(row.keys[0]) ||
         row.position > MAX_SOURCE_POSITION ||
         !live.has(sourceKey) ||
         linked?.has(sourceKey)
@@ -78,7 +78,7 @@ export function internalLinks(
       const source = sources.get(sourceKey);
       if (!source)
         sources.set(sourceKey, {
-          url: row.keys![1],
+          url: row.keys[1],
           impressions: row.impressions,
           best: row,
         });
@@ -92,8 +92,11 @@ export function internalLinks(
       (a, b) => b.impressions - a.impressions || compareText(a.url, b.url),
     ).slice(0, SOURCES_PER_TARGET);
     for (const source of ranked) {
-      const sharedQuery = source.best.keys![0];
-      const targetPosition = topQueries.get(sharedQuery)!.position;
+      const sharedQuery = source.best.keys[0];
+      const target = topQueries.get(sharedQuery);
+      if (!target) continue;
+      const targetPosition = target.position;
+      const keyPageMetrics = pageMetrics.get(keyPage.url);
       candidates.push({
         type: "internal_link",
         url: keyPage.url,
@@ -115,13 +118,13 @@ export function internalLinks(
             "The link graph is from the latest audit. A link added since then is not seen. Anchor text and link placement are not checked.",
         }),
         evidence: [
-          ...(pageMetrics.has(keyPage.url)
+          ...(keyPageMetrics
             ? [
                 {
                   period: "current" as const,
                   url: "",
                   query: "",
-                  metrics: pageMetrics.get(keyPage.url)!,
+                  metrics: keyPageMetrics,
                 },
               ]
             : []),

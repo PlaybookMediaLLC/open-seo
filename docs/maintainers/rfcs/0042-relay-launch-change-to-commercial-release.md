@@ -40,16 +40,16 @@ Every launch requirement has independent status and timestamp. Marketing readine
 
 ## 4. Artifacts and channels
 
-| Output | Initial mechanism | Release constraint |
-|---|---|---|
-| Release page / launch landing page | existing page check and reviewed GitHub PR | new-page generation remains gated by RFC-0021 |
-| Changelog / docs update | reuse RFC-0017 safe MDX edits | source-backed factual claims only |
-| SEO metadata / internal link | existing bounded publisher and audit checks | customer preview and original rule verification |
-| Screenshots / graphics | proposed connector to Shots or approved uploaded assets | user selects source capture; no invented UI |
-| Sales brief / customer success FAQ | reviewable document draft using accepted facts | requires owner acceptance; delivery integration later |
-| Email/social announcement | draft only in v1 | separate legal/consent and explicit send approval later |
-| CRM customer interest routing | read-only consented signals, later | do not expose customer lists to the content model |
-| Adoption/activation measurement | configured GA4/product-analytics events | absence of events is unknown, not failed launch |
+| Output                             | Initial mechanism                                       | Release constraint                                      |
+| ---------------------------------- | ------------------------------------------------------- | ------------------------------------------------------- |
+| Release page / launch landing page | existing page check and reviewed GitHub PR              | new-page generation remains gated by RFC-0021           |
+| Changelog / docs update            | reuse RFC-0017 safe MDX edits                           | source-backed factual claims only                       |
+| SEO metadata / internal link       | existing bounded publisher and audit checks             | customer preview and original rule verification         |
+| Screenshots / graphics             | proposed connector to Shots or approved uploaded assets | user selects source capture; no invented UI             |
+| Sales brief / customer success FAQ | reviewable document draft using accepted facts          | requires owner acceptance; delivery integration later   |
+| Email/social announcement          | draft only in v1                                        | separate legal/consent and explicit send approval later |
+| CRM customer interest routing      | read-only consented signals, later                      | do not expose customer lists to the content model       |
+| Adoption/activation measurement    | configured GA4/product-analytics events                 | absence of events is unknown, not failed launch         |
 
 Relay Launch is the coordinator, not a clone of Shots, HubSpot, scheduling apps or a support platform. Each channel adapter defines its own permission and verification contract.
 

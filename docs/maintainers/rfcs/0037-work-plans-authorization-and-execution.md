@@ -39,13 +39,13 @@ Never skip an authorization transition because a plan was accepted. Publishing p
 
 **Action risk classes:**
 
-| Class | Examples | Initial control |
-|---|---|---|
-| `read` | compare page, fetch metadata, list docs | project membership and connector permission |
-| `internal_draft` | save draft and proposed text | authenticated editor; no external side effect |
-| `repo_proposal` | create branch and PR | exact-payload human approval, source CAS, existing repository protections |
-| `external_write` | update help center, CRM asset or status | feature-gated, explicit per-connector scope, new security review; **off by default** |
-| `customer_message` | release email / support reply | direct human final approval and provider-compliant recipients; **not in v1** |
+| Class              | Examples                                     | Initial control                                                                            |
+| ------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `read`             | compare page, fetch metadata, list docs      | project membership and connector permission                                                |
+| `internal_draft`   | save draft and proposed text                 | authenticated editor; no external side effect                                              |
+| `repo_proposal`    | create branch and PR                         | exact-payload human approval, source CAS, existing repository protections                  |
+| `external_write`   | update help center, CRM asset or status      | feature-gated, explicit per-connector scope, new security review; **off by default**       |
+| `customer_message` | release email / support reply                | direct human final approval and provider-compliant recipients; **not in v1**               |
 | `financial_change` | plan, invoice, price or entitlement mutation | **never supported by generic Relay automation**; separate future product/security contract |
 
 Model role and action permission using the existing organization permission service; do not invent a new full RBAC product. Check both actor's current membership and destination connection scopes immediately before execution.

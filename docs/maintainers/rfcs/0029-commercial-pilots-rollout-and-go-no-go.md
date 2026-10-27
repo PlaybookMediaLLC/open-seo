@@ -15,11 +15,11 @@ Protect remains the narrow first offer. Sync's versioned facts and content integ
 
 ## 2. Target buyers and discovery frame
 
-| Offer | First buyer / daily users | Trigger worth investigating | Alternatives and switching constraints |
-|---|---|---|---|
-| Protect | technical founder, growth/engineering lead | broken high-value page, signup path or instrumentation after release | uptime/CI tools, developer ownership, website access permissions |
-| Sync | product ops, product marketing, support content owner | plan/feature/integration changes create public contradictions | existing docs owner, manual reviews, CMS/KB workflow, legal approval |
-| Launch | product-marketing lead or founder, product + GTM operators | release announced late or materials contradict rollout | existing release checklist, Notion/Jira, PR process, marketing automation |
+| Offer   | First buyer / daily users                                  | Trigger worth investigating                                          | Alternatives and switching constraints                                    |
+| ------- | ---------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Protect | technical founder, growth/engineering lead                 | broken high-value page, signup path or instrumentation after release | uptime/CI tools, developer ownership, website access permissions          |
+| Sync    | product ops, product marketing, support content owner      | plan/feature/integration changes create public contradictions        | existing docs owner, manual reviews, CMS/KB workflow, legal approval      |
+| Launch  | product-marketing lead or founder, product + GTM operators | release announced late or materials contradict rollout               | existing release checklist, Notion/Jira, PR process, marketing automation |
 
 Ask customers to reconstruct their **last five meaningful product changes**, including what actually shipped, where messages/docs/pricing needed edits, who owned the work, what they missed, how discovered, what it cost, and which current tool or service got paid. Request artifacts when permitted (sanitized PRs, tickets, approval threads, broken pages); avoid hypothetical “would you use AI?” interviews.
 
@@ -36,12 +36,12 @@ Track them separately. Do not count signed-up research users as Protect subscrib
 
 The clock starts when the program is deliberately launched. Targets are **proposed gates**, not accomplished outcomes or committed delivery dates.
 
-| Window | Work | Decision evidence |
-|---|---|---|
-| Days 1–14 | 15–20 qualified Protect buyer/operator interviews; rebuild five real changes each; seek 3 restricted paid pilots | Actual agreement/payment, protected scope, reviewer, permitted source access; log refusals |
-| Days 15–30 | Protect 5–20 chosen pages per site, show healthy/stale coverage and reproducible incidents. Assisted work allowed when disclosed | At least 3 usable pilot scopes; no unsupported monitoring promises; reported alert precision |
-| Days 31–60 | Human-approved safe repair through exact PR → customer merge → production verification | 2 independently verified repairs across distinct companies targeted; measure time, cost, reviewer effort |
-| Days 61–90 | Repeat paid cycles; audit gross margin, access friction, false alerts, renewal | Approx. 8–10 paying sites targeted; actual renewals where due, expressed intent labeled separately |
+| Window     | Work                                                                                                                             | Decision evidence                                                                                        |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Days 1–14  | 15–20 qualified Protect buyer/operator interviews; rebuild five real changes each; seek 3 restricted paid pilots                 | Actual agreement/payment, protected scope, reviewer, permitted source access; log refusals               |
+| Days 15–30 | Protect 5–20 chosen pages per site, show healthy/stale coverage and reproducible incidents. Assisted work allowed when disclosed | At least 3 usable pilot scopes; no unsupported monitoring promises; reported alert precision             |
+| Days 31–60 | Human-approved safe repair through exact PR → customer merge → production verification                                           | 2 independently verified repairs across distinct companies targeted; measure time, cost, reviewer effort |
+| Days 61–90 | Repeat paid cycles; audit gross margin, access friction, false alerts, renewal                                                   | Approx. 8–10 paying sites targeted; actual renewals where due, expressed intent labeled separately       |
 
 In parallel, run **read-only Sync discovery** with these same companies: collect pricing/feature/integration change evidence and map up to 20 public assets, but do not spend substantial infrastructure time before identifying buyers and paid willingness.
 
@@ -61,16 +61,16 @@ Pilot with a **manually initiated release** and a verified public product fact, 
 
 ## 7. Product/engineering priority ledger
 
-| Priority | Build/test | Why now / when |
-|---|---|---|
-| **P0** | Finish existing RFC-0019/0025/0026/0027/0028 Protect path | first safe completed outcome and initial commercial proof |
-| **P0** | New RFC-0030 common evidence contract, minimal RFC-0033 manual/GitHub event and RFC-0037/0038 bridges | avoid inventing duplicate evidence/authority semantics |
-| **P1** | RFC-0034 manually reviewed scoped facts + RFC-0035 restricted claim extraction + RFC-0036 exact impact rules | first measurable Sync pilot without broad integrations |
-| **P1** | RFC-0040 first reviewed correction and Verify-on-production | usable Sync outcome that can be paid for |
-| **P2** | RFC-0042 manual launch packet and required artifact checklist | default next paid product after Sync; repeat release work, not content volume |
-| **P2 (demand-gated)** | RFC-0043 safe conversion journeys; RFC-0044 reporting consistency, customer requested | expands paid Protect with measurable failures only when buyer demand warrants it |
-| **P3** | Support/activation/enablement, third-party writes, semantic candidate expansion | only after customer demand and access policies |
-| **Deferred** | automated merges, sends, billing writes, unbounded website builds, full CMS, portfolio management | too much operational/security and switching cost before validated need |
+| Priority              | Build/test                                                                                                   | Why now / when                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| **P0**                | Finish existing RFC-0019/0025/0026/0027/0028 Protect path                                                    | first safe completed outcome and initial commercial proof                        |
+| **P0**                | New RFC-0030 common evidence contract, minimal RFC-0033 manual/GitHub event and RFC-0037/0038 bridges        | avoid inventing duplicate evidence/authority semantics                           |
+| **P1**                | RFC-0034 manually reviewed scoped facts + RFC-0035 restricted claim extraction + RFC-0036 exact impact rules | first measurable Sync pilot without broad integrations                           |
+| **P1**                | RFC-0040 first reviewed correction and Verify-on-production                                                  | usable Sync outcome that can be paid for                                         |
+| **P2**                | RFC-0042 manual launch packet and required artifact checklist                                                | default next paid product after Sync; repeat release work, not content volume    |
+| **P2 (demand-gated)** | RFC-0043 safe conversion journeys; RFC-0044 reporting consistency, customer requested                        | expands paid Protect with measurable failures only when buyer demand warrants it |
+| **P3**                | Support/activation/enablement, third-party writes, semantic candidate expansion                              | only after customer demand and access policies                                   |
+| **Deferred**          | automated merges, sends, billing writes, unbounded website builds, full CMS, portfolio management            | too much operational/security and switching cost before validated need           |
 
 RFC-0031/0032 security, scope and usage rules apply **before** each new integration; these are not separate months of speculative infrastructure construction. RFC-0039 workbench and RFC-0041 API may ship in narrow increments aligned to active pilot needs.
 

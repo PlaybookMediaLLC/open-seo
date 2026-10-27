@@ -12,16 +12,16 @@ Relay should be API-first, but a generic agent with all connector credentials wo
 
 ## 2. REST API version 1 (proposed)
 
-| Method/path | Capability | Required permission |
-|---|---|---|
-| `GET /api/v1/projects/:id/reality/changes` | list typed changes, filter by state and cursor | project read |
-| `GET /api/v1/projects/:id/reality/changes/:changeId` | source/evidence and timeline | project read |
-| `GET /api/v1/projects/:id/reality/facts` | list accepted/disputed facts with scope | authorized fact read |
-| `GET /api/v1/projects/:id/reality/assets` | asset metadata and covered claims | authorized asset read |
-| `GET /api/v1/projects/:id/reality/impacts` | confirmed/candidate issues | project read |
-| `GET /api/v1/projects/:id/reality/work` | work status, approval links, verification receipts | project read |
-| `POST /api/v1/projects/:id/reality/change-assessments` | trigger bounded read-only evaluation | authorized operator + spend admission |
-| `POST /api/v1/projects/:id/reality/drafts` | prepare internal, non-publishing draft | authorized editor + spend admission |
+| Method/path                                            | Capability                                         | Required permission                   |
+| ------------------------------------------------------ | -------------------------------------------------- | ------------------------------------- |
+| `GET /api/v1/projects/:id/reality/changes`             | list typed changes, filter by state and cursor     | project read                          |
+| `GET /api/v1/projects/:id/reality/changes/:changeId`   | source/evidence and timeline                       | project read                          |
+| `GET /api/v1/projects/:id/reality/facts`               | list accepted/disputed facts with scope            | authorized fact read                  |
+| `GET /api/v1/projects/:id/reality/assets`              | asset metadata and covered claims                  | authorized asset read                 |
+| `GET /api/v1/projects/:id/reality/impacts`             | confirmed/candidate issues                         | project read                          |
+| `GET /api/v1/projects/:id/reality/work`                | work status, approval links, verification receipts | project read                          |
+| `POST /api/v1/projects/:id/reality/change-assessments` | trigger bounded read-only evaluation               | authorized operator + spend admission |
+| `POST /api/v1/projects/:id/reality/drafts`             | prepare internal, non-publishing draft             | authorized editor + spend admission   |
 
 No general API endpoint to approve arbitrary actions, send customer messages, merge PRs or mutate billing/feature flags in v1. In particular, `POST /drafts` returns a reviewable candidate and never executes external side effects.
 

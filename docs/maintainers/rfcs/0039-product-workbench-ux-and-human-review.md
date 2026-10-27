@@ -49,17 +49,17 @@ On every tab, show what is **not covered** and why, including unsupported dynami
 
 ## 5. Empty, partial, and failure states
 
-| State | User-facing result |
-|---|---|
-| No source connected | “Connect GitHub or enter a verified change to begin,” with exact scopes requested |
-| Connected, no accepted facts | Evidence intake active; cannot yet verify public claims |
+| State                               | User-facing result                                                                |
+| ----------------------------------- | --------------------------------------------------------------------------------- |
+| No source connected                 | “Connect GitHub or enter a verified change to begin,” with exact scopes requested |
+| Connected, no accepted facts        | Evidence intake active; cannot yet verify public claims                           |
 | No actionable issues, healthy scans | “No confirmed issues in the monitored scope,” with last successful check/coverage |
-| Data source stale | “Last checked X; protection is degraded,” reconnect/retry action |
-| Candidate impact without scope | “Needs an owner to confirm plan/region,” not “outdated content” |
-| PR merged, prod unverified | “Merged; awaiting production verification,” with check details |
-| Verification inconclusive | Show provider/state reason and next scheduled attempt |
-| Spend budget exhausted | No paid checks, honest paused coverage, visible remediation |
-| Customer fixed it | Mark external resolution with evidence, not Relay-attributed repair |
+| Data source stale                   | “Last checked X; protection is degraded,” reconnect/retry action                  |
+| Candidate impact without scope      | “Needs an owner to confirm plan/region,” not “outdated content”                   |
+| PR merged, prod unverified          | “Merged; awaiting production verification,” with check details                    |
+| Verification inconclusive           | Show provider/state reason and next scheduled attempt                             |
+| Spend budget exhausted              | No paid checks, honest paused coverage, visible remediation                       |
+| Customer fixed it                   | Mark external resolution with evidence, not Relay-attributed repair               |
 
 ## 6. API and state model
 

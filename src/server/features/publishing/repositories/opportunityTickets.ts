@@ -29,6 +29,7 @@ export async function claimTicket(
         selectedValues(
           opportunityTickets,
           ticket,
+          // oxlint-disable-next-line typescript/no-non-null-assertion -- and() is undefined only when every condition is, and claimExists() always returns SQL
           and(
             claimExists(tx, input),
             activeConnection(tx, ticket.projectId, ticket.connectionId),

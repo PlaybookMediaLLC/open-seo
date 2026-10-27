@@ -1,11 +1,16 @@
 import { sort } from "remeda";
-import type { GscSearchAnalyticsRow } from "@/server/lib/gscClient";
 import type {
   OpportunityCandidate,
   OpportunityMetrics,
 } from "@/types/schemas/opportunities";
 import { scoreCandidate, type ScoringContext } from "./scoreCandidate";
-import { bounded, compareText, metrics, totals } from "./shared";
+import {
+  bounded,
+  compareText,
+  metrics,
+  totals,
+  type UsableGscRow,
+} from "./shared";
 
 const MIN_IMPRESSIONS = 50;
 const MAX_POSITION = 20;
@@ -22,20 +27,20 @@ function variantKey(url: string): string {
 
 type SharedQuery = {
   query: string;
-  rows: [GscSearchAnalyticsRow, GscSearchAnalyticsRow];
+  rows: [UsableGscRow, UsableGscRow];
 };
 
 /** Two pages each take 25%+ of the impressions for the same queries. */
 export function cannibalization(
-  nonBrandedQueryPages: GscSearchAnalyticsRow[],
+  nonBrandedQueryPages: UsableGscRow[],
   pageMetrics: Map<string, OpportunityMetrics>,
   context: ScoringContext,
 ): OpportunityCandidate[] {
-  const byQuery = new Map<string, GscSearchAnalyticsRow[]>();
+  const byQuery = new Map<string, UsableGscRow[]>();
   for (const row of nonBrandedQueryPages) {
-    const rows = byQuery.get(row.keys![0]) ?? [];
+    const rows = byQuery.get(row.keys[0]) ?? [];
     rows.push(row);
-    byQuery.set(row.keys![0], rows);
+    byQuery.set(row.keys[0], rows);
   }
   const pairs = new Map<string, SharedQuery[]>();
   for (const [query, rows] of byQuery) {
@@ -46,15 +51,15 @@ export function cannibalization(
           row.impressions >= MIN_IMPRESSIONS && row.position <= MAX_POSITION,
       ),
       (x, y) =>
-        y.impressions - x.impressions || compareText(x.keys![1], y.keys![1]),
+        y.impressions - x.impressions || compareText(x.keys[1], y.keys[1]),
     );
     if (!a || !b) continue;
     if (a.impressions < MIN_SHARE * total || b.impressions < MIN_SHARE * total)
       continue;
     // A URL variant is a canonical problem for phase 2, not cannibalization.
-    if (variantKey(a.keys![1]) === variantKey(b.keys![1])) continue;
-    const pair = sort([a, b], (x, y) => compareText(x.keys![1], y.keys![1]));
-    const key = JSON.stringify(pair.map((row) => row.keys![1]));
+    if (variantKey(a.keys[1]) === variantKey(b.keys[1])) continue;
+    const pair = sort([a, b], (x, y) => compareText(x.keys[1], y.keys[1]));
+    const key = JSON.stringify(pair.map((row) => row.keys[1]));
     const entries = pairs.get(key) ?? [];
     entries.push({ query, rows: [pair[0], pair[1]] });
     pairs.set(key, entries);
@@ -71,7 +76,7 @@ export function cannibalization(
       sharedImpressions < MIN_SHARED_IMPRESSIONS
     )
       continue;
-    const urls = shared[0].rows.map((row) => row.keys![1]);
+    const urls = shared[0].rows.map((row) => row.keys[1]);
     const firstIsPrimary =
       first.clicks !== second.clicks
         ? first.clicks > second.clicks
@@ -123,7 +128,7 @@ export function cannibalization(
         ...evidenceQueries.flatMap((entry) =>
           entry.rows.map((row) => ({
             period: "current" as const,
-            url: row.keys![1],
+            url: row.keys[1],
             query: entry.query,
             metrics: metrics(row),
           })),

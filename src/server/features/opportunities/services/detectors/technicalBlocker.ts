@@ -98,7 +98,7 @@ export function isIndexingIssue(issueType: string): boolean {
 function pageRows(rows: DetectionInput["currentPages"]) {
   const result = new Map<string, OpportunityMetrics>();
   for (const row of rows) {
-    const key = usableRow(row, 0) ? urlJoinKey(row.keys![0]) : null;
+    const key = usableRow(row, 0) ? urlJoinKey(row.keys[0]) : null;
     if (key) result.set(key, metrics(row));
   }
   return result;
@@ -136,7 +136,7 @@ export function technicalBlockers(
       url: issue.pageUrl,
       query: null,
       title: `Fix a technical issue: ${issue.issueType}`,
-      explanation: `The site audit of ${audit.completedAt.slice(0, 10)} found "${issue.issueType}" on this page. The page had ${impressions} impressions in the larger of the two periods${keyPage ? " and is a key page" : ""}.${confirmed ? ` URL inspection confirms it: Google reports "${inspection!.coverageState ?? inspection!.verdict}".` : ""}`,
+      explanation: `The site audit of ${audit.completedAt.slice(0, 10)} found "${issue.issueType}" on this page. The page had ${impressions} impressions in the larger of the two periods${keyPage ? " and is a key page" : ""}.${confirmed && inspection ? ` URL inspection confirms it: Google reports "${inspection.coverageState ?? inspection.verdict}".` : ""}`,
       recommendedAction: rule.action,
       searchIntent: "Not applicable; a technical issue",
       diagnosis: null,

@@ -62,6 +62,7 @@ export function AnswerContent({
 function AnswerEvidence({ answer }: { answer: AiAnswer }) {
   const [view, setView] = useState("answer");
   const citations = answer.sources;
+  const { answerText } = answer;
   const answered = answer.observation.answerStatus === "answered";
   return (
     <div>
@@ -214,7 +215,7 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
                         <AiMatchBadge value={brand.cited} positive="Cited" />
                       </div>
                     )}
-                    {spans.length > 0 && answer.answerText && (
+                    {spans.length > 0 && answerText && (
                       <Accordion>
                         <AccordionItem value="mentions">
                           <AccordionTrigger className="py-1 text-xs">
@@ -227,21 +228,14 @@ function AnswerEvidence({ answer }: { answer: AiAnswer }) {
                             {spans.map((span, index) => (
                               <p key={`${span.start}-${span.end}-${index}`}>
                                 “
-                                {answer.answerText!.slice(
+                                {answerText.slice(
                                   Math.max(0, span.start - 70),
                                   span.start,
                                 )}
                                 <mark className="bg-primary/15 text-foreground">
-                                  {answer.answerText!.slice(
-                                    span.start,
-                                    span.end,
-                                  )}
+                                  {answerText.slice(span.start, span.end)}
                                 </mark>
-                                {answer.answerText!.slice(
-                                  span.end,
-                                  span.end + 70,
-                                )}
-                                ”
+                                {answerText.slice(span.end, span.end + 70)}”
                               </p>
                             ))}
                           </AccordionContent>

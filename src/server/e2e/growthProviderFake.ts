@@ -79,7 +79,7 @@ async function storeTree(
     { mode: string; type: string; sha: string }
   >();
   const directories = new Set<string>();
-  for (const path of files.keys()) {
+  for (const [path, sha] of files) {
     if (!path.startsWith(prefix)) continue;
     const rest = path.slice(prefix.length);
     const [name, ...deeper] = rest.split("/");
@@ -88,7 +88,7 @@ async function storeTree(
       entries.set(name, {
         mode: "100644",
         type: "blob",
-        sha: files.get(path)!,
+        sha,
       });
   }
   for (const name of directories)
@@ -196,7 +196,8 @@ async function github(url: URL, method: string, bodyText: string) {
   }
   if ((match = route.match(/^\/contents\/(.+)$/)) && method === "PUT") {
     const path = match[1].split("/").map(decodeURIComponent).join("/");
-    const head = commits.get(refs.get(body.branch) ?? "")!;
+    const head = commits.get(refs.get(body.branch) ?? "");
+    if (!head) throw new Error(`E2E fake has no branch ${body.branch}`);
     if (head.files.get(path) !== body.sha)
       return json({ message: "sha does not match" }, 409);
     const source = fromBase64(body.content);
@@ -214,8 +215,10 @@ async function github(url: URL, method: string, bodyText: string) {
     (match = route.match(/^\/compare\/([0-9a-f]{40})\.\.\.([0-9a-f]{40})$/))
   ) {
     const [, baseSha, headSha] = match;
-    const base = commits.get(baseSha)!;
-    const head = commits.get(headSha)!;
+    const base = commits.get(baseSha);
+    const head = commits.get(headSha);
+    if (!base || !head)
+      throw new Error(`E2E fake has no commits ${baseSha}...${headSha}`);
     const files = [...head.files]
       .filter(([path, sha]) => base.files.get(path) !== sha)
       .map(([filename, sha]) => ({ filename, status: "modified", sha }));
@@ -231,12 +234,16 @@ async function github(url: URL, method: string, bodyText: string) {
     });
   }
   if (route === "/pulls" && method === "POST") {
+    const headSha = refs.get(body.head);
+    const baseSha = refs.get(body.base);
+    if (!headSha || !baseSha)
+      throw new Error(`E2E fake has no branch ${body.head} or ${body.base}`);
     const pull: Pull = {
       number: pulls.length + 1,
       head: body.head,
       base: body.base,
-      headSha: refs.get(body.head)!,
-      baseSha: refs.get(body.base)!,
+      headSha,
+      baseSha,
       body: body.body ?? "",
     };
     pulls.push(pull);
@@ -254,7 +261,8 @@ async function github(url: URL, method: string, bodyText: string) {
     );
   }
   if ((match = route.match(/^\/pulls\/(\d+)$/))) {
-    const pull = pulls.find((item) => item.number === Number(match![1]));
+    const number = Number(match[1]);
+    const pull = pulls.find((item) => item.number === number);
     return pull ? json(pullJson(pull)) : json({ message: "Not Found" }, 404);
   }
   if (/^\/commits\/[0-9a-f]{40}\/check-runs$/.test(route))
@@ -315,7 +323,7 @@ export async function installGrowthProviderFake() {
     new SignJWT({ email: "e2e@example.com" })
       .setProtectedHeader({ alg: "RS256", kid: "e2e" })
       .setIssuer("https://accounts.google.com")
-      .setAudience(process.env.GOOGLE_CLIENT_ID!)
+      .setAudience(process.env.GOOGLE_CLIENT_ID ?? CLIENT_ID)
       .setSubject("e2e-google-account")
       .setIssuedAt()
       .setExpirationTime("1h")
