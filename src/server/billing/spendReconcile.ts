@@ -1,9 +1,10 @@
-import { and, eq, lt, or } from "drizzle-orm";
+import { and, eq, lt, ne, or } from "drizzle-orm";
 import { db } from "@/db";
 import { spendLedger } from "@/db/schema";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import type { CreditFeature } from "@/shared/billing-credit-features";
 import { AUTUMN_SEO_DATA_BALANCE_FEATURE_ID } from "@/shared/billing";
+import { RENDERING_HOLD_TTL_MS } from "./spendLedger";
 import {
   finalizeHold,
   getUsageCreditsRemaining,
@@ -30,6 +31,10 @@ const creditFeatureOf = (feature: string | null): CreditFeature =>
   DATAFORSEO_FEATURES.find((known) => known === feature) ?? "agent";
 
 type Row = typeof spendLedger.$inferSelect;
+// A rendering lock lives for the whole audit, so its row is neither released
+// nor tracked while the lock can still be finalized.
+const holdMsOf = (provider: Row["provider"]) =>
+  provider === "rendering" ? RENDERING_HOLD_TTL_MS : HOLD_MS;
 
 /**
  * Charges one failed settlement: the hold while it is valid, else a direct
@@ -40,7 +45,7 @@ async function charge(row: Row, now: Date) {
   const credits = row.actualCredits ?? 0;
   const holdValid =
     row.holdLockId !== null &&
-    now.getTime() - new Date(row.createdAt).getTime() < HOLD_MS;
+    now.getTime() - new Date(row.createdAt).getTime() < holdMsOf(row.provider);
   if (holdValid && row.holdLockId) {
     const { landed, error } = await finalizeHold(
       {
@@ -79,7 +84,8 @@ async function charge(row: Row, now: Date) {
 export async function reconcileSpend(now = new Date()) {
   const counts = { settled: 0, released: 0, failed: 0 };
   if (!(await isHostedServerAuthMode())) return counts;
-  const stale = new Date(now.getTime() - HOLD_MS - GRACE_MS).toISOString();
+  const staleSince = (holdMs: number) =>
+    new Date(now.getTime() - holdMs - GRACE_MS).toISOString();
   const rows = await db
     .select()
     .from(spendLedger)
@@ -92,7 +98,13 @@ export async function reconcileSpend(now = new Date()) {
         ),
         and(
           eq(spendLedger.status, "admitted"),
-          lt(spendLedger.createdAt, stale),
+          or(
+            and(
+              ne(spendLedger.provider, "rendering"),
+              lt(spendLedger.createdAt, staleSince(HOLD_MS)),
+            ),
+            lt(spendLedger.createdAt, staleSince(RENDERING_HOLD_TTL_MS)),
+          ),
         ),
       ),
     )

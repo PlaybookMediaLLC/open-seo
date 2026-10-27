@@ -13,7 +13,7 @@
 import { execFileSync } from "node:child_process";
 import process from "node:process";
 import { Autumn } from "autumn-js";
-import { symmetricDecrypt } from "better-auth/crypto";
+import { openToken } from "../src/server/features/publishing/tokenKeys";
 import { GA4_OAUTH_PROVIDER_ID } from "../src/shared/ga4";
 import {
   GDPR_STORAGE_ERASURE_PATH,
@@ -211,17 +211,28 @@ async function deleteAutumnCustomers(organizationIds: string[]) {
 
 // Deleting the row leaves a personal token valid at GitHub, so submit it to
 // GitHub's credential revocation API first. App connections store no token.
+// Revoking is best effort: a token no configured key opens is skipped with a
+// warning, and never stops the erasure.
 async function revokeGithubTokens(projectIds: string[]) {
   if (!projectIds.length) return 0;
-  const key = requiredEnv("BETTER_AUTH_SECRET");
   const rows = query(
-    `SELECT encrypted_token FROM publishing_connections WHERE project_id IN (${list(projectIds)}) AND encrypted_token IS NOT NULL`,
+    `SELECT encrypted_token, token_key_version FROM publishing_connections WHERE project_id IN (${list(projectIds)}) AND encrypted_token IS NOT NULL`,
   );
-  const credentials = await Promise.all(
-    rows.map((row) =>
-      symmetricDecrypt({ key, data: String(row.encrypted_token) }),
-    ),
-  );
+  const credentials: string[] = [];
+  for (const row of rows) {
+    const tokenKeyVersion = Number(row.token_key_version);
+    try {
+      const { token } = await openToken({
+        encryptedToken: String(row.encrypted_token),
+        tokenKeyVersion,
+      });
+      credentials.push(token);
+    } catch {
+      console.warn(
+        `Could not decrypt a GitHub token (key version ${tokenKeyVersion}). Set the PUBLISHING_TOKEN_KEY values from production, or ask the user to revoke it at GitHub.`,
+      );
+    }
+  }
   if (!credentials.length) return 0;
   const response = await fetch("https://api.github.com/credentials/revoke", {
     method: "POST",
@@ -320,7 +331,16 @@ async function main() {
       "Worker storage erased:",
       JSON.stringify(await eraseWorkerStorage(payload)),
     );
-    console.log("GitHub tokens revoked:", await revokeGithubTokens(projectIds));
+    const revoked = await revokeGithubTokens(projectIds).catch(
+      (error: unknown) => {
+        console.warn(
+          "GitHub token revocation failed; erasing anyway:",
+          error instanceof Error ? error.message : error,
+        );
+        return 0;
+      },
+    );
+    console.log("GitHub tokens revoked:", revoked);
   }
   eraseDatabase(userId, email, payload.organizationIds);
   console.log(

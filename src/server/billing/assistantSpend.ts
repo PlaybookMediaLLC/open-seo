@@ -13,7 +13,7 @@ type SamCustomer = {
   project: { id: string; organizationId: string };
 };
 
-/** A refusal message when a limit is reached; otherwise the reservation. */
+/** A refusal message at a limit or the rate cap; otherwise the reservation. */
 export async function admitTurn(ctx: SamCustomer) {
   try {
     const id = await admitSpend({
@@ -31,6 +31,12 @@ export async function admitTurn(ctx: SamCustomer) {
   } catch (error) {
     if (error instanceof AppError && error.code === "SPEND_LIMIT_REACHED")
       return { id: null, refusal: error.message };
+    if (error instanceof AppError && error.code === "RATE_LIMITED")
+      return {
+        id: null,
+        refusal:
+          "You're sending messages too quickly. Wait a minute, then try again.",
+      };
     // The Autumn balance check already passed; a ledger outage must not
     // lock members out of chat.
     console.error("[spend] assistant admission failed", {

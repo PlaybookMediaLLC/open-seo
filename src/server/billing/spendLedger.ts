@@ -7,6 +7,13 @@ import { creditsForProviderUsd } from "@/shared/billing";
 
 type Hold = { lockId: string; estimatedCredits: number };
 
+/**
+ * A rendering lock covers a whole audit, so it lives far longer than a
+ * DataForSEO hold. Autumn allows 24 hours at most; a minute of margin covers
+ * clock skew. Reconciliation leaves `rendering` rows alone until then.
+ */
+export const RENDERING_HOLD_TTL_MS = 24 * 60 * 60_000 - 60_000;
+
 // Loaded on first use: upstream's subscription.ts imports this module, and
 // the database modules read the Worker environment when they load.
 async function ledgerDb() {
@@ -86,6 +93,8 @@ export async function recordSettlement(
   lockId: string,
   input: {
     costs: Array<{ costUsd: number }>;
+    /** The credits charged, when the hold split one cost with another. */
+    credits?: number;
     landed: boolean;
     error?: unknown;
     creditFeature?: string;
@@ -94,10 +103,12 @@ export async function recordSettlement(
   try {
     const { db, spendLedger } = await ledgerDb();
     const costUsd = input.costs.reduce((sum, cost) => sum + cost.costUsd, 0);
-    const actualCredits = input.costs.reduce(
-      (sum, cost) => sum + creditsForProviderUsd(cost.costUsd),
-      0,
-    );
+    const actualCredits =
+      input.credits ??
+      input.costs.reduce(
+        (sum, cost) => sum + creditsForProviderUsd(cost.costUsd),
+        0,
+      );
     const status = !input.landed
       ? "settle_failed"
       : actualCredits > 0

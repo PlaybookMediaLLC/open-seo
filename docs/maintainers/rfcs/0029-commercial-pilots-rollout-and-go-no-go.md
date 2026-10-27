@@ -41,7 +41,7 @@ The clock starts when the program is deliberately launched. Targets are **propos
 | Days 1–14  | 15–20 qualified Protect buyer/operator interviews; rebuild five real changes each; seek 3 restricted paid pilots                 | Actual agreement/payment, protected scope, reviewer, permitted source access; log refusals               |
 | Days 15–30 | Protect 5–20 chosen pages per site, show healthy/stale coverage and reproducible incidents. Assisted work allowed when disclosed | At least 3 usable pilot scopes; no unsupported monitoring promises; reported alert precision             |
 | Days 31–60 | Human-approved safe repair through exact PR → customer merge → production verification                                           | 2 independently verified repairs across distinct companies targeted; measure time, cost, reviewer effort |
-| Days 61–90 | Repeat paid cycles; audit gross margin, access friction, false alerts, renewal                                                   | Approx. 8–10 paying sites targeted; actual renewals where due, expressed intent labeled separately       |
+| Days 61–90 | Repeat paid cycles; audit gross margin, access friction, false alerts, renewal                                                   | Paying-site target (set privately); actual renewals where due, expressed intent labeled separately       |
 
 In parallel, run **read-only Sync discovery** with these same companies: collect pricing/feature/integration change evidence and map up to 20 public assets, but do not spend substantial infrastructure time before identifying buyers and paid willingness.
 

@@ -1,3 +1,10 @@
+import { admitSpend } from "@/server/billing/spendAdmission";
+import {
+  attachHolds,
+  closeSpend,
+  recordSettlement,
+  RENDERING_HOLD_TTL_MS,
+} from "@/server/billing/spendLedger";
 import {
   finalizeHold,
   getOrCreateOrganizationCustomer,
@@ -14,6 +21,7 @@ import {
   estimateRenderingCredits,
   renderingCreditsNeededText,
   renderUsageCredits,
+  renderUsageUsd,
   type RenderUsage,
 } from "@/shared/audit-rendering";
 import {
@@ -21,18 +29,17 @@ import {
   AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
 } from "@/shared/billing";
 
-// Autumn allows 24 hours at most; keep a minute of margin for clock skew. An
-// audit that dies without settling returns its hold when the lock expires.
-const LOCK_TTL_MS = 24 * 60 * 60_000 - 60_000;
-
 /** Credits held for one rendered audit, monthly balance first, then top-up. */
 export type RenderingLock = UsageCreditHold;
 
 /**
  * Holds the worst-case rendering cost of a hosted audit before it starts:
- * every page falling back to Context. Throws INSUFFICIENT_CREDITS when the
- * monthly and top-up balances together cannot cover it. Returns no locks
- * outside hosted mode, where rendering is unmetered.
+ * every page falling back to Context. The estimate first passes the monthly
+ * spend limits (SPEND_LIMIT_REACHED), then the Autumn hold; each lock gets its
+ * own ledger row. Throws INSUFFICIENT_CREDITS when the monthly and top-up
+ * balances together cannot cover it. Returns no locks outside hosted mode,
+ * where rendering is unmetered. An audit that dies without settling returns
+ * its hold when the lock expires.
  *
  * Unlike a single DataForSEO call, one audit's hold is large enough to split:
  * the monthly balance covers what it can and top-up covers the rest.
@@ -47,15 +54,16 @@ export async function lockRenderingCredits(input: {
     input.customer,
   );
   const required = estimateRenderingCredits(input.maxPages).high;
+  const ledgerId = await admitSpend({
+    customer: input.customer,
+    feature: "site_audit",
+    provider: "rendering",
+    estimatedCredits: required,
+  });
   const insufficient = new AppError(
     "INSUFFICIENT_CREDITS",
     renderingCreditsNeededText(input.maxPages),
   );
-  const balances = await getUsageCreditsRemaining(customerId);
-  // Clamp at 0: a balance can read negative after an overdraft.
-  const monthly = Math.min(Math.max(balances.monthlyRemaining, 0), required);
-  const topup = required - monthly;
-
   const properties = {
     creditFeature: "site_audit",
     source: "site_audit_rendering",
@@ -63,6 +71,10 @@ export async function lockRenderingCredits(input: {
   };
   const locks: RenderingLock[] = [];
   try {
+    const balances = await getUsageCreditsRemaining(customerId);
+    // Clamp at 0: a balance can read negative after an overdraft.
+    const monthly = Math.min(Math.max(balances.monthlyRemaining, 0), required);
+    const topup = required - monthly;
     if (topup > Math.max(balances.topupRemaining, 0)) throw insufficient;
     for (const [featureId, credits] of [
       [AUTUMN_SEO_DATA_BALANCE_FEATURE_ID, monthly],
@@ -76,7 +88,7 @@ export async function lockRenderingCredits(input: {
         // Covers the audit's renders, not any DataForSEO calls.
         callIndexes: [],
         properties,
-        ttlMs: LOCK_TTL_MS,
+        ttlMs: RENDERING_HOLD_TTL_MS,
         lockPrefix: "render",
       });
       // The balance moved between the read and the hold.
@@ -85,9 +97,11 @@ export async function lockRenderingCredits(input: {
     }
   } catch (error) {
     await releaseRenderingLocks(locks);
+    await closeSpend(ledgerId, error === insufficient ? "refused" : "released");
     if (error === insufficient) await sendCreditsExhaustedEvent(input.customer);
     throw error;
   }
+  await attachHolds(ledgerId, locks);
   return locks;
 }
 
@@ -97,6 +111,7 @@ export async function releaseRenderingLocks(locks: RenderingLock[]) {
     const { landed, error } = await finalizeHold(lock, 0, {
       source: "site_audit_rendering",
     });
+    await recordSettlement(lock.lockId, { costs: [], landed, error });
     // The lock still expires on its own.
     if (!landed) {
       console.error("site_audit:render_lock_release_failed", {
@@ -109,8 +124,8 @@ export async function releaseRenderingLocks(locks: RenderingLock[]) {
 
 /**
  * Charges the credits the audit used against its locks, monthly first, and
- * releases the rest. Never throws: a settlement that fails leaves the hold to
- * expire, which returns it to the customer.
+ * releases the rest. Never throws: each lock's ledger row records its charge
+ * with the outcome, so spend reconciliation charges a finalize that failed.
  */
 export async function settleRenderingLocks(input: {
   customer: BillingCustomerContext;
@@ -118,7 +133,9 @@ export async function settleRenderingLocks(input: {
   locks: RenderingLock[];
   usage: RenderUsage;
 }) {
-  let remaining = renderUsageCredits(input.usage);
+  const totalCredits = renderUsageCredits(input.usage);
+  const totalUsd = renderUsageUsd(input.usage);
+  let remaining = totalCredits;
   const charged = { monthly: 0, topup: 0 };
   for (const lock of input.locks) {
     // A retried chunk can render a page twice; the hold is the most we charge.
@@ -128,6 +145,17 @@ export async function settleRenderingLocks(input: {
       source: "site_audit_rendering",
       auditId: input.auditId,
       ...input.usage,
+    });
+    await recordSettlement(lock.lockId, {
+      credits: charge,
+      // ponytail: a split cost's share; tracked after the lock expires, it
+      // can differ from `charge` by a credit.
+      costs: [
+        { costUsd: totalCredits ? (totalUsd * charge) / totalCredits : 0 },
+      ],
+      landed,
+      error,
+      creditFeature: "site_audit",
     });
     if (!landed) {
       console.error("site_audit:render_settle_failed", {

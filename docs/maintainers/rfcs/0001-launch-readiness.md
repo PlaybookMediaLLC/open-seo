@@ -107,7 +107,7 @@ Fix every blocker before you invite users outside the team.
 **Steps:**
 
 1. Use test site S1 (`playbookmedia.io`). Confirm its Search Console property in the Relay project. Record its 28-day totals.
-2. Use the repository `PlaybookMediaLLC/monorepo` with root directory `apps/www` and base branch `main`.
+2. Use S1's repository and its site root directory, with base branch `main`.
 3. Run opportunity detection. Record the count and three sample opportunities.
 4. Review and approve one striking-distance opportunity.
 5. Create a fine-grained token for that one repository, with Contents and Pull requests write access.
@@ -300,8 +300,8 @@ The items that wait on Google, a payment, search data, calendar time or other RF
 
 **Done, with evidence:**
 
-- **B2.** The OpenRouter key has a monthly limit of $50 (`GET /api/v1/key`). In the Playbook Media project, the assistant answered "What should I fix first" in two turns. The first turn hit its step limit and said so. The second named `/terms` (61-character description) and `/privacy` (69 characters) from the audit, and said that no third page was flagged. The SAM Agent charge rose from $0.01 to $0.03 on the Billing page.
-- **B4, in part.** The live Autumn products match the landing page: Free has 1,000 credits a month, Base costs $10 a month with 10,000 credits, and a top-up costs $1 for 1,000 credits. The webhook reaches production: on 2026-10-16 at 07:30 UTC, `handleAutumnWebhookRequest` ran for the smoke-test customer `billing-smoke-test-playbook`. Its write failed on the organization foreign key, because that customer has no Relay organization.
+- **B2.** The OpenRouter key has a monthly spend limit (`GET /api/v1/key`). In the Playbook Media project, the assistant answered "What should I fix first" in two turns. The first turn hit its step limit and said so. The second named `/terms` (61-character description) and `/privacy` (69 characters) from the audit, and said that no third page was flagged. The SAM Agent charge rose on the Billing page.
+- **B4, in part.** The live Autumn products match the landing page: Free has 1,000 credits a month, Base costs $10 a month with 10,000 credits, and a top-up costs $1 for 1,000 credits. The webhook reaches production: on 2026-10-16 at 07:30 UTC, `handleAutumnWebhookRequest` ran for a smoke-test customer. Its write failed on the organization foreign key, because that customer has no Relay organization.
 - **B6.** PostHog is the error tool. A test error thrown on `/billing` at 14:42:33 UTC appeared as an `$exception` event about 1 minute later. Server errors arrive in Error tracking too.
 - **B7.** `/docs/opportunities` and `/docs/experiments` are live, and the empty states link to the guides (PR #58).
 - **S2 and S3.** `runbooks/delete-user-data.md` with `scripts/relay-erase-user-d1.ts`, and `runbooks/restore-d1.md`, both tested on a copy of production (PR #59).
@@ -326,20 +326,20 @@ Justification for `analytics.readonly` (821 of 1,000 characters):
 
 **Team (B3)**
 
-- [ ] The second account (`yoanyombapro@gmail.com`) accepts the invitation and sees the project within 1 minute. The invitation arrived 3 seconds after it was sent, and Gmail reported SPF, DKIM and DMARC as pass.
+- [ ] A second test account accepts the invitation and sees the project within 1 minute. The invitation arrived 3 seconds after it was sent, and Gmail reported SPF, DKIM and DMARC as pass.
 
 **Billing (B4)**
 
-- [ ] A test purchase and a test top-up work. The owner pays, because the Autumn keys are live.
-- [ ] A paid lookup lowers the balance by the shown cost. DataForSEO paused the account once at about 11:40 UTC on 2026-10-16 and allowed paid calls again by 15:19 UTC. The owner asked its support about the cause. The trial balance is about $0.44, so research stops soon without a deposit (minimum $50).
+- [ ] A test purchase and a test top-up work. The owner runs them.
+- [ ] A paid lookup lowers the balance by the shown cost. The DataForSEO deposit must be topped up before this check.
 
 **Live acceptance (B5)**
 
-- [ ] Steps 1 to 10 pass on S1, and the evidence is in `docs/maintainers/organic-growth-audit.md`. Search Console returned no rows because the `playbookmedia.io` domain property was verified on 2026-10-15 and still shows "Processing data, please check again in a day or so". URL Inspection shows the home page as indexed. The site sitemap was submitted on 2026-10-16; before that, only Relay's sitemap was. The merge and deploy steps also need the monorepo GitHub Actions billing fix.
+- [ ] Steps 1 to 10 pass on S1, and the evidence is in `docs/maintainers/organic-growth-audit.md`. Search Console returned no rows because the `playbookmedia.io` domain property was verified on 2026-10-15 and still shows "Processing data, please check again in a day or so". URL Inspection shows the home page as indexed. The site sitemap was submitted on 2026-10-16; before that, only Relay's sitemap was. The merge and deploy steps also need S1's GitHub Actions to run.
 
 **Monitoring**
 
-- [ ] The alert email arrives. The PostHog insight "Exception count" has the hourly alert "Relay production errors" (more than 0 exceptions), which emails the owner. A test error was thrown at 16:12 UTC on 2026-10-16. On 2026-10-18 PostHog showed the alert as last sent at about 01:50 UTC. It goes to the PostHog account address (`yoanyomba@solomon-ai.co`), not to `yoanyombapro@gmail.com`. Trigger: the owner confirms the email in that inbox, or changes the alert recipient.
+- [ ] The alert email arrives. The PostHog insight "Exception count" has the hourly alert "Relay production errors" (more than 0 exceptions), which emails the owner. A test error was thrown at 16:12 UTC on 2026-10-16. On 2026-10-18 PostHog showed the alert as last sent at about 01:50 UTC. It goes to the owner's PostHog address, not to the second test account. Trigger: the owner confirms the email in that inbox, or changes the alert recipient.
 - [ ] The uptime check stays green for 7 days in a row: 2026-10-22 at the earliest. GitHub runs the 15-minute schedule every 3 to 5 hours, so the check proves availability at that cadence only.
 
 **People**

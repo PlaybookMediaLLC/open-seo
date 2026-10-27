@@ -307,7 +307,7 @@ The Worker cron runs the jobs now (section 5, as built), so these items apply on
 
 - [x] Email preferences table and settings UI. `growth_email_preferences` and the bell control (2026-10-18).
 - [x] Digest sends only to opted-in users (test). `emailDigest.test.ts`.
-- [ ] Live check: a digest reaches a test inbox. Trigger: `yoanyombapro@gmail.com` accepts its invitation and sends itself a test digest, or the owner names another test inbox.
+- [ ] Live check: a digest reaches a test inbox. Trigger: the second test account accepts its invitation and sends itself a test digest, or the owner names another test inbox.
 
 ## 10. Real-site acceptance test
 

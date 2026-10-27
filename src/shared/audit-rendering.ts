@@ -28,11 +28,16 @@ export type RenderUsage = {
   contextCredits: number;
 };
 
-export function renderUsageCredits(usage: RenderUsage): number {
-  return creditsForProviderUsd(
+/** The raw provider cost, before the markup. */
+export function renderUsageUsd(usage: RenderUsage): number {
+  return (
     usage.cloudflareAttempts * CLOUDFLARE_USD_PER_ATTEMPT +
-      usage.contextCredits * CONTEXT_USD_PER_CREDIT,
+    usage.contextCredits * CONTEXT_USD_PER_CREDIT
   );
+}
+
+export function renderUsageCredits(usage: RenderUsage): number {
+  return creditsForProviderUsd(renderUsageUsd(usage));
 }
 
 /**

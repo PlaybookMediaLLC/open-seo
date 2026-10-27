@@ -271,6 +271,7 @@ export const {
   growthNotificationReads,
   growthEmailPreferences,
   githubAppInstallations,
+  githubAppInstallationRepositories,
   proposalApprovals,
   proposalExecutions,
   proposalExecutionEvents,

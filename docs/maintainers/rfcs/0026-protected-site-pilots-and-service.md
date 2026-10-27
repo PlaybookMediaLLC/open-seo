@@ -18,7 +18,7 @@ Reuse `projects`, `project_key_pages`, the GSC/GA4 connections, publishing conne
 ## 3. Phase A: discovery and an assisted pilot
 
 1. Interview 15–20 qualified B2B SaaS buyers/operators about actual release incidents, response ownership, existing spend, buying authority, and permission objections.
-2. Seek three paid pilots. Record the agreed price, scope, duration, payment reference, success criteria, and permitted operations. $79–$149/site/month is a test range, not a default checkout price.
+2. Seek three paid pilots. Record the agreed price, scope, duration, payment reference, success criteria, and permitted operations in the private sales record. The pilot price is a test, not a default checkout price.
 3. Start with one production origin and an explicitly selected small page set, normally 5–20 pages. Record exclusions, cadence, response expectations, and support contact. A staging site is an acceptance-test target, not a substitute for agreed production coverage.
 4. A detection-and-ticket pilot may use RFC-0019 phases 1a–1b before automated repair exists. Disclose assisted work. Do not claim unattended monitoring before the scheduled checks and health reporting are active.
 5. Initial permissions are read-only where possible. Approval to prepare code, write the exact branch/PR, and merge is explicit. A customer's project connection alone never grants those actions.
@@ -69,7 +69,7 @@ Supporting metrics: activation-to-payment, actionable-alert precision (customer-
 | Days 1–14 of the program | 15–20 interviews and three paid restricted pilots, or recorded failure to recruit them                                                            | Continue the narrow service or revise the offer.                                                    |
 | Days 15–30               | Agreed pages protected, reproducible findings, operational health visible, customer response owner                                                | Admit supported sites to active protection.                                                         |
 | Days 31–60               | Two approved repairs across separate customer organizations, deployed and verified under RFC-0028; reviewed false alerts, costs, and support time | Decide whether repair delivery is repeatable. Own-site seeded tests alone do not satisfy this gate. |
-| Days 61–90               | Target 8–10 paying sites; actual renewals where due and stated intent separately; service economics                                               | Decide whether to expand. These are hypotheses, not accomplished milestones.                        |
+| Days 61–90               | Paying-site target (set privately); actual renewals where due and stated intent separately; service economics                                     | Decide whether to expand. These are hypotheses, not accomplished milestones.                        |
 
 Calendar targets do not waive engineering acceptance. If customers will not pay or authorize the necessary workflow, stop increasing autonomy and revisit the thesis. A small sample with zero false alerts is not proof of a population-wide zero false-positive rate.
 

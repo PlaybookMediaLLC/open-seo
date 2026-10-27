@@ -30,9 +30,6 @@ vi.mock("@/server/features/projects/repositories/ProjectRepository", () => ({
       projectId === orgId ? { id: projectId } : null,
   },
 }));
-vi.mock("@/server/billing/spendAdmission", () => ({
-  assertSpendRoom: async () => undefined,
-}));
 vi.mock("@/server/lib/audit/rendering-billing", () => ({
   lockRenderingCredits: async () => [{ lockId: "lock" }],
   settleRenderingLocks: mocks.settle,

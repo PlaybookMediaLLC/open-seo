@@ -68,6 +68,7 @@ it("records connections and one App revocation", async () => {
       createdBy: "reviewer",
       createdAt: new Date().toISOString(),
     },
+    [],
     auditFor(input, "github_app.installed"),
   );
   const [installation] = await repo.listInstallations(input.organizationId);
@@ -105,27 +106,56 @@ it("records connections and one App revocation", async () => {
   );
 });
 
+const authHook = (
+  path: string,
+  body: unknown,
+  returned: unknown,
+  activeOrganizationId: string,
+) =>
+  auditAuthRoute({
+    path,
+    body,
+    context: {
+      returned,
+      session: { session: { activeOrganizationId }, user: { id: "owner" } },
+    },
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a minimal better-auth hook context
+  } as unknown as Parameters<typeof auditAuthRoute>[0]);
+const eventsOf = (organizationId: string) =>
+  db
+    .select({ action: auditEvents.action, targetId: auditEvents.targetId })
+    .from(auditEvents)
+    .where(eq(auditEvents.organizationId, organizationId));
+
 it("records a member removal by id, never by the email it names", async () => {
   const input = await fixture(database);
   const hook = (returned: unknown) =>
-    auditAuthRoute({
-      path: "/organization/remove-member",
-      body: { memberIdOrEmail: "teammate@example.com" },
-      context: {
-        returned,
-        session: {
-          session: { activeOrganizationId: input.organizationId },
-          user: { id: "owner" },
-        },
-      },
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- a minimal better-auth hook context
-    } as unknown as Parameters<typeof auditAuthRoute>[0]);
+    authHook(
+      "/organization/remove-member",
+      { memberIdOrEmail: "teammate@example.com" },
+      returned,
+      input.organizationId,
+    );
   await hook(new Error("Forbidden"));
-  await hook({ member: { id: "member-7" } });
-  expect(
-    await db
-      .select({ action: auditEvents.action, targetId: auditEvents.targetId })
-      .from(auditEvents)
-      .where(eq(auditEvents.organizationId, input.organizationId)),
-  ).toEqual([{ action: "member.removed", targetId: "member-7" }]);
+  await hook({
+    member: { id: "member-7", organizationId: input.organizationId },
+  });
+  expect(await eventsOf(input.organizationId)).toEqual([
+    { action: "member.removed", targetId: "member-7" },
+  ]);
+});
+
+it("records a new API key in the org it was bound to, not the body's", async () => {
+  const mine = await fixture(database);
+  const theirs = await fixture(database);
+  await authHook(
+    "/api-key/create",
+    { organizationId: theirs.organizationId },
+    { id: "key-1", metadata: { organizationId: mine.organizationId } },
+    mine.organizationId,
+  );
+  expect(await eventsOf(theirs.organizationId)).toEqual([]);
+  expect(await eventsOf(mine.organizationId)).toEqual([
+    { action: "api_key.created", targetId: "key-1" },
+  ]);
 });

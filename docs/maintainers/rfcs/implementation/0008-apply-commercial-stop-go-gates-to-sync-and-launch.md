@@ -14,7 +14,7 @@ Read the linked source RFC in full, including its safety decisions, persistence 
 
 ## Acceptance gate
 
-One evidence-backed go/no-go record for Protect expansion and a bounded, priced Sync experiment with named buyer and purchasing owner.
+One evidence-backed go/no-go record for Protect expansion and a bounded, priced Sync experiment with named buyer and purchasing owner. Commercial evidence stays in the private sales record; the public completion note and PR say only **met** or **not met**, with no names, prices, payment references or costs.
 
 ## Explicit boundary
 

@@ -38,7 +38,8 @@ export const LIGHTHOUSE_FETCH_STEP: WorkflowStepConfig = {
 
 /**
  * Confirms a rendered audit's credit lock. Finalizing a lock twice is refused,
- * so a replay must not run it again; a failed settlement expires on its own.
+ * so a replay must not run it again; spend reconciliation charges a failed
+ * settlement from its ledger row.
  */
 export const SETTLE_RENDERING_STEP: WorkflowStepConfig = {
   retries: { limit: 0, delay: "1 second" },

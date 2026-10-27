@@ -9,7 +9,7 @@
 
 ## Implementation decision
 
-**Start with the existing paid Relay Protect pilot and production-repair work.** RFC-0026 governs commercial qualification and RFCs 0019, 0025, 0027, and 0028 cover actual release monitoring, safe corrections and production verification. Do not delay this revenue test while building a platform. The new numbering applies to the _additional_ Product Reality Engine and later products.
+**Start with the proposed Protect pilot (RFC-0026) and production-repair work.** RFC-0026 governs commercial qualification and RFCs 0019, 0025, 0027, and 0028 cover actual release monitoring, safe corrections and production verification. Do not delay this revenue test while building a platform. The new numbering applies to the _additional_ Product Reality Engine and later products.
 
 The numbered RFCs below follow **earliest useful implementation and dependency order**, not functional-category grouping. Cross-cutting contracts are written early but implemented incrementally, not fully up front. RFC-0029 is a commercial decision gate rather than a software dependency; RFC-0031 applies security and metering standards throughout instead of demanding its entire future feature set in the first PR.
 

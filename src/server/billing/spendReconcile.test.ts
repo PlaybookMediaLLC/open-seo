@@ -43,6 +43,7 @@ async function ledgerRow(
   status: "settle_failed" | "admitted",
   createdAt: string,
   attempts = 1,
+  provider: "dataforseo" | "rendering" = "dataforseo",
 ) {
   const { run } = await setupRun(database.client, database.slugPrefix);
   const id = crypto.randomUUID();
@@ -51,7 +52,7 @@ async function ledgerRow(
     organizationId: run.projectId,
     projectId: run.projectId,
     feature: "backlinks",
-    provider: "dataforseo",
+    provider,
     actor: "member",
     periodMonth: "2026-10",
     estimatedCredits: 8,
@@ -110,4 +111,29 @@ it("stops after 10 attempts and releases reservations that never settled", async
     attempts: 10,
   });
   expect(await rowOf(stale)).toEqual({ status: "released", attempts: 1 });
+});
+
+it("leaves a rendering lock to its audit until the lock expires", async () => {
+  const running = await ledgerRow("admitted", minutesAgo(120), 0, "rendering");
+  const failed = await ledgerRow(
+    "settle_failed",
+    minutesAgo(120),
+    1,
+    "rendering",
+  );
+  const expired = await ledgerRow(
+    "admitted",
+    minutesAgo(25 * 60),
+    0,
+    "rendering",
+  );
+  await reconcileSpend(now);
+  expect(await rowOf(running)).toEqual({ status: "admitted", attempts: 0 });
+  expect(mocks.finalize).toHaveBeenCalledWith(
+    expect.objectContaining({ lockId: `lock-${failed}` }),
+    5,
+    expect.objectContaining({ ledgerId: failed }),
+  );
+  expect(mocks.track).not.toHaveBeenCalled();
+  expect(await rowOf(expired)).toEqual({ status: "released", attempts: 0 });
 });

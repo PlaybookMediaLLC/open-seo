@@ -1,5 +1,5 @@
 import { asc, eq } from "drizzle-orm";
-import { afterAll, beforeAll, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { db } from "@/db";
 import { spendLedger, spendLimits } from "@/db/schema";
 import { setupRun } from "@/server/features/opportunities/repositories/opportunityRepositoryTestSupport";
@@ -12,9 +12,18 @@ const database = await vi.hoisted(async () => {
     await import("@/server/features/experiments/repositories/experimentTestDb");
   return createExperimentTestDatabase();
 });
-const mocks = vi.hoisted(() => ({ reserve: vi.fn(), settle: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  reserve: vi.fn(),
+  settle: vi.fn(),
+  rateAllowed: true,
+}));
 vi.mock("cloudflare:workers", () => ({
-  env: { DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1" },
+  env: {
+    DATABASE_PROVIDER: database.isPostgres ? "postgres" : "d1",
+    PAID_ACTION_RATE_LIMIT: {
+      limit: async () => ({ success: mocks.rateAllowed }),
+    },
+  },
 }));
 vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
@@ -29,6 +38,9 @@ vi.mock("./subscription", () => ({
 }));
 beforeAll(() => database.prepare());
 afterAll(() => database.close());
+beforeEach(() => {
+  mocks.rateAllowed = true;
+});
 
 async function projectWithLimit(monthlyLimitCredits: number) {
   const { run } = await setupRun(database.client, database.slugPrefix);
@@ -101,4 +113,10 @@ it("reserves each assistant turn and counts its real spend", async () => {
   expect((await admitTurn(sam)).refusal).toBe(
     "This project reached its monthly limit of 60 credits. An owner can change it in Billing.",
   );
+});
+
+it("refuses an assistant turn over the paid action rate", async () => {
+  const sam = await projectWithLimit(60);
+  mocks.rateAllowed = false;
+  expect((await admitTurn(sam)).refusal).toMatch(/too quickly/);
 });

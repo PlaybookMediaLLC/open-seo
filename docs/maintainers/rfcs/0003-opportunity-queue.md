@@ -196,7 +196,7 @@ An issue ticket in this RFC is text only. The user copies it. It has a title, th
 
 Each follow-up names its trigger. Check it here when it passes.
 
-- [ ] Acceptance steps 1 to 6 (section 9) with two real team members. Trigger: the second account (`yoanyombapro@gmail.com`) accepts its invitation, and the project has opportunities from real search data (see RFC-0002 section 13).
+- [ ] Acceptance steps 1 to 6 (section 9) with two real team members. Trigger: the second test account accepts its invitation, and the project has opportunities from real search data (see RFC-0002 section 13).
 - [ ] Three engineers rate tickets for three types at 4 of 5 or higher. Trigger: the same.
 - [ ] The second weekly triage of up to 50 items takes 15 minutes or less. Trigger: the same, one week later.
 

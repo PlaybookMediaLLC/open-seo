@@ -1,11 +1,9 @@
 import { env } from "cloudflare:workers";
-import { assertSpendRoom } from "@/server/billing/spendAdmission";
 import { RenderedPageService } from "@/server/lib/audit/rendered-page";
 import {
   lockRenderingCredits,
   settleRenderingLocks,
 } from "@/server/lib/audit/rendering-billing";
-import { estimateRenderingCredits } from "@/shared/audit-rendering";
 import { pageFacts } from "./pageSnapshot";
 import { pageUrl, type CheckPlan } from "./seoCheckPlan";
 import type { PageFacts } from "./seoRules";
@@ -32,7 +30,6 @@ export async function renderPages(plan: CheckPlan, paths: string[]) {
   const renders = paths.length * 2;
   let locks: Awaited<ReturnType<typeof lockRenderingCredits>>;
   try {
-    await assertSpendRoom(customer, estimateRenderingCredits(renders).high);
     locks = await lockRenderingCredits({
       customer,
       auditId: plan.runId,

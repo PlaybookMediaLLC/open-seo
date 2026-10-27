@@ -72,7 +72,7 @@ Phase 1 closes the main acceptance-test gap: "The system creates a verified chan
 8. Budget: at most 12 GitHub requests per locate call. Use the existing publishing claim.
 9. The UI pre-fills the file path. The user can still edit it.
 
-On test site S1, `/approach` resolves to `apps/www/app/(site)/approach/page.tsx`.
+On test site S1, `/approach` resolves to `app/(site)/approach/page.tsx` under the site root.
 
 Dynamic segments and rewrites stay unsupported. The locator says so, and the user can open a ticket instead (RFC-0003). When no file matches, the locator reads the parent folder once for each group. If that folder has a dynamic segment such as `[slug]`, the message names it. A dynamic segment higher in the path gets the general message.
 
@@ -325,7 +325,7 @@ One draft is about 3,000 input tokens and 400 output tokens, with at most 2 atte
 
 ### Phase 1
 
-**Sites:** S1 (`playbookmedia.io`, repository `PlaybookMediaLLC/monorepo`, root `apps/www`) and S2. Needs RFC-0005 phase 1a.
+**Sites:** S1 (`playbookmedia.io`) and S2. Needs RFC-0005 phase 1a.
 
 **Steps:**
 
@@ -444,7 +444,7 @@ Each follow-up names its trigger. Check it here when it passes.
 
 Evidence for the completion criteria that code can show:
 
-- **File locator:** on 2026-10-16 the real locator, run read-only against the real repositories, found all five real pages: `/`, `/company` and `/approach` under `apps/www/app/(site)/` on S1, and `/pricing` and `/about` on the Relay Lab site. It used at most 8 GitHub requests each. A test proves the 12-request cap, and another names a dynamic segment.
+- **File locator:** on 2026-10-16 the real locator, run read-only against the real repositories, found all five real pages: `/`, `/company` and `/approach` under `app/(site)/` on S1, and `/pricing` and `/about` on the Relay Lab site. It used at most 8 GitHub requests each. A test proves the 12-request cap, and another names a dynamic segment.
 - **Checks:** one test per deterministic check, each with a draft that fails only that check. An injected "#1" in page text or a query is rejected, and only the owner's own context can permit it.
 - **Limits and billing:** tests prove 3 drafts a day per kind for each opportunity, 30 for each project, one draft at a time, no model call without credits, and a settled cost equal to the reported cost.
 - **Permission and tenancy:** tests prove that a member without manage permission cannot draft, in the app and through MCP, and that a draft from one project is not readable from another.

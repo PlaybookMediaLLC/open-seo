@@ -64,7 +64,7 @@ export async function checkBatch(
   },
 ): Promise<BatchResult> {
   const linkBudget = budget.links;
-  const access = await previewAccess(plan.projectId, plan.previewOrigin);
+  const { access } = await previewAccess(plan);
   const fetched = await inPool(batch, async (url) => ({
     url,
     base: await fetchSnapshot(
@@ -241,6 +241,19 @@ export async function finishCheck(plan: CheckPlan, batches: BatchResult[]) {
           })
         : []),
       ...batches.flatMap((batch) => batch.findings),
+      ...(plan.previewAccessWithheld
+        ? [
+            {
+              path: "/",
+              rule: "preview-access-not-sent",
+              pack: "seo" as const,
+              severity: "warning" as const,
+              before: null,
+              after: null,
+              message: `Preview access was not sent, because ${new URL(plan.previewOrigin).hostname} is not your project's domain or a preview host you added in Project settings > SEO checks.`,
+            },
+          ]
+        : []),
     ]),
     traffic,
     { raiseOnHighTraffic: plan.raiseOnHighTraffic, ignores: plan.ignores },
