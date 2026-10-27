@@ -387,7 +387,7 @@ Each follow-up names its trigger. Check it here when it passes.
 - [x] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists. Done on 2026-10-18 with the Worker cron instead, which needs no secrets. At the 11:00 UTC tick, the 4 Playbook Media jobs (opportunity refresh, measurement refresh, deployment check and recommendation re-check) succeeded on their first attempt.
 - [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`. PR #89 is merged. The secrets are not needed while the Worker cron runs the jobs.
 - [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists. Not needed while the Worker cron runs the jobs: a job that fails 3 times notifies the project.
-- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production. They run since 11:00 UTC on 2026-10-18, so the 7 days end on 2026-10-25 at the earliest. On 2026-10-27 the window had passed, but nobody had read the results from production yet. Runs recorded before the 2026-10-27 change store the tick time as their start, which hides the delay only when several jobs share a tick.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production. They run since 11:00 UTC on 2026-10-18, so the 7 days end on 2026-10-25 at the earliest. On 2026-10-27 the window had passed, but nobody had read the results from production yet; section 13 has the steps. Runs recorded before the 2026-10-27 change store the tick time as their start, which hides the delay only when several jobs share a tick.
 - [x] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Done on 2026-10-18; scheduled jobs that spend now pass the limits, and their audit events show as Scheduled.
 - [x] Phase 2 email digest (section 5.11). Trigger: Loops is configured. Done on 2026-10-18 on the Cloudflare Email binding instead (PR #116). Its live check in section 9 stays open.
 - [ ] Email digests in `trigger` mode. `sendDigests` runs only on the Worker cron, which `trigger` mode turns off, so digests would stop. Trigger: the jobs move to Trigger.dev; add a `growth-digest` task (5.11) first.
@@ -400,3 +400,41 @@ Evidence for the phase 1 items that code can show:
 - **Permissions and plans:** a removed owner causes a skip with the reason and a `job_failed` notification. A free plan skips the traffic watch. An audit follow-up runs as the member who started the audit (tests).
 - **Audit hook:** it triggers `audit-followup` once per audit, writes a queued row when Trigger.dev fails, does nothing when jobs are off, and never fails the audit (tests).
 - **Production, 2026-10-17:** the Automation tab shows the five jobs, their defaults and the "not available" notice, and the Edit sheet opens. The notification bell is in the sidebar.
+
+## 13. How to close the open items
+
+The jobs run on the Worker cron, so these steps replace the Trigger.dev ones in section 10. Record counts and dates here, never customer names.
+
+**Production numbers (sections 10 and 11).** Run `scripts/rfc0008-acceptance.sql` with a read-only role on the production database. Agent sessions read its URL from `RELAY_READONLY_DATABASE_URL`. The script reports, since 2026-10-18 11:00 UTC: the share of windows that succeeded or were skipped, duplicate windows, overlapping runs, the latest first-attempt starts, skip and failure reasons, notification kinds with any repeated key, and live projects without their default jobs. The section 10 traffic step still needs one `traffic_watch` summary compared by hand with the Search Console UI for the same 7 days.
+
+**Digest live check (phase 2).**
+
+1. Sign in to Relay as a member whose inbox is a test inbox, such as the second test account after it accepts its invitation. A new member sees all of the organization's notifications as unread.
+2. Open the notification bell, choose **Email me a daily digest**, then click **Email me a test digest**. "You have no unread notifications to send" means there is nothing to send yet.
+3. Confirm that a message from `notifications@mail.playbookmedia.io` arrives and lists those notifications.
+
+**Default jobs for older projects.**
+
+1. Query 6 of the script lists live projects with Search Console or tracking but no default jobs.
+2. For each, a member who can manage integrations opens **Project settings → Automation** and turns on the jobs that fit: with Search Console, Opportunity refresh, Recommendation re-check, and Traffic watch on a paid plan; with tracking, Measurement refresh and Deployment check. That member becomes the jobs' owner.
+3. Run query 6 again. It lists none of them.
+
+**Removed owner (section 10, step 7).** This needs no staging. In a test organization, have member B save a job so B owns it, remove B from the organization, and wait for the job's hour. The run is skipped with "The schedule owner no longer has access.", and a `job_failed` notification appears.
+
+**Staging (section 10 steps 4 and 5, section 11 recovery and security).** There is no Playbook staging Worker yet. Deploy the Alchemy stack as a second stage with its own env file (the staging Hyperdrive and its own secrets), in the same way that `deploy-playbook.yml` deploys stage `playbook`. Then:
+
+1. **Retries.** Connect a staging project to Search Console and turn on Traffic watch. Revoke Relay's access in the Google account's third-party access settings before the job's hour. The run fails, retries at the next two quarter-hour ticks, then sends `job_failed`. Reconnect; the next window succeeds.
+2. **Pause and resume.** Set `GROWTH_JOBS_MODE=off` for 2 hours, then remove it. Each window that fell due during the pause runs once at the next tick (query 1 shows no duplicate).
+3. **Signatures.** Set `GROWTH_JOBS_SECRET` and `GROWTH_JOBS_MODE=trigger` on staging, which turns its cron off, and send bad requests. Every one must answer `404`, and no run with the window key `acceptance` may appear. Remove both settings afterwards.
+
+```sh
+HOST=https://staging.example # the staging hostname
+BODY='{"kind":"traffic_watch","projectId":"<staging project id>","scheduleId":null,"windowKey":"acceptance","attempt":1,"maxAttempts":1}'
+sign() { printf '%s.%s' "$1" "$BODY" | openssl dgst -sha256 -hmac "$GROWTH_JOBS_SECRET" -r | cut -d' ' -f1; }
+post() { curl -s -o /dev/null -w '%{http_code}\n' -X POST "$HOST/api/internal/growth/run" \
+  -H 'content-type: application/json' -H "x-relay-timestamp: $1" -H "x-relay-signature: $2" --data-raw "$BODY"; }
+now=$(date +%s)
+post "$now" "$(openssl rand -hex 32)"           # wrong signature
+post "$((now - 600))" "$(sign $((now - 600)))" # correctly signed, 10 minutes old
+for i in $(seq 1000); do post "$now" "$(openssl rand -hex 32)"; done | sort | uniq -c # expect "1000 404"
+```
