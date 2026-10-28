@@ -190,28 +190,36 @@ async function saveSettings(
       "VALIDATION_ERROR",
       "Pause protection before changing the production origin.",
     );
-  if (
-    !originChanged &&
-    !reviewerChanged &&
-    settings.checkHourUtc === enrollment.checkHourUtc &&
-    settings.notes === enrollment.notes &&
-    settings.allowRepairProposals === enrollment.allowRepairProposals &&
-    settings.allowPullRequests === enrollment.allowPullRequests
-  )
-    return;
+  // Only what this save changes: a stale form must not restore an origin or
+  // reviewer that another save replaced, beside that one's verification.
+  const set = {
+    ...(originChanged
+      ? { productionOrigin, originVerifiedAt: null, originVerifiedBy: null }
+      : {}),
+    ...(reviewerChanged
+      ? {
+          reviewerUserId: settings.reviewerUserId,
+          alertTestedAt: null,
+          alertConfirmedAt: null,
+        }
+      : {}),
+    ...(settings.checkHourUtc !== enrollment.checkHourUtc
+      ? { checkHourUtc: settings.checkHourUtc }
+      : {}),
+    ...(settings.notes !== enrollment.notes ? { notes: settings.notes } : {}),
+    ...(settings.allowRepairProposals !== enrollment.allowRepairProposals
+      ? { allowRepairProposals: settings.allowRepairProposals }
+      : {}),
+    ...(settings.allowPullRequests !== enrollment.allowPullRequests
+      ? { allowPullRequests: settings.allowPullRequests }
+      : {}),
+  };
+  if (!Object.keys(set).length) return;
   const change = () =>
     ProtectionRepository.updateEnrollment({
       enrollmentId: enrollment.id,
       userId: context.userId,
-      set: {
-        ...settings,
-        ...(originChanged
-          ? { originVerifiedAt: null, originVerifiedBy: null }
-          : {}),
-        ...(reviewerChanged
-          ? { alertTestedAt: null, alertConfirmedAt: null }
-          : {}),
-      },
+      set,
       scopeVersion: originChanged ? enrollment.scopeVersion + 1 : undefined,
       audit: audit(
         context,

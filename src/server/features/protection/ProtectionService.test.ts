@@ -12,6 +12,7 @@ import {
 import { db } from "@/db";
 import { auditEvents, member, monitoredPages, user } from "@/db/schema";
 import { ProtectionService } from "./ProtectionService";
+import { ProtectionRepository } from "./repositories/ProtectionRepository";
 
 // RFC-0026 phase A (IRFC-0001) on real SQLite and Postgres.
 const database = await vi.hoisted(async () => {
@@ -319,6 +320,28 @@ describe(`ProtectionService (${database.isPostgres ? "Postgres" : "SQLite"})`, (
     expect((await ProtectionService.get(owner)).enrollment?.status).toBe(
       "setup",
     );
+  });
+
+  it("never restores an origin from a stale form", async () => {
+    const { owner, admin } = await site();
+    const stale = await enrolled(owner);
+    await ProtectionService.saveSettings(admin, {
+      ...settings,
+      productionOrigin: "https://www.example.com",
+    });
+    await ProtectionService.verifyOrigin(admin);
+    // The owner's form still shows the old origin and changes only the hour.
+    vi.spyOn(ProtectionRepository, "getEnrollment").mockResolvedValueOnce(
+      stale,
+    );
+    await ProtectionService.saveSettings(owner, {
+      ...settings,
+      checkHourUtc: 9,
+    });
+    expect((await ProtectionService.get(owner)).enrollment).toMatchObject({
+      productionOrigin: "https://www.example.com",
+      checkHourUtc: 9,
+    });
   });
 
   it("changes the origin only in setup or paused, and the change clears verification", async () => {
