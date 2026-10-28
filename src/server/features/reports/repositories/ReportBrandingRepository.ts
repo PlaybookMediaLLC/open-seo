@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, exists, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -78,11 +78,25 @@ async function remove(input: {
   organizationId: string;
   audit: AuditInput;
 }): Promise<void> {
+  const target = eq(organizationBranding.organizationId, input.organizationId);
   await runBatch((tx) => [
+    // Row-lock first, as transferOwnership does: a concurrent removal on
+    // Postgres waits here, then finds no row and writes no second event.
     tx
-      .delete(organizationBranding)
-      .where(eq(organizationBranding.organizationId, input.organizationId)),
-    auditInsert(tx, input.audit),
+      .update(organizationBranding)
+      .set({ organizationId: sql`${organizationBranding.organizationId}` })
+      .where(target),
+    auditInsert(
+      tx,
+      input.audit,
+      exists(
+        tx
+          .select({ id: organizationBranding.organizationId })
+          .from(organizationBranding)
+          .where(target),
+      ),
+    ),
+    tx.delete(organizationBranding).where(target),
   ]);
 }
 

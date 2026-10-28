@@ -92,6 +92,19 @@ it("lets only owners and admins change branding, and only their own organization
   expect(await changes(y.id)).toHaveLength(1);
 });
 
+it("records one removal when admins remove the branding at once", async () => {
+  const x = await organization();
+  await ReportBrandingService.save(x.admin, {
+    brandColor: "#1c4ed8",
+    logoDataUrl: null,
+  });
+  await Promise.all(
+    Array.from({ length: 5 }, () => ReportBrandingService.remove(x.admin)),
+  );
+  expect(await brandingOf(x.id)).toBeNull();
+  expect(await changes(x.id)).toHaveLength(2);
+});
+
 it("removes the Relay mark only for a branded organization that pays", async () => {
   const paying = await organization();
   const free = await organization();
