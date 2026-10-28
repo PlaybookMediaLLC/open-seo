@@ -32,6 +32,6 @@ Do not implement portfolio features for a single-site customer or imply existing
 
 - What was built, item by item: [RFC-0007 section 6](../0007-portfolio-operations.md#6-design-sketch-and-what-was-built). Design record: [Portfolio operations](../../specs/portfolio-operations.md).
 - Tests, on SQLite and Postgres: `src/server/features/publishing/PublishingApproverService.test.ts`, `src/server/features/portfolio/services/PortfolioService.test.ts`, the RFC-0007 tenancy suite (`src/server/features/growth/tenancy.test.ts`), plus the share page, link preview and dashboard cache tests in `src/server/features/reports/` and `src/server/features/dashboard/`.
-- Fixtures versus live: every test above uses fixtures. The live checks are RFC-0007 section 9, step 4.
+- Fixtures versus live: every test above uses fixtures. RFC-0007 section 9 then ran against this code on a local hosted-mode server with two accounts in two organizations, and all 24 checks passed, along with the two-account MCP isolation suite (85 checks). Production acceptance waits for the deploy. Neither run is a customer or a payment.
 
 **Next:** End of current implementation series.

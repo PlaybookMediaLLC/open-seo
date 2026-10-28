@@ -210,7 +210,8 @@ export async function renderSharePage(
           {brandColor ? ( // playbook-seam
             <style
               dangerouslySetInnerHTML={{
-                __html: `:root{--primary:${brandColor};--primary-text:${textColorOn(brandColor)}}header{box-shadow:inset 0 3px 0 ${brandColor}}`,
+                // body, not :root: the page's own :root rules come later.
+                __html: `body{--primary:${brandColor};--primary-text:${textColorOn(brandColor)}}header{box-shadow:inset 0 3px 0 ${brandColor}}`,
               }}
             />
           ) : null}

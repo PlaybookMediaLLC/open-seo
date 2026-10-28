@@ -1,6 +1,6 @@
 # RFC-0007: Portfolio operations
 
-- **Status:** Section 4 done on 2026-10-17 (PR #83). Section 6 implemented on 2026-10-27 at the owner's request, before an entry criterion in section 5 was recorded as met. Real-site acceptance (section 9) and live acceptance of section 6 are pending. The owner decided on 2026-10-17 that the follow-ups in section 11 do not block closing this RFC.
+- **Status:** Section 4 done on 2026-10-17 (PR #83). Section 6 implemented on 2026-10-27 at the owner's request, before an entry criterion in section 5 was recorded as met. The section 9 script passed on 2026-10-28 against this code running locally in hosted mode, with two accounts in two organizations; the same run on production waits for the deploy. The owner decided on 2026-10-17 that the follow-ups in section 11 do not block closing this RFC.
 - **Date:** 2026-10-15
 - **Brief section:** 8 (Feature F)
 - **Depends on:** RFC-0001 to RFC-0006 in production, and the entry criteria in section 5.
@@ -87,7 +87,8 @@ Only section 4 applies now.
 - [x] The schema check fails for a growth table without `project_id` (prove it with a temporary failing case, then remove it).
 - [ ] This RFC is reviewed again when an entry criterion is met.
 - [x] Section 6 has behavior tests on SQLite and Postgres: approval rules and the role-endpoint guard, the approver list, the portfolio summary and comparison, agency links, and white-label share pages. The approver service is in the tenancy suite.
-- [ ] Section 6 is accepted on a real site (see section 9).
+- [x] Section 6 passes the section 9 script with two accounts in two organizations, on this code running locally in hosted mode (2026-10-28; results below).
+- [ ] Section 6 passes the section 9 script on production. Trigger: the deploy that carries it.
 
 ## 9. Real-site acceptance test
 
@@ -107,6 +108,14 @@ Only section 4 applies now.
 
 **Value check:** customers can trust that their search data, repositories and results stay in their own workspace.
 
+**Local run, 2026-10-28.** Steps 1 to 4 ran against this code on a local hosted-mode server, with two accounts signed up as two organizations. Organization A's project held a seeded opportunity, an approved proposal with a recorded pull request, and an experiment still measuring. All 24 checks passed:
+
+- Steps 1–2: A sees its own opportunity, proposal and experiment. B opening the same URLs, and A's project settings, lands on B's own project with nothing of A's on the page. The app redirects there rather than showing a "not found" page.
+- Step 3: B's `get_opportunity` and `list_opportunities` on A's project answer `NOT_FOUND` with A's real ids, while A's own call returns the opportunity. The two-account MCP isolation suite also passed, 85 checks with no failure, including the growth tools.
+- Step 4: B joined A as a plain admin, and Better Auth's role endpoint refused B's own attempt to add the approver role. B could not approve until A's owner listed B for the project, could not after the list was cleared, and could again once the owner granted approval for the organization. Each portfolio showed only its own organization. B's agency request showed nothing until A's owner accepted, then showed A's summary, and nothing again once A ended it. A's branded shared report kept the Relay mark on the free plan and dropped it with the paid status set. It used the brand color, and its link preview rendered. `list_report_templates` returned the brand color.
+
+Not covered locally: Google sign-in, a real paid subscription (the paid status was set in the database), and production data. Those wait for the production run.
+
 ## 10. Completion criteria
 
 - The tenancy suite covers 100% of growth service functions. A count of exported service functions equals the count of tested ones.
@@ -118,11 +127,11 @@ Only section 4 applies now.
 Each follow-up names its trigger. Check it here when it passes.
 
 - [x] The tenancy suite runs on Postgres in CI. Trigger: the maintainer reviews and merges PR #84, which adds a fork-owned Postgres workflow. Done 2026-10-18 (PR #84).
-- [ ] Real-site acceptance (section 9) with two real Google accounts in two organizations. Trigger: a second organization exists with its own project. The invitation to the second account is still pending.
+- [ ] Real-site acceptance (section 9) with two real Google accounts in two organizations on production. Trigger: a second organization exists with its own project, and the deploy carrying section 6. The local run of the same steps passed on 2026-10-28 (section 9).
 - [x] Schedules and notifications join the suite. Trigger: RFC-0008 adds their services. The schedule service joined the suite (PR #88). Notifications belong to an organization, and their own test proves that one organization never sees another's (PR #87).
 - [ ] Review this RFC again. Trigger: one entry criterion in section 5 is met.
-- [ ] Live acceptance of section 6 (section 9, step 4). Trigger: the deployment carrying it, with a second organization and a paid organization to test with.
-- [ ] Run the two-account MCP isolation suite with the growth tools it now calls (`pnpm test:e2e:mcp-isolation`). Trigger: a hosted test environment with sign-up configured.
+- [x] Acceptance of section 6 (section 9, step 4) on this code running in hosted mode. Done 2026-10-28, locally; the production run is the item above.
+- [x] Run the two-account MCP isolation suite with the growth tools it now calls (`pnpm test:e2e:mcp-isolation`). Done 2026-10-28 on a local hosted-mode server: 85 checks, none failed.
 
 Evidence for the completion criteria that code can show:
 

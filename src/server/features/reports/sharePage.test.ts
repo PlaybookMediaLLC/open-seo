@@ -102,8 +102,9 @@ describe("renderSharePage", () => {
       const $ = load(await (await renderSharePage(TOKEN, request())).text());
       expect($("header img.logo").attr("src")).toBe(LOGO);
       expect($("header img.logo").attr("alt")).toBe("Acme");
+      // On body: the page's own :root colors come after this style.
       expect($("style").text()).toContain(
-        "--primary:#1c4ed8;--primary-text:#ffffff",
+        "body{--primary:#1c4ed8;--primary-text:#ffffff}",
       );
       expect($("header").text().includes("Made with OpenSEO")).toBe(showsMark);
       expect($("a.btn.primary").length > 0).toBe(showsMark);
