@@ -3,6 +3,7 @@ import { chunk } from "remeda";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
+  auditEvents,
   monitoredPages,
   protectionEnrollments,
   protectionScopeChanges,
@@ -93,11 +94,12 @@ async function createEnrollment(input: {
 }
 
 /**
- * One change to the enrollment, applied only where `where` still holds, with
- * its event fenced on this write's own timestamp. A change that bumps the
- * scope inserts `scopeVersion` first: a second change from the same version
+ * One change to the enrollment, applied only where `where` still holds, and
+ * its event, which lands only with the change. A change that bumps the scope
+ * inserts `scopeVersion` first: a second change from the same version
  * collides there and its whole batch rolls back, so scope changes pass no
- * `where`. Returns whether the change landed.
+ * `where`. Returns whether the change landed, read from its event: later
+ * writes can replace the enrollment's fields, but never the event.
  */
 async function updateEnrollment(input: {
   enrollmentId: string;
@@ -105,14 +107,10 @@ async function updateEnrollment(input: {
   set: EnrollmentChanges;
   where?: SQL;
   scopeVersion?: number;
-  audit: AuditInput | null;
+  audit: AuditInput;
 }): Promise<boolean> {
   const updatedAt = new Date().toISOString();
-  const landed = and(
-    eq(protectionEnrollments.id, input.enrollmentId),
-    eq(protectionEnrollments.updatedAt, updatedAt),
-    eq(protectionEnrollments.updatedBy, input.userId),
-  );
+  const eventId = crypto.randomUUID();
   await runBatch((tx) => [
     ...(input.scopeVersion
       ? [
@@ -135,26 +133,44 @@ async function updateEnrollment(input: {
       .where(
         and(eq(protectionEnrollments.id, input.enrollmentId), input.where),
       ),
-    ...(input.audit
-      ? [
-          auditInsert(
-            tx,
-            input.audit,
-            exists(
-              tx
-                .select({ id: protectionEnrollments.id })
-                .from(protectionEnrollments)
-                .where(landed),
+    auditInsert(
+      tx,
+      { ...input.audit, id: eventId },
+      exists(
+        tx
+          .select({ id: protectionEnrollments.id })
+          .from(protectionEnrollments)
+          .where(
+            and(
+              eq(protectionEnrollments.id, input.enrollmentId),
+              eq(protectionEnrollments.updatedAt, updatedAt),
+              eq(protectionEnrollments.updatedBy, input.userId),
             ),
           ),
-        ]
-      : []),
+      ),
+    ),
   ]);
-  const [row] = await db
-    .select({ id: protectionEnrollments.id })
-    .from(protectionEnrollments)
-    .where(landed);
-  return Boolean(row);
+  const [event] = await db
+    .select({ id: auditEvents.id })
+    .from(auditEvents)
+    .where(eq(auditEvents.id, eventId));
+  return Boolean(event);
+}
+
+/** A test alert went to this reviewer; no event, as it changes no scope. */
+async function markAlertTested(
+  enrollmentId: string,
+  reviewerUserId: string,
+): Promise<void> {
+  await db
+    .update(protectionEnrollments)
+    .set({ alertTestedAt: new Date().toISOString() })
+    .where(
+      and(
+        eq(protectionEnrollments.id, enrollmentId),
+        eq(protectionEnrollments.reviewerUserId, reviewerUserId),
+      ),
+    );
 }
 
 /**
@@ -243,5 +259,6 @@ export const ProtectionRepository = {
   usersByIds,
   createEnrollment,
   updateEnrollment,
+  markAlertTested,
   savePages,
 };

@@ -26,11 +26,13 @@ export type AuditInput = {
   targetType: string;
   targetId: string;
   summary: string;
+  /** Set by a caller that checks afterwards whether the event landed. */
+  id?: string;
 };
 
 function auditRow(input: AuditInput) {
   return {
-    id: crypto.randomUUID(),
+    id: input.id ?? crypto.randomUUID(),
     organizationId: input.organizationId,
     projectId: input.projectId,
     actorType: input.actor.scheduled

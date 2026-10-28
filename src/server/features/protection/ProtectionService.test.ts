@@ -10,6 +10,7 @@ import {
   vi,
 } from "vitest";
 import { db } from "@/db";
+import { runBatch } from "@/db/runBatch";
 import { auditEvents, member, monitoredPages, user } from "@/db/schema";
 import { ProtectionService } from "./ProtectionService";
 import { ProtectionRepository } from "./repositories/ProtectionRepository";
@@ -40,6 +41,11 @@ vi.mock("cloudflare:workers", () => ({
 vi.mock("@/db", () => ({ db: database.db }));
 vi.mock("@/db/d1/client", () => ({ d1Db: database.db }));
 vi.mock("@/db/pg/client", () => ({ pgDb: database.db }));
+// Passes through, so one test can land another write right after a batch.
+vi.mock("@/db/runBatch", async (importOriginal) => {
+  const actual = await importOriginal<{ runBatch: typeof runBatch }>();
+  return { ...actual, runBatch: vi.fn(actual.runBatch) };
+});
 // No DNS in tests: the origin is the project's own domain.
 vi.mock("@/server/lib/audit/url-policy", () => ({
   normalizeAndValidateStartUrl: async (url: string) => url,
@@ -298,9 +304,8 @@ describe(`ProtectionService (${database.isPostgres ? "Postgres" : "SQLite"})`, (
       code: "FORBIDDEN",
     });
     await ProtectionService.confirmAlert(admin);
-    expect(
-      (await ProtectionService.get(owner)).enrollment?.alertConfirmedAt,
-    ).toBeTruthy();
+    const { enrollment } = await ProtectionService.get(owner);
+    expect(enrollment?.alertConfirmedAt).toBeTruthy();
     await ProtectionService.saveSettings(owner, {
       ...settings,
       reviewerUserId: owner.userId,
@@ -309,6 +314,24 @@ describe(`ProtectionService (${database.isPostgres ? "Postgres" : "SQLite"})`, (
       alertTestedAt: null,
       alertConfirmedAt: null,
     });
+  });
+
+  it("reports a confirmation that landed even when another save follows it", async () => {
+    const { owner, admin } = await site();
+    await enrolled(owner, { reviewerUserId: admin.userId });
+    await ProtectionService.sendTestAlert(owner);
+    const realRunBatch = vi.mocked(runBatch).getMockImplementation()!;
+    vi.mocked(runBatch).mockImplementationOnce(async (build) => {
+      await realRunBatch(build);
+      await ProtectionService.saveSettings(owner, {
+        ...settings,
+        reviewerUserId: admin.userId,
+        checkHourUtc: 9,
+      });
+    });
+    await ProtectionService.confirmAlert(admin);
+    const { enrollment } = await ProtectionService.get(owner);
+    expect(enrollment?.alertConfirmedAt).toBeTruthy();
   });
 
   it("refuses activation while a required item fails, and stays in setup", async () => {

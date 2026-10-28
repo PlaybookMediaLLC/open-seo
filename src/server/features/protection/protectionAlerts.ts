@@ -51,13 +51,7 @@ export async function sendTestAlert(context: ProtectionContext): Promise<void> {
     projectName: context.project.name,
     productionOrigin: enrollment.productionOrigin,
   });
-  await ProtectionRepository.updateEnrollment({
-    enrollmentId: enrollment.id,
-    userId: context.userId,
-    set: { alertTestedAt: new Date().toISOString() },
-    where: eq(protectionEnrollments.reviewerUserId, reviewerUserId),
-    audit: null,
-  });
+  await ProtectionRepository.markAlertTested(enrollment.id, reviewerUserId);
 }
 
 export async function confirmAlert(context: ProtectionContext): Promise<void> {
