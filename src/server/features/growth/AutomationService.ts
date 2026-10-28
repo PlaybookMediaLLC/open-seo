@@ -1,4 +1,4 @@
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, max } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import { GROWTH_JOB_KINDS } from "@/db/growth-jobs.schema";
@@ -91,7 +91,7 @@ export async function startSearchConsoleJobs<
 
 async function get(context: OpportunityContext, projectId: string) {
   await authorize(context, projectId);
-  const [schedules, runs] = await Promise.all([
+  const [schedules, runs, lastRuns] = await Promise.all([
     db
       .select()
       .from(growthSchedules)
@@ -102,6 +102,15 @@ async function get(context: OpportunityContext, projectId: string) {
       .where(eq(growthJobRuns.projectId, projectId))
       .orderBy(desc(growthJobRuns.createdAt), desc(growthJobRuns.id))
       .limit(RUN_LIMIT),
+    // A weekly job's last run can be older than the last RUN_LIMIT runs.
+    db
+      .select({
+        kind: growthJobRuns.kind,
+        lastRunAt: max(growthJobRuns.startedAt),
+      })
+      .from(growthJobRuns)
+      .where(eq(growthJobRuns.projectId, projectId))
+      .groupBy(growthJobRuns.kind),
   ]);
   return {
     available: (await growthJobsMode()) !== "off",
@@ -114,6 +123,7 @@ async function get(context: OpportunityContext, projectId: string) {
         interval: schedule?.interval ?? DEFAULTS[kind].interval,
         hourUtc: schedule?.hourUtc ?? DEFAULTS[kind].hourUtc,
         nextRunAt: schedule?.enabled ? schedule.nextRunAt : null,
+        lastRunAt: lastRuns.find((row) => row.kind === kind)?.lastRunAt ?? null,
         ownedByViewer: schedule?.ownerUserId === context.userId,
       };
     }),

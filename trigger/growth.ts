@@ -36,11 +36,17 @@ const BACKOFF = {
   factor: 6,
 };
 
-/** One child task per job kind; one run per project at a time. */
+/**
+ * One child task per job kind; one run per project at a time. The dispatch
+ * sets `concurrencyKey: projectId`, which copies this limit per project.
+ * shortcut: that copy means no task can also be capped at 5 overall (5.3);
+ * the environment's concurrency limit bounds it. Revisit if Trigger.dev runs.
+ */
 function growthTask(id: string, maxDuration: number, maxAttempts: number) {
   return task({
     id,
     maxDuration,
+    queue: { concurrencyLimit: 1 },
     retry: { maxAttempts, ...BACKOFF },
     run: async (payload: RunPayload, { ctx }) => {
       const response = await callWorker("/api/internal/growth/run", {
@@ -94,6 +100,8 @@ export const growthDispatch = schedules.task({
   id: "growth-dispatch",
   cron: "*/15 * * * *",
   maxDuration: 120,
+  // 5.3: one run at a time overall.
+  queue: { concurrencyLimit: 1 },
   retry: { maxAttempts: 2 },
   run: async () => {
     const response = await callWorker("/api/internal/growth/due", {});
@@ -126,6 +134,8 @@ export const spendReconcile = schedules.task({
   id: "spend-reconcile",
   cron: "*/15 * * * *",
   maxDuration: 120,
+  // 5.3: one run at a time overall.
+  queue: { concurrencyLimit: 1 },
   retry: { maxAttempts: 2 },
   run: async () => {
     const response = await callWorker("/api/internal/billing/reconcile", {});
@@ -139,6 +149,8 @@ export const growthRetention = schedules.task({
   id: "growth-retention",
   cron: "30 3 * * *",
   maxDuration: 120,
+  // 5.3: one run at a time overall.
+  queue: { concurrencyLimit: 1 },
   retry: { maxAttempts: 2 },
   run: async () => {
     const response = await callWorker("/api/internal/growth/retention", {});

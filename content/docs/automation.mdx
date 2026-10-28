@@ -52,6 +52,6 @@ To change the time or interval, click **Edit**. Times are in UTC.
 
 ## Run history
 
-The Automation tab shows the last 20 runs with their status and summary. Click **Logs** to see at most 50 log lines for a run. Relay deletes runs, logs and notifications after 180 days.
+Each job shows when it last ran and when it runs next. The Automation tab shows the last 20 runs with their status, start time, duration and summary. Click **Logs** to see at most 50 log lines for a run. Relay deletes runs, logs and notifications after 180 days.
 
-Self-hosted installs do not run scheduled jobs unless the operator sets them up. The tab then says "Scheduled jobs are not available on this installation."
+Self-hosted installs run scheduled jobs too, unless the operator turns them off with `GROWTH_JOBS_MODE=off`. The tab then says "Scheduled jobs are not available on this installation."
