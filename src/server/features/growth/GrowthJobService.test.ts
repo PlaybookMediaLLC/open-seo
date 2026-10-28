@@ -131,8 +131,18 @@ it("lists due work without changing any row", async () => {
   expect(await rows()).toEqual(before);
 });
 
+it("leaves an archived project's jobs out of the due list", async () => {
+  const { projectId } = await project();
+  await database.client.execute({
+    sql: "UPDATE projects SET archived_at = ? WHERE id = ?",
+    args: [now.toISOString(), projectId],
+  });
+  const { items } = await GrowthJobService.due(now);
+  expect(items.map((item) => item.projectId)).not.toContain(projectId);
+});
+
 it("runs a window once, keeps its log and moves the schedule to the next slot", async () => {
-  const { request, nextRunAt } = await project();
+  const { projectId, request, nextRunAt } = await project();
   expect(await GrowthJobService.run(request(), now)).toEqual({
     status: 200,
     body: {
@@ -141,6 +151,12 @@ it("runs a window once, keeps its log and moves the schedule to the next slot", 
     },
   });
   expect(await nextRunAt()).toBe("2026-10-18T06:00:00.000Z");
+  // The row keeps the real start, not the earlier cron tick passed as `now`.
+  const [row] = await db
+    .select({ startedAt: growthJobRuns.startedAt })
+    .from(growthJobRuns)
+    .where(eq(growthJobRuns.projectId, projectId));
+  expect(Date.parse(row?.startedAt ?? "")).toBeGreaterThan(now.getTime());
   expect(await db.select().from(growthJobLogs)).toContainEqual(
     expect.objectContaining({ message: "Checked 1 experiment." }),
   );

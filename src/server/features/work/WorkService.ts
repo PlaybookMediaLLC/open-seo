@@ -13,6 +13,7 @@ import {
   authorizePublishing,
   type PublishingContext,
 } from "@/server/features/publishing/publishingAccess";
+import { auditInsert } from "@/server/features/activity/auditLog";
 import { AppError } from "@/server/lib/errors";
 import type { WorkSettingsInput } from "@/types/schemas/work";
 import type { CycleEntry } from "./workCycle";
@@ -172,6 +173,16 @@ async function saveSettings(
         target: [growthSchedules.projectId, growthSchedules.kind],
         set: schedule,
       }),
+    // RFC-0008 5.7: every schedule change, and its new owner, is recorded.
+    auditInsert(tx, {
+      organizationId: context.organizationId,
+      projectId,
+      actor: context,
+      action: "schedule.changed",
+      targetType: "schedule",
+      targetId: "weekly_cycle",
+      summary: `${enabled === undefined ? "Changed" : enabled ? "Turned on" : "Turned off"} weekly cycle, next run ${week.nextRunAt}`,
+    }),
   ]);
   return { nextRunAt: week.nextRunAt };
 }

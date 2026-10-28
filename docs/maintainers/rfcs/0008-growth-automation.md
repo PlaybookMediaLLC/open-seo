@@ -1,6 +1,6 @@
 # RFC-0008: Growth automation on Trigger.dev, and notifications
 
-- **Status:** Done on 2026-10-17 for phase 1 code: part A (runner, endpoints, Trigger.dev tasks, PR #86), part B (all jobs, notifications, PR #87) and part C (audit hook, Automation tab, default schedules, PR #88). The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC.
+- **Status:** Done on 2026-10-17 for phase 1 code: part A (runner, endpoints, Trigger.dev tasks, PR #86), part B (all jobs, notifications, PR #87) and part C (audit hook, Automation tab, default schedules, PR #88). The owner decided on 2026-10-17 that the follow-ups in section 12 do not block closing this RFC. PR #206 adds each job's last run and each run's start time and duration to the Automation tab (5.10), and fixes three gaps: task queue limits (5.3), archived projects that stayed due (5.6), and the weekly cycle's missing audit event (5.7).
 - **Date:** 2026-10-15
 - **Brief section:** 9
 - **Depends on:** RFC-0001 and RFC-0009 (limits and audit log). Jobs call services from RFC-0002, RFC-0005 and RFC-0006. Needs a Trigger.dev account for Playbook Media.
@@ -86,6 +86,8 @@ Trigger.dev tasks run on Trigger.dev machines, outside Cloudflare. D1, KV, R2 an
 | `audit-followup`         | Event     | Worker, on audit complete | Key `projectId`                            | 3 attempts, same backoff               | 180 s        |
 | `spend-reconcile`        | Scheduled | `*/15 * * * *`            | 1 global                                   | 2 attempts                             | 120 s        |
 | `growth-retention`       | Scheduled | `30 3 * * *`              | 1 global                                   | 2 attempts                             | 120 s        |
+
+**As built (PR #206).** Each child task's queue allows one run, and the dispatch's `concurrencyKey` copies that limit per project. The scheduled tasks allow one run overall. Because the limit is copied per key, Trigger.dev cannot also cap `opportunity-refresh` at 5 overall; the environment's concurrency limit bounds it.
 
 `spend-reconcile` belongs to RFC-0009. `growth-retention` deletes runs, logs and notifications older than 180 days, and audit events older than 1 year.
 
@@ -176,13 +178,14 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 4. Run logs are kept in memory during the run and written, at most 50, when it ends.
 5. `GROWTH_JOBS_SECRET_PREVIOUS` holds the old secret during a rotation.
 6. The run endpoint finishes a window's `queued` rows when it succeeds or skips that window.
+7. An archived project's schedules and queued rows are not due (PR #206). Its run could never start, so they used to come back on every tick. A restored project runs once at the next tick, then moves to its next slot.
 
 ### 5.7 Permissions
 
 1. Each schedule has an `owner_user_id`. Jobs run with that user's current membership and role in the project's organization.
 2. Before each run, the Worker loads the membership. When the owner is no longer a member, or lacks the needed permission, it skips the run with "The schedule owner no longer has access." It notifies the project's managers.
 3. Creating or changing a schedule requires `integration: ["manage"]`. The editor becomes the new owner.
-4. Every schedule change writes an RFC-0009 audit event.
+4. Every schedule change writes an RFC-0009 audit event. As built: the weekly cycle settings of RFC-0018 write it too (PR #206). Default schedules that turn on with a Search Console connection or tracking start do not.
 
 ### 5.8 Jobs
 
@@ -206,7 +209,7 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 
 **Audit hook.** At the end of the site-audit workflow's successful finalize step, call a fork function that triggers `audit-followup` with the idempotency key `audit:{auditId}`. Add it with one `// playbook-seam` line in the upstream workflow file.
 
-**As built (part C).** The Worker triggers `audit-followup` through the Trigger.dev REST API, with the idempotency key `audit:{auditId}` and the concurrency key `projectId`. It needs no SDK. When the key is missing or the request fails, it writes a queued run that the next dispatch picks up. It does nothing when `GROWTH_JOBS_MODE` is `off`, and it never fails the audit. The follow-up runs as the member who started the audit. Membership is enough, because any member can start an audit; scheduled jobs still need a member who can manage integrations. Connecting Search Console turns on the opportunity refresh, the traffic watch and the recommendation re-check. Starting tracking turns on the measurement refresh and the deployment check, because tracking is where the experiment exists. Each default turns on once; a job that a member turned off stays off.
+**As built (part C).** The Worker triggers `audit-followup` through the Trigger.dev REST API, with the idempotency key `audit:{auditId}` and the concurrency key `projectId`. It needs no SDK. When the key is missing or the request fails, it writes a queued run that the next dispatch picks up. It never fails the audit. The site-audit workflow runs in the audit Worker, which the Alchemy deploys give none of the growth settings, so there it always writes the queued row, even when jobs are off; the row waits until jobs run again. The follow-up runs as the member who started the audit. Membership is enough, because any member can start an audit; scheduled jobs still need a member who can manage integrations. Connecting Search Console turns on the opportunity refresh, the traffic watch and the recommendation re-check. Starting tracking turns on the measurement refresh and the deployment check, because tracking is where the experiment exists. Each default turns on once; a job that a member turned off stays off.
 
 ### 5.9 Plan rules
 
@@ -223,6 +226,8 @@ Unique on (`project_id`, `kind`, `window_key`, `attempt`).
 5. When `GROWTH_JOBS_MODE` is `off`, the tab says "Scheduled jobs are not available on this installation."
 
 **Operators** use the Trigger.dev dashboard for live runs. Configure Trigger.dev alerts for failed runs to the team's email.
+
+**As built (PR #206).** Each job shows its last and next run, and each run in the history shows when it started and how long it took. A cron tick runs its due jobs one after another, so a run records the moment it really started, not the tick's time. Section 11's start-time criterion reads that value.
 
 ### 5.11 Email digest (phase 2)
 
@@ -336,6 +341,8 @@ The Worker cron runs the jobs now (section 5, as built), so these items apply on
 
 **Value check:** the owner gets new opportunities, traffic-drop alerts and results without opening Relay, and every automatic run is visible and explained.
 
+**With the Worker cron (section 5.1, as built).** There is no Trigger.dev dashboard to compare against; read the Automation tab and the run history instead. Each window should have one succeeded or skipped run per kind and project, and each first attempt should start within 20 minutes of its hour. A failing job retries at the next quarter-hour ticks, up to 3 attempts, then sends `job_failed`. Step 3 has no cron equivalent: the "already done" check and the unique index on (`project_id`, `kind`, `window_key`, `attempt`) stand in for it (tests). In cron mode the signed endpoints answer `404` to every request, so step 5 checks only that nothing is written. The Trigger.dev cost lines do not apply.
+
 ## 11. Completion criteria
 
 **Reliability (7 days on S1 to S3)**
@@ -380,9 +387,10 @@ Each follow-up names its trigger. Check it here when it passes.
 - [x] Turn on scheduled jobs in production: `GROWTH_JOBS_SECRET` and `TRIGGER_SECRET_KEY` in `ENV_PLAYBOOK`, `RELAY_INTERNAL_URL` and `GROWTH_JOBS_SECRET` in Trigger.dev. Trigger: the Trigger.dev project exists. Done on 2026-10-18 with the Worker cron instead, which needs no secrets. At the 11:00 UTC tick, the 4 Playbook Media jobs (opportunity refresh, measurement refresh, deployment check and recommendation re-check) succeeded on their first attempt.
 - [ ] Deploy the tasks automatically. Trigger: the maintainer reviews and merges PR #89, then adds `TRIGGER_ACCESS_TOKEN` and `TRIGGER_PROJECT_REF`. PR #89 is merged. The secrets are not needed while the Worker cron runs the jobs.
 - [ ] Trigger.dev alerts for failed runs and a monthly spend alert reach the team's email. Trigger: the Trigger.dev project exists. Not needed while the Worker cron runs the jobs: a job that fails 3 times notifies the project.
-- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production. They run since 11:00 UTC on 2026-10-18, so the 7 days end on 2026-10-25 at the earliest.
+- [ ] Real-site acceptance (section 10) and completion criteria (section 11) over 7 days on S1 to S3. Trigger: scheduled jobs run in production. They run since 11:00 UTC on 2026-10-18, so the 7 days end on 2026-10-25 at the earliest. On 2026-10-27 the window had passed, but nobody had read the results from production yet; section 13 has the steps. Runs recorded before PR #206 was deployed store the tick time as their start, which hides the delay only when several jobs share a tick.
 - [x] "RFC-0009 audit log and limits are live." Trigger: RFC-0009 is done. Done on 2026-10-18; scheduled jobs that spend now pass the limits, and their audit events show as Scheduled.
 - [x] Phase 2 email digest (section 5.11). Trigger: Loops is configured. Done on 2026-10-18 on the Cloudflare Email binding instead (PR #116). Its live check in section 9 stays open.
+- [ ] Email digests in `trigger` mode. `sendDigests` runs only on the Worker cron, which `trigger` mode turns off, so digests would stop. Trigger: the jobs move to Trigger.dev; add a `growth-digest` task (5.11) first.
 - [ ] The existing projects get their default schedules. They connected Search Console before part C, so the defaults turn on only at the next connection or tracking start. Trigger: scheduled jobs run in production; then a manager turns the jobs on in the Automation tab. Done for Playbook Media on 2026-10-18 (4 jobs). The other projects wait for a manager.
 
 Evidence for the phase 1 items that code can show:
@@ -392,3 +400,41 @@ Evidence for the phase 1 items that code can show:
 - **Permissions and plans:** a removed owner causes a skip with the reason and a `job_failed` notification. A free plan skips the traffic watch. An audit follow-up runs as the member who started the audit (tests).
 - **Audit hook:** it triggers `audit-followup` once per audit, writes a queued row when Trigger.dev fails, does nothing when jobs are off, and never fails the audit (tests).
 - **Production, 2026-10-17:** the Automation tab shows the five jobs, their defaults and the "not available" notice, and the Edit sheet opens. The notification bell is in the sidebar.
+
+## 13. How to close the open items
+
+The jobs run on the Worker cron, so these steps replace the Trigger.dev ones in section 10. Record counts and dates here, never customer names.
+
+**Production numbers (sections 10 and 11).** Run `scripts/rfc0008-acceptance.sql` with a read-only role on the production database. The script reports, since 2026-10-18 11:00 UTC: the share of windows that succeeded or were skipped, duplicate windows, overlapping runs, the latest first-attempt starts, skip and failure reasons, the notification kinds seen, and live projects without their default jobs. A second notification for one window cannot exist: the unique key on project, kind and dedupe key refuses it. The section 10 traffic step still needs one `traffic_watch` summary compared by hand with the Search Console UI for the same 7 days.
+
+**Digest live check (phase 2).**
+
+1. Sign in to Relay as a member whose inbox is a test inbox, such as the second test account after it accepts its invitation. A new member sees all of the organization's notifications as unread.
+2. Open the notification bell, choose **Email me a daily digest**, then click **Email me a test digest**. "You have no unread notifications to send" means there is nothing to send yet.
+3. Confirm that a message from `notifications@mail.playbookmedia.io` arrives and lists those notifications.
+
+**Default jobs for older projects.**
+
+1. Query 6 of the script lists live projects with Search Console or tracking but no default jobs.
+2. For each, a member who can manage integrations opens **Project settings → Automation** and turns on the jobs that fit: with Search Console, Opportunity refresh, Recommendation re-check, and Traffic watch on a paid plan; with tracking, Measurement refresh and Deployment check. That member becomes the jobs' owner.
+3. Run query 6 again. It lists none of them.
+
+**Removed owner (section 10, step 7).** This needs no staging. In a test organization, have member B save a job so B owns it, remove B from the organization, and wait for the job's hour. The run is skipped with "The schedule owner no longer has access.", and a `job_failed` notification appears.
+
+**Staging (section 10 steps 4 and 5, section 11 recovery and security).** There is no Playbook staging Worker yet. Deploy the Alchemy stack as a second stage with its own env file (the staging Hyperdrive and its own secrets), in the same way that `deploy-playbook.yml` deploys stage `playbook`. Then:
+
+1. **Retries.** Connect a staging project on a paid plan to Search Console and turn on Traffic watch; on a free plan the job is skipped before it runs. Revoke Relay's access in the Google account's third-party access settings before the job's hour. The run fails, retries at the next two quarter-hour ticks, then sends `job_failed`. Reconnect; the next window succeeds.
+2. **Pause and resume.** Set `GROWTH_JOBS_MODE=off` for 2 hours, then remove it. Each window that fell due during the pause runs once at the next tick (query 1 shows no duplicate).
+3. **Signatures.** Set `GROWTH_JOBS_SECRET` and `GROWTH_JOBS_MODE=trigger` on staging, which turns its cron off, and send bad requests. Every one must answer `404`, and no run with the window key `acceptance` may appear. Remove both settings afterwards.
+
+```sh
+HOST=https://staging.example # the staging hostname
+BODY='{"kind":"traffic_watch","projectId":"<staging project id>","scheduleId":null,"windowKey":"acceptance","attempt":1,"maxAttempts":1}'
+sign() { printf '%s.%s' "$1" "$BODY" | openssl dgst -sha256 -hmac "$GROWTH_JOBS_SECRET" -r | cut -d' ' -f1; }
+post() { curl -s -o /dev/null -w '%{http_code}\n' -X POST "$HOST/api/internal/growth/run" \
+  -H 'content-type: application/json' -H "x-relay-timestamp: $1" -H "x-relay-signature: $2" --data-raw "$BODY"; }
+now=$(date +%s)
+post "$now" "$(openssl rand -hex 32)"           # wrong signature
+post "$((now - 600))" "$(sign $((now - 600)))" # correctly signed, 10 minutes old
+for i in $(seq 1000); do post "$now" "$(openssl rand -hex 32)"; done | sort | uniq -c # expect "1000 404"
+```

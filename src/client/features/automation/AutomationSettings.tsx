@@ -70,6 +70,10 @@ type Schedule = {
   ownedByViewer: boolean;
 };
 const hour = (value: number) => `${String(value).padStart(2, "0")}:00 UTC`;
+const duration = (from: string, to: string) => {
+  const seconds = Math.round((Date.parse(to) - Date.parse(from)) / 1000);
+  return seconds < 60 ? `${seconds} s` : `${Math.round(seconds / 60)} min`;
+};
 
 /** RFC-0008 5.10: scheduled jobs, their owner and their run history. */
 export function AutomationSettings({ projectId }: { projectId: string }) {
@@ -122,6 +126,8 @@ export function AutomationSettings({ projectId }: { projectId: string }) {
                 <p className="text-xs text-muted-foreground">
                   {schedule.interval === "daily" ? "Daily" : "Weekly"} at{" "}
                   {hour(schedule.hourUtc)}
+                  {schedule.lastRunAt &&
+                    ` · last run ${new Date(schedule.lastRunAt).toLocaleString()}`}
                   {schedule.nextRunAt &&
                     ` · next run ${new Date(schedule.nextRunAt).toLocaleString()}`}
                   {schedule.enabled &&
@@ -170,6 +176,13 @@ export function AutomationSettings({ projectId }: { projectId: string }) {
                       : JOBS[run.kind].label}{" "}
                     · {run.windowKey}
                   </p>
+                  {run.startedAt && (
+                    <p className="text-xs text-muted-foreground">
+                      Started {new Date(run.startedAt).toLocaleString()}
+                      {run.finishedAt &&
+                        ` · took ${duration(run.startedAt, run.finishedAt)}`}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     {run.summary ?? run.skipReason ?? run.error ?? ""}
                   </p>
