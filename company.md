@@ -26,9 +26,9 @@ This is the company's direction, not proof that the complete platform exists or 
 
 A product change creates more work than merging code. A new integration or pricing model can affect billing entitlements, landing pages, documentation, onboarding, support replies, sales materials, customer notices, and acquisition channels. Those systems have different owners and update cycles. The product may be correct while the company continues to make inaccurate promises.
 
-Consider an illustrative pricing change for *new US Business-plan customers*. Correcting the pricing page does not prove that checkout matches the offer, existing customers keep grandfathered terms, documentation lists the new limits, or sales briefs use the right eligibility rules. Relay's proposed responsibility is to establish those scoped facts, find affected claims and journeys, prepare authorized changes, and independently check their destinations.
+Consider an illustrative pricing change for _new US Business-plan customers_. Correcting the pricing page does not prove that checkout matches the offer, existing customers keep grandfathered terms, documentation lists the new limits, or sales briefs use the right eligibility rules. Relay's proposed responsibility is to establish those scoped facts, find affected claims and journeys, prepare authorized changes, and independently check their destinations.
 
-Most teams already own tools that solve individual parts of this work. Relay should coordinate the unfinished work *between* them rather than replace analytics, billing, support, CRM, feature flags, or CI. The business only works if customers recognize the recurring costs of missed changes and will pay for verified completion.
+Most teams already own tools that solve individual parts of this work. Relay should coordinate the unfinished work _between_ them rather than replace analytics, billing, support, CRM, feature flags, or CI. The business only works if customers recognize the recurring costs of missed changes and will pay for verified completion.
 
 ## Customer and first commercial scope
 
@@ -45,11 +45,11 @@ Agencies and portfolios follow repeatable single-company delivery. The broader a
 
 ## Three flagship offers
 
-| Offer | Work customers would pay for | Buyer | Delivery and pricing status |
-| --- | --- | --- | --- |
-| **Relay Protect** | Monitor selected production pages, confirm harmful regressions, propose source-backed fixes, and verify that customer-deployed repairs work. Expand to signup, demo, checkout and tracking checks when validated. | Founder, technical growth or engineering leader | **Initial paid entry.** Per protected site/month, priced and scoped with pilot customers; broader journeys are planned. |
-| **Relay Sync** | Reconcile scoped, versioned product facts with pricing, feature, integration, marketing and documentation claims. Prepare approved corrections and verify publication. | Product operations, marketing, support or founder | **Planned expansion.** $299–$999/month is a hypothesis, not a live plan. |
-| **Relay Launch** | Coordinate fact-backed website changes, docs, announcements, sales assets, owners and evidence of publication after a meaningful release. | Product marketing, growth or founder | **Planned expansion.** $399–$1,499/month is a hypothesis, not a live plan. |
+| Offer             | Work customers would pay for                                                                                                                                                                                      | Buyer                                             | Delivery and pricing status                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Relay Protect** | Monitor selected production pages, confirm harmful regressions, propose source-backed fixes, and verify that customer-deployed repairs work. Expand to signup, demo, checkout and tracking checks when validated. | Founder, technical growth or engineering leader   | **Initial paid entry.** Per protected site/month, priced and scoped with pilot customers; broader journeys are planned. |
+| **Relay Sync**    | Reconcile scoped, versioned product facts with pricing, feature, integration, marketing and documentation claims. Prepare approved corrections and verify publication.                                            | Product operations, marketing, support or founder | **Planned expansion.** $299–$999/month is a hypothesis, not a live plan.                                                |
+| **Relay Launch**  | Coordinate fact-backed website changes, docs, announcements, sales assets, owners and evidence of publication after a meaningful release.                                                                         | Product marketing, growth or founder              | **Planned expansion.** $399–$1,499/month is a hypothesis, not a live plan.                                              |
 
 These are three offers using one shared operational model, not three separate sources of truth. Initial sales require bounded contracts: monitored pages and assets, check cadence, permissions, usage limits, support expectations, and named decision-makers. Do not sell unlimited agent execution or assume production automation is ready.
 
@@ -87,12 +87,12 @@ GitHub detachment did not disable the existing upstream-sync workflow. Review in
 
 Engineers and coding agents should start at the [implementation index: IRFC-0001–0033](docs/maintainers/rfcs/implementation/README.md). Each IRFC names the exact technical slice, the original detailed RFC, its prerequisites, required acceptance evidence, and what is deferred. Original RFC-0001–0046 numbers remain stable historical design references; completed scopes are not to be implemented again.
 
-| Implementation order | Milestone | Investment gate |
-| --- | --- | --- |
-| **IRFC-0001–0007** | Protect: paid pilot, monitored pages, confirmed incidents, reviewed source repairs, previews, production verification and recurring reporting. | Actual payments and working customer-owned repair outcomes, with manageable cost and reliable coverage. |
-| **IRFC-0008–0019** | Product Reality Engine's minimum useful slice and Relay Sync: accepted facts → affected claims → authorized corrections → verified results. | A buyer repeatedly pays for an accurately detected, corrected and independently verified inconsistency. |
-| **IRFC-0020–0022** | Customer-created page launch checks, approved Relay Launch packets and selective read-only API/MCP access. | Repeated releases coordinated and used by customers; no assumption that read-only integrations require a new platform. |
-| **IRFC-0023–0033** | Broader growth, journeys, revenue integrity, support, sales, delegated authority, sandboxes and portfolios. | Demand, safety and cost gates for each optional workflow. Skip or defer failures rather than manufacture implementation work. |
+| Implementation order | Milestone                                                                                                                                      | Investment gate                                                                                                               |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **IRFC-0001–0007**   | Protect: paid pilot, monitored pages, confirmed incidents, reviewed source repairs, previews, production verification and recurring reporting. | Actual payments and working customer-owned repair outcomes, with manageable cost and reliable coverage.                       |
+| **IRFC-0008–0019**   | Product Reality Engine's minimum useful slice and Relay Sync: accepted facts → affected claims → authorized corrections → verified results.    | A buyer repeatedly pays for an accurately detected, corrected and independently verified inconsistency.                       |
+| **IRFC-0020–0022**   | Customer-created page launch checks, approved Relay Launch packets and selective read-only API/MCP access.                                     | Repeated releases coordinated and used by customers; no assumption that read-only integrations require a new platform.        |
+| **IRFC-0023–0033**   | Broader growth, journeys, revenue integrity, support, sales, delegated authority, sandboxes and portfolios.                                    | Demand, safety and cost gates for each optional workflow. Skip or defer failures rather than manufacture implementation work. |
 
 **Sequence is about proven customer outcomes, not the number of implemented RFCs.** Discovery can happen in parallel; a paid validation failure should change the investment decision. Coding agents should inspect the current branch before each item, reuse existing code and preserve human approval and independent production verification.
 
