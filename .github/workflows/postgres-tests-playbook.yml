@@ -70,4 +70,5 @@ jobs:
           src/server/features/seo-checks
           src/server/features/split-tests
           src/server/features/portfolio
+          src/server/features/reports/services/ReportBrandingService.test.ts
           --no-file-parallelism
