@@ -100,6 +100,25 @@ it("narrows approval to a project's listed members, and back", async () => {
   expect(await approves(approver.context, projectId)).toBe(true);
 });
 
+it("keeps one of two concurrent approver lists, not both", async () => {
+  const { projectId, owner, admin, approver } = await organization();
+  await Promise.all(
+    [admin, approver].map((listed) =>
+      PublishingApproverService.save(owner.context, {
+        projectId,
+        memberIds: [listed.memberId],
+      }),
+    ),
+  );
+  expect(
+    (
+      await Promise.all(
+        [admin, approver].map((listed) => approves(listed.context, projectId)),
+      )
+    ).filter(Boolean),
+  ).toHaveLength(1);
+});
+
 it("refuses a pull request from a member who may not approve, before any GitHub work", async () => {
   const { projectId, admin } = await organization();
   await expect(

@@ -1,7 +1,12 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
-import { member, projectPublishingApprovers, user } from "@/db/schema";
+import {
+  member,
+  projectPublishingApprovers,
+  projects,
+  user,
+} from "@/db/schema";
 import {
   auditInsert,
   type AuditInput,
@@ -84,6 +89,12 @@ export async function replaceApprovers(input: {
 }): Promise<void> {
   const createdAt = new Date().toISOString();
   await runBatch((tx) => [
+    // Row-lock the project first, as transferOwnership does: on Postgres a
+    // concurrent save waits here instead of merging its list with this one.
+    tx
+      .update(projects)
+      .set({ id: sql`${projects.id}` })
+      .where(eq(projects.id, input.projectId)),
     auditInsert(tx, input.audit),
     tx
       .delete(projectPublishingApprovers)
