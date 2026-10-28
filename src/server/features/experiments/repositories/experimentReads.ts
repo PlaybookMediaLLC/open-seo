@@ -1,4 +1,16 @@
-import { and, asc, count, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  ne,
+  sql,
+  type SQL,
+} from "drizzle-orm";
+import { groupBy } from "remeda";
 import { db } from "@/db";
 import {
   ga4DateInTimeZone,
@@ -9,6 +21,7 @@ import {
   measurementRuns,
   measurementDays,
   opportunities,
+  projects,
   proposalExecutions,
 } from "@/db/schema";
 import type {
@@ -29,7 +42,7 @@ import {
 import { listSignals } from "./deploymentSignals";
 
 /** The newest COMPLETED run, so a later failed attempt never hides a result. */
-const latestRun = (projectId: string) =>
+const latestRun = (projectId: string | SQL) =>
   eq(
     measurementRuns.id,
     sql`(select latest.id from ${measurementRuns} latest where latest.project_id = ${projectId} and latest.experiment_id = ${growthExperiments.id} and latest.status = 'completed' and latest.measurement_window = 'primary' order by latest.started_at desc, latest.id desc limit 1)`,
@@ -92,22 +105,64 @@ export async function list(input: ExperimentListInput): Promise<{
       .where(eq(growthExperiments.projectId, input.projectId))
       .groupBy(measurementRuns.windowComplete, measurementRuns.outcome),
   ]);
+  return {
+    items,
+    total: totals[0]?.total ?? 0,
+    summary: labelSummary(labels),
+  };
+}
+
+function labelSummary(
+  rows: readonly {
+    windowComplete: boolean | null;
+    outcome: ExperimentLabel | null;
+    total: number;
+  }[],
+): Record<ExperimentLabel, number> {
   const counted = (name: ExperimentLabel) =>
-    labels
+    rows
       .filter(
         (row) => (row.windowComplete ? row.outcome : "measuring") === name,
       )
       .reduce((sum, row) => sum + Number(row.total), 0);
   return {
-    items,
-    total: totals[0]?.total ?? 0,
-    summary: {
-      encouraging: counted("encouraging"),
-      inconclusive: counted("inconclusive"),
-      negative: counted("negative"),
-      measuring: counted("measuring"),
-    },
+    encouraging: counted("encouraging"),
+    inconclusive: counted("inconclusive"),
+    negative: counted("negative"),
+    measuring: counted("measuring"),
   };
+}
+
+/** RFC-0007 6.1: each active project's experiments by label, in one query. */
+export async function labelCountsForOrganization(
+  organizationId: string,
+): Promise<Map<string, Record<ExperimentLabel, number>>> {
+  const rows = await db
+    .select({
+      projectId: growthExperiments.projectId,
+      windowComplete: measurementRuns.windowComplete,
+      outcome: measurementRuns.outcome,
+      total: count(),
+    })
+    .from(growthExperiments)
+    .innerJoin(projects, eq(projects.id, growthExperiments.projectId))
+    .leftJoin(measurementRuns, latestRun(sql`${growthExperiments.projectId}`))
+    .where(
+      and(
+        eq(projects.organizationId, organizationId),
+        isNull(projects.archivedAt),
+      ),
+    )
+    .groupBy(
+      growthExperiments.projectId,
+      measurementRuns.windowComplete,
+      measurementRuns.outcome,
+    );
+  return new Map(
+    Object.entries(groupBy(rows, (row) => row.projectId)).map(
+      ([projectId, group]) => [projectId, labelSummary(group)],
+    ),
+  );
 }
 
 export async function get(

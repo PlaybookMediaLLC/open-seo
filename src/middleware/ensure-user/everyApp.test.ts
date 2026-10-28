@@ -60,7 +60,8 @@ describe("AUTH_MODE=everyapp", () => {
       userEmail: "ana@example.com",
       emailVerified: true,
       organizationId: "shared-workspace",
-      role: "admin",
+      // playbook-seam: RFC-0007 6.4, gateway admins keep approving.
+      role: "admin,approver",
     });
     await expect(
       resolveEveryAppContext(await signedBy("guest")),

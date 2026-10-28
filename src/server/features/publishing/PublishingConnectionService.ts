@@ -10,6 +10,7 @@ import {
 import { createGithubClient } from "./githubClient";
 import {
   authorizePublishing,
+  canApprove,
   connectionSummary,
   publishingEncryptionKey,
   publishingFailure,
@@ -32,6 +33,7 @@ async function get(context: PublishingContext, projectId: string) {
   return {
     configured: Boolean(key),
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    canApprove: await canApprove(context, projectId),
     connection: connection ? connectionSummary(connection) : null,
     appRevoked:
       connection?.transport === "github_app" &&

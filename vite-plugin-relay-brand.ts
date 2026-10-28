@@ -132,6 +132,30 @@ import type { Plugin } from "vite";
  * - src/client/features/dashboard/DashboardPage.tsx: shows the This week
  *   card at the top of the project home
  *   (src/client/features/work/ThisWeekCard.tsx).
+ * - src/lib/org-permissions.ts: the publishing:approve statement, held by
+ *   owners and the approver role (RFC-0007 6.4). src/lib/auth.ts: the member
+ *   role hook refuses approver changes (src/server/auth/member-approval.ts).
+ *   src/middleware/ensure-user/everyApp.ts and its test: gateway admins keep
+ *   approval.
+ * - src/client/features/team/TeamSettings.tsx and TeamTableRows.tsx: owners
+ *   grant or remove a member's approval.
+ * - src/routes/_app/p/$projectId/settings/integrations.tsx: mounts the
+ *   project's approvers (src/client/features/publishing/
+ *   PublishingApproversCard.tsx, RFC-0007 6.5).
+ * - src/client/features/projects/ProjectSwitcher.tsx: links the Portfolio page
+ *   (src/client/features/portfolio/PortfolioPage.tsx, RFC-0007 6.1).
+ * - src/server/features/dashboard/services/DashboardCacheService.ts and
+ *   DashboardSiteService.ts: a cache-only read of the dashboard's stored
+ *   Search Console queries for the portfolio comparison (RFC-0007 6.2).
+ * - src/routes/_app/settings/organization.tsx: mounts shared report branding
+ *   and agency access (src/client/features/reports/ReportBrandingSettings.tsx,
+ *   src/client/features/portfolio/AgencyLinksSettings.tsx; RFC-0007 6.6-6.7).
+ * - src/server/features/reports/sharePage.tsx, reportSocialImage.tsx and
+ *   src/routes/s/$token/og[.]png.ts: shared reports and their link previews
+ *   show the organization's branding, without the Relay mark on a paid plan
+ *   (src/server/features/reports/services/ReportBrandingService.ts).
+ * - src/server/mcp/tools/report-template-tools.ts: list_report_templates
+ *   returns the organization's brand color.
  */
 const RELAY = "https://relay.playbookmedia.io";
 

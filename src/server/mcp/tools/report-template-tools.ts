@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ReportBrandingService } from "@/server/features/reports/services/ReportBrandingService"; // playbook-seam
 import { ReportTemplateService } from "@/server/features/reports/services/ReportTemplateService";
 import { captureServerEvent } from "@/server/lib/posthog";
 import { DEFAULT_CLIENT_LABEL } from "@/server/mcp/client-label";
@@ -32,6 +33,7 @@ const listInputSchema = { projectId: projectIdSchema } as const;
 const listOutputSchema = z.looseObject({
   templates: z.array(looseObjectOutputSchema),
   remaining: z.number(),
+  brandColor: z.string().nullable(), // playbook-seam: RFC-0007 6.7
   ...optionalMetaOutputSchema,
 });
 
@@ -53,6 +55,13 @@ export const listReportTemplatesTool = {
     async (args: z.infer<z.ZodObject<typeof listInputSchema>>, context) => {
       const { templates, remaining } =
         await ReportTemplateService.listReportTemplates(args.projectId);
+      // playbook-seam: RFC-0007 6.7, the organization's brand color.
+      const brandColor = await ReportBrandingService.brandColor(
+        context.auth.organizationId,
+      );
+      const brandLine = brandColor
+        ? `\n\nOrganization brand color: ${brandColor}. Use it as the report's --accent unless the template sets its own accent.`
+        : "";
 
       const blocks = templates.map((template) =>
         [
@@ -65,9 +74,10 @@ export const listReportTemplatesTool = {
 
       return mcpResponse({
         text:
-          templates.length > 0
+          (templates.length > 0
             ? blocks.join("\n\n---\n\n")
-            : "This project has no report templates. Reports use the running skill's own format.",
+            : "This project has no report templates. Reports use the running skill's own format.") +
+          brandLine, // playbook-seam
         meta: buildProjectMeta(
           context,
           args.projectId,
@@ -82,6 +92,7 @@ export const listReportTemplatesTool = {
             updatedAt: template.updatedAt,
           })),
           remaining,
+          brandColor, // playbook-seam
         },
       });
     },

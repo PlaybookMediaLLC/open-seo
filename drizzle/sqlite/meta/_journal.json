@@ -757,6 +757,13 @@
       "when": 1793136082080,
       "tag": "0107_steep_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "6",
+      "when": 1793142496371,
+      "tag": "0108_loving_katie_power",
+      "breakpoints": true
     }
   ]
 }

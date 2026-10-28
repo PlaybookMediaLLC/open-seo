@@ -25,6 +25,7 @@ import { Route as Char91DotwellKnownChar93OpenaiAppsChallengeRouteImport } from 
 import { Route as AppAiRouteImport } from './routes/_app/ai'
 import { Route as AppAppRouteImport } from './routes/_app/app'
 import { Route as AppBillingRouteImport } from './routes/_app/billing'
+import { Route as AppPortfolioRouteImport } from './routes/_app/portfolio'
 import { Route as AppProjectsRouteImport } from './routes/_app/projects'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppSupportRouteImport } from './routes/_app/support'
@@ -185,6 +186,11 @@ const AppAppRoute = AppAppRouteImport.update({
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppPortfolioRoute = AppPortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppProjectsRoute = AppProjectsRouteImport.update({
@@ -645,6 +651,7 @@ export interface FileRoutesByFullPath {
   '/ai': typeof AppAiRoute
   '/app': typeof AppAppRoute
   '/billing': typeof AppBillingRoute
+  '/portfolio': typeof AppPortfolioRoute
   '/projects': typeof AppProjectsRoute
   '/settings': typeof AppSettingsRouteWithChildren
   '/support': typeof AppSupportRoute
@@ -742,6 +749,7 @@ export interface FileRoutesByTo {
   '/ai': typeof AppAiRoute
   '/app': typeof AppAppRoute
   '/billing': typeof AppBillingRoute
+  '/portfolio': typeof AppPortfolioRoute
   '/projects': typeof AppProjectsRoute
   '/support': typeof AppSupportRoute
   '/sign-in': typeof AuthSignInRoute
@@ -837,6 +845,7 @@ export interface FileRoutesById {
   '/_app/ai': typeof AppAiRoute
   '/_app/app': typeof AppAppRoute
   '/_app/billing': typeof AppBillingRoute
+  '/_app/portfolio': typeof AppPortfolioRoute
   '/_app/projects': typeof AppProjectsRoute
   '/_app/settings': typeof AppSettingsRouteWithChildren
   '/_app/support': typeof AppSupportRoute
@@ -936,6 +945,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/app'
     | '/billing'
+    | '/portfolio'
     | '/projects'
     | '/settings'
     | '/support'
@@ -1033,6 +1043,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/app'
     | '/billing'
+    | '/portfolio'
     | '/projects'
     | '/support'
     | '/sign-in'
@@ -1127,6 +1138,7 @@ export interface FileRouteTypes {
     | '/_app/ai'
     | '/_app/app'
     | '/_app/billing'
+    | '/_app/portfolio'
     | '/_app/projects'
     | '/_app/settings'
     | '/_app/support'
@@ -1365,6 +1377,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/portfolio': {
+      id: '/_app/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AppPortfolioRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/projects': {
@@ -2104,6 +2123,7 @@ interface AppRouteRouteChildren {
   AppAiRoute: typeof AppAiRoute
   AppAppRoute: typeof AppAppRoute
   AppBillingRoute: typeof AppBillingRoute
+  AppPortfolioRoute: typeof AppPortfolioRoute
   AppProjectsRoute: typeof AppProjectsRoute
   AppSettingsRoute: typeof AppSettingsRouteWithChildren
   AppSupportRoute: typeof AppSupportRoute
@@ -2117,6 +2137,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAiRoute: AppAiRoute,
   AppAppRoute: AppAppRoute,
   AppBillingRoute: AppBillingRoute,
+  AppPortfolioRoute: AppPortfolioRoute,
   AppProjectsRoute: AppProjectsRoute,
   AppSettingsRoute: AppSettingsRouteWithChildren,
   AppSupportRoute: AppSupportRoute,

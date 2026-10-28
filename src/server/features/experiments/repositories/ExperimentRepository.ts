@@ -6,6 +6,7 @@ import {
   getExecutionHistory,
   getForExecution,
   hasOverlappingChanges,
+  labelCountsForOrganization,
   list,
 } from "./experimentReads";
 import { recordPullStatus, register } from "./experimentRegistration";
@@ -13,6 +14,7 @@ import { failRun, startRun } from "./measurementRuns";
 
 export const ExperimentRepository = {
   list,
+  labelCountsForOrganization,
   get,
   getForExecution,
   getExecutionHistory,

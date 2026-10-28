@@ -9,7 +9,7 @@ import {
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { projects } from "./app.schema";
-import { organization } from "./better-auth-schema";
+import { member, organization } from "./better-auth-schema";
 import { opportunities, opportunityRuns } from "./opportunities.schema";
 import { proposalDrafts } from "./proposal-drafts.schema";
 
@@ -335,4 +335,22 @@ export const githubAppInstallationRepositories = pgTable(
     repositoryId: text("repository_id").notNull(),
   },
   (t) => [primaryKey({ columns: [t.installationRef, t.repositoryId] })],
+);
+
+// RFC-0007 6.5: who may approve this project's pull requests. No rows means
+// every member holding publishing:approve; rows narrow that to these members.
+// Owners always may. Removing a member removes their rows.
+export const projectPublishingApprovers = pgTable(
+  "project_publishing_approvers",
+  {
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    memberId: text("member_id")
+      .notNull()
+      .references(() => member.id, { onDelete: "cascade" }),
+    grantedByUserId: text("granted_by_user_id").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.memberId] })],
 );

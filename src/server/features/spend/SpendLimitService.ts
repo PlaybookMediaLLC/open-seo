@@ -1,13 +1,14 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
-import { projects, spendLedger, spendLimits } from "@/db/schema";
+import { spendLedger, spendLimits } from "@/db/schema";
 import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { auditInsert } from "@/server/features/activity/auditLog";
 import {
   committedCredits,
   limitUse,
+  organizationSpend,
   periodOf,
 } from "@/server/billing/spendQueries";
 import {
@@ -21,55 +22,9 @@ const canManage = (context: OpportunityContext) =>
   hasOrgPermission(context.role, { billing: ["manage"] });
 
 async function organization(context: OpportunityContext) {
-  const { organizationId } = context;
-  const periodMonth = periodOf(new Date());
-  const inPeriod = and(
-    eq(spendLedger.organizationId, organizationId),
-    eq(spendLedger.periodMonth, periodMonth),
-  );
-  const [limits, projectRows, byProject, byFeature] = await Promise.all([
-    db
-      .select()
-      .from(spendLimits)
-      .where(eq(spendLimits.organizationId, organizationId)),
-    db
-      .select({ id: projects.id, name: projects.name })
-      .from(projects)
-      .where(
-        and(
-          eq(projects.organizationId, organizationId),
-          isNull(projects.archivedAt),
-        ),
-      ),
-    db
-      .select({ projectId: spendLedger.projectId, credits: committedCredits })
-      .from(spendLedger)
-      .where(inPeriod)
-      .groupBy(spendLedger.projectId),
-    db
-      .select({ feature: spendLedger.feature, credits: committedCredits })
-      .from(spendLedger)
-      .where(inPeriod)
-      .groupBy(spendLedger.feature),
-  ]);
-  const spentOn = (projectId: string | null) =>
-    Number(byProject.find((row) => row.projectId === projectId)?.credits ?? 0);
   return {
-    periodMonth,
+    ...(await organizationSpend(context.organizationId)),
     canManage: canManage(context),
-    limit:
-      limits.find((row) => row.projectId === null)?.monthlyLimitCredits ?? null,
-    committed: byProject.reduce((sum, row) => sum + Number(row.credits), 0),
-    projects: projectRows.map((row) => ({
-      ...row,
-      committed: spentOn(row.id),
-      limit:
-        limits.find((limitRow) => limitRow.projectId === row.id)
-          ?.monthlyLimitCredits ?? null,
-    })),
-    features: byFeature
-      .map((row) => ({ feature: row.feature, committed: Number(row.credits) }))
-      .filter((row) => row.committed > 0),
   };
 }
 

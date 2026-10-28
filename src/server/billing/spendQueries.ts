@@ -1,6 +1,6 @@
-import { eq, sql, type SQL } from "drizzle-orm";
+import { and, eq, isNull, sql, type SQL } from "drizzle-orm";
 import { db } from "@/db";
-import { spendLedger, spendLimits } from "@/db/schema";
+import { projects, spendLedger, spendLimits } from "@/db/schema";
 
 // RFC-0009 5.2: committed spend for a month is the real cost once known,
 // plus the estimate of rows that are still admitted.
@@ -51,4 +51,71 @@ export async function limitUse(
       row.projectId ? (totals?.project ?? 0) : (totals?.organization ?? 0),
     ),
   }));
+}
+
+/**
+ * This month's committed spend and the limits of an organization and each of
+ * its active projects (RFC-0009 5.5). Shared by the spending card and the
+ * portfolio summary (RFC-0007 6.1); callers authorize the organization.
+ */
+export async function organizationSpend(organizationId: string): Promise<{
+  periodMonth: string;
+  limit: number | null;
+  committed: number;
+  projects: {
+    id: string;
+    name: string;
+    committed: number;
+    limit: number | null;
+  }[];
+  features: { feature: string | null; committed: number }[];
+}> {
+  const periodMonth = periodOf(new Date());
+  const inPeriod = and(
+    eq(spendLedger.organizationId, organizationId),
+    eq(spendLedger.periodMonth, periodMonth),
+  );
+  const [limits, projectRows, byProject, byFeature] = await Promise.all([
+    db
+      .select()
+      .from(spendLimits)
+      .where(eq(spendLimits.organizationId, organizationId)),
+    db
+      .select({ id: projects.id, name: projects.name })
+      .from(projects)
+      .where(
+        and(
+          eq(projects.organizationId, organizationId),
+          isNull(projects.archivedAt),
+        ),
+      ),
+    db
+      .select({ projectId: spendLedger.projectId, credits: committedCredits })
+      .from(spendLedger)
+      .where(inPeriod)
+      .groupBy(spendLedger.projectId),
+    db
+      .select({ feature: spendLedger.feature, credits: committedCredits })
+      .from(spendLedger)
+      .where(inPeriod)
+      .groupBy(spendLedger.feature),
+  ]);
+  const spentOn = (projectId: string | null) =>
+    Number(byProject.find((row) => row.projectId === projectId)?.credits ?? 0);
+  return {
+    periodMonth,
+    limit:
+      limits.find((row) => row.projectId === null)?.monthlyLimitCredits ?? null,
+    committed: byProject.reduce((sum, row) => sum + Number(row.credits), 0),
+    projects: projectRows.map((row) => ({
+      ...row,
+      committed: spentOn(row.id),
+      limit:
+        limits.find((limitRow) => limitRow.projectId === row.id)
+          ?.monthlyLimitCredits ?? null,
+    })),
+    features: byFeature
+      .map((row) => ({ feature: row.feature, committed: Number(row.credits) }))
+      .filter((row) => row.committed > 0),
+  };
 }

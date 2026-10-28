@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   sharesEnabled: vi.fn(),
   getSharedReportByToken: vi.fn(),
   renderReportSocialImage: vi.fn(),
+  forShare: vi.fn(),
 }));
 
 vi.mock("@/server/features/reports/shareAccess", () => ({
@@ -17,6 +18,9 @@ vi.mock("@/server/features/reports/repositories/ReportRepository", () => ({
 vi.mock("@/server/features/reports/reportSocialImage", () => ({
   renderReportSocialImage: mocks.renderReportSocialImage,
 }));
+vi.mock("@/server/features/reports/services/ReportBrandingService", () => ({
+  ReportBrandingService: { forShare: mocks.forShare },
+}));
 
 const TOKEN = "a".repeat(32);
 
@@ -28,6 +32,7 @@ beforeEach(() => {
     archived: false,
   });
   mocks.renderReportSocialImage.mockResolvedValue(new Response("image"));
+  mocks.forShare.mockResolvedValue(null);
 });
 
 describe("report social image access", () => {
@@ -37,8 +42,24 @@ describe("report social image access", () => {
     expect(mocks.renderReportSocialImage).toHaveBeenCalledWith(
       "Acme SEO audit",
       "acme.com",
+      null,
     );
     expect(await response.text()).toBe("image");
+  });
+
+  // RFC-0007 6.7: a white-label card names the organization, not Relay.
+  it("names a white-label organization instead of Relay", async () => {
+    mocks.forShare.mockResolvedValue({
+      organizationName: "Acme Agency",
+      branding: { brandColor: "#112233", logoDataUrl: null },
+      hideRelayMark: true,
+    });
+    await handleReportSocialImage(TOKEN);
+    expect(mocks.renderReportSocialImage).toHaveBeenCalledWith(
+      "Acme SEO audit",
+      "acme.com",
+      { name: "Acme Agency", logo: null },
+    );
   });
 
   it("falls back to the marketing card on rendering failure and retries next time", async () => {

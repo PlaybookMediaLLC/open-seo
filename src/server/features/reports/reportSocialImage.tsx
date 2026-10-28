@@ -6,6 +6,8 @@ import logo from "../../../public/android-chrome-192x192.png?inline";
 export async function renderReportSocialImage(
   title: string,
   projectDomain?: string | null,
+  // playbook-seam: RFC-0007 6.7, a white-label card names the organization.
+  brand?: { name: string; logo: string | null } | null,
 ): Promise<Response> {
   // Projects normally store a bare domain. Also handle older full URLs, and
   // omit missing/invalid websites rather than failing an otherwise valid card.
@@ -24,9 +26,16 @@ export async function renderReportSocialImage(
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <img src={logo} width={64} height={64} style={{ borderRadius: 14 }} />
+        {brand?.logo === null ? null : ( // playbook-seam
+          <img
+            src={brand?.logo ?? logo}
+            height={64}
+            style={{ borderRadius: 14, maxWidth: 320, objectFit: "contain" }}
+          />
+        )}
         <div style={{ fontSize: 34, fontWeight: 600, letterSpacing: -1 }}>
-          OpenSEO
+          {brand?.name ?? "OpenSEO"}
+          {/* playbook-seam */}
         </div>
       </div>
       <div

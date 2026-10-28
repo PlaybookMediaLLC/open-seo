@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ReportRepository } from "@/server/features/reports/repositories/ReportRepository";
+import { ReportBrandingService } from "@/server/features/reports/services/ReportBrandingService"; // playbook-seam
 import {
   SHARE_TOKEN_PATTERN,
   sharesEnabled,
@@ -22,7 +23,18 @@ export async function handleReportSocialImage(
   try {
     const { renderReportSocialImage } =
       await import("@/server/features/reports/reportSocialImage");
-    return await renderReportSocialImage(report.title, report.projectDomain);
+    // playbook-seam: RFC-0007 6.7, no Relay mark on a white-label card.
+    const brand = await ReportBrandingService.forShare(report.organizationId);
+    return await renderReportSocialImage(
+      report.title,
+      report.projectDomain,
+      brand?.hideRelayMark
+        ? {
+            name: brand.organizationName,
+            logo: brand.branding?.logoDataUrl ?? null,
+          }
+        : null,
+    );
   } catch (error) {
     console.error("Report social image rendering failed", error);
     return new Response(null, {

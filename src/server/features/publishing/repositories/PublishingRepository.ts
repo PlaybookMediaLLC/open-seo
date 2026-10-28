@@ -23,6 +23,12 @@ import {
 } from "./githubAppInstallations";
 import { markReverted } from "./markReverted";
 import { claimTicket, completeTicket, getTicket } from "./opportunityTickets";
+import {
+  listApproverCandidates,
+  listApproverUserIds,
+  membersIn,
+  replaceApprovers,
+} from "./publishingApprovers";
 
 export const PublishingRepository = {
   getConnection,
@@ -47,4 +53,8 @@ export const PublishingRepository = {
   listInstallationRepositoryIds,
   getInstallation,
   revokeInstallation,
+  listApproverUserIds,
+  listApproverCandidates,
+  membersIn,
+  replaceApprovers,
 };

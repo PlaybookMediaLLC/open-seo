@@ -8,6 +8,7 @@ import {
   type OpportunityContext,
 } from "@/server/features/opportunities/services/opportunityAccess";
 import {
+  authorizeApproval,
   connectedGithub,
   withPublishingClaim,
 } from "@/server/features/publishing/publishingAccess";
@@ -124,8 +125,7 @@ async function end(
   input: { projectId: string; testId: string; action: Action; hash: string },
 ) {
   // Another organization gets "not found", never the claim's conflict.
-  await authorize(context, input.projectId);
-  requireOrgPermission(context, { integration: ["manage"] });
+  await authorizeApproval(context, input.projectId);
   return withPublishingClaim(context, input.projectId, async (_, signal) => {
     const planned = await plan(context, input, signal);
     const { test, connection, client, template } = planned;

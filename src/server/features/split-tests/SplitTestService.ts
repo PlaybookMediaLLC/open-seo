@@ -11,7 +11,10 @@ import {
   authorize,
   type OpportunityContext,
 } from "@/server/features/opportunities/services/opportunityAccess";
-import { connectedGithub } from "@/server/features/publishing/publishingAccess";
+import {
+  canApprove,
+  connectedGithub,
+} from "@/server/features/publishing/publishingAccess";
 import { getConnection } from "@/server/features/publishing/repositories/publishingConnections";
 import { AppError } from "@/server/lib/errors";
 import type { CreateSplitTestInput } from "@/types/schemas/splitTests";
@@ -93,6 +96,7 @@ async function get(
     variantClicks: total("variant"),
     controlClicks: total("control"),
     canManage: hasOrgPermission(context.role, { integration: ["manage"] }),
+    canApprove: await canApprove(context, input.projectId),
     series: groupSeries(test, pages, days),
     ...(await latestResults(input.projectId, input.testId)),
   };

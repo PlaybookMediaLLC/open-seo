@@ -69,4 +69,5 @@ jobs:
           src/server/features/growth
           src/server/features/seo-checks
           src/server/features/split-tests
+          src/server/features/portfolio
           --no-file-parallelism

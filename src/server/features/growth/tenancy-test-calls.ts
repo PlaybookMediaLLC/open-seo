@@ -23,6 +23,7 @@ import { MetadataProposalService } from "@/server/features/publishing/MetadataPr
 import { ProposalDraftService } from "@/server/features/publishing/ProposalDraftService";
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
+import { PublishingApproverService } from "@/server/features/publishing/PublishingApproverService";
 
 import { accessibilityCalls } from "./tenancy-test-calls-accessibility";
 import { conversionCalls } from "./tenancy-test-calls-conversion";
@@ -182,6 +183,11 @@ export function tenancyCalls(seed: Seed, ctx: typeof INTRUDER): Calls {
           expectedVersion: 1,
           confirmRecovery: true,
         }),
+    },
+    PublishingApproverService: {
+      list: () => PublishingApproverService.list(ctx, projectId),
+      save: () =>
+        PublishingApproverService.save(ctx, { projectId, memberIds: [] }),
     },
     GithubIssueService: {
       preview: () =>
