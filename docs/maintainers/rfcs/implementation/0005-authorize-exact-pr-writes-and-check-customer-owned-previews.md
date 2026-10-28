@@ -42,7 +42,11 @@ Extend `MetadataExecutionService.execute` with the regression evidence variant. 
      - compare-and-set the incident from `open` to `repairing` at the proposal's evidence version, setting `last_decision_id` to the new event ID;
      - insert the approval, execution, first event and audit rows, each conditioned on that `last_decision_id`, exactly as the opportunity path does;
      - refuse when another execution for the same incident and evidence version is `succeeded`.
-   - **Stuck executions:** a `running` execution with an expired lease is taken over exactly as today (`previous = 'running'` with another ID is retired).
+   - **Stuck executions.** A crash after the batch leaves the incident `repairing`, with its execution `running` and nobody to reopen it. The `open` check alone would then refuse every later approval. So admission has a second, fenced branch:
+     - it accepts `repairing` only when `last_decision_id` names an execution that is still `running`;
+     - the publishing lease (`data_refresh_claims` key `publishing:{projectId}`) for that execution must have expired;
+     - the evidence version must match.
+   - In that case the same batch retires the stale execution (`previous = 'running'` with another ID, as today) and takes over with a new `last_decision_id`. Any other `repairing` incident is refused.
 4. **Retire.** `retireExecutions` gets the regression variant too. Retiring a regression execution moves its incident from `repairing` back to `open` in the same batch. The publishing lease is shared per project, so an opportunity publish can retire a regression execution; without this, the incident would stay `repairing` forever.
 5. **Publish.**
    - Execution passes `restore: true` to `prepareChangeAt` for regression proposals, as `prepare` did. Today `execute` sets `restore` only for reverts, so a known-good title outside 10–60 characters would prepare and then always fail.
@@ -127,6 +131,7 @@ The incident page gains a **Repair** section:
   - one regression approval wins, and the incident moves `open` → `repairing` only at the matching evidence version;
   - a losing approval's child rows never land (the `last_decision_id` fence);
   - `retireExecutions` retiring a regression execution reopens its incident;
+  - after a crash leaves the incident `repairing` with an expired lease, a new approval takes over once. An incident `repairing` under a live lease, or at another evidence version, is refused;
   - after a PR is closed unmerged, a new proposal at the bumped evidence version can be approved and opens a second PR.
 - `previewCheck.test.ts`, real SQL with a fake GitHub client and `fetch`:
   - finds the preview for the exact SHA;

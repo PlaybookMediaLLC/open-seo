@@ -87,7 +87,7 @@ Retention from IRFC-0002 never deletes a snapshot, site snapshot or finding that
 
 - **Pages:** call `comparePage(toSnapshot(baseline), toSnapshot(current), { path, baseOrigin: origin, previewOrigin: origin, checkRobotsHeader: true })`, when the baseline is a `page` and the current snapshot is a `page` or a `response`. A `response` carries only status and redirect, so the status rules can fire while fact rules stay silent. Production always checks `X-Robots-Tag`, and preview exemptions never apply.
   - **Fix the shared rule for header noindex.** `comparePage` decides whether the baseline was noindex from its meta tag alone (`!noindex(before.robots)`). An acknowledged baseline that sends `X-Robots-Tag: noindex` would therefore raise `newly-noindex` on every check. When `checkRobotsHeader` is on, include `base.robotsHeader` in the baseline's noindex test. This only removes a false positive, and CI's existing callers benefit too. Add a `seoRules.test.ts` case for an unchanged header-noindex page.
-- **Site:** call `compareSite` with the monitored paths, `isAllowed` from the baseline and current `robots_txt`, and the sitemap counts. Robots rules run only when both robots states are `ok`.
+- **Site:** call `compareSite` with the monitored paths, `isAllowed` from the baseline and current `robots_txt`, and the sitemap counts. Robots rules run when each side's robots state is `ok` or `missing`. A confirmed missing robots.txt allows every path, so adding `Disallow: /` to a site that had none raises `robots-txt-blocks`. They never run on an `unknown` or `truncated` robots state.
   - The sitemap rule runs when the baseline state is `ok` and the current state is `ok` and not at a cap, or `missing`.
   - A confirmed missing sitemap is compared as zero URLs, so deleting a healthy sitemap raises `sitemap-shrunk`. An `unknown` sitemap is never compared.
 - **Unknown data:** an `unknown` or `truncated` snapshot produces no finding and is counted as unknown.
@@ -175,7 +175,7 @@ Retention from IRFC-0002 never deletes a snapshot, site snapshot or finding that
   - production checks `X-Robots-Tag`;
   - an unchanged `X-Robots-Tag: noindex` on an acknowledged baseline raises nothing;
   - an unknown current snapshot gives no findings;
-  - robots rules need both states `ok`;
+  - a missing baseline robots.txt followed by `Disallow: /` raises `robots-txt-blocks`, while an `unknown` robots state raises nothing;
   - a sitemap that is now `missing` raises `sitemap-shrunk`, while an `unknown` one raises nothing;
   - a fingerprint is stable for one baseline and changes with a new one.
 - `regressionLifecycle.test.ts`, real SQLite and Postgres:
