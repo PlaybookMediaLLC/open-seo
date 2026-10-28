@@ -2,7 +2,7 @@
 
 **Status:** To be reconciled against current `develop` before writing code  
 **Priority:** Required to reach the next core milestone  
-**Prerequisites:** IRFC-0008  
+**Prerequisites:** IRFC-0007  
 **Canonical technical specification:** [RFC-0030](../0030-product-reality-engine-architecture.md)  
 **Implementation order:** 0009 of 0032
 
@@ -23,7 +23,7 @@ No new framework, cross-tenant graph database, or broad agent autonomy.
 ## Engineering verification
 
 - Preserve the existing authenticated project boundary, user permissions and source/approval authority. Run behavior tests for all new invariants and applicable real-SQL, schema parity, type-check, lint and focused E2E checks.
-- Where actual customer/provider acceptance is necessary, state what was tested with fixtures versus a live authorized site. Never treat a test fixture or an unmerged PR as a paid customer outcome.
-- Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**; if its commercial gate fails, mark **skipped/deferred** with the evidence. Do not block later unrelated work.
+- State what was tested with fixtures and what was tested on a live authorized site. Never treat a test fixture or an unmerged PR as a production result.
+- Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**. Do not block later unrelated work.
 
 **Next:** [IRFC-0010](0010-enforce-tenant-privacy-authorization-and-spend-invariants.md)

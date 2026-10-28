@@ -1,7 +1,7 @@
 # IRFC-0021: Deliver approved Relay Launch release packets
 
 **Status:** To be reconciled against current `develop` before writing code  
-**Priority:** Commercial decision gate; proceed only with buyer evidence  
+**Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0019  
 **Canonical technical specification:** [RFC-0042](../0042-relay-launch-change-to-commercial-release.md)  
 **Implementation order:** 0021 of 0032
@@ -23,7 +23,7 @@ No automatic mass emailing, CRM segmentation or unsupervised publishing.
 ## Engineering verification
 
 - Preserve the existing authenticated project boundary, user permissions and source/approval authority. Run behavior tests for all new invariants and applicable real-SQL, schema parity, type-check, lint and focused E2E checks.
-- Where actual customer/provider acceptance is necessary, state what was tested with fixtures versus a live authorized site. Never treat a test fixture or an unmerged PR as a paid customer outcome.
-- Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**; if its commercial gate fails, mark **skipped/deferred** with the evidence. Do not block later unrelated work.
+- State what was tested with fixtures and what was tested on a live authorized site. Never treat a test fixture or an unmerged PR as a production result.
+- Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**. Do not block later unrelated work.
 
-**Next:** [IRFC-0022](0022-expose-read-only-api-and-mcp-workflows-when-needed.md)
+**Next:** [IRFC-0022](0022-expose-read-only-api-and-mcp-workflows.md)

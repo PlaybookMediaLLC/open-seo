@@ -39,12 +39,12 @@ The Product Reality Engine will link **source observations → scoped product fa
 
 The single contributor execution plan is [**IRFC-0001–0032**](docs/maintainers/rfcs/implementation/README.md):
 
-1. **IRFC-0001–0007 — Protect:** agree a paid scope, capture known-good baselines, detect regressions, prepare source-mapped fixes, test exact previews, verify production and report recurring protection.
-2. **IRFC-0008–0019 — Reality Engine + Sync:** validate the next buyer, ingest changes, establish scoped facts, match published claims, prepare reviewed corrections and verify outcomes.
-3. **IRFC-0020–0022 — Launch:** check existing launch pages, build coordinated release packets and add read-only API/MCP workflows when demanded.
-4. **IRFC-0023–0032 — extensions:** customer journeys, growth, conversion, adoption, support, sales and advanced controls; each is subject to its own customer and reliability gate.
+1. **IRFC-0001–0007 — Protect:** record the protected-site scope, capture known-good baselines, detect regressions, prepare source-mapped fixes, test exact previews, verify production and report recurring protection.
+2. **IRFC-0009–0019 — Reality Engine + Sync:** ingest changes, establish scoped facts, match published claims, prepare reviewed corrections and verify outcomes.
+3. **IRFC-0020–0022 — Launch:** check existing launch pages, build coordinated release packets and add read-only API/MCP workflows.
+4. **IRFC-0023–0032 — extensions:** customer journeys, growth, conversion, adoption, support, sales and advanced controls; each has its own acceptance gate.
 
-Each IRFC links to the authoritative technical RFC and specifies the **slice and acceptance test**. Historical RFC-0001–0046 remain intact for code references and design history. Do not rebuild completed features simply to satisfy a number, or implement optional extensions without buyer evidence. [Company strategy](company.md) and [north-star vision](vision.md) describe why the milestones exist.
+Each IRFC links to the authoritative technical RFC and specifies the **slice and acceptance test**. The queue holds development work only. Historical RFC-0001–0046 remain intact for code references and design history. Do not rebuild completed features simply to satisfy a number. [Company strategy](company.md) and [north-star vision](vision.md) describe why the milestones exist.
 
 **First useful customer result:** a real production regression is detected, a supported repair is explicitly approved, the customer deploys it, and Relay verifies the original failure has cleared. The next milestone is a product change causing a verified published-claim discrepancy that Relay gets corrected and independently checks.
 
