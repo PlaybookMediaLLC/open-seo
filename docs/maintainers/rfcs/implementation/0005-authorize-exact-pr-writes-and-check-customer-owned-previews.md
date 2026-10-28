@@ -1,24 +1,149 @@
 # IRFC-0005: Authorize exact PR writes and check customer-owned previews
 
-**Status:** To be reconciled against current `develop` before writing code  
+**Status:** Ready to build; specified against `develop` on 2026-10-28  
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0004  
-**Canonical technical specifications:** [RFC-0027](../0027-source-mapped-regression-repairs.md), [RFC-0025](../0025-preview-sandboxes-on-cloudflare.md)  
+**Canonical technical specifications:** [RFC-0027](../0027-source-mapped-regression-repairs.md) phase B, [RFC-0025](../0025-preview-sandboxes-on-cloudflare.md) phase 1a  
 **Implementation order:** 0005 of 0032
 
 ## Implement this slice
 
-Complete RFC-0027 **phase B** and RFC-0025 **phase 1a only**. Bind explicit user approval to the exact source/evidence fingerprint and PR head SHA; reuse customer-provided Vercel, Netlify, Cloudflare, or other authorized preview URLs, CI results and current release-quality rules.
+Let an approver authorize one exact regression proposal. Relay then re-checks everything and opens exactly one pull request, records its head commit, and checks the customer's own preview deployment of that commit. The check uses the customer's CI results, the existing SEO check rules and the restored value rendered on the preview. Missing, stale, redirected or mismatched evidence is shown and never counts as passed. The customer reviews, merges and deploys.
 
-Read the linked source RFC in full, including its safety decisions, persistence requirements, migration contracts and verification sections. Inspect the latest branch before implementing: completed functionality is **reused**, not reimplemented. The source RFC number is a stable historical identifier, not an additional implementation step.
+Read RFC-0027 section 5 and RFC-0025 sections 5.3, 6 and 9 (phase 1a). Inspect `develop` before writing code: reuse what is listed here, and update this file if the code has moved.
+
+## What exists to reuse
+
+| Need                    | Existing code                                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Exact-change execution  | `MetadataExecutionService.execute` behind `executeMetadataProposal` (`src/serverFunctions/publishing.ts`, `executeProposalInputSchema`: `changeHash`, `authorizePullRequest: true`, `note`). It recomputes the fingerprint and re-reads source at `baseSha`, matching blobs, helper and snippets; it checks the repository ID and `canPush`, and that the base ref is still at `baseSha` |
+| Approver gate           | `authorizeApproval(context, projectId)` → `canApprove` (`publishingAccess.ts`), including `project_publishing_approvers`                                                                                                                                                                                                                                                                 |
+| One PR only             | `beginExecution` (one-winner compare-and-set, lease `publishing:{projectId}`, `retireExecutions`); fixed branch `growth/{proposalId}`; PR marker `<!-- OpenSEO proposal:{id} change:{hash} -->`; `findPullRequest` and `verifyPull` for forward recovery; `checkpoint` phases                                                                                                            |
+| Head commit             | `proposal_executions.commit_sha` once `pull_request_created`                                                                                                                                                                                                                                                                                                                             |
+| Preview discovery       | `createGithubSignals`: `listDeployments(sha)` and `listDeploymentStatuses(id)` (with `environment_url` from IRFC-0003); `publishing_connections.production_environment` marks the production environment                                                                                                                                                                                 |
+| SEO checks on a preview | `queueCheck(scope, input, { source: "app", installationId })` (`seo-checks/CheckApi.ts`), which `handleDeploymentStatus` already calls with `{ ...target, tokenId: null }` for App-mode PR previews. `ci_check_runs` is unique per (`project_id`, `head_sha`, `preview_origin`)                                                                                                          |
+| Host and access policy  | `isAllowedPreviewHost` and `isTrustedPreviewHost` (`previewHosts.ts`), `ci_preview_hosts`, `ci_preview_access`; private `previewAccess(run)` in `seoCheckPlan.ts`; `crawlerHeadersFor` (`src/shared/crawler-access.ts`)                                                                                                                                                                  |
+| Customer CI             | `getChecks(sha)` → `passing`, `failing`, `pending`, `not_configured`                                                                                                                                                                                                                                                                                                                     |
+| PR state                | `getPullRequest(number)`; the pattern in `experiments/experimentPullStatus.ts`                                                                                                                                                                                                                                                                                                           |
+
+## Execution
+
+Extend `MetadataExecutionService.execute` with the regression evidence variant. Do not add a second publisher; RFC-0027 requires the existing controls.
+
+1. **Same checks as today.** Recompute and compare the fingerprint, require an approver, and check that the connection is not revoked, the repository ID matches, `canPush` holds, the source re-proves at `baseSha` and the base ref is unchanged.
+2. **Regression eligibility replaces the opportunity checks.** The GSC site, evidence run and 14-day window stay opportunity-only. Instead require:
+   - the incident `open` at the proposal's `regression_evidence_version`;
+   - the enrollment `active` with `allow_pull_requests`;
+   - the page still active;
+   - the mapping's `connection_id` equal to the active connection.
+3. **A `beginExecution` regression variant.** One batch does all of this:
+   - compare-and-set the incident from `open` to `repairing` at that evidence version, instead of bumping the opportunity version;
+   - refuse when another execution for the incident is `running` or `succeeded`;
+   - insert the approval, execution, first event and audit rows exactly as today.
+4. **Publish.** Use `publishProposal` unchanged. The PR body adds an evidence section: incident link, baseline value, bad value and confirmations.
+5. **Failure.** A failure moves the incident back to `open` in the same batch as the failed checkpoint. Forward recovery and `PublishingRecoveryService` behave as they do for opportunities.
+
+The new server function `approveRegressionRepair` takes the same input as `executeProposalInputSchema` and calls the extended service. Approval binds `change_hash`, which in version 7 covers the incident evidence version and the source mapping. The preview check below binds the resulting head SHA.
+
+## Preview check
+
+New table **`proposal_preview_checks`** in the protection schema:
+
+| Column                                                                             | Type and rule                                                                    |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `id`, `project_id` (FK cascade), `execution_id` (FK `proposal_executions` cascade) | text                                                                             |
+| `head_sha`                                                                         | text, not null                                                                   |
+| `status`                                                                           | `PREVIEW_CHECK_STATUSES` = `pending`, `passed`, `failed`, `unavailable`, `stale` |
+| `deployment_id`, `environment`, `preview_url`                                      | nullable                                                                         |
+| `ci_check_run_id`                                                                  | nullable FK `ci_check_runs` on delete set null                                   |
+| `repository_checks`                                                                | nullable: `passing`, `failing`, `pending`, `not_configured`                      |
+| `rendered_value`                                                                   | text, nullable, at most 1000                                                     |
+| `reason`                                                                           | text, nullable, at most 500: why it is not passed, and the next action           |
+| `started_at`, `checked_at`, `expires_at`                                           | `expires_at` is `started_at` + 7 days                                            |
+
+Unique (`execution_id`, `head_sha`).
+
+**`PreviewCheckService.tick(now)`** runs from `runProtectionMonitor` on every tick, for checks that are `pending` and younger than 30 minutes:
+
+1. **Find the preview.**
+   - Call `listDeployments(head_sha)` and skip the production environment.
+   - Take the newest status that is `success` and has an `https` `environment_url`.
+   - The host must pass `isAllowedPreviewHost` for the project domain and its `ci_preview_hosts`, and `normalizeAndValidateStartUrl`. A failure is `unavailable` with "preview host not allowed", and no credentials are sent.
+2. **Run the SEO check.**
+   - Reuse the `ci_check_runs` row for (`head_sha`, preview origin) when the webhook already queued one.
+   - Otherwise call `queueCheck` with the publishing connection's installation and `changedFiles: [file_path]`, then start the workflow as `handleDeploymentStatus` does.
+   - Wait for it to finish. A `failed` run or any blocking finding is `failed`.
+3. **Check the rendered value.**
+   - Fetch the preview page with `fetchSnapshot`, using the protected-preview access. Export `previewAccess` from `seoCheckPlan.ts` for this second caller; it sends secrets only to a trusted host.
+   - The whitespace-squashed field must equal the mapping's `expected_value`. A mismatch is `failed`, with "preview renders … , expected …".
+   - Preview `noindex` is ignored, following the preview policy.
+4. **Read customer CI.** Call `getChecks(head_sha)`:
+   - `failing` is `failed`;
+   - `pending` waits;
+   - `not_configured` is allowed and shown as "No CI checks are configured".
+5. **Pass.** All of the above passing gives `passed`.
+6. **Time out.** At 30 minutes with no preview or CI result, the check is `unavailable`: "No preview deployment for {sha} within 30 minutes", or "CI still running". The PR stays open; Relay only declines to label it preview-verified.
+
+**Staleness** is re-checked whenever the incident page loads and on each tick. A passed check becomes `stale` when any of these holds:
+
+- the PR head differs from `head_sha` (it no longer contains exactly the approved change);
+- the incident is no longer `repairing`;
+- the connection was revoked;
+- `expires_at` has passed.
+
+**PR state** is read with `getPullRequest`, cached for 5 minutes:
+
+- A PR closed without merging moves the incident back to `open`.
+- A merged PR keeps it `repairing` until IRFC-0006 verifies production.
+
+## Interface
+
+The incident page gains a **Repair** section:
+
+- **Approve and open pull request.** A `ConfirmDialog` shows the exact diff and says Relay will create branch `growth/{id}` and one PR, and that the customer reviews and merges.
+- **After approval:** the PR link and head SHA, then the preview check status with its reason and next action, the CI result, the rendered and expected values, and a link to the SEO check run.
+- **Preview-verified** is shown only for a current `passed` check. Every other state names itself, and production verification is described as a later, separate step.
+
+## Tests
+
+- `MetadataExecutionService.test.ts`, regression cases:
+  - a non-approver is refused;
+  - a changed evidence version, a resolved incident and an enrollment without PRs are each refused before any GitHub write;
+  - a duplicate approval produces one PR through the existing recovery path;
+  - a failed execution returns the incident to `open`;
+  - the opportunity cases still pass unchanged.
+- `publishingExecution.test.ts`, real SQLite and Postgres: one regression approval wins, and the incident moves `open` → `repairing` only at the matching evidence version.
+- `previewCheck.test.ts`, real SQL with a fake GitHub client and `fetch`:
+  - finds the preview for the exact SHA;
+  - ignores production and other SHAs;
+  - a disallowed host is `unavailable` and sends no credentials;
+  - times out to `unavailable`;
+  - failing CI is `failed`;
+  - a rendered mismatch is `failed`;
+  - a changed PR head is `stale`;
+  - reuses an existing check run for the same SHA and origin;
+  - `passed` only when every part passes.
+- `githubSignals` tests cover the deployment status schema with and without `environment_url`.
 
 ## Acceptance gate
 
-An approved PR is opened once and tested on the exact commit. Missing, stale, redirected, or mismatched preview evidence is visible and cannot be treated as passed. Customer owns merge and deployment.
+Use an authorized Next.js repository whose platform builds PR previews.
+
+1. Approve one IRFC-0004 proposal. Exactly one PR opens. Retrying the approval opens no second PR.
+2. The preview for that head SHA is found and checked, and the restored value renders.
+3. Push a commit to the PR. The result becomes stale.
+4. Test each failure case. None may show as passed or leak a bypass credential:
+   - a failed build;
+   - no preview;
+   - a wrong environment;
+   - a disallowed preview host;
+   - revoked access;
+   - a protected preview.
+5. The customer merges. Relay neither merges nor deploys.
 
 ## Explicit boundary
 
-Do not build Relay-owned Cloudflare sandboxes, standing approval policies, or auto-merge.
+Do not build Relay-owned Cloudflare sandboxes, standing approval policies, or auto-merge. Do not mark the incident resolved; IRFC-0006 owns production verification.
 
 ## Engineering verification
 

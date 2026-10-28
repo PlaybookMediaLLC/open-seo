@@ -40,7 +40,7 @@ A site is active only when the relevant checks pass:
 
 ### Scope and persistence
 
-Add a normalized project-owned `protection_entitlements` table beside `protection_enrollments`, with organization-scoped authorization. The enrollment records the production origin, agreed scope version, lifecycle (`setup`, `active`, `degraded`, `paused`, `ended`), service start/end, customer reviewer, and operational readiness timestamps. The entitlement records included page count, cadence, and bounded check capacity. RFC-0019 owns monitored pages and check runs; do not duplicate those records in JSON.
+Add a normalized project-owned `protection_entitlements` table beside `protection_enrollments`, with organization-scoped authorization. The enrollment records the production origin, agreed scope version, lifecycle (`setup`, `active`, `paused`, `ended`; `degraded` is derived from coverage, never stored), service start/end, customer reviewer, and operational readiness timestamps. The entitlement records included page count, cadence, and bounded check capacity. RFC-0019 owns monitored pages and check runs; do not duplicate those records in JSON.
 
 An active enrollment is not a boolean shortcut for healthy coverage. Derive coverage from the required URLs and successful, fresh check runs. Keep service state and evidence of coverage separate. Add matching SQLite/Postgres schemas and migrations.
 
