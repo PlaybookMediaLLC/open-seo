@@ -15,10 +15,10 @@ import {
   projectKeyPages,
   projects,
 } from "@/db/schema";
-import { GscService } from "@/server/features/gsc/services/GscService";
 import { openToken } from "@/server/features/publishing/tokenKeys";
 import { discoverUrls } from "@/server/lib/audit/discovery";
 import type { CrawlerAccess } from "@/shared/crawler-access";
+import { pageTraffic } from "./pageTraffic";
 import { isTrustedPreviewHost } from "./previewHosts";
 import { selectUrls } from "./urlSelection";
 
@@ -84,26 +84,6 @@ export async function previewAccess(run: {
     },
     withheld: false,
   };
-}
-
-/** Page clicks and impressions for the last 28 days; empty without GSC. */
-async function pageTraffic(projectId: string) {
-  try {
-    const result = await GscService.getPerformance({
-      projectId,
-      dateRange: "last_28_days",
-      dimensions: ["page"],
-      rowLimit: 1000,
-    });
-    return result.rows.flatMap((row) => {
-      const url = row.keys?.[0];
-      return url
-        ? [{ url, clicks: row.clicks ?? 0, impressions: row.impressions ?? 0 }]
-        : [];
-    });
-  } catch {
-    return [];
-  }
 }
 
 const allows = (

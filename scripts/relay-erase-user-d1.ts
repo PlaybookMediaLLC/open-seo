@@ -50,6 +50,13 @@ const ATTRIBUTION: Array<[table: string, column: string]> = [
   ["agency_client_links", "accepted_by_user_id"],
   ["agency_client_links", "ended_by_user_id"],
   ["organization_branding", "updated_by_user_id"],
+  // RFC-0026 phase A.
+  ["protection_enrollments", "reviewer_user_id"],
+  ["protection_enrollments", "created_by"],
+  ["protection_enrollments", "updated_by"],
+  ["monitored_pages", "added_by"],
+  ["monitored_pages", "removed_by"],
+  ["protection_scope_changes", "changed_by"],
 ];
 
 const args = parseArgs(process.argv.slice(2));

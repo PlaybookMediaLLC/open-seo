@@ -610,6 +610,13 @@
       "when": 1793142499210,
       "tag": "0086_whole_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1793211575349,
+      "tag": "0087_same_spacker_dave",
+      "breakpoints": true
     }
   ]
 }

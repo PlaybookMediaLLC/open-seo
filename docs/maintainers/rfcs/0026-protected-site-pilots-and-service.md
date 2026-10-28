@@ -1,6 +1,6 @@
 # RFC-0026: Protected-site enrollment and recurring service
 
-- **Status:** Proposed; not implemented.
+- **Status:** Phase A implemented, live acceptance pending ([IRFC-0001](implementation/0001-record-protected-site-scope-and-activation.md#completion-note)); phase B not implemented.
 - **Date:** 2026-10-23
 - **Updated:** 2026-10-28
 - **Delivery:** Phase A is [IRFC-0001](implementation/0001-record-protected-site-scope-and-activation.md); phase B is [IRFC-0007](implementation/0007-productize-protect-work-reports-and-recurring-service.md).

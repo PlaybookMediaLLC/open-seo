@@ -47,4 +47,10 @@ export const AUDIT_ACTIONS = [
   "agency.link_accepted",
   "agency.link_ended",
   "branding.changed",
+  // RFC-0026 phase A: the protected-site record.
+  "protection.settings_changed",
+  "protection.origin_verified",
+  "protection.pages_changed",
+  "protection.alert_confirmed",
+  "protection.status_changed",
 ] as const;

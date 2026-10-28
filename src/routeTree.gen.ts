@@ -100,6 +100,7 @@ import { Route as AppPProjectIdSettingsAutomationRouteImport } from './routes/_a
 import { Route as AppPProjectIdSettingsContextRouteImport } from './routes/_app/p/$projectId/settings/context'
 import { Route as AppPProjectIdSettingsConversionRouteImport } from './routes/_app/p/$projectId/settings/conversion'
 import { Route as AppPProjectIdSettingsIntegrationsRouteImport } from './routes/_app/p/$projectId/settings/integrations'
+import { Route as AppPProjectIdSettingsProtectionRouteImport } from './routes/_app/p/$projectId/settings/protection'
 import { Route as AppPProjectIdSettingsSeoChecksRouteImport } from './routes/_app/p/$projectId/settings/seo-checks'
 import { Route as AppPProjectIdSettingsSpendingRouteImport } from './routes/_app/p/$projectId/settings/spending'
 import { Route as ApiCiV1ChecksIdRouteImport } from './routes/api/ci/v1/checks/$id'
@@ -590,6 +591,12 @@ const AppPProjectIdSettingsIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AppPProjectIdSettingsRoute,
   } as any)
+const AppPProjectIdSettingsProtectionRoute =
+  AppPProjectIdSettingsProtectionRouteImport.update({
+    id: '/protection',
+    path: '/protection',
+    getParentRoute: () => AppPProjectIdSettingsRoute,
+  } as any)
 const AppPProjectIdSettingsSeoChecksRoute =
   AppPProjectIdSettingsSeoChecksRouteImport.update({
     id: '/seo-checks',
@@ -718,6 +725,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/protection': typeof AppPProjectIdSettingsProtectionRoute
   '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
@@ -810,6 +818,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/p/$projectId/settings/protection': typeof AppPProjectIdSettingsProtectionRoute
   '/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
@@ -912,6 +921,7 @@ export interface FileRoutesById {
   '/_app/p/$projectId/settings/context': typeof AppPProjectIdSettingsContextRoute
   '/_app/p/$projectId/settings/conversion': typeof AppPProjectIdSettingsConversionRoute
   '/_app/p/$projectId/settings/integrations': typeof AppPProjectIdSettingsIntegrationsRoute
+  '/_app/p/$projectId/settings/protection': typeof AppPProjectIdSettingsProtectionRoute
   '/_app/p/$projectId/settings/seo-checks': typeof AppPProjectIdSettingsSeoChecksRoute
   '/_app/p/$projectId/settings/spending': typeof AppPProjectIdSettingsSpendingRoute
   '/api/ci/v1/checks/$id': typeof ApiCiV1ChecksIdRoute
@@ -1012,6 +1022,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/conversion'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/protection'
     | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
@@ -1104,6 +1115,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/settings/context'
     | '/p/$projectId/settings/conversion'
     | '/p/$projectId/settings/integrations'
+    | '/p/$projectId/settings/protection'
     | '/p/$projectId/settings/seo-checks'
     | '/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
@@ -1205,6 +1217,7 @@ export interface FileRouteTypes {
     | '/_app/p/$projectId/settings/context'
     | '/_app/p/$projectId/settings/conversion'
     | '/_app/p/$projectId/settings/integrations'
+    | '/_app/p/$projectId/settings/protection'
     | '/_app/p/$projectId/settings/seo-checks'
     | '/_app/p/$projectId/settings/spending'
     | '/api/ci/v1/checks/$id'
@@ -1904,6 +1917,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPProjectIdSettingsIntegrationsRouteImport
       parentRoute: typeof AppPProjectIdSettingsRoute
     }
+    '/_app/p/$projectId/settings/protection': {
+      id: '/_app/p/$projectId/settings/protection'
+      path: '/protection'
+      fullPath: '/p/$projectId/settings/protection'
+      preLoaderRoute: typeof AppPProjectIdSettingsProtectionRouteImport
+      parentRoute: typeof AppPProjectIdSettingsRoute
+    }
     '/_app/p/$projectId/settings/seo-checks': {
       id: '/_app/p/$projectId/settings/seo-checks'
       path: '/seo-checks'
@@ -2036,6 +2056,7 @@ interface AppPProjectIdSettingsRouteChildren {
   AppPProjectIdSettingsContextRoute: typeof AppPProjectIdSettingsContextRoute
   AppPProjectIdSettingsConversionRoute: typeof AppPProjectIdSettingsConversionRoute
   AppPProjectIdSettingsIntegrationsRoute: typeof AppPProjectIdSettingsIntegrationsRoute
+  AppPProjectIdSettingsProtectionRoute: typeof AppPProjectIdSettingsProtectionRoute
   AppPProjectIdSettingsSeoChecksRoute: typeof AppPProjectIdSettingsSeoChecksRoute
   AppPProjectIdSettingsSpendingRoute: typeof AppPProjectIdSettingsSpendingRoute
   AppPProjectIdSettingsIndexRoute: typeof AppPProjectIdSettingsIndexRoute
@@ -2047,6 +2068,7 @@ const AppPProjectIdSettingsRouteChildren: AppPProjectIdSettingsRouteChildren = {
   AppPProjectIdSettingsConversionRoute: AppPProjectIdSettingsConversionRoute,
   AppPProjectIdSettingsIntegrationsRoute:
     AppPProjectIdSettingsIntegrationsRoute,
+  AppPProjectIdSettingsProtectionRoute: AppPProjectIdSettingsProtectionRoute,
   AppPProjectIdSettingsSeoChecksRoute: AppPProjectIdSettingsSeoChecksRoute,
   AppPProjectIdSettingsSpendingRoute: AppPProjectIdSettingsSpendingRoute,
   AppPProjectIdSettingsIndexRoute: AppPProjectIdSettingsIndexRoute,
