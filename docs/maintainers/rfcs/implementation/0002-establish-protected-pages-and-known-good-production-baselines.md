@@ -45,38 +45,43 @@ Extend `src/db/protection.schema.ts` and the pg twin; generate both migrations. 
 | `required_count`, `checked_count`, `unknown_count`            | integer, not null, default 0                                                                                                         |
 | `error`                                                       | text, nullable, at most 500 characters, stored through `safeError` (move it out of `GrowthJobService.ts` so both callers share it)   |
 | `requested_by`                                                | text, nullable: the user for `manual` and `baseline` runs                                                                            |
+| `manual_day`, `manual_slot`                                   | text and integer 1–4, nullable; set only on `manual` runs                                                                            |
 
-Unique (`enrollment_id`, `trigger`, `scheduled_at`); index (`status`, `scheduled_at`).
+Unique (`enrollment_id`, `trigger`, `scheduled_at`); partial unique (`enrollment_id`, `manual_day`, `manual_slot`) where `manual_slot` is not null; index (`status`, `scheduled_at`).
 
 **`page_snapshots`**
 
 - **Keys:** `id`, `project_id`, `monitored_page_id` (FK cascade), `run_id` (FK cascade).
 - **`fetched_at`:** text, not null.
-- **`fetch_state`:** `ok`, `unknown`, `not_html` or `truncated`.
-  - A `null` status is `unknown` (a timeout, network error or blocked fetch), never an invented status code.
-  - `truncated` covers a body at the 2 MiB cap and any value over its column bound.
-  - Only `ok` snapshots are compared.
+- **`fetch_state`:** `page`, `response`, `unknown` or `truncated`.
+  - `page` is a 200 HTML response with facts.
+  - `response` is any other real response: a 3xx, a 4xx or 5xx, or a 200 that is not HTML. Its status, redirect flag and location are stored, and its facts are null. `comparePage` still raises `status-regressed` and `newly-redirected` from these, because it checks status before facts.
+  - `unknown` covers no response (timeout or network error) and any response that `classifyFetch` (`src/server/lib/audit/classify-fetch.ts`) does not call `ok`. That includes 401, 403, 429, 202, `cf-mitigated` and challenge pages. A bot wall is an unknown check, never a status regression, as RFC-0019 section 7 requires.
+  - `truncated` covers a body that hit the 2 MiB cap, or any value over its column bound.
+  - `unknown` and `truncated` are never compared and count as unknown in the run.
 - **Response:** `status` (nullable integer), `redirected` (boolean), `location` (nullable, at most 2000).
 - **Robots and canonical:** `robots_header` (at most 500), `robots_meta` (at most 500), `canonical` (at most 2000).
 - **Text:** `title` (at most 1000), `description` (at most 2000), `h1` (the first H1, at most 1000), `og_title` (at most 1000), `og_image` (at most 2000).
 - **Counts:** `h1_count`, `internal_link_count`, `word_count`, `json_ld_valid_count`, `json_ld_invalid_count`.
-- Every fact column is nullable and null unless `fetch_state` is `ok`.
+- Every fact column is nullable and null unless `fetch_state` is `page`.
 
 **`page_snapshot_values`**: `snapshot_id` (FK cascade), `kind` (`hreflang`, `json_ld_type`), `value` (at most 200). Primary key (`snapshot_id`, `kind`, `value`). At most 100 rows per snapshot; more makes the snapshot `truncated`. Repeated facts live here rather than in JSON, as RFC-0019 requires.
 
 **`site_snapshots`**
 
-| Column                                                     | Type and rule                                                               |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `id`, `project_id`, `enrollment_id`, `run_id` (FK cascade) | text                                                                        |
-| `fetched_at`                                               | text, not null                                                              |
-| `robots_state`                                             | `ok`, `missing`, `unknown`, `truncated`                                     |
-| `robots_txt`                                               | text, nullable, at most 64 KiB, so robots rules can be re-evaluated later   |
-| `sitemap_state`                                            | `ok`, `missing`, `unknown`                                                  |
-| `sitemap_url_count`                                        | integer, nullable                                                           |
-| `sitemap_at_cap`                                           | boolean: the count hit `MONITOR_SITEMAP_CAP = 1000`, so it is a lower bound |
+| Column                                                     | Type and rule                                                             |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `id`, `project_id`, `enrollment_id`, `run_id` (FK cascade) | text                                                                      |
+| `fetched_at`                                               | text, not null                                                            |
+| `robots_state`                                             | `ok`, `missing`, `unknown`, `truncated`                                   |
+| `robots_txt`                                               | text, nullable, at most 64 KiB, so robots rules can be re-evaluated later |
+| `sitemap_state`                                            | `ok`, `missing`, `unknown`                                                |
+| `sitemap_url_count`                                        | integer, nullable                                                         |
+| `sitemap_at_cap`                                           | boolean: discovery stopped at a limit, so the count is a lower bound      |
 
 A discovery failure is `unknown`, never `missing`. If `discoverUrls` cannot tell a missing file from a failed fetch, add that distinction in `discovery.ts`, where both the audit and the monitor benefit.
+
+`discoverUrls(origin, maxPages)` does not cap URLs at `maxPages`. It caps them at `min(max(maxPages * 20, 500), 50000)` and may fetch up to 300 sitemap documents of 10 MiB each. Extend it with an optional limits argument (maximum documents, maximum bytes per document, total time budget) whose defaults keep today's behavior for existing callers. The monitor calls `discoverUrls(origin, 50)`, which caps URLs at 1000, with at most 20 documents of 2 MiB each and a 60-second budget. Hitting any limit sets `sitemap_at_cap`. `sitemap-shrunk` is evaluated only when the current count is not at a cap.
 
 **Baseline columns**
 
@@ -87,33 +92,39 @@ Use Drizzle's `(): AnySQLiteColumn` form for the circular reference. An origin c
 
 ## Fetching and runs
 
-1. **Extend `fetchSnapshot`.** Return the `Location` header of a 3xx as an optional `location` on `Snapshot`; existing callers are unaffected. Move `inPool` to `src/server/lib/inPool.ts` with a concurrency argument and import it from both callers.
+1. **Extend `fetchSnapshot`.** Add three optional fields to `Snapshot`; existing callers are unaffected:
+   - `location`: the `Location` header of a 3xx;
+   - `fetchClass`: from `classifyFetch(status, cf-mitigated header present, first 2 KiB of the body)`;
+   - `truncated`: true when `readTextUpTo` stopped at the 2 MiB cap, which it does silently today. Move `inPool` to `src/server/lib/inPool.ts` with a concurrency argument and import it from both callers.
 2. **Map snapshots in one place.** `snapshotRecord.ts` maps a `Snapshot` to a row plus value rows, and back with `toSnapshot(row, values)`. Because `comparePage` only counts links, `toSnapshot` rebuilds `internalLinks` as a placeholder array of the stored length; say so in a one-line comment.
 3. **Execute runs in `MonitorRunService.execute(runId)`:**
    - Load the run, enrollment and active non-excluded pages.
    - Skip runs of `paused` or `ended` enrollments, with a reason.
    - Fetch each page as `production_origin + path` with `fetchSnapshot(url, null)`, after `isCrawlableUrl`, at most two concurrent requests.
-   - Call `discoverUrls(origin, MONITOR_SITEMAP_CAP)` for the site snapshot.
+   - Call `discoverUrls(origin, 50)` with the monitor limits above for the site snapshot.
    - Write snapshots with `runBatch` in chunks of at most 100 statements.
    - Finish with counts: `succeeded` when nothing was unknown, `partial` when some pages were, `failed` when all were or an error stopped the run.
+   - A run is bounded to about 3 minutes: 20 pages at 10 s each, two at a time, plus 60 s of discovery. That stays inside both the 10-minute lease and the 4-minute tick budget, so a lease never expires on a run that is still working.
 4. **Hook the tick.** `runProtectionMonitor(scheduledTime)` in `src/server/features/protection/monitorCron.ts` joins the `Promise.allSettled` list in `scheduled()` in `src/server.ts`, marked `// playbook-seam`. Each tick it does three things:
    - **Schedule:** for every `setup` or `active` enrollment past today's `check_hour_utc` with at least one accepted baseline, insert today's `schedule` run with `onConflictDoNothing`.
    - **Reclaim:** requeue runs whose lease expired once (`attempt` 2), then mark them `failed` with "interrupted".
    - **Claim:** claim due `queued` runs with a compare-and-set to `running` and a 10-minute lease, and execute them until a 4-minute tick budget is spent.
-5. **Manual checks.** `requestProtectionCheck` queues a `manual` run for now. Allow at most four per enrollment per UTC day, and show how many remain.
-6. **Retention.** On the 03:30 UTC tick:
-   - Delete page and site snapshots older than 90 days unless they are a baseline (IRFC-0003 adds "or referenced by an incident").
-   - Delete runs older than 90 days with no remaining snapshots.
-   - Bound each tick to 500 rows.
-
-This skips RFC-0019's 30-per-page cap: daily checks stay within it.
+   - Add the new `src/server.ts` and `src/client/navigation/items.ts` seams to the seam registry comment in `vite-plugin-relay-brand.ts`.
+5. **Manual checks.** `requestProtectionCheck` inserts a `manual` run for now into the first free slot from 1 to 4 for today's `manual_day`, using `onConflictDoNothing` and trying each slot in turn. All four taken means refused. The unique index is the fence, so concurrent requests can never exceed four. Show how many remain.
+6. **Resume.** `paused`→`active` (IRFC-0001) queues a `schedule` run for now. Coverage reads "checks resuming" until that run finishes.
+7. **Retention.** Runs on every tick, deleting at most 500 rows per tick, which is up to 144,000 a day:
+   - Keep the 30 most recent snapshots per page within 90 days, as RFC-0019 requires, and delete the rest.
+   - Never delete a baseline snapshot. IRFC-0003 adds snapshots, site snapshots and findings that an incident references.
+   - Delete runs older than 90 days that no longer hold any snapshot or finding.
 
 ## Baseline
 
 1. **Capture.** `captureProtectionBaseline` queues two `baseline` runs, one now and one ten minutes later. Baseline runs also run in `setup`.
-2. **Match.** A page matches when both snapshots are `ok` and `comparePage(first, second)` returns no findings.
-3. **Find problems.** `baselineProblems(snapshot)` (pure) lists absolute problems: status not 200, redirected, title or description missing, `noindex` in the meta tag or `X-Robots-Tag`, an invalid JSON-LD block, or a canonical pointing to another path.
-4. **Accept.** `acceptProtectionBaseline({ projectId, pageIds, acknowledgeProblems })` refuses pages without a matching pair. It refuses pages with problems unless `acknowledgeProblems` is true; the dialog lists the problems, and an intentionally non-indexable page is accepted this way. It sets each page's `baseline_snapshot_id` to the second snapshot and the site baseline to the second site snapshot, in one `runBatch` with a `protection.baseline_accepted` audit row.
+2. **Match.** A page matches when both snapshots are `page` (a 200 HTML response) and `comparePage(first, second)` returns no findings.
+3. **Find problems.** `baselineProblems(snapshot)` (pure) sorts problems into two groups:
+   - **Blocking:** anything but a 200 HTML `page`, including a redirect, an error status, non-HTML, unknown or truncated. Such a page cannot get a baseline, because `comparePage` returns nothing when the baseline is not a 200. The owner excludes it with a reason instead, and coverage shows it as excluded, never as healthy.
+   - **Acknowledgeable:** a missing title or description, `noindex` in the meta tag or `X-Robots-Tag`, an invalid JSON-LD block, or a canonical pointing to another path.
+4. **Accept.** `acceptProtectionBaseline({ projectId, pageIds, acknowledgeProblems })` refuses pages without a matching pair or with a blocking problem. It refuses pages with acknowledgeable problems unless `acknowledgeProblems` is true. The dialog lists those problems; an intentionally non-indexable page is accepted this way. It sets each page's `baseline_snapshot_id` to the second snapshot and the site baseline to the second site snapshot, in one `runBatch` with a `protection.baseline_accepted` audit row.
 5. **New pages.** A page added later has no baseline, shows **needs baseline**, and is covered by the next capture.
 
 Automatic promotion of newer baselines is deferred. Intentional changes are accepted explicitly through IRFC-0003.
@@ -156,16 +167,24 @@ When an active enrollment's `schedule` run ends `failed` or `partial`, call `Gro
   - two claimers execute a run once;
   - an expired lease is requeued once, then fails;
   - paused enrollments are skipped;
-  - a fifth manual check is refused;
-  - today's schedule run is inserted once per enrollment.
+  - a fifth manual check is refused, including when five requests arrive at once;
+  - today's schedule run is inserted once per enrollment;
+  - fetch states:
+    - a 403, 429 or Cloudflare challenge page is `unknown`, not a status;
+    - a 500 or a 301 is `response`, with its status and location stored;
+    - a body at the 2 MiB cap is `truncated`;
+  - resuming a paused enrollment queues one immediate check;
+  - retention deletes beyond 30 snapshots per page but never a baseline.
+- `discovery.test.ts` (extend): the new limits stop document fetches and set the at-cap flag, and existing callers get today's limits.
 - `snapshotRecord.test.ts`: a `Snapshot` stored and rebuilt with `toSnapshot` gives `comparePage` the same findings as the original. This is the invariant the monitor depends on.
 - `protectionBaseline.test.ts`, real SQL:
   - acceptance refuses unmatched pages;
-  - it refuses problem pages without acknowledgement;
+  - it refuses a redirecting or non-200 page even with acknowledgement;
+  - it refuses acknowledgeable problem pages without acknowledgement;
   - it sets page and site baselines atomically with one audit row;
   - an origin change clears baselines.
 - `protectionCoverage.test.ts`: healthy, overdue, partial, needs-baseline and revoked-connection cases, plus the next-check time across midnight UTC.
-- `pageSnapshot.test.ts`: a 3xx records `location`.
+- `pageSnapshot.test.ts`: a 3xx records `location`, a challenge response records its `fetchClass`, and the size cap sets `truncated`.
 
 ## Acceptance gate
 

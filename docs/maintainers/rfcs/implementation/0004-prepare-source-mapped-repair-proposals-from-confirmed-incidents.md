@@ -29,7 +29,7 @@ Opportunity proposals stay exactly as they are. `proposableOpportunity`, the GSC
 
 ## Data model
 
-Generate both migrations, and read the SQLite rebuild SQL to make sure rows and indexes survive.
+Generate both migrations. The SQLite migration for `opportunity_proposals` must be hand-written, because the generated one would delete data (see **The `opportunity_proposals` migration** below).
 
 **`regression_source_mappings`** (in the protection schema): immutable, insert only.
 
@@ -56,6 +56,41 @@ Generate both migrations, and read the SQLite rebuild SQL to make sure rows and 
 - Add a named check, `opportunity_proposals_evidence_check`. It requires either all three opportunity columns set and all three regression columns null, or the reverse. Name it identically in both dialects so `schema-parity.test.ts` compares it.
 - Every existing opportunity query selects `opportunity_id is not null` in SQL, never filtering afterwards.
 - The proposal readers, `MetadataExecutionService`, `RevertService`, experiment registration and the proposal UI get the nullable type. TypeScript lists every caller to update.
+
+**The `opportunity_proposals` migration (the riskiest step in IRFC-0001–0005)**
+
+On Postgres, this is `ALTER COLUMN … DROP NOT NULL`, three `ADD COLUMN`s and `ADD CONSTRAINT … CHECK`. Nothing is rebuilt.
+
+SQLite cannot drop a `NOT NULL` without rebuilding the table, and the rebuild Drizzle generates would delete data on D1:
+
+- It runs create new table, copy, `DROP TABLE opportunity_proposals`, rename (as in `drizzle/sqlite/0005_low_red_hulk.sql`).
+- D1 ignores `PRAGMA foreign_keys=OFF` inside a migration, and dropping a table runs its children's `ON DELETE` actions.
+- No migration since 0005 has rebuilt a table.
+
+Today the drop would affect these tables:
+
+| Effect of dropping `opportunity_proposals`          | Tables                                                                                                                                                                                                         |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rows cascade-deleted                                | `proposal_text_edits`, `proposal_approvals`, `proposal_executions` and their `proposal_execution_events`                                                                                                       |
+| Rows cascade-deleted, along with experiment history | `growth_experiments`, and through it `experiment_deployment_signals`, `measurement_runs`, `measurement_days`, `accessibility_fix_checks` (and their children), `experiment_key_events`, `measurement_ga4_days` |
+| References nulled                                   | `work_cycle_entries.proposal_id`, `work_cycle_entries.experiment_id`, `split_tests.proposal_id`                                                                                                                |
+
+The libsql test database applies migrations outside a transaction, where the pragma does work, so tests will not catch this.
+
+Write the SQLite migration by hand:
+
+1. Start with `PRAGMA defer_foreign_keys = on`.
+2. Copy every table in the closure into a backup table (`CREATE TABLE __bk_x AS SELECT * FROM x`). Recompute the closure from the schema when building, because it grows.
+3. Rebuild `opportunity_proposals`.
+4. Restore the deleted rows parent first, and restore the nulled references by ID.
+5. Drop the backups. Deferred keys are checked at commit, when every reference is valid again.
+
+Before merging:
+
+- Rehearse on a copy of a real D1 database: export it, apply the migration with `wrangler d1 migrations apply --local`, and compare the row counts of every table before and after.
+- Note a D1 Time Travel restore point before the production migration.
+
+If the rehearsal loses or changes a single row, stop and bring it to the maintainer instead of shipping. The fallback design is separate regression proposal, approval and execution tables reusing `prepareChangeAt` and `publishProposal`. That avoids the rebuild but duplicates the execution state machine, which RFC-0027 argues against.
 
 **Fingerprint version 7**
 
@@ -137,6 +172,9 @@ Server functions in `src/serverFunctions/protection.ts`: `prepareRegressionRepai
   - the evidence check rejects a row with both variants and a row with neither;
   - `saveProposal`'s regression variant refuses a closed incident;
   - the existing `PublishingRepository` and `publishingExecution` tests pass unchanged.
+- **Migration test (SQLite).** Seed a proposal with text edits, an approval, an execution and its events, an experiment with deployment signals and measurement days, and a This Week entry and a split test that reference it. Apply the migration inside one transaction with foreign keys on, as D1 does. Every row and reference must survive.
+  - The test database's usual migration path will not reproduce D1, so this test must set that up itself.
+  - It does not replace the rehearsal on a real D1 copy.
 - `proposalFingerprint.test.ts`: version 7 changes when any evidence field changes, and versions up to 6 produce the same hashes as before.
 
 ## Acceptance gate

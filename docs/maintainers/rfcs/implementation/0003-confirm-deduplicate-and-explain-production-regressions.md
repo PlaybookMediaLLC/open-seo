@@ -55,8 +55,9 @@ Index (`project_id`, `fingerprint`).
 | `id`, `project_id` (FK cascade), `enrollment_id` (FK cascade)         | text                                                                                                                                     |
 | `monitored_page_id`, `subject_key`, `rule`, `severity`, `fingerprint` | as in findings                                                                                                                           |
 | `baseline_snapshot_id`, `site_baseline_snapshot_id`                   | the baseline compared against (one is set)                                                                                               |
-| `first_finding_id`, `last_finding_id`                                 | FK `monitor_findings`                                                                                                                    |
-| `first_bad_snapshot_id`, `last_bad_snapshot_id`                       | nullable FK `page_snapshots`                                                                                                             |
+| `first_finding_id`, `last_finding_id`                                 | FK `monitor_findings`, no `on delete` action (restrict)                                                                                  |
+| `first_bad_snapshot_id`, `last_bad_snapshot_id`                       | nullable FK `page_snapshots`, restrict; set for page rules                                                                               |
+| `first_bad_site_snapshot_id`, `last_bad_site_snapshot_id`             | nullable FK `site_snapshots`, restrict; set for site rules                                                                               |
 | `confirmation_count`, `clean_count`                                   | integer, not null                                                                                                                        |
 | `evidence_version`                                                    | integer, not null, default 1; bumped when the bad value changes                                                                          |
 | `status`                                                              | `REGRESSION_STATUSES` = `open`, `repairing`, `resolved`, `accepted`, `dismissed`                                                         |
@@ -64,21 +65,29 @@ Index (`project_id`, `fingerprint`).
 | `resolved_at`, `resolved_by`, `resolution_note` (at most 500)         | nullable                                                                                                                                 |
 | `previous_regression_id`                                              | nullable self FK: recurrence link                                                                                                        |
 | `deployment_sha`, `previous_deployment_sha`                           | nullable: the suspect range when both releases were observed                                                                             |
-| `detected_at`, `alerted_at`                                           | text; `alerted_at` nullable and set once                                                                                                 |
+| `detected_at`                                                         | text, not null                                                                                                                           |
+| `alert_claimed_at`, `alert_attempts`, `alerted_at`                    | the email send claim, its attempt count, and when it was sent                                                                            |
 
 Partial unique index on (`enrollment_id`, `subject_key`, `rule`) where `status` is `open` or `repairing`. That index enforces one active incident per page or resource and rule.
 
-**Tickets.** Extend `opportunity_tickets` rather than add a second ticket table: make `opportunity_id` nullable, add a nullable `regression_id` (FK `site_regressions` on delete cascade), add a check that exactly one of the two is set, and add a unique index on (`regression_id`, `text_hash`). SQLite needs a table rebuild; read the generated SQL to make sure rows and indexes survive. Every opportunity-ticket query keeps filtering by `opportunity_id`.
+**Tickets.** Extend `opportunity_tickets` rather than add a second ticket table: make `opportunity_id` nullable, add a nullable `regression_id` (FK `site_regressions` on delete cascade), add a check that exactly one of the two is set, and add a unique index on (`regression_id`, `text_hash`). Every opportunity-ticket query keeps filtering by `opportunity_id`.
 
-Retention from IRFC-0002 also keeps snapshots that an incident references.
+SQLite cannot drop a `NOT NULL` without rebuilding the table. On D1, `PRAGMA foreign_keys=OFF` has no effect inside a migration, and dropping a table still runs `ON DELETE` actions on its children. `opportunity_tickets` has no child tables, so its rebuild is safe. Even so:
+
+- start the migration with `PRAGMA defer_foreign_keys = on`;
+- rehearse it on a D1 copy and compare the row count before and after.
+
+Postgres only needs `ALTER COLUMN … DROP NOT NULL` and the check.
+
+Retention from IRFC-0002 never deletes a snapshot, site snapshot or finding that an incident references. The restrict foreign keys above make a mistake fail loudly instead of erasing evidence.
 
 ## Comparison and confirmation
 
 `compareToBaseline` in `src/server/features/protection/monitorCompare.ts` (pure):
 
-- **Pages:** call `comparePage(toSnapshot(baseline), toSnapshot(current), { path, baseOrigin: origin, previewOrigin: origin, checkRobotsHeader: true })`, but only when both snapshots are `ok`. Production always checks `X-Robots-Tag`, and preview exemptions never apply.
-- **Site:** call `compareSite` with the monitored paths, `isAllowed` from the baseline and current `robots_txt`, and the sitemap counts, only when both sides' states are `ok`.
-- **Unknown data:** an unknown snapshot produces no finding and is counted as unknown.
+- **Pages:** call `comparePage(toSnapshot(baseline), toSnapshot(current), { path, baseOrigin: origin, previewOrigin: origin, checkRobotsHeader: true })`, when the baseline is a `page` and the current snapshot is a `page` or a `response`. A `response` carries only status and redirect, so the status rules can fire while fact rules stay silent. Production always checks `X-Robots-Tag`, and preview exemptions never apply.
+- **Site:** call `compareSite` with the monitored paths, `isAllowed` from the baseline and current `robots_txt`, and the sitemap counts. Robots rules run only when both robots states are `ok`. The sitemap rule runs only when both sitemap states are `ok` and the current count is not at a cap.
+- **Unknown data:** an `unknown` or `truncated` snapshot produces no finding and is counted as unknown.
 
 `weigh` is not applied: traffic is optional here, and missing click data is not zero.
 
@@ -92,7 +101,7 @@ Retention from IRFC-0002 also keeps snapshots that an incident references.
    - An unknown observation allows one more confirmation, after which the candidate is `transient` with "could not confirm".
 3. **Warnings.** A warning confirms when the same fingerprint appears in two consecutive non-confirmation runs. It opens an incident with severity `warning`, an in-app notification and no email.
 4. **Finding for an open incident.** Update `last_finding_id` and `last_bad_snapshot_id`, add one to `confirmation_count`, and reset `clean_count`. Bump `evidence_version` only when `after_value` changed. Never notify again.
-5. **Open incident without its finding.** Two consecutive `ok` observations without the finding resolve it as `observed_resolution`. IRFC-0006 later separates Relay repairs from customer fixes.
+5. **Open incident without its finding.** Two consecutive comparable observations without the finding resolve it as `observed_resolution`. IRFC-0006 later separates Relay repairs from customer fixes.
 6. **Dismissed fingerprint.** A dismissed incident's fingerprint stays quiet while the baseline is unchanged. Accepting a change sets a new baseline, so the fingerprint changes naturally.
 7. **Recurrence.** A recurrence after resolution opens a new incident with `previous_regression_id`.
 8. **Newer deployment.** A queued confirmation becomes `skipped` ("superseded by deployment …") when a newer `deployment` run is queued. Its candidates become `superseded`. Evidence from two site versions is never mixed.
@@ -103,7 +112,12 @@ Retention from IRFC-0002 also keeps snapshots that an incident references.
    - `listEnvironmentDeployments(environment)` reads `/deployments?environment=…&per_page=10` and returns `id`, `sha` and `created_at`;
    - `listDeploymentStatuses` gains a nullable `environment_url`.
 2. On each tick, for every `active` enrollment with an active publishing connection, read production deployments newer than `last_deployment_id`. Use the same read permissions as `DeploymentSignalService`.
-3. For each deployment whose latest status is `success`, queue a `deployment` run with its ID and SHA, then advance the cursor.
+3. Walk the deployments oldest first:
+   - A latest status of `success` queues a `deployment` run with its ID and SHA.
+   - `failure`, `error` and `inactive` are terminal and queue nothing.
+   - A deployment still `queued`, `pending` or `in_progress` stops the walk.
+   - The cursor advances only past the leading run of terminal deployments, so an in-progress release is read again on the next tick, not skipped.
+   - A deployment that is still not terminal after 6 hours is passed over and recorded on the coverage view.
 4. A queued `deployment` run that has not started absorbs newer deployments: update its ID and SHA and add one to `coalesced_count`.
 5. Without a connection, coverage says "Deployment checks need a GitHub connection; daily checks still run." The webhook path is unchanged; RFC-0019 adds it only if polling latency proves insufficient.
 
@@ -113,7 +127,12 @@ Retention from IRFC-0002 also keeps snapshots that an incident references.
 
 - Add `regression_confirmed` to both notification-kind literals.
 - A newly opened blocking incident calls `notify` with `dedupeKey` set to the incident ID and `linkPath` `/p/{projectId}/protection/incidents/{id}`.
-- It also sends one email to the reviewer through `sendProtectionAlertEmail`. That send is guarded by a compare-and-set on `alerted_at` from null, so retries never email twice.
+- It also emails the reviewer through `sendProtectionAlertEmail`, in four steps:
+  1. A tick claims the send with a compare-and-set on `alert_claimed_at`, which acts as a 10-minute lease.
+  2. It sends the email.
+  3. Only then does it set `alerted_at`.
+  4. A failed send clears the claim and adds one to `alert_attempts`. Later ticks retry up to 3 attempts, then the incident page shows "alert email failed".
+- That makes alerts at-least-once. A crash between sending and recording can send a duplicate, but a failure never loses the alert silently.
 - The alert includes the page, rule, before and after values, first seen, confirmations and one next action.
 
 **Cause**
@@ -131,7 +150,9 @@ Retention from IRFC-0002 also keeps snapshots that an incident references.
 
 **Owner actions**
 
-- **Accept as new baseline** (`acceptRegressionChange`) sets the page baseline to the latest `ok` snapshot and closes the incident as `accepted_change`.
+- **Accept as new baseline** (`acceptRegressionChange`) sets the page baseline to the latest `page` snapshot and closes the incident as `accepted_change`.
+  - That snapshot also carries any other current regression on the page. So acceptance is refused while the page has another open incident, and the refusal lists them.
+  - The owner either resolves those first or accepts them together: `acceptRegressionChange` takes the full list of the page's open incident IDs, and they close in one batch. RFC-0019 section 4.5 forbids silently overwriting a baseline while findings are unresolved.
 - **Dismiss** (`dismissRegression`, with a reason) closes it as `false_positive`.
 - Both require `integration:manage` and write `regression.accepted` or `regression.dismissed` audit rows in the same batch. Add both actions to `AUDIT_ACTIONS`.
 
@@ -163,9 +184,12 @@ Retention from IRFC-0002 also keeps snapshots that an incident references.
   - a recurrence links to the previous incident;
   - a newer deployment supersedes pending confirmations;
   - two concurrent processors cannot open two incidents;
-  - the email is sent once.
+  - the email is sent once, a failed send is retried, and three failures are shown;
+  - a `response` with status 500 opens `status-regressed`, while a 403 challenge (`unknown`) opens nothing;
+  - accepting a change is refused while another incident is open on the page, and accepting both together closes both;
+  - retention keeps every snapshot, site snapshot and finding an incident references.
 - `deploymentDiscovery.test.ts`:
-  - the cursor advances;
+  - the cursor advances only past terminal deployments, and an in-progress one is read again next tick;
   - only `success` statuses queue runs;
   - other environments are ignored;
   - a burst coalesces into one run with a count;

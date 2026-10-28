@@ -36,12 +36,19 @@ Extend `MetadataExecutionService.execute` with the regression evidence variant. 
    - the enrollment `active` with `allow_pull_requests`;
    - the page still active;
    - the mapping's `connection_id` equal to the active connection.
-3. **A `beginExecution` regression variant.** One batch does all of this:
-   - compare-and-set the incident from `open` to `repairing` at that evidence version, instead of bumping the opportunity version;
-   - refuse when another execution for the incident is `running` or `succeeded`;
-   - insert the approval, execution, first event and audit rows exactly as today.
-4. **Publish.** Use `publishProposal` unchanged. The PR body adds an evidence section: incident link, baseline value, bad value and confirmations.
-5. **Failure.** A failure moves the incident back to `open` in the same batch as the failed checkpoint. Forward recovery and `PublishingRecoveryService` behave as they do for opportunities.
+3. **A `beginExecution` regression variant.** It needs its own fence.
+   - **Why:** today the winning compare-and-set writes `opportunities.lastDecisionId = eventId`, and every child insert is conditioned on that value. Add `site_regressions.last_decision_id` (nullable text) and use it the same way.
+   - **The batch:**
+     - compare-and-set the incident from `open` to `repairing` at the proposal's evidence version, setting `last_decision_id` to the new event ID;
+     - insert the approval, execution, first event and audit rows, each conditioned on that `last_decision_id`, exactly as the opportunity path does;
+     - refuse when another execution for the same incident and evidence version is `succeeded`.
+   - **Stuck executions:** a `running` execution with an expired lease is taken over exactly as today (`previous = 'running'` with another ID is retired).
+4. **Retire.** `retireExecutions` gets the regression variant too. Retiring a regression execution moves its incident from `repairing` back to `open` in the same batch. The publishing lease is shared per project, so an opportunity publish can retire a regression execution; without this, the incident would stay `repairing` forever.
+5. **Publish.**
+   - Execution passes `restore: true` to `prepareChangeAt` for regression proposals, as `prepare` did. Today `execute` sets `restore` only for reverts, so a known-good title outside 10–60 characters would prepare and then always fail.
+   - `publishProposal` changes in one way: it takes the PR body text from its caller. Opportunity callers pass today's text ("approved in the growth queue"). The regression caller passes the incident link, baseline value, bad value and confirmations.
+6. **Failure and recovery.** A failure moves the incident back to `open` in the same batch as the failed checkpoint. `PublishingRecoveryService` stays opportunity-only. A regression recovers by approving the same proposal again: `findPullRequest`, `verifyPull` and the branch-commit check reuse any verified PR or commit, as forward recovery does today.
+7. **Closed PR.** A PR closed without merging moves the incident back to `open` and adds one to its `evidence_version`. The old proposal becomes stale, so the reviewer prepares and approves a new proposal, which gets a new ID and branch. Without the bump, IRFC-0004's dedupe would return the old proposal, and `execute` would stop at "already has a recorded pull request".
 
 The new server function `approveRegressionRepair` takes the same input as `executeProposalInputSchema` and calls the extended service. Approval binds `change_hash`, which in version 7 covers the incident evidence version and the source mapping. The preview check below binds the resulting head SHA.
 
@@ -63,7 +70,7 @@ New table **`proposal_preview_checks`** in the protection schema:
 
 Unique (`execution_id`, `head_sha`).
 
-**`PreviewCheckService.tick(now)`** runs from `runProtectionMonitor` on every tick, for checks that are `pending` and younger than 30 minutes:
+**`PreviewCheckService.tick(now)`** runs from `runProtectionMonitor` on every tick, for every `pending` check. A check older than 30 minutes goes straight to step 6.
 
 1. **Find the preview.**
    - Call `listDeployments(head_sha)` and skip the production environment.
@@ -71,10 +78,12 @@ Unique (`execution_id`, `head_sha`).
    - The host must pass `isAllowedPreviewHost` for the project domain and its `ci_preview_hosts`, and `normalizeAndValidateStartUrl`. A failure is `unavailable` with "preview host not allowed", and no credentials are sent.
 2. **Run the SEO check.**
    - Reuse the `ci_check_runs` row for (`head_sha`, preview origin) when the webhook already queued one.
-   - Otherwise call `queueCheck` with the publishing connection's installation and `changedFiles: [file_path]`, then start the workflow as `handleDeploymentStatus` does.
-   - Wait for it to finish. A `failed` run or any blocking finding is `failed`.
+   - Otherwise call `queueCheck` with the publishing connection's installation and `changedFiles: [file_path]`. `queueCheck` starts the workflow itself, so do not start it again.
+   - **Base origin:** `queueCheck` compares against `https://${domain}`, but `projects.domain` is the bare host. On a site served from `www.`, every base page answers 301, `comparePage` finds nothing, and the check passes vacuously. Extend `queueCheck` with an optional `baseOrigin`, defaulting to today's value, and pass the enrollment's `production_origin`.
+   - **Refusals:** every non-queued `queueCheck` result becomes `unavailable` with the API's own message. That covers `quota_reached` (these checks count toward the project's monthly SEO check quota), `no_domain` and `preview_host_not_allowed`.
+   - Wait for the run to finish. A `failed` run or any blocking finding is `failed`.
 3. **Check the rendered value.**
-   - Fetch the preview page with `fetchSnapshot`, using the protected-preview access. Export `previewAccess` from `seoCheckPlan.ts` for this second caller; it sends secrets only to a trusted host.
+   - Fetch the preview page with `fetchSnapshot`, using the protected-preview access from `previewAccess`. It is already exported from `seoCheckPlan.ts` and used by `seoCheckRun.ts`, and it sends secrets only to a trusted host.
    - The whitespace-squashed field must equal the mapping's `expected_value`. A mismatch is `failed`, with "preview renders … , expected …".
    - Preview `noindex` is ignored, following the preview policy.
 4. **Read customer CI.** Call `getChecks(head_sha)`:
@@ -93,7 +102,7 @@ Unique (`execution_id`, `head_sha`).
 
 **PR state** is read with `getPullRequest`, cached for 5 minutes:
 
-- A PR closed without merging moves the incident back to `open`.
+- A PR closed without merging moves the incident back to `open` and bumps its evidence version, as in **Execution** step 7.
 - A merged PR keeps it `repairing` until IRFC-0006 verifies production.
 
 ## Interface
@@ -111,13 +120,22 @@ The incident page gains a **Repair** section:
   - a changed evidence version, a resolved incident and an enrollment without PRs are each refused before any GitHub write;
   - a duplicate approval produces one PR through the existing recovery path;
   - a failed execution returns the incident to `open`;
+  - a known-good title outside 10–60 characters executes, because `restore` is passed;
+  - the PR body is the regression text, and the opportunity PR body is unchanged;
   - the opportunity cases still pass unchanged.
-- `publishingExecution.test.ts`, real SQLite and Postgres: one regression approval wins, and the incident moves `open` → `repairing` only at the matching evidence version.
+- `publishingExecution.test.ts`, real SQLite and Postgres:
+  - one regression approval wins, and the incident moves `open` → `repairing` only at the matching evidence version;
+  - a losing approval's child rows never land (the `last_decision_id` fence);
+  - `retireExecutions` retiring a regression execution reopens its incident;
+  - after a PR is closed unmerged, a new proposal at the bumped evidence version can be approved and opens a second PR.
 - `previewCheck.test.ts`, real SQL with a fake GitHub client and `fetch`:
   - finds the preview for the exact SHA;
   - ignores production and other SHAs;
   - a disallowed host is `unavailable` and sends no credentials;
-  - times out to `unavailable`;
+  - a check older than 30 minutes becomes `unavailable` on the next tick;
+  - a `quota_reached` or `preview_host_not_allowed` result from `queueCheck` is `unavailable` with its message;
+  - on a `www.` production origin, the SEO check compares against that origin, not the bare domain;
+  - the workflow is started once;
   - failing CI is `failed`;
   - a rendered mismatch is `failed`;
   - a changed PR head is `stale`;
