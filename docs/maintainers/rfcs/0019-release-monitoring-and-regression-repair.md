@@ -4,13 +4,13 @@
 - **Date:** 2026-10-15
 - **Updated:** 2026-10-23
 - **Delivery:** Stage 1 for observation/detection; stage 2 for reviewed repair integration.
-- **Depends on:** Phase 1a uses RFC-0005 repository/deployment reads, RFC-0008 jobs, RFC-0009 controls, RFC-0010/0015 rules, and the pilot scope from RFC-0026 phase A. Phase 1b adds confirmed incidents. Phase 1c uses RFC-0027, RFC-0025 phase 1a, and RFC-0028. The RFC-0018 report consumes results; standing approvals are not a prerequisite.
+- **Depends on:** Phase 1a uses RFC-0005 repository/deployment reads, RFC-0008 jobs, RFC-0009 controls, RFC-0010/0015 rules, and the protected-site scope from RFC-0026 phase A. Phase 1b adds confirmed incidents. Phase 1c uses RFC-0027, RFC-0025 phase 1a, and RFC-0028. The RFC-0018 report consumes results; standing approvals are not a prerequisite.
 
 ## 1. Summary
 
 Monitor the production pages a customer has agreed to protect, retain their known-good state, and confirm consequential regressions before alerting. Explain the before/after evidence, affected pages, suspected source, and next action. Detection and actionable tickets are the first useful increment. Source-proven, human-reviewed repairs and production verification follow through separate RFCs.
 
-This is the initial release-assurance product in [company.md](../../../company.md). Ongoing campaigns and autonomous execution follow customer validation, not the other way around.
+This is the initial release-assurance product in [company.md](../../../company.md). Ongoing campaigns and autonomous execution come after the reviewed repair loop works, not before.
 
 ## 2. What exists today
 
@@ -32,13 +32,13 @@ The proposed `monitored_pages`, `page_snapshots`, `site_snapshots`, and `site_re
 | 1b    | Deployment/daily checks, shared comparison rules, confirmations, deduplicated incidents, cause evidence, notification and tickets | A confirmed regression is actionable even without an automatic repair.                                |
 | 1c    | RFC-0027 reviewed metadata repairs, RFC-0025 customer previews, RFC-0028 verification                                             | Approved repair reaches production and the original failure is verified resolved.                     |
 | 2     | Verified adapters for canonical/robots literals and static `robots.txt`; webhook improvements where needed                        | Each new repair class passes its own source, preview, and verification acceptance.                    |
-| 3     | Rendered production checks and response-time signals                                                                              | Validated demand, affordable runtime, and explicit unknown states.                                    |
+| 3     | Rendered production checks and response-time signals                                                                              | Affordable runtime and explicit unknown states.                                                       |
 
 No full-site crawl, CMS writes, whole-commit rollback, autonomous merge, or Relay-controlled production deployment. The site audit and customer's release process retain those roles.
 
 ## 4. Protected set and baseline
 
-Use explicit owner-selected key pages first, normally 5–20 in a pilot, bounded by RFC-0026's agreed entitlement. Suggest top organic landing pages from existing Search Console data when available; missing history does not prevent protection. Include relevant `robots.txt` and sitemap checks, accounted for in capacity. Show excluded or unsupported pages and why. Changes to the protected set are visible and auditable.
+Use explicit owner-selected key pages first, normally 5–20 per site, bounded by the site's agreed scope (RFC-0026). Suggest top organic landing pages from existing Search Console data when available; missing history does not prevent protection. Include relevant `robots.txt` and sitemap checks, accounted for in capacity. Show excluded or unsupported pages and why. Changes to the protected set are visible and auditable.
 
 `monitored_pages` stores project, normalized URL path, selection reason, scope version, added/removed times, and a nullable known-good snapshot reference. Enforce one active row per project/path. Record site resources separately where appropriate. Keep all relations normalized and compatible with SQLite and Postgres.
 
@@ -64,10 +64,10 @@ Retain the most recent 30 observations per page within 90 days plus all active b
 
 ## 6. Triggers, capacity, and service health
 
-- Poll successful deployments for the configured production environment, with a durable cursor and deduplication. Include deployments unrelated to Relay proposals. Add an authenticated webhook path when it improves pilot latency.
+- Poll successful deployments for the configured production environment, with a durable cursor and deduplication. Include deployments unrelated to Relay proposals. Add an authenticated webhook path when polling latency is not enough.
 - Run a daily scheduled check for changes with no available Git event, plus bounded manual checks (initially four per day).
 - Use the existing job/lease/notification infrastructure. Monitoring and confirmations require due-time scheduling suited to their promised cadence; do not assume the existing quarter-hour dispatcher can satisfy a shorter target.
-- For the initial polling pilot, target an initial check within 30 minutes of a successful deployment and confirmed findings within 60 minutes, measured from the deployment timestamp. Schedule ordinary confirmations 5–10 minutes after the initial check; HTTP-status regressions need two confirmations ten minutes apart. A faster 15-minute confirmed-alert objective requires separately proven webhook/scheduling behavior.
+- For the initial polling release, target an initial check within 30 minutes of a successful deployment and confirmed findings within 60 minutes, measured from the deployment timestamp. Schedule ordinary confirmations 5–10 minutes after the initial check; HTTP-status regressions need two confirmations ten minutes apart. A faster 15-minute confirmed-alert objective requires separately proven webhook/scheduling behavior.
 - Show last successful check, next due check, queued/failed/skipped work, coverage completeness, and reason. Persistent monitor failure sends a deduplicated operational notification, not “no regressions”.
 
 Use at most two concurrent requests per origin, a ten-second request timeout, two MB maximum HTML, and the shared URL policy on every hop. Bounded page/deployment/confirmation budgets follow RFC-0026. Deployment bursts may coalesce pending checks to the newest release, but must record skipped release coverage and must not mix confirmation evidence from different site versions.
@@ -137,4 +137,4 @@ For phase 1c, a reviewer authorizes a source-proven metadata repair, the custome
 
 ## 12. Alternatives
 
-Full audits after every release are too broad for bounded protection. Alert-and-ticket delivery is accepted as an initial useful pilot, while reviewed repair is the next value gate. Whole-commit rollback and guesses at rendered-to-source mapping are rejected. Building standing approvals first would add risk and dependencies before validating demand.
+Full audits after every release are too broad for bounded protection. Alert-and-ticket delivery is accepted as an initial useful release, while reviewed repair is the next step. Whole-commit rollback and guesses at rendered-to-source mapping are rejected. Building standing approvals first would add risk and dependencies before the reviewed repair loop is proven.

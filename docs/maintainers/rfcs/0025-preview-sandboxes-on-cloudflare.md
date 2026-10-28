@@ -3,7 +3,7 @@
 - **Status:** Draft. Existing CI checks can inspect a supplied preview; proposal-bound customer-preview orchestration and Relay-owned builds are not implemented.
 - **Date:** 2026-10-15
 - **Delivery order updated:** 2026-10-23
-- **Area:** stage 2 customer-preview checks first; Relay-owned builds deferred until demand and isolation are proven.
+- **Area:** stage 2 customer-preview checks first; Relay-owned builds deferred until isolation and bounded cost are proven.
 - **Depends on:** RFC-0005 proposal/execution and GitHub access, RFC-0008 jobs, RFC-0009 controls, RFC-0010/0015 checks. RFC-0027 supplies incident proposals. No dependency on RFC-0018 standing approvals; those later consume passed previews.
 
 ## 1. Summary
@@ -59,10 +59,10 @@ The initial service uses **phase 1a, Path A only**. Phase 0 is a later feasibili
 | Delivery order / phase | Delivers                                                                                                                                                                                         |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | First: 1a              | Path A only: approved branch/PR, customer preview bound to its head commit, required CI checks, rendered postcondition, explicit failed/unavailable/stale states. No Relay build infrastructure. |
-| Later: 0               | Isolation, framework, runtime, outbound control, teardown, and cost spike from 5.12, only if customer demand warrants Path B.                                                                    |
+| Later: 0               | Isolation, framework, runtime, outbound control, teardown, and cost spike from 5.12, only for sites that cannot use customer previews (Path B).                                                  |
 | After 0: 1b            | Path B for static/OpenNext output, verification, access controls, and teardown.                                                                                                                  |
 | 2                      | Path B Node-server output and per-project dependency cache.                                                                                                                                      |
-| 3                      | Broader pull-request preview hosting through the release gate, if demand justifies it.                                                                                                           |
+| 3                      | Broader pull-request preview hosting through the release gate.                                                                                                                                   |
 
 ### 5.2 Choosing the path
 
@@ -182,15 +182,15 @@ Add `preview_mode` and `preview_mode_reason` to `publishing_connections`.
 4. **RFC-0019/0028:** preview checks establish readiness; only subsequent production checks establish repair resolution.
 5. **RFC-0021:** later new pages must render before approval to merge; preliminary repository writes still require authorization.
 
-### 5.10 Limits and plans
+### 5.10 Limits
 
-| Limit                                  | Default                                       |
-| -------------------------------------- | --------------------------------------------- |
-| Builds per month                       | Set per plan from the spike's cost per build. |
-| Parallel builds per organization       | 2                                             |
-| Build time                             | 15 minutes                                    |
-| Preview lifetime                       | 7 days (static, OpenNext), 24 hours (Node)    |
-| Running Node previews per organization | 3                                             |
+| Limit                                  | Default                                    |
+| -------------------------------------- | ------------------------------------------ |
+| Builds per month                       | Set from the spike's cost per build.       |
+| Parallel builds per organization       | 2                                          |
+| Build time                             | 15 minutes                                 |
+| Preview lifetime                       | 7 days (static, OpenNext), 24 hours (Node) |
+| Running Node previews per organization | 3                                          |
 
 Builds use RFC-0009 admission, so a project limit stops them before they start.
 
@@ -227,7 +227,7 @@ For phase 1a, validate the preview URL and redirects, scope bypass credentials t
 
 Phase 1a uses customer CI compute plus bounded GitHub reads and Relay check/render costs. Paid checks retain RFC-0009 admission; disclose the cost and unavailable states. There is no Relay container/build cost in that slice.
 
-Container time per build, Workers for Platforms requests for previews, and small R2 storage. The spike records the median and 95th-percentile cost per build. Plans set their build allowance from it.
+Container time per build, Workers for Platforms requests for previews, and small R2 storage. The spike records the median and 95th-percentile cost per build. The monthly build allowance is set from it.
 
 ## 8. Alternatives considered
 
