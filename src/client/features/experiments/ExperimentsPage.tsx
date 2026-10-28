@@ -23,14 +23,8 @@ import {
   type ExperimentLabel,
 } from "@/types/schemas/experiments";
 import { SplitTestsSection } from "@/client/features/split-tests/SplitTestsSection";
+import { LABEL_TEXT } from "./labels";
 import { experimentListOptions } from "./queries";
-
-const LABEL_TEXT: Record<ExperimentLabel, string> = {
-  encouraging: "Encouraging",
-  inconclusive: "Inconclusive",
-  negative: "Negative",
-  measuring: "Still measuring",
-};
 
 export function ExperimentsPage({ projectId }: { projectId: string }) {
   const [offset, setOffset] = useState(0);

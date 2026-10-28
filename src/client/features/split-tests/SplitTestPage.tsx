@@ -58,7 +58,7 @@ export function SplitTestPage(props: { projectId: string; testId: string }) {
         )}
         <SplitTestResultsCard data={query.data} />
         <SplitTestEndCard data={query.data} />
-        <SplitTestPullCard test={test} />
+        <SplitTestPullCard test={test} canApprove={query.data.canApprove} />
         {query.data.canManage && (
           <SplitTestBacktestCard
             projectId={props.projectId}

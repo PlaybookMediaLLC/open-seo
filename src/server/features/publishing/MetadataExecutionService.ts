@@ -13,7 +13,7 @@ import { parseRobotsText } from "./indexingMetadata";
 import { prepareChangeAt } from "./publishingTarget";
 import { gitBlobHash, proposalFingerprint } from "./proposalFingerprint";
 import {
-  authorizePublishing,
+  authorizeApproval,
   connectedGithub,
   publishingFailure,
   withPublishingClaim,
@@ -46,7 +46,7 @@ async function execute(
   context: PublishingContext,
   raw: ExecuteProposalInput,
 ): Promise<PublishingMutationResult> {
-  await authorizePublishing(context, raw.projectId, true);
+  await authorizeApproval(context, raw.projectId);
   const input = executeProposalInputSchema.parse(raw);
   try {
     return await withPublishingClaim(

@@ -61,7 +61,10 @@ export async function resolveEveryAppUserContext(
   // The gateway always names an organization; a token without one has no
   // workspace to open.
   if (!user.orgId) throw new AppError("UNAUTHENTICATED");
-  const role = ROLES.has(user.orgRole) ? user.orgRole : "member";
+  const gatewayRole = ROLES.has(user.orgRole) ? user.orgRole : "member";
+  // RFC-0007 6.4: the gateway owns the team, so no owner here can grant
+  // approval per member. Gateway admins keep approving pull requests.
+  const role = gatewayRole === "admin" ? "admin,approver" : gatewayRole; // playbook-seam
   const userEmail = await ensureUserRecord(user.id, user.email);
   const organizationId = await ensureSharedWorkspaceOrganization();
   return {

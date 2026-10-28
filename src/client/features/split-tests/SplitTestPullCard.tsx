@@ -24,7 +24,13 @@ import {
 // then confirm the production deployment.
 type Test = Awaited<ReturnType<typeof getSplitTest>>["test"];
 
-export function SplitTestPullCard({ test }: { test: Test }) {
+export function SplitTestPullCard({
+  test,
+  canApprove,
+}: {
+  test: Test;
+  canApprove: boolean;
+}) {
   const client = useQueryClient();
   const ids = { projectId: test.projectId, testId: test.id };
   const [reviewing, setReviewing] = useState(false);
@@ -49,9 +55,15 @@ export function SplitTestPullCard({ test }: { test: Test }) {
               Relay opens one pull request with the variant list and a helper. A
               developer then adds one edit to <code>{test.templatePath}</code>.
             </p>
-            <Button size="sm" onClick={() => setReviewing(true)}>
-              Review pull request
-            </Button>
+            {canApprove ? (
+              <Button size="sm" onClick={() => setReviewing(true)}>
+                Review pull request
+              </Button>
+            ) : (
+              <p className="text-muted-foreground">
+                An owner or an approver of this project opens it.
+              </p>
+            )}
           </>
         )}
         {test.pullRequestUrl && (

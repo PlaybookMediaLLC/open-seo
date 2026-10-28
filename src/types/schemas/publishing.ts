@@ -27,6 +27,16 @@ const rootDirectory = z
   .regex(/^(?:[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*)?$/)
   .default("");
 export const publishingProjectInputSchema = projectScope;
+// RFC-0007 6.5: at most 20 listed approvers keeps one insert inside D1's
+// 100 bound parameters.
+export const savePublishingApproversInputSchema = projectScope.extend({
+  memberIds: z.array(z.string().min(1)).max(20),
+});
+// RFC-0007 6.4: an owner grants or removes one member's approval.
+export const memberApprovalInputSchema = z.object({
+  memberId: z.string().min(1),
+  approve: z.boolean(),
+});
 export const connectPublishingInputSchema = projectScope.extend({
   owner,
   repository: repositoryPart,
@@ -261,6 +271,7 @@ export type PublishingOpportunityState = {
   configured: boolean;
   appRevoked: boolean;
   canManage: boolean;
+  canApprove: boolean;
   connection: PublishingConnection | null;
   proposals: ProposalWithHistory[];
 };

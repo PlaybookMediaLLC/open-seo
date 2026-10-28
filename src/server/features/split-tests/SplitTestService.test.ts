@@ -33,6 +33,7 @@ vi.mock("@/server/features/gsc/services/GscService", () => ({
   GscService: { getPerformance: mocks.performance },
 }));
 vi.mock("@/server/features/publishing/publishingAccess", () => ({
+  canApprove: async () => true,
   connectedGithub: async () => ({
     getRef: async () => ({ sha: "a".repeat(40) }),
     getCommit: async () => ({ treeSha: "b".repeat(40) }),

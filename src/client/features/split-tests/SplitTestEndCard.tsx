@@ -25,7 +25,7 @@ const DEPLOYED = new Set(["verifying", "running", "stopped", "concluded"]);
 export function SplitTestEndCard({ data }: { data: Data }) {
   const { test, analysis } = data;
   const [action, setAction] = useState<Action | null>(null);
-  if (!data.canManage || !DEPLOYED.has(test.status)) return null;
+  if (!data.canApprove || !DEPLOYED.has(test.status)) return null;
   const canApply =
     test.status === "concluded" && analysis?.label !== "negative";
   return (

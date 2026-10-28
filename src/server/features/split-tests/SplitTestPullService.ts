@@ -13,6 +13,7 @@ import {
   type OpportunityContext,
 } from "@/server/features/opportunities/services/opportunityAccess";
 import {
+  authorizeApproval,
   connectedGithub,
   withPublishingClaim,
 } from "@/server/features/publishing/publishingAccess";
@@ -142,6 +143,7 @@ async function open(
     draft?: VariantDraft;
   },
 ) {
+  await authorizeApproval(context, input.projectId);
   const loaded = await loadTest(context, input);
   const { test, templatePath, connection, files } = loaded;
   if (test.status !== "eligible" || test.pullRequestNumber)

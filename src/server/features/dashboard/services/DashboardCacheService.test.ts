@@ -207,3 +207,17 @@ it("returns a visible startup refusal and backs off instead of repeatedly attemp
   await DashboardFirstAuditService.start("project", "example.com", customer);
   expect(state.startAudit).toHaveBeenCalledTimes(1);
 });
+
+it("reads back the stored value of any age without loading, and nothing for another organization", async () => {
+  const stored = input();
+  await DashboardCacheService.readThrough(stored);
+  vi.useFakeTimers({ now: Date.now() + 365 * 86400_000 });
+  const { load: _load, maxAgeMs: _maxAge, ...entry } = stored;
+  await expect(DashboardCacheService.readCached(entry)).resolves.toMatchObject({
+    value: ["real response"],
+  });
+  expect(stored.load).toHaveBeenCalledTimes(1);
+  await expect(
+    DashboardCacheService.readCached({ ...entry, organizationId: "org-b" }),
+  ).resolves.toBeNull();
+});

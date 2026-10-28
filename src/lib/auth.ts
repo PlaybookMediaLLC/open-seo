@@ -28,6 +28,7 @@ import {
 } from "@/lib/auth-turnstile";
 import { resolveSignInHostedOrganization } from "@/server/auth/default-hosted-organization";
 import { onInvitationAccepted } from "@/server/auth/invited-member";
+import { refuseApproverChange } from "@/server/auth/member-approval"; // playbook-seam
 import { AuthRepository } from "@/server/auth/repositories/AuthRepository";
 import { assertStandaloneSignUpOpen } from "@/server/standalone/sign-up";
 import { captureDubReferralSignup } from "@/server/referrals/dub";
@@ -122,7 +123,7 @@ function createAuth() {
               // free-grant loop at next sign-in). Ownership moves only through
               // the transferOwnership server function, which swaps the two
               // roles atomically — reject owner here.
-              beforeUpdateMemberRole: async ({ newRole }) => {
+              beforeUpdateMemberRole: async ({ member, newRole }) => {
                 if (
                   newRole
                     .split(",")
@@ -134,6 +135,7 @@ function createAuth() {
                       "The owner role can't be granted from here. Use Transfer ownership in organization settings.",
                   });
                 }
+                refuseApproverChange(member.role, newRole); // playbook-seam
               },
               afterAcceptInvitation: async ({ member: acceptedMember }) => {
                 await onInvitationAccepted({

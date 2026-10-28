@@ -91,8 +91,28 @@ async function deleteGscCache(projectId: string) {
   );
 }
 
+// playbook-seam: RFC-0007 6.2, the last stored value, however old, or null.
+// It never loads, so a page built from it makes no provider call. The key is
+// built as readThrough builds it.
+async function readCached<T>(input: {
+  namespace: string;
+  organizationId: string;
+  params: Record<string, unknown>;
+  schema: z.ZodType<T>;
+}) {
+  const key = await buildCacheKey(input.namespace, {
+    ...input.params,
+    organizationId: input.organizationId,
+  });
+  const parsed = z
+    .object({ value: input.schema, fetchedAt: z.string() })
+    .safeParse(await getCached(key));
+  return parsed.success ? parsed.data : null;
+}
+
 export const DashboardCacheService = {
   readThrough,
+  readCached, // playbook-seam
   gscNamespace,
   deleteGscCache,
 };

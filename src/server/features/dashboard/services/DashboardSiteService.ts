@@ -16,7 +16,10 @@ import {
   isExpectedGrantFailure,
   GscNotConnectedError,
 } from "@/server/features/gsc/services/GscService";
-import { GscConnectionRepository } from "@/server/features/gsc/repositories/GscConnectionRepository";
+import {
+  GscConnectionRepository,
+  type GscConnection, // playbook-seam
+} from "@/server/features/gsc/repositories/GscConnectionRepository";
 import { resolveDateRange } from "@/server/features/gsc/searchAnalytics";
 
 const querySchema = z.object({
@@ -90,20 +93,7 @@ async function getKeywords(projectId: string, organizationId: string) {
       refreshError: null,
     };
   return DashboardCacheService.readThrough({
-    namespace: DashboardCacheService.gscNamespace(projectId, "keywords"),
-    organizationId,
-    params: {
-      projectId,
-      siteUrl: connection.siteUrl,
-      accountId: connection.gscAccountId,
-      updatedAt: connection.updatedAt,
-    },
-    schema: z.object({
-      connected: z.boolean(),
-      rows: z.array(querySchema),
-      startDate: z.string(),
-      endDate: z.string(),
-    }),
+    ...keywordsCache(projectId, organizationId, connection), // playbook-seam
     maxAgeMs: 86400_000,
     shouldCache: (value) => value.connected,
     load: async () => {
@@ -144,6 +134,44 @@ async function getKeywords(projectId: string, organizationId: string) {
       }
     },
   });
+}
+
+// playbook-seam: RFC-0007 6.2, the keywords cache entry, shared with the
+// portfolio comparison so both read the same stored rows.
+function keywordsCache(
+  projectId: string,
+  organizationId: string,
+  connection: GscConnection,
+) {
+  return {
+    namespace: DashboardCacheService.gscNamespace(projectId, "keywords"),
+    organizationId,
+    params: {
+      projectId,
+      siteUrl: connection.siteUrl,
+      accountId: connection.gscAccountId,
+      updatedAt: connection.updatedAt,
+    },
+    schema: z.object({
+      connected: z.boolean(),
+      rows: z.array(querySchema),
+      startDate: z.string(),
+      endDate: z.string(),
+    }),
+  };
+}
+
+// playbook-seam: RFC-0007 6.2, the stored queries only, or null. Never calls
+// Google.
+async function getCachedKeywords(projectId: string, organizationId: string) {
+  const connection = await GscConnectionRepository.getByProjectId(projectId);
+  if (!connection) return { connected: false as const, cached: null };
+  return {
+    connected: true as const,
+    cached: await DashboardCacheService.readCached(
+      keywordsCache(projectId, organizationId, connection),
+    ),
+  };
 }
 
 async function getEmergingQueries(projectId: string, organizationId: string) {
@@ -333,6 +361,7 @@ async function getLinkActivity(
 
 export const DashboardSiteService = {
   getKeywords,
+  getCachedKeywords, // playbook-seam
   getBacklinks,
   getEmergingQueries,
   getLinkActivity,

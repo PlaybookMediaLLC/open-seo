@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { findLast } from "remeda";
 import {
   IconFolderCog as FolderCog,
+  IconLayoutGrid as LayoutGrid, // playbook-seam
   IconPlus as Plus,
   IconSettings as Settings,
 } from "@tabler/icons-react";
@@ -227,6 +228,24 @@ export function ProjectSwitcher({
             >
               <FolderCog className="size-4" />
               Manage projects
+            </Button>
+            {/* playbook-seam: RFC-0007 6.1, the organization's portfolio. */}
+            <Button
+              nativeButton={false}
+              render={
+                <Link
+                  to="/portfolio"
+                  onClick={() => {
+                    setOpen(false);
+                    onCloseDrawer?.();
+                  }}
+                />
+              }
+              variant="ghost"
+              className="justify-start"
+            >
+              <LayoutGrid className="size-4" />
+              Portfolio
             </Button>
           </div>
         </ComboboxContent>

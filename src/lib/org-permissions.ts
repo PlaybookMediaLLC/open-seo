@@ -19,6 +19,9 @@ const statement = {
   project: ["create", "delete"],
   // GSC/GA4 connect, re-point, disconnect.
   integration: ["manage"],
+  // RFC-0007 6.4: approve the pull requests Relay opens. Owners hold it and
+  // grant it per member with the approver role.
+  publishing: ["approve"], // playbook-seam
 } as const;
 
 export const orgAccessControl = createAccessControl(statement);
@@ -29,6 +32,7 @@ export const orgRoles = {
     billing: ["manage"],
     project: ["create", "delete"],
     integration: ["manage"],
+    publishing: ["approve"], // playbook-seam
   }),
   admin: orgAccessControl.newRole({
     ...adminAc.statements,
@@ -41,6 +45,9 @@ export const orgRoles = {
   member: orgAccessControl.newRole({
     ...memberAc.statements,
   }),
+  // RFC-0007 6.4: never a role on its own. An owner adds it to a member's
+  // role ("admin,approver") through setMemberApproval, the only path that may.
+  approver: orgAccessControl.newRole({ publishing: ["approve"] }), // playbook-seam
 };
 
 export type OrgPermissionRequest = Partial<{
@@ -50,6 +57,23 @@ export type OrgPermissionRequest = Partial<{
 const roleByName = new Map<string, (typeof orgRoles)[keyof typeof orgRoles]>(
   Object.entries(orgRoles),
 );
+
+const roleNames = (role: string) =>
+  role
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean);
+
+/** Whether an owner granted this member approval (RFC-0007 6.4). */
+export function hasApproverRole(role: string): boolean {
+  return roleNames(role).includes("approver");
+}
+
+/** The member's role with the approver role added or removed. */
+export function withApproverRole(role: string, approve: boolean): string {
+  const others = roleNames(role).filter((name) => name !== "approver");
+  return (approve ? [...others, "approver"] : others).join(",") || "member";
+}
 
 // better-auth stores multiple roles as one comma-separated string and ORs
 // permission checks across them; mirror that here. Unknown role names fail

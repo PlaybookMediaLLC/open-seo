@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { formatRelativeTime } from "@/client/lib/relative-time";
 import { ReportRepository } from "@/server/features/reports/repositories/ReportRepository";
+import { ReportBrandingService } from "@/server/features/reports/services/ReportBrandingService"; // playbook-seam
+import { textColorOn } from "@/shared/report-branding"; // playbook-seam
 import {
   SHARE_TOKEN_PATTERN,
   sharesEnabled,
@@ -51,6 +53,7 @@ html,body{height:100%;margin:0}
 body{display:flex;flex-direction:column;background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
 .title{width:100%;min-width:0}
+.logo{height:28px;max-width:140px;object-fit:contain}
 @media (min-width:640px){.title{width:auto;flex:1}}
 h1{margin:0;font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .meta{margin:0;font-size:12px;color:var(--muted)}
@@ -95,10 +98,12 @@ function TryButton() {
 
 function Document({
   title,
+  siteName = "OpenSEO", // playbook-seam: RFC-0007 6.7 white-label
   head,
   children,
 }: {
   title: string;
+  siteName?: string; // playbook-seam
   head?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -111,7 +116,8 @@ function Document({
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
         <meta name="robots" content="noindex, nofollow" />
-        <title>{`${title} · OpenSEO`}</title>
+        <title>{`${title} · ${siteName}`}</title>
+        {/* playbook-seam */}
         {head}
         <link rel="icon" href="/favicon.ico" />
         <style dangerouslySetInnerHTML={{ __html: STYLES }} />
@@ -178,6 +184,12 @@ export async function renderSharePage(
     );
   }
 
+  // playbook-seam: RFC-0007 6.7, the organization's logo and color, and no
+  // Relay mark for a branded organization on a paid plan.
+  const brand = await ReportBrandingService.forShare(report.organizationId);
+  const siteName = brand?.hideRelayMark ? brand.organizationName : "OpenSEO";
+  const brandColor = brand?.branding?.brandColor ?? null;
+  const logo = brand?.branding?.logoDataUrl ?? null;
   const description = shareDescription(report.summary);
   const canonical = `${new URL(request.url).origin}${sharePath(token)}`;
   const domain = domainField.safeParse(report.projectDomain);
@@ -192,10 +204,20 @@ export async function renderSharePage(
   return htmlResponse(
     <Document
       title={report.title}
+      siteName={siteName} // playbook-seam
       head={
         <>
+          {brandColor ? ( // playbook-seam
+            <style
+              dangerouslySetInnerHTML={{
+                // body, not :root: the page's own :root rules come later.
+                __html: `body{--primary:${brandColor};--primary-text:${textColorOn(brandColor)}}header{box-shadow:inset 0 3px 0 ${brandColor}}`,
+              }}
+            />
+          ) : null}
           <meta property="og:type" content="article" />
-          <meta property="og:site_name" content="OpenSEO" />
+          <meta property="og:site_name" content={siteName} />
+          {/* playbook-seam */}
           <meta property="og:title" content={report.title} />
           <meta name="twitter:title" content={report.title} />
           {description ? (
@@ -208,25 +230,42 @@ export async function renderSharePage(
           <meta property="og:image" content={imageUrl} />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
-          <meta property="og:image:alt" content={`${report.title} · OpenSEO`} />
+          <meta
+            property="og:image:alt"
+            content={`${report.title} · ${siteName}`}
+          />
+          {/* playbook-seam */}
           <meta name="twitter:image" content={imageUrl} />
           <meta
             name="twitter:image:alt"
-            content={`${report.title} · OpenSEO`}
+            content={`${report.title} · ${siteName}`} // playbook-seam
           />
           <meta name="twitter:card" content="summary_large_image" />
         </>
       }
     >
       <header>
+        {logo ? ( // playbook-seam
+          <img
+            className="logo"
+            src={logo}
+            alt={brand?.organizationName ?? ""}
+          />
+        ) : null}
         <div className="title">
           <h1>{report.title}</h1>
           <p className="meta">
-            Made with OpenSEO · Updated {formatRelativeTime(report.updatedAt)}
+            {brand?.hideRelayMark ? "" : "Made with OpenSEO · "}
+            {/* playbook-seam */}
+            Updated {formatRelativeTime(report.updatedAt)}
           </p>
         </div>
         <div className="actions">
-          <button type="button" className="btn" id="share">
+          <button
+            type="button"
+            className={brandColor ? "btn primary" : "btn"} // playbook-seam
+            id="share"
+          >
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -244,7 +283,8 @@ export async function renderSharePage(
             </svg>
             <span>Share</span>
           </button>
-          <TryButton />
+          {brand?.hideRelayMark ? null : <TryButton />}
+          {/* playbook-seam */}
         </div>
       </header>
       <iframe

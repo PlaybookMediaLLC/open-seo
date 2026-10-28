@@ -21,7 +21,7 @@ Every OpenSEO skill that produces a recommendation delivers through this skill. 
 
 A project can carry report templates: named, reusable briefs saying who a report is for, which sections it has in what order, how it should sound, and how to sign off. They are listed in project context, and `list_report_templates` returns the full instructions for each one. Templates belong to a project. To reuse one in another project, list it there and save a copy here.
 
-Use a template only when the user names it, or asks for the kind of report a template's name or description names. A plain skill run ("audit this site") uses the skill's default format. If two match, ask in one line. A template's sections, audience and tone replace the skill's Output format list; the HTML constraints and writing rules never change. Project writing_preferences always apply; a template's tone wins only where they conflict. Pass its `templateId` to `save_report`.
+Use a template only when the user names it, or asks for the kind of report a template's name or description names. A plain skill run ("audit this site") uses the skill's default format. If two match, ask in one line. A template's sections, audience and tone replace the skill's Output format list; the HTML constraints and writing rules never change. Project writing_preferences always apply; a template's tone wins only where they conflict. Pass its `templateId` to `save_report`. When `list_report_templates` names an organization brand color, use it as `--accent` unless the template sets its own accent.
 
 ## Writing rules
 

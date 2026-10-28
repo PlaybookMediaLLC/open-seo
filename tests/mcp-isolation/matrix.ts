@@ -74,6 +74,18 @@ export function foreignProjectCalls(b: Tenant, seeded: SeededData): ToolCall[] {
     },
     { name: "export_ai_visibility_data", arguments: { projectId } },
     { name: "get_audit_status", arguments: { projectId } },
+    // RFC-0007 9: the growth tools refuse another organization's project
+    // before they look up the opportunity or experiment.
+    { name: "list_opportunities", arguments: { projectId } },
+    {
+      name: "get_opportunity",
+      arguments: { projectId, opportunityId: INTRUDER },
+    },
+    {
+      name: "get_opportunity_ticket",
+      arguments: { projectId, opportunityId: INTRUDER },
+    },
+    { name: "get_experiment_results", arguments: { projectId } },
   ];
 }
 

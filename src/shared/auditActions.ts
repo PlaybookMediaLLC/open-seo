@@ -39,4 +39,12 @@ export const AUDIT_ACTIONS = [
   // RFC-0017 6.2: the read-only support source.
   "integration.support_connected",
   "integration.support_disconnected",
+  // RFC-0007 6: approval roles, project approvers, agency links, branding.
+  "member.approval_granted",
+  "member.approval_removed",
+  "publishing.approvers_changed",
+  "agency.link_requested",
+  "agency.link_accepted",
+  "agency.link_ended",
+  "branding.changed",
 ] as const;
