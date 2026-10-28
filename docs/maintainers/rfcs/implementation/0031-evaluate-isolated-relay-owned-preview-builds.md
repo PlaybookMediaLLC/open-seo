@@ -4,7 +4,7 @@
 **Priority:** Optional engineering investment; skip unless the stated entry criteria are met  
 **Prerequisites:** IRFC-0005, IRFC-0019  
 **Canonical technical specification:** [RFC-0025](../0025-preview-sandboxes-on-cloudflare.md)  
-**Implementation order:** 0031 of 0033
+**Implementation order:** 0031 of 0032
 
 ## Implement this slice
 

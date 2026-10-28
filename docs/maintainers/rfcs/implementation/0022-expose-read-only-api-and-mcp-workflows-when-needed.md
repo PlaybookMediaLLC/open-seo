@@ -4,7 +4,7 @@
 **Priority:** Demand-gated expansion; if no validated buyer demand, record a skip and continue  
 **Prerequisites:** IRFC-0019  
 **Canonical technical specification:** [RFC-0041](../0041-versioned-api-mcp-and-event-subscriptions.md)  
-**Implementation order:** 0022 of 0033
+**Implementation order:** 0022 of 0032
 
 ## Implement this slice
 

@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0015  
 **Canonical technical specification:** [RFC-0037](../0037-work-plans-authorization-and-execution.md)  
-**Implementation order:** 0016 of 0033
+**Implementation order:** 0016 of 0032
 
 ## Implement this slice
 

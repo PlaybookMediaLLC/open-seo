@@ -1,6 +1,6 @@
 # Relay implementation RFCs — one sequential execution path
 
-**Updated:** 2026-10-27  
+**Updated:** 2026-10-28  
 **Target repository:** `PlaybookMediaLLC/relay` → `develop`  
 **Authority:** This index sets the work sequence. Linked historical RFCs hold the full engineering designs and safety contracts.
 
@@ -46,7 +46,8 @@ At each item: inspect current `develop`, implement only the specified slice, run
 | [0030](0030-respond-to-verified-competitor-changes.md)                          | Respond to verified competitor changes                          | [0022](../0022-competitor-change-response.md)                                                                  | optional    |
 | [0031](0031-evaluate-isolated-relay-owned-preview-builds.md)                    | Evaluate isolated Relay-owned preview builds                    | [0025](../0025-preview-sandboxes-on-cloudflare.md)                                                             | optional    |
 | [0032](0032-evaluate-narrowly-delegated-execution-policies.md)                  | Evaluate narrowly delegated execution policies                  | [0018](../0018-weekly-execution-queue.md)                                                                      | optional    |
-| [0033](0033-consider-multi-website-and-portfolio-operations.md)                 | Consider multi-website and portfolio operations                 | [0007](../0007-portfolio-operations.md)                                                                        | optional    |
+
+IRFC-0033 (multi-website and portfolio operations) was removed once its code shipped; [RFC-0007 section 6](../0007-portfolio-operations.md#6-design-sketch-and-what-was-built) records what was built, and its status line tracks the pending live acceptance.
 
 ## Milestones
 
@@ -54,7 +55,7 @@ At each item: inspect current `develop`, implement only the specified slice, run
 - **IRFC-0008–0019 — Product Reality Engine and Relay Sync:** commercial decision, minimally sufficient architecture, secure ingestion, scoped facts, claim matching, impact analysis, approved work, verification and first paying Sync implementation.
 - **IRFC-0020–0022 — Relay Launch and agent access:** existing-page launch checks, coordinated launch packets, and read-only API/MCP when required. IRFC-0022 is optional for the first Launch customer.
 - **IRFC-0023–0030 — Customer-validated extensions:** page memory, customer journeys, conversion integrity, campaigns, sourced pages, support, enablement and competitor responses. Sequence is advisory after commercial gates; stop or skip low-value extensions.
-- **IRFC-0031–0033 — Optional capital-intensive extensions:** isolated builds, delegated execution and portfolio operations. Do not treat these as prerequisites for the company's core goal.
+- **IRFC-0031–0032 — Optional capital-intensive extensions:** isolated builds and delegated execution. Do not treat these as prerequisites for the company's core goal.
 
 ## Pre-existing foundation
 

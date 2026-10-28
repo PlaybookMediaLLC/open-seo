@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0011  
 **Canonical technical specification:** [RFC-0033](../0033-change-observation-and-provenance.md)  
-**Implementation order:** 0012 of 0033
+**Implementation order:** 0012 of 0032
 
 ## Implement this slice
 

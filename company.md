@@ -85,14 +85,14 @@ GitHub detachment did not disable the existing upstream-sync workflow. Review in
 
 ## One numbered execution plan
 
-Engineers and coding agents should start at the [implementation index: IRFC-0001–0033](docs/maintainers/rfcs/implementation/README.md). Each IRFC names the exact technical slice, the original detailed RFC, its prerequisites, required acceptance evidence, and what is deferred. Original RFC-0001–0046 numbers remain stable historical design references; completed scopes are not to be implemented again.
+Engineers and coding agents should start at the [implementation index: IRFC-0001–0032](docs/maintainers/rfcs/implementation/README.md). Each IRFC names the exact technical slice, the original detailed RFC, its prerequisites, required acceptance evidence, and what is deferred. Original RFC-0001–0046 numbers remain stable historical design references; completed scopes are not to be implemented again.
 
 | Implementation order | Milestone                                                                                                                                      | Investment gate                                                                                                               |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | **IRFC-0001–0007**   | Protect: paid pilot, monitored pages, confirmed incidents, reviewed source repairs, previews, production verification and recurring reporting. | Actual payments and working customer-owned repair outcomes, with manageable cost and reliable coverage.                       |
 | **IRFC-0008–0019**   | Product Reality Engine's minimum useful slice and Relay Sync: accepted facts → affected claims → authorized corrections → verified results.    | A buyer repeatedly pays for an accurately detected, corrected and independently verified inconsistency.                       |
 | **IRFC-0020–0022**   | Customer-created page launch checks, approved Relay Launch packets and selective read-only API/MCP access.                                     | Repeated releases coordinated and used by customers; no assumption that read-only integrations require a new platform.        |
-| **IRFC-0023–0033**   | Broader growth, journeys, revenue integrity, support, sales, delegated authority, sandboxes and portfolios.                                    | Demand, safety and cost gates for each optional workflow. Skip or defer failures rather than manufacture implementation work. |
+| **IRFC-0023–0032**   | Broader growth, journeys, revenue integrity, support, sales, delegated authority and sandboxes.                                                | Demand, safety and cost gates for each optional workflow. Skip or defer failures rather than manufacture implementation work. |
 
 **Sequence is about proven customer outcomes, not the number of implemented RFCs.** Discovery can happen in parallel; a paid validation failure should change the investment decision. Coding agents should inspect the current branch before each item, reuse existing code and preserve human approval and independent production verification.
 

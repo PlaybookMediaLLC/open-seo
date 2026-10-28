@@ -4,7 +4,7 @@
 **Priority:** Commercial decision gate; proceed only with buyer evidence  
 **Prerequisites:** IRFC-0019  
 **Canonical technical specification:** [RFC-0042](../0042-relay-launch-change-to-commercial-release.md)  
-**Implementation order:** 0021 of 0033
+**Implementation order:** 0021 of 0032
 
 ## Implement this slice
 

@@ -4,7 +4,7 @@
 **Priority:** Demand-gated expansion; if no validated buyer demand, record a skip and continue  
 **Prerequisites:** IRFC-0019, IRFC-0021  
 **Canonical technical specification:** [RFC-0046](../0046-enablement-integrations-and-partner-assets.md)  
-**Implementation order:** 0029 of 0033
+**Implementation order:** 0029 of 0032
 
 ## Implement this slice
 

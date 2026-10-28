@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0016  
 **Canonical technical specification:** [RFC-0038](../0038-verification-outcomes-and-learning.md)  
-**Implementation order:** 0017 of 0033
+**Implementation order:** 0017 of 0032
 
 ## Implement this slice
 

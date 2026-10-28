@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0004  
 **Canonical technical specifications:** [RFC-0027](../0027-source-mapped-regression-repairs.md), [RFC-0025](../0025-preview-sandboxes-on-cloudflare.md)  
-**Implementation order:** 0005 of 0033
+**Implementation order:** 0005 of 0032
 
 ## Implement this slice
 

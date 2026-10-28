@@ -4,7 +4,7 @@
 **Priority:** Optional engineering investment; skip unless the stated entry criteria are met  
 **Prerequisites:** IRFC-0017, IRFC-0023  
 **Canonical technical specification:** [RFC-0018](../0018-weekly-execution-queue.md)  
-**Implementation order:** 0032 of 0033
+**Implementation order:** 0032 of 0032
 
 ## Implement this slice
 
@@ -26,4 +26,4 @@ No blanket permission for AI to merge, deploy or send customer messages.
 - Where actual customer/provider acceptance is necessary, state what was tested with fixtures versus a live authorized site. Never treat a test fixture or an unmerged PR as a paid customer outcome.
 - Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**; if its commercial gate fails, mark **skipped/deferred** with the evidence. Do not block later unrelated work.
 
-**Next:** [IRFC-0033](0033-consider-multi-website-and-portfolio-operations.md)
+**Next:** End of current implementation series.

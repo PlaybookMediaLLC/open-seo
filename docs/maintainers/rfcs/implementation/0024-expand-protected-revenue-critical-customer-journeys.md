@@ -4,7 +4,7 @@
 **Priority:** Demand-gated expansion; if no validated buyer demand, record a skip and continue  
 **Prerequisites:** IRFC-0007, IRFC-0017  
 **Canonical technical specification:** [RFC-0043](../0043-relay-protect-journey-and-release-assurance.md)  
-**Implementation order:** 0024 of 0033
+**Implementation order:** 0024 of 0032
 
 ## Implement this slice
 

@@ -4,7 +4,7 @@
 **Priority:** Commercial decision gate; proceed only with buyer evidence  
 **Prerequisites:** IRFC-0007  
 **Canonical technical specification:** [RFC-0029](../0029-commercial-pilots-rollout-and-go-no-go.md)  
-**Implementation order:** 0008 of 0033
+**Implementation order:** 0008 of 0032
 
 ## Implement this slice
 

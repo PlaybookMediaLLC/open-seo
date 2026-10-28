@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0017  
 **Canonical technical specification:** [RFC-0039](../0039-product-workbench-ux-and-human-review.md)  
-**Implementation order:** 0018 of 0033
+**Implementation order:** 0018 of 0032
 
 ## Implement this slice
 

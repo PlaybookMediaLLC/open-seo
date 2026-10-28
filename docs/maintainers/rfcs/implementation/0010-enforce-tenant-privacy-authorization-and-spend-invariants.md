@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0009  
 **Canonical technical specification:** [RFC-0031](../0031-platform-governance-privacy-metering-and-service-quality.md)  
-**Implementation order:** 0010 of 0033
+**Implementation order:** 0010 of 0032
 
 ## Implement this slice
 

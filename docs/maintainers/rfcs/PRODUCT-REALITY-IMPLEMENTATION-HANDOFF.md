@@ -1,6 +1,6 @@
 # Product Reality Engine — implementation handoff and exact work packages
 
-> **Implementation order:** [IRFC-0001–0033](implementation/README.md) supersedes the older numerical handoff order below. Its files point to canonical RFCs and define the actionable phase and exit gate.
+> **Implementation order:** [IRFC-0001–0032](implementation/README.md) supersedes the older numerical handoff order below. Its files point to canonical RFCs and define the actionable phase and exit gate.
 
 **Status:** Suggested engineering plan, not executed.  
 **Base repository:** `PlaybookMediaLLC/relay`, branch `develop` at the time of review.  

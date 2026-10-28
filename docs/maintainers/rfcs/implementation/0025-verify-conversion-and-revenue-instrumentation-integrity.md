@@ -4,7 +4,7 @@
 **Priority:** Demand-gated expansion; if no validated buyer demand, record a skip and continue  
 **Prerequisites:** IRFC-0024  
 **Canonical technical specification:** [RFC-0044](../0044-conversion-revenue-and-attribution-integrity.md)  
-**Implementation order:** 0025 of 0033
+**Implementation order:** 0025 of 0032
 
 ## Implement this slice
 

@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0013  
 **Canonical technical specification:** [RFC-0035](../0035-customer-facing-assets-and-claims.md)  
-**Implementation order:** 0014 of 0033
+**Implementation order:** 0014 of 0032
 
 ## Implement this slice
 

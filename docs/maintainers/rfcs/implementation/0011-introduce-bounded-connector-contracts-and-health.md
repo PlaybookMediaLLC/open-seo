@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0010  
 **Canonical technical specification:** [RFC-0032](../0032-connector-runtime-permissions-and-health.md)  
-**Implementation order:** 0011 of 0033
+**Implementation order:** 0011 of 0032
 
 ## Implement this slice
 

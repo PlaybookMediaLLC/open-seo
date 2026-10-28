@@ -4,7 +4,7 @@
 **Priority:** Commercial decision gate; proceed only with buyer evidence  
 **Prerequisites:** IRFC-0018  
 **Canonical technical specification:** [RFC-0040](../0040-relay-sync-product-truth-and-content-integrity.md)  
-**Implementation order:** 0019 of 0033
+**Implementation order:** 0019 of 0032
 
 ## Implement this slice
 

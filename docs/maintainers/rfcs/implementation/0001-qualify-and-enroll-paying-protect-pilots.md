@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** None; may start immediately  
 **Canonical technical specification:** [RFC-0026](../0026-protected-site-pilots-and-service.md)  
-**Implementation order:** 0001 of 0033
+**Implementation order:** 0001 of 0032
 
 ## Implement this slice
 

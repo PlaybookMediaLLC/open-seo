@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0008  
 **Canonical technical specification:** [RFC-0030](../0030-product-reality-engine-architecture.md)  
-**Implementation order:** 0009 of 0033
+**Implementation order:** 0009 of 0032
 
 ## Implement this slice
 

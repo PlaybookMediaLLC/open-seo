@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0006  
 **Canonical technical specifications:** [RFC-0018](../0018-weekly-execution-queue.md), [RFC-0026](../0026-protected-site-pilots-and-service.md)  
-**Implementation order:** 0007 of 0033
+**Implementation order:** 0007 of 0032
 
 ## Implement this slice
 

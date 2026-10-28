@@ -4,7 +4,7 @@
 **Priority:** Optional engineering investment; skip unless the stated entry criteria are met  
 **Prerequisites:** IRFC-0026, IRFC-0027  
 **Canonical technical specification:** [RFC-0022](../0022-competitor-change-response.md)  
-**Implementation order:** 0030 of 0033
+**Implementation order:** 0030 of 0032
 
 ## Implement this slice
 

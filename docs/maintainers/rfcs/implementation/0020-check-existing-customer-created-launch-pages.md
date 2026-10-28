@@ -4,7 +4,7 @@
 **Priority:** Demand-gated expansion; if no validated buyer demand, record a skip and continue  
 **Prerequisites:** IRFC-0019  
 **Canonical technical specification:** [RFC-0023](../0023-launch-workflows.md)  
-**Implementation order:** 0020 of 0033
+**Implementation order:** 0020 of 0032
 
 ## Implement this slice
 

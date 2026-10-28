@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0005  
 **Canonical technical specifications:** [RFC-0028](../0028-production-repair-verification.md), [RFC-0019](../0019-release-monitoring-and-regression-repair.md)  
-**Implementation order:** 0006 of 0033
+**Implementation order:** 0006 of 0032
 
 ## Implement this slice
 

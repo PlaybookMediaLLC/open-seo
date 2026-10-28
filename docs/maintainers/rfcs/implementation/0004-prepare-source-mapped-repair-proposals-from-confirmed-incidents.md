@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0003  
 **Canonical technical specification:** [RFC-0027](../0027-source-mapped-regression-repairs.md)  
-**Implementation order:** 0004 of 0033
+**Implementation order:** 0004 of 0032
 
 ## Implement this slice
 

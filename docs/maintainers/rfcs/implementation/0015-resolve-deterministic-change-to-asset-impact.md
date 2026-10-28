@@ -4,7 +4,7 @@
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** IRFC-0014  
 **Canonical technical specification:** [RFC-0036](../0036-impact-analysis-and-dependency-graph.md)  
-**Implementation order:** 0015 of 0033
+**Implementation order:** 0015 of 0032
 
 ## Implement this slice
 
