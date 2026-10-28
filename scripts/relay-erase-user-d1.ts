@@ -44,6 +44,12 @@ const ATTRIBUTION: Array<[table: string, column: string]> = [
   ["growth_experiments", "created_by"],
   ["measurement_runs", "requested_by"],
   ["experiment_deployment_signals", "created_by"],
+  // RFC-0007 6.
+  ["project_publishing_approvers", "granted_by_user_id"],
+  ["agency_client_links", "requested_by_user_id"],
+  ["agency_client_links", "accepted_by_user_id"],
+  ["agency_client_links", "ended_by_user_id"],
+  ["organization_branding", "updated_by_user_id"],
 ];
 
 const args = parseArgs(process.argv.slice(2));

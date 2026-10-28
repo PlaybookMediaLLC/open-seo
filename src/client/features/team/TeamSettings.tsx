@@ -34,6 +34,7 @@ import { TransferOwnershipModal } from "@/client/features/team/TransferOwnership
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient, useSession } from "@/lib/auth-client";
 import { hasOrgPermission } from "@/lib/org-permissions";
+import { setTeamMemberApproval } from "@/serverFunctions/approvals"; // playbook-seam
 import { getTeam, sendTeamInvitation } from "@/serverFunctions/organization";
 
 const RESEND_KEY = ["team", "resend-invitation"];
@@ -120,6 +121,20 @@ export function TeamSettings() {
     },
   });
 
+  // playbook-seam: RFC-0007 6.4, an owner grants or removes approval.
+  const approvalMutation = useMutation({
+    mutationFn: (input: { memberId: string; approve: boolean }) =>
+      setTeamMemberApproval({ data: input }),
+    onSuccess: (_, input) => {
+      toast.success(
+        input.approve
+          ? "They can now approve pull requests"
+          : "They can no longer approve pull requests",
+      );
+      void refreshTeam();
+    },
+  });
+
   const pendingResends = usePendingVariables(RESEND_KEY);
   const pendingRemovals = usePendingVariables(REMOVE_KEY);
   const pendingCancels = usePendingVariables(CANCEL_KEY);
@@ -163,7 +178,8 @@ export function TeamSettings() {
       />
       <p className="text-sm text-muted-foreground">
         Teammates join as Admins. Admins have full access to each project except
-        for billing.
+        for billing. Only owners, and the members they allow, approve the pull
+        requests Relay opens.{/* playbook-seam */}
       </p>
       {orgContextQuery.isSuccess && !canManageTeam ? (
         <PermissionHint action="invite or remove teammates" />
@@ -192,8 +208,16 @@ export function TeamSettings() {
                   canManageTeam={canManageTeam}
                   isOwner={isOwner}
                   isRemoving={pendingRemovals.includes(member.id)}
+                  // playbook-seam
+                  isSettingApproval={
+                    approvalMutation.isPending &&
+                    approvalMutation.variables.memberId === member.id
+                  }
                   onRemove={() => removeMemberMutation.mutate(member.id)}
                   onTransferOwnership={() => setTransferTarget(member)}
+                  onSetApproval={(approve) =>
+                    approvalMutation.mutate({ memberId: member.id, approve })
+                  }
                 />
               ))}
               {pendingInvitations.map((invitation) => (

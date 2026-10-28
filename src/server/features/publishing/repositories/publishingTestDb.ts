@@ -24,6 +24,7 @@ export function createPublishingTestDatabase() {
           "0079_safe_stranger.sql",
           "0091_mysterious_saracen.sql",
           "0107_steep_tarot.sql",
+          "0108_loving_katie_power.sql",
         ])
           await database.client.executeMultiple(
             readFileSync(`drizzle/sqlite/${migration}`, "utf8"),

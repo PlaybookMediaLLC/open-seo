@@ -1,4 +1,13 @@
-import { and, asc, eq, lt, lte, max } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  getTableColumns,
+  isNull,
+  lt,
+  lte,
+  max,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { runBatch } from "@/db/runBatch";
 import {
@@ -6,6 +15,7 @@ import {
   growthJobRuns,
   growthNotifications,
   growthSchedules,
+  projects,
 } from "@/db/schema";
 
 // RFC-0008 5.5 and 5.6: schedules, runs, logs and notifications. Every write
@@ -18,15 +28,20 @@ export type LogLine = {
   message: string;
 };
 
-/** Enabled schedules whose time has come, oldest first. Changes nothing. */
+/**
+ * Enabled schedules whose time has come, oldest first. Changes nothing. An
+ * archived project's run never starts, so its schedule would stay due forever.
+ */
 async function dueSchedules(now: string, limit: number) {
   return db
-    .select()
+    .select(getTableColumns(growthSchedules))
     .from(growthSchedules)
+    .innerJoin(projects, eq(projects.id, growthSchedules.projectId))
     .where(
       and(
         eq(growthSchedules.enabled, true),
         lte(growthSchedules.nextRunAt, now),
+        isNull(projects.archivedAt),
       ),
     )
     .orderBy(asc(growthSchedules.nextRunAt))
@@ -37,9 +52,10 @@ async function dueSchedules(now: string, limit: number) {
 async function queuedRuns(limit: number) {
   if (limit <= 0) return [];
   return db
-    .select()
+    .select(getTableColumns(growthJobRuns))
     .from(growthJobRuns)
-    .where(eq(growthJobRuns.status, "queued"))
+    .innerJoin(projects, eq(projects.id, growthJobRuns.projectId))
+    .where(and(eq(growthJobRuns.status, "queued"), isNull(projects.archivedAt)))
     .orderBy(asc(growthJobRuns.createdAt))
     .limit(limit);
 }

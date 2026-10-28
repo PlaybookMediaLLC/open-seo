@@ -1,3 +1,4 @@
+import { PublishingApproversCard } from "@/client/features/publishing/PublishingApproversCard"; // playbook-seam
 import { PublishingConnectionCard } from "@/client/features/publishing/PublishingConnectionCard";
 import { queryClient } from "@/client/tanstack-db/queryClient";
 import { googleConnectionOptions } from "@/client/features/integrations/googleProviders";
@@ -5,6 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { GoogleConnectionCard } from "@/client/features/integrations/GoogleConnectionCard";
 import { CrawlerAccessSettings } from "@/client/features/settings/CrawlerAccessSettings";
 import { IndexNowSettings } from "@/client/features/settings/IndexNowSettings";
+import { usesBetterAuthClient } from "@/lib/auth-mode"; // playbook-seam
 
 export const Route = createFileRoute(
   "/_app/p/$projectId/settings/integrations",
@@ -37,8 +39,13 @@ function ProjectIntegrationsRoute() {
         <GoogleConnectionCard provider="ga4" projectId={projectId} />
       </section>
 
-      <section id="publishing" className="scroll-mt-6">
+      <section id="publishing" className="scroll-mt-6 space-y-8">
         <PublishingConnectionCard key={projectId} projectId={projectId} />
+        {/* playbook-seam: RFC-0007 6.5. Approvers are members, which only
+            Relay's own accounts have. */}
+        {usesBetterAuthClient() ? (
+          <PublishingApproversCard projectId={projectId} />
+        ) : null}
       </section>
       <IndexNowSettings projectId={projectId} />
 

@@ -67,6 +67,7 @@ import { MetadataProposalService } from "@/server/features/publishing/MetadataPr
 import { ProposalDraftService } from "@/server/features/publishing/ProposalDraftService";
 import { PublishingConnectionService } from "@/server/features/publishing/PublishingConnectionService";
 import { PublishingRecoveryService } from "@/server/features/publishing/PublishingRecoveryService";
+import { PublishingApproverService } from "@/server/features/publishing/PublishingApproverService";
 
 // RFC-0007 section 4: organization A must never reach organization B's
 // growth data through any service, for reads or writes.
@@ -163,6 +164,7 @@ const services: Record<string, Record<string, unknown>> = {
   MetadataProposalService,
   MetadataExecutionService,
   PublishingRecoveryService,
+  PublishingApproverService,
   GithubIssueService,
   ProposalDraftService,
   ExperimentService,

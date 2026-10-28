@@ -1,5 +1,6 @@
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { openToken } from "./tokenKeys";
+import { hasOrgPermission } from "@/lib/org-permissions";
 import { requireOrgPermission } from "@/server/auth/org-gate";
 import { DataRefreshClaimRepository } from "@/server/features/dashboard/repositories/DataRefreshClaimRepository";
 import { ProjectRepository } from "@/server/features/projects/repositories/ProjectRepository";
@@ -35,6 +36,41 @@ export async function authorizePublishing(
   );
   if (!project) throw new AppError("NOT_FOUND", "Project not found.");
   if (manage) requireOrgPermission(context, { integration: ["manage"] });
+}
+
+/**
+ * RFC-0007 6.4-6.5: who may approve a pull request Relay opens for the
+ * project. Owners always may. A project's approver list, when it has one,
+ * names the others; otherwise every holder of publishing:approve may.
+ */
+export async function canApprove(
+  context: PublishingContext,
+  projectId: string,
+): Promise<boolean> {
+  if (!hasOrgPermission(context.role, { integration: ["manage"] }))
+    return false;
+  // billing:manage is the owner-only statement.
+  if (hasOrgPermission(context.role, { billing: ["manage"] })) return true;
+  const listed = await PublishingRepository.listApproverUserIds(
+    projectId,
+    context.organizationId,
+  );
+  return listed.length
+    ? listed.includes(context.userId)
+    : hasOrgPermission(context.role, { publishing: ["approve"] });
+}
+
+/** Every path that writes to a customer repository authorizes here first. */
+export async function authorizeApproval(
+  context: PublishingContext,
+  projectId: string,
+) {
+  await authorizePublishing(context, projectId, true);
+  if (!(await canApprove(context, projectId)))
+    throw new AppError(
+      "FORBIDDEN",
+      "You can't approve pull requests for this project. Ask an owner to add you as an approver.",
+    );
 }
 
 export async function publishingEncryptionKey(): Promise<string | null> {

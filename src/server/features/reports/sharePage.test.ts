@@ -8,12 +8,17 @@ const mocks = vi.hoisted(() => ({
     AUTH_MODE: "hosted" as string | undefined,
   },
   getSharedReportByToken: vi.fn(),
+  getForShare: vi.fn(),
 }));
 
 vi.mock("cloudflare:workers", () => ({ env: mocks.env }));
 vi.mock("@/server/features/reports/repositories/ReportRepository", () => ({
   ReportRepository: { getSharedReportByToken: mocks.getSharedReportByToken },
 }));
+vi.mock(
+  "@/server/features/reports/repositories/ReportBrandingRepository",
+  () => ({ ReportBrandingRepository: { getForShare: mocks.getForShare } }),
+);
 
 const TOKEN = "a".repeat(32);
 const request = () => new Request(`https://app.example.com/s/${TOKEN}`);
@@ -28,9 +33,19 @@ const SHARED_REPORT = {
   archived: false,
 };
 
+// A 1x1 PNG.
+const LOGO =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAwS2OUAAAAABJRU5ErkJggg==";
+
 beforeEach(() => {
   mocks.env.AUTH_MODE = "hosted";
   mocks.getSharedReportByToken.mockResolvedValue(SHARED_REPORT);
+  mocks.getForShare.mockResolvedValue({
+    name: "Acme",
+    brandColor: null,
+    logoDataUrl: null,
+    isPaying: true,
+  });
 });
 
 describe("renderSharePage", () => {
@@ -68,6 +83,47 @@ describe("renderSharePage", () => {
     );
     // No app bundle: the reader has never signed in and needs none of it.
     expect(html).not.toContain("/assets/");
+  });
+
+  // RFC-0007 6.7: white-label is opt-in branding, and the Relay mark comes
+  // off only on a paid plan.
+  it.each([
+    [true, false],
+    [false, true],
+  ])(
+    "shows the organization's logo and color, with the Relay mark when paying is %s: %s",
+    async (isPaying, showsMark) => {
+      mocks.getForShare.mockResolvedValue({
+        name: "Acme",
+        brandColor: "#1C4ED8",
+        logoDataUrl: LOGO,
+        isPaying,
+      });
+      const $ = load(await (await renderSharePage(TOKEN, request())).text());
+      expect($("header img.logo").attr("src")).toBe(LOGO);
+      expect($("header img.logo").attr("alt")).toBe("Acme");
+      // On body: the page's own :root colors come after this style.
+      expect($("style").text()).toContain(
+        "body{--primary:#1c4ed8;--primary-text:#ffffff}",
+      );
+      expect($("header").text().includes("Made with OpenSEO")).toBe(showsMark);
+      expect($("a.btn.primary").length > 0).toBe(showsMark);
+      expect($("title").text()).toBe(
+        `${SHARED_REPORT.title} · ${showsMark ? "OpenSEO" : "Acme"}`,
+      );
+    },
+  );
+
+  it("drops a stored logo that is not a PNG or JPEG", async () => {
+    mocks.getForShare.mockResolvedValue({
+      name: "Acme",
+      brandColor: null,
+      logoDataUrl: "data:image/svg+xml;base64,PHN2Zy8+",
+      isPaying: true,
+    });
+    const html = await (await renderSharePage(TOKEN, request())).text();
+    expect(html).not.toContain("data:image/svg");
+    expect(html).toContain("Made with OpenSEO");
   });
 
   // The reader is told the project is archived; the report's own title is

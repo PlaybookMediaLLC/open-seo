@@ -41,8 +41,14 @@ export function PublishingOpportunityPanel({
         />
       </CardShell>
     );
-  const { configured, canManage, connection, proposals, appRevoked } =
-    query.data;
+  const {
+    configured,
+    canManage,
+    canApprove,
+    connection,
+    proposals,
+    appRevoked,
+  } = query.data;
   const activeConnection = connection && !connection.revokedAt && !appRevoked;
   const enabled =
     configured &&
@@ -102,23 +108,25 @@ export function PublishingOpportunityPanel({
       {proposals.map((history) => {
         const blockedReason = !enabled
           ? "Execution is unavailable without publishing configuration, management permission, and an active connection."
-          : history.connection.revokedAt ||
-              history.proposal.connectionId !== connection?.id
-            ? "This proposal's connection was revoked or replaced. Prepare a new proposal."
-            : history.proposal.revertsProposalId
-              ? ["in_progress", "implemented"].includes(opportunity.status)
-                ? null
-                : "This revert can no longer run on this opportunity."
-              : !["approved", "in_progress", "failed"].includes(
-                    opportunity.status,
-                  )
-                ? "This opportunity is no longer approved for execution."
-                : null;
+          : !canApprove
+            ? "Only an owner or an approver of this project can approve this pull request."
+            : history.connection.revokedAt ||
+                history.proposal.connectionId !== connection?.id
+              ? "This proposal's connection was revoked or replaced. Prepare a new proposal."
+              : history.proposal.revertsProposalId
+                ? ["in_progress", "implemented"].includes(opportunity.status)
+                  ? null
+                  : "This revert can no longer run on this opportunity."
+                : !["approved", "in_progress", "failed"].includes(
+                      opportunity.status,
+                    )
+                  ? "This opportunity is no longer approved for execution."
+                  : null;
         return (
           <PublishingProposal
             key={history.proposal.id}
             history={history}
-            canExecute={enabled}
+            canExecute={enabled && canApprove}
             canTrack={canManage && !readOnly}
             canConfirmRevert={
               enabled &&

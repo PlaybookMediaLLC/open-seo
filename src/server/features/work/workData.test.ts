@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { db } from "@/db";
 import {
+  auditEvents,
   growthSchedules,
   splitTests,
   workCycleEntries,
@@ -147,4 +148,10 @@ it("changes weekly activation only when explicitly requested", async () => {
   expect(await enabled()).toBe(true);
   await WorkService.saveSettings(context, { ...input, enabled: false });
   expect(await enabled()).toBe(false);
+  // RFC-0008 5.7: each schedule change leaves an audit event.
+  const events = await db
+    .select({ action: auditEvents.action })
+    .from(auditEvents)
+    .where(eq(auditEvents.projectId, projectId));
+  expect(events).toHaveLength(4);
 });

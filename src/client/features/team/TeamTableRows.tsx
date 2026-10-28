@@ -1,5 +1,6 @@
 import {
   IconCrown as Crown,
+  IconGitPullRequest as PullRequest, // playbook-seam
   IconSend as Send,
   IconTrash as Trash2,
 } from "@tabler/icons-react";
@@ -9,12 +10,13 @@ import { RowActionsMenu } from "@/client/components/RowActionsMenu";
 import { Badge } from "@/client/components/ui/badge";
 import { DropdownMenuItem } from "@/client/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/client/components/ui/table";
-import { hasOrgPermission } from "@/lib/org-permissions";
+import { hasApproverRole, hasOrgPermission } from "@/lib/org-permissions"; // playbook-seam
 
 const ROLE_LABELS: Record<string, string> = {
   owner: "Owner",
   admin: "Admin",
   member: "Member",
+  approver: "Approver", // playbook-seam
 };
 
 function formatRole(role: string) {
@@ -44,16 +46,20 @@ export function MemberRow({
   canManageTeam,
   isOwner,
   isRemoving,
+  isSettingApproval,
   onRemove,
   onTransferOwnership,
+  onSetApproval,
 }: {
   member: Member;
   isSelf: boolean;
   canManageTeam: boolean;
   isOwner: boolean;
   isRemoving: boolean;
+  isSettingApproval: boolean; // playbook-seam
   onRemove: () => void;
   onTransferOwnership: () => void;
+  onSetApproval: (approve: boolean) => void;
 }) {
   const memberIsOwner = hasOrgPermission(member.role, {
     billing: ["manage"],
@@ -63,6 +69,10 @@ export function MemberRow({
   const canRemove = canManageTeam && !isSelf && (!memberIsOwner || isOwner);
   // Owners can always remove, so this only ever adds to the remove menu.
   const canTransferOwnership = isOwner && !isSelf && !memberIsOwner;
+  // playbook-seam: RFC-0007 6.4, owners always approve; they grant it to
+  // anyone else.
+  const canSetApproval = isOwner && !memberIsOwner;
+  const approves = hasApproverRole(member.role);
   const [isConfirmingRemove, setIsConfirmingRemove] = useState(false);
 
   return (
@@ -89,6 +99,18 @@ export function MemberRow({
               <DropdownMenuItem onClick={onTransferOwnership}>
                 <Crown />
                 Transfer ownership
+              </DropdownMenuItem>
+            ) : null}
+            {/* playbook-seam */}
+            {canSetApproval ? (
+              <DropdownMenuItem
+                disabled={isSettingApproval}
+                onClick={() => onSetApproval(!approves)}
+              >
+                <PullRequest />
+                {approves
+                  ? "Stop approving pull requests"
+                  : "Allow to approve pull requests"}
               </DropdownMenuItem>
             ) : null}
             <DropdownMenuItem
