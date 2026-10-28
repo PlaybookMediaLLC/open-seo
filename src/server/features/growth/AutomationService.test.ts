@@ -72,8 +72,8 @@ it("shows when each job last started", async () => {
   await db
     .insert(growthJobRuns)
     .values([
-      started("2026-10-18", "2026-10-18T07:00:04.000Z"),
       started("2026-10-17", "2026-10-17T07:08:00.000Z"),
+      started("2026-10-18", "2026-10-18T07:00:04.000Z"),
     ]);
   const { schedules } = await AutomationService.get(
     viewer("owner"),

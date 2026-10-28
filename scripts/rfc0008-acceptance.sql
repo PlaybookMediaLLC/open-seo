@@ -1,6 +1,6 @@
 -- RFC-0008 sections 10 to 12: read-only acceptance numbers for scheduled jobs.
 -- Run against the production Postgres database with a read-only role:
---   psql "$RELAY_READONLY_DATABASE_URL" -X -v ON_ERROR_STOP=1 -f scripts/rfc0008-acceptance.sql
+--   psql "<read-only database URL>" -X -v ON_ERROR_STOP=1 -f scripts/rfc0008-acceptance.sql
 -- The period starts at the first Worker cron run, 2026-10-18 11:00 UTC.
 \set since '''2026-10-18T11:00:00.000Z'''
 
@@ -31,7 +31,7 @@ JOIN growth_job_runs b
 WHERE a.created_at >= :since AND b.created_at >= :since;
 
 -- 3. Each first attempt starts within 20 minutes of its hour; latest first.
--- Runs before the 2026-10-27 deploy store their cron tick as the start, and a
+-- Runs from before PR #206 was deployed store their cron tick as the start, and a
 -- schedule whose hour changed since shows here too. The weekly cycle keeps a
 -- local hour, so it is left out.
 SELECT r.kind, r.window_key, s.hour_utc, r.started_at,
@@ -43,14 +43,16 @@ WHERE r.created_at >= :since AND r.attempt = 1 AND r.kind <> 'weekly_cycle'
 ORDER BY minutes_late DESC
 LIMIT 20;
 
--- 4. Skips and final failures with their reasons (removed owner, plan).
+-- 4. Skips and failed attempts with their reasons (removed owner, plan).
+-- Query 1 shows which retried windows recovered.
 SELECT status, coalesce(skip_reason, error) AS reason, count(*)
 FROM growth_job_runs
 WHERE created_at >= :since AND status IN ('skipped', 'failed')
 GROUP BY 1, 2 ORDER BY 3 DESC;
 
--- 5. Notification kinds seen; notices equal distinct keys when none repeats.
-SELECT kind, count(*) AS notices, count(DISTINCT (project_id, dedupe_key)) AS distinct_keys
+-- 5. Notification kinds seen. A unique index already refuses a second
+-- notification for one project, kind and dedupe key.
+SELECT kind, count(*) AS notices
 FROM growth_notifications
 WHERE created_at >= :since
 GROUP BY 1 ORDER BY 1;
