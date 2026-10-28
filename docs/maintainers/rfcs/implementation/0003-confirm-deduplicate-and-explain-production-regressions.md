@@ -156,6 +156,11 @@ Retention from IRFC-0002 never deletes a snapshot, site snapshot or finding that
 - **Accept as new baseline** (`acceptRegressionChange`) sets the page baseline to the latest `page` snapshot and closes the incident as `accepted_change`.
   - That snapshot also carries any other current regression on the page. So acceptance is refused while the page has another open incident, and the refusal lists them.
   - The owner either resolves those first or accepts them together: `acceptRegressionChange` takes the full list of the page's open incident IDs, and they close in one batch. RFC-0019 section 4.5 forbids silently overwriting a baseline while findings are unresolved.
+  - **Site incidents** (`robots-txt-blocks`, `sitemap-shrunk`) have no page, so they take the site branch instead, with the same rules:
+    - it sets `protection_enrollments.site_baseline_snapshot_id` to the latest site snapshot whose robots and sitemap states can be compared;
+    - it is refused while another site incident is open, unless all of them are accepted together;
+    - it closes them in one batch with the baseline change.
+  - Closing a site incident without moving the site baseline would let the next check reopen it, so `accepted_change` always moves the baseline it was compared against.
 - **Dismiss** (`dismissRegression`, with a reason) closes it as `false_positive`.
 - Both require `integration:manage` and write `regression.accepted` or `regression.dismissed` audit rows in the same batch. Add both actions to `AUDIT_ACTIONS`.
 
@@ -192,6 +197,7 @@ Retention from IRFC-0002 never deletes a snapshot, site snapshot or finding that
   - the email is sent once, a failed send is retried, and three failures are shown;
   - a `response` with status 500 opens `status-regressed`, while a 403 challenge (`unknown`) opens nothing;
   - accepting a change is refused while another incident is open on the page, and accepting both together closes both;
+  - accepting an intentional sitemap or robots change moves the site baseline, so the next check stays quiet;
   - retention keeps every snapshot, site snapshot and finding an incident references.
 - `deploymentDiscovery.test.ts`:
   - the cursor advances only past terminal deployments, and an in-progress one is read again next tick;

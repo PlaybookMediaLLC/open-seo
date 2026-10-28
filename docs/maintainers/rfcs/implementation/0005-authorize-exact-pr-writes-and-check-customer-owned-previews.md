@@ -81,9 +81,12 @@ Unique (`execution_id`, `head_sha`).
    - Take the newest status that is `success` and has an `https` `environment_url`.
    - The host must pass `isAllowedPreviewHost` for the project domain and its `ci_preview_hosts`, and `normalizeAndValidateStartUrl`. A failure is `unavailable` with "preview host not allowed", and no credentials are sent.
 2. **Run the SEO check.**
-   - Reuse the `ci_check_runs` row for (`head_sha`, preview origin) when the webhook already queued one.
+   - **Base origin, fixed at the source.** `queueCheck` compares against `https://${domain}`, but `projects.domain` is the bare host. On a site served from `www.`, every base page answers 301, `comparePage` finds nothing, and the check passes vacuously.
+     - A per-call option would not be enough. `ci_check_runs` is unique per (`project_id`, `head_sha`, `preview_origin`), so a run the webhook queued first would keep the wrong base, and Relay could not queue a second one.
+     - Instead, `queueCheck` itself uses the protection enrollment's `production_origin` as the base whenever the project has an enrollment, for every caller (Action, App webhook, Relay). Otherwise it keeps today's value.
+     - This also fixes CI's own checks for enrolled `www.` sites.
+   - Reuse the existing `ci_check_runs` row for (`head_sha`, preview origin) only when its `base_origin` equals the enrollment's `production_origin`. A row from before the enrollment, with a different base, makes the check `unavailable`: "This commit was checked against another production origin; push a new commit to check it again."
    - Otherwise call `queueCheck` with the publishing connection's installation and `changedFiles: [file_path]`. `queueCheck` starts the workflow itself, so do not start it again.
-   - **Base origin:** `queueCheck` compares against `https://${domain}`, but `projects.domain` is the bare host. On a site served from `www.`, every base page answers 301, `comparePage` finds nothing, and the check passes vacuously. Extend `queueCheck` with an optional `baseOrigin`, defaulting to today's value, and pass the enrollment's `production_origin`.
    - **Refusals:** every non-queued `queueCheck` result becomes `unavailable` with the API's own message. That covers `quota_reached` (these checks count toward the project's monthly SEO check quota), `no_domain` and `preview_host_not_allowed`.
    - Wait for the run to finish. A `failed` run or any blocking finding is `failed`.
 3. **Check the rendered value.**
@@ -139,7 +142,8 @@ The incident page gains a **Repair** section:
   - a disallowed host is `unavailable` and sends no credentials;
   - a check older than 30 minutes becomes `unavailable` on the next tick;
   - a `quota_reached` or `preview_host_not_allowed` result from `queueCheck` is `unavailable` with its message;
-  - on a `www.` production origin, the SEO check compares against that origin, not the bare domain;
+  - on a `www.` production origin, the SEO check compares against that origin, not the bare domain, including when the webhook queued it first;
+  - an existing run with another base origin is not reused, and the check is `unavailable` with the reason;
   - the workflow is started once;
   - failing CI is `failed`;
   - a rendered mismatch is `failed`;
