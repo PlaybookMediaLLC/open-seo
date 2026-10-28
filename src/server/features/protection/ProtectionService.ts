@@ -44,7 +44,8 @@ function searchConsoleCovers(siteUrl: string, origin: string): boolean {
     const host = new URL(origin).hostname;
     return host === domain || host.endsWith(`.${domain}`);
   }
-  return URL.parse(siteUrl)?.origin === origin;
+  // A URL-prefix property proves only its own path, so it must be the root.
+  return URL.parse(siteUrl)?.href === `${origin}/`;
 }
 
 async function productionOriginFor(

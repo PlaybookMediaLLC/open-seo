@@ -345,6 +345,7 @@ describe(`ProtectionService (${database.isPostgres ? "Postgres" : "SQLite"})`, (
     ["https://example.com/", "https://example.com", true],
     ["https://example.com/", "https://www.example.com", false],
     ["http://example.com/", "https://example.com", false],
+    ["https://example.com/blog/", "https://example.com", false],
   ])(
     "verifies %s as covering %s: %s",
     async (gscSiteUrl, productionOrigin, verified) => {
