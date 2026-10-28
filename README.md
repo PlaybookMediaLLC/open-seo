@@ -9,6 +9,7 @@ Relay, by Playbook Media LLC, is building a system for the customer-facing work 
 [Use Relay](https://relay.playbookmedia.io) · [Company thesis](company.md) · [North star](vision.md) · [Implement in order: IRFC-0001–0033](docs/maintainers/rfcs/implementation/README.md) · [Full technical RFCs](docs/maintainers/rfcs/README.md)
 
 Relay is an independent, MIT-licensed codebase derived from [OpenSEO](https://github.com/every-app/open-seo). We retain its research foundation, license and attribution. Some package names and agent plugins still say OpenSEO. The upstream-sync workflow remains in place for reviewed changes.
+
 ## Current capabilities
 
 The repository currently contains:
@@ -26,11 +27,11 @@ This is a substantial foundation, **not a completed Protect, Sync or Launch serv
 
 Three customer-facing offers share one planned **Product Reality Engine**:
 
-| Product | Customer outcome | Delivery boundary |
-| --- | --- | --- |
-| **Relay Protect** | Keep agreed production pages healthy, catch release regressions, prepare approved repairs and verify that they work. | **Initial paid entry.** Start with GitHub-managed Next.js sites; browser journeys are a later validated extension. |
-| **Relay Sync** | Keep public pricing, plan limits, feature and integration claims, and documentation consistent with verified product facts. | **Planned expansion.** Start with accepted facts and narrowly scoped Git-backed assets. |
-| **Relay Launch** | Turn a real product change into reviewed website, docs, announcement and sales-enablement work, with accountable owners and publication receipts. | **Planned expansion.** Start with fact-backed, manually approved launch packets. |
+| Product           | Customer outcome                                                                                                                                  | Delivery boundary                                                                                                  |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Relay Protect** | Keep agreed production pages healthy, catch release regressions, prepare approved repairs and verify that they work.                              | **Initial paid entry.** Start with GitHub-managed Next.js sites; browser journeys are a later validated extension. |
+| **Relay Sync**    | Keep public pricing, plan limits, feature and integration claims, and documentation consistent with verified product facts.                       | **Planned expansion.** Start with accepted facts and narrowly scoped Git-backed assets.                            |
+| **Relay Launch**  | Turn a real product change into reviewed website, docs, announcement and sales-enablement work, with accountable owners and publication receipts. | **Planned expansion.** Start with fact-backed, manually approved launch packets.                                   |
 
 The Product Reality Engine will link **source observations → scoped product facts → customer-facing claims and assets → impact findings → approved work → destination verification**. Source commits, deployed behavior, published statements, and measured commercial outcomes remain separate evidence. AI can help investigate and draft but cannot substitute for authority or silently publish.
 
