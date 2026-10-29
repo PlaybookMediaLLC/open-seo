@@ -69,7 +69,10 @@ overrides:
   # Keep all MCP v1 consumers above the patched SDK floor.
   "@modelcontextprotocol/sdk@1": "^1.32.0"
   "ws@8": "^8.21.0"
+  # GHSA-7rv5-mrxv-xcr9, GHSA-wp97-x4hv-qvhp, GHSA-97r2-qh9m-474h — TanStack Start
   seroval: "^1.6.8"
+  # GHSA-3f7j-7jwc-fxfj — via @trigger.dev/sdk host metrics and shadcn's dotenvx
+  systeminformation: "^5.33.16"
   proxy-addr: "^2.0.8"
   source-map-js: "^1.2.2"
   "zod@4": "4.6.7"
