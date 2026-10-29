@@ -69,7 +69,7 @@ overrides:
   # Keep all MCP v1 consumers above the patched SDK floor.
   "@modelcontextprotocol/sdk@1": "^1.32.0"
   "ws@8": "^8.21.0"
-  seroval: "^1.6.3"
+  seroval: "^1.6.8"
   proxy-addr: "^2.0.8"
   source-map-js: "^1.2.2"
   "zod@4": "4.6.7"
