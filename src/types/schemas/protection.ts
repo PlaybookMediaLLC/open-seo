@@ -10,14 +10,20 @@ import { publishingProjectInputSchema as projectScope } from "@/types/schemas/pu
 // RFC-0026 phase A (IRFC-0001): the protected-site record's inputs.
 export const protectionProjectInputSchema = projectScope;
 
-export const saveProtectionSettingsInputSchema = projectScope.extend({
-  productionOrigin: z.url({ protocol: /^https$/ }).max(300),
-  checkHourUtc: z.number().int().min(0).max(23),
-  reviewerUserId: z.string().min(1).nullable(),
-  notes: z.string().trim().max(1000).nullable(),
-  allowRepairProposals: z.boolean(),
-  allowPullRequests: z.boolean(),
-});
+// A save sends only the fields its form changed, so a form opened before
+// another manager's save cannot send back the values it still shows.
+export const saveProtectionSettingsInputSchema = projectScope.extend(
+  z
+    .object({
+      productionOrigin: z.url({ protocol: /^https$/ }).max(300),
+      checkHourUtc: z.number().int().min(0).max(23),
+      reviewerUserId: z.string().min(1).nullable(),
+      notes: z.string().trim().max(1000).nullable(),
+      allowRepairProposals: z.boolean(),
+      allowPullRequests: z.boolean(),
+    })
+    .partial().shape,
+);
 
 // Each list stays inside D1's 100 bound parameters per statement.
 const pageIds = z.array(z.string().min(1)).max(50);

@@ -128,42 +128,51 @@ async function saveSettings(
 ): Promise<void> {
   requireOrgPermission(context, MANAGE);
   const projectId = context.project.id;
-  const productionOrigin = await productionOriginFor(
-    context.project.domain,
-    input.productionOrigin,
-  );
+  const { reviewerUserId, checkHourUtc } = input;
+  const { allowRepairProposals, allowPullRequests } = input;
+  const productionOrigin =
+    input.productionOrigin === undefined
+      ? undefined
+      : await productionOriginFor(
+          context.project.domain,
+          input.productionOrigin,
+        );
+  const notes = input.notes === undefined ? undefined : input.notes || null;
   const enrollment = await ProtectionRepository.getEnrollment(projectId);
   const reviewerChanged =
-    input.reviewerUserId !== (enrollment?.reviewerUserId ?? null);
+    reviewerUserId !== undefined &&
+    reviewerUserId !== (enrollment?.reviewerUserId ?? null);
   if (
     reviewerChanged &&
-    input.reviewerUserId !== null &&
+    reviewerUserId !== null &&
     !(await reviewerCandidates(context, null)).some(
-      (candidate) => candidate.userId === input.reviewerUserId,
+      (candidate) => candidate.userId === reviewerUserId,
     )
   )
     throw new AppError(
       "VALIDATION_ERROR",
       "The reviewer must be a member of this organization.",
     );
-  const settings = {
-    productionOrigin,
-    checkHourUtc: input.checkHourUtc,
-    reviewerUserId: input.reviewerUserId,
-    notes: input.notes || null,
-    allowRepairProposals: input.allowRepairProposals,
-    allowPullRequests: input.allowPullRequests,
-  };
-  const now = new Date().toISOString();
 
   if (!enrollment) {
+    if (productionOrigin === undefined || checkHourUtc === undefined)
+      throw new AppError(
+        "VALIDATION_ERROR",
+        "Choose the production origin and the daily check time.",
+      );
     const id = crypto.randomUUID();
+    const now = new Date().toISOString();
     await fenced(projectId, null, () =>
       ProtectionRepository.createEnrollment({
         enrollment: {
           id,
           projectId,
-          ...settings,
+          productionOrigin,
+          checkHourUtc,
+          reviewerUserId: reviewerUserId ?? null,
+          notes: notes ?? null,
+          allowRepairProposals: allowRepairProposals ?? false,
+          allowPullRequests: allowPullRequests ?? false,
           createdBy: context.userId,
           createdAt: now,
           updatedBy: context.userId,
@@ -180,7 +189,9 @@ async function saveSettings(
     return;
   }
 
-  const originChanged = productionOrigin !== enrollment.productionOrigin;
+  const originChanged =
+    productionOrigin !== undefined &&
+    productionOrigin !== enrollment.productionOrigin;
   if (
     originChanged &&
     enrollment.status !== "setup" &&
@@ -190,28 +201,26 @@ async function saveSettings(
       "VALIDATION_ERROR",
       "Pause protection before changing the production origin.",
     );
-  // Only what this save changes: a stale form must not restore an origin or
-  // reviewer that another save replaced, beside that one's verification.
+  // Only what was sent and differs. An origin or reviewer change clears the
+  // verification or alerts that belonged to the old value.
   const set = {
     ...(originChanged
       ? { productionOrigin, originVerifiedAt: null, originVerifiedBy: null }
       : {}),
     ...(reviewerChanged
-      ? {
-          reviewerUserId: settings.reviewerUserId,
-          alertTestedAt: null,
-          alertConfirmedAt: null,
-        }
+      ? { reviewerUserId, alertTestedAt: null, alertConfirmedAt: null }
       : {}),
-    ...(settings.checkHourUtc !== enrollment.checkHourUtc
-      ? { checkHourUtc: settings.checkHourUtc }
+    ...(checkHourUtc !== undefined && checkHourUtc !== enrollment.checkHourUtc
+      ? { checkHourUtc }
       : {}),
-    ...(settings.notes !== enrollment.notes ? { notes: settings.notes } : {}),
-    ...(settings.allowRepairProposals !== enrollment.allowRepairProposals
-      ? { allowRepairProposals: settings.allowRepairProposals }
+    ...(notes !== undefined && notes !== enrollment.notes ? { notes } : {}),
+    ...(allowRepairProposals !== undefined &&
+    allowRepairProposals !== enrollment.allowRepairProposals
+      ? { allowRepairProposals }
       : {}),
-    ...(settings.allowPullRequests !== enrollment.allowPullRequests
-      ? { allowPullRequests: settings.allowPullRequests }
+    ...(allowPullRequests !== undefined &&
+    allowPullRequests !== enrollment.allowPullRequests
+      ? { allowPullRequests }
       : {}),
   };
   if (!Object.keys(set).length) return;

@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { pickBy } from "remeda";
 import { toast } from "sonner";
 import { useAppForm } from "@/client/components/form/useAppForm";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -41,22 +42,36 @@ export function ProtectionSettingsForm({
       allowRepairProposals: enrollment?.allowRepairProposals ?? false,
       allowPullRequests: enrollment?.allowPullRequests ?? false,
     },
-    onSubmit: async ({ value }) => {
+    onSubmit: async ({ value, formApi }) => {
+      // Only what this person edited since the form last loaded or saved, so
+      // an old tab cannot send back an origin or reviewer someone replaced.
+      const shown = formApi.options.defaultValues ?? value;
+      const edited = enrollment
+        ? pickBy(value, (field, key) => field !== shown[key])
+        : value;
       try {
         await save.mutateAsync({
           data: {
             projectId,
-            ...value,
-            reviewerUserId:
-              value.reviewerUserId === NO_REVIEWER
-                ? null
-                : value.reviewerUserId,
-            notes: value.notes.trim() || null,
+            ...edited,
+            ...(edited.reviewerUserId === undefined
+              ? {}
+              : {
+                  reviewerUserId:
+                    edited.reviewerUserId === NO_REVIEWER
+                      ? null
+                      : edited.reviewerUserId,
+                }),
+            ...(edited.notes === undefined
+              ? {}
+              : { notes: edited.notes.trim() || null }),
           },
         });
       } catch (error) {
         toast.error(getStandardErrorMessage(error));
+        return;
       }
+      formApi.reset(value);
     },
   });
   const originLocked =
