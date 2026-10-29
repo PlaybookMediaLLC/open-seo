@@ -1,6 +1,6 @@
 # IRFC-0001: Record protected-site scope and activation
 
-**Status:** Ready to build; specified against `develop` on 2026-10-28  
+**Status:** Implemented on branch `claude/kind-mccarthy-x32k05`; live acceptance pending (see [Completion note](#completion-note))  
 **Priority:** Required to reach the next core milestone  
 **Prerequisites:** None; may start immediately  
 **Canonical technical specification:** [RFC-0026](../0026-protected-site-pilots-and-service.md) phase A  
@@ -76,7 +76,7 @@ Partial unique index on (`enrollment_id`, `path`) where `removed_at` is null. `M
 
 ## Server functions, service and repository
 
-Files: `src/serverFunctions/protection.ts`, `src/types/schemas/protection.ts` (inputs derived with `.extend()` from `projectScope`, which is private in `src/types/schemas/publishing.ts` today; export it rather than declaring another copy), `src/server/features/protection/ProtectionService.ts`, `src/server/features/protection/protectionReadiness.ts` (pure), `src/server/features/protection/repositories/ProtectionRepository.ts`.
+Files: `src/serverFunctions/protection.ts`, `src/types/schemas/protection.ts` (inputs derived with `.extend()` from `publishingProjectInputSchema`, which is `projectScope` in `src/types/schemas/publishing.ts`; exporting `projectScope` under a second name fails Knip), `src/server/features/protection/ProtectionService.ts`, `src/server/features/protection/protectionReadiness.ts` (pure), `src/server/features/protection/repositories/ProtectionRepository.ts`. The 400-line limit splits the service into `protectionAccess.ts`, `protectionAlerts.ts` and `monitoredPages.ts`.
 
 Every function uses `requireProjectContext`. Writes call `requireOrgPermission(context, { integration: ["manage"] })` first, except `confirmProtectionAlert`.
 
@@ -130,7 +130,7 @@ Activation needs every required item `passed`. Until IRFC-0002 ships, `baseline`
   - `search_data` never blocks;
   - activation is allowed only when every required item passes.
 - `src/server/features/protection/ProtectionService.test.ts`, real SQLite and Postgres through a new `repositories/protectionTestDb.ts` built on `createPublishingTestDatabase`:
-  - **Test database setup:** the SQLite variant applies a hand-picked migration list, and the opportunity test database creates `projects` without `domain`. Add that column and list every new protection migration.
+  - **Test database setup:** the SQLite variant applies a hand-picked migration list, and the opportunity test database creates `projects` without `domain`, `location_code`, `language_code`, `created_at` and `ai_research_keywords`, `gsc_connections` without its account and timestamp columns, and no `ga4_connections`. `protectionTestDb.ts` adds them and applies the protection migration. Postgres runs only for directories listed in `.github/workflows/postgres-tests-playbook.yml`.
   - a member without `integration:manage` is refused before any write;
   - a 21st page is refused, and so is a path on another origin or with a query;
   - a removed path can be added again, but one path never has two active rows;
@@ -158,5 +158,13 @@ Do not promise automatic PRs or unattended monitoring before checks are schedule
 - Preserve the existing authenticated project boundary, user permissions and source/approval authority. Run behavior tests for all new invariants and applicable real-SQL, schema parity, type-check, lint and focused E2E checks.
 - State what was tested with fixtures and what was tested on a live authorized site. Never treat a test fixture or an unmerged PR as a production result.
 - Record a short, evidence-backed completion note with links to implementation PRs and tests. If this item is already satisfied, mark **verified existing**. Do not block later unrelated work.
+
+## Completion note
+
+Built on branch `claude/kind-mccarthy-x32k05` (no pull request yet). Status: **implemented, live acceptance pending.**
+
+- Tested with fixtures, on SQLite and on Postgres 16: `src/server/features/protection/protectionReadiness.test.ts` and `src/server/features/protection/ProtectionService.test.ts` cover every case in [Tests](#tests). Schema parity covers the three tables.
+- Run locally in `local_noauth` mode: start setup, choose a reviewer, turn pull requests on without a publishing connection, add five pages and exclude one. Verification explained why it failed (no Search Console property or key file locally), and test alerts were disabled because the deployment has no `EMAIL` binding. With verification and alert confirmation written directly to the local database, the checklist showed `repository` failing with its reason, `baseline` and `schedule` not available, and **Activate** disabled. That is a fixture, not the acceptance gate.
+- Not yet done: the acceptance gate on an authorized production site with a real Search Console property and a delivered test alert. Cross-organization NOT_FOUND comes from `ensureUserMiddleware`'s project lookup, which every protection function goes through; no new test covers it.
 
 **Next:** [IRFC-0002](0002-establish-protected-pages-and-known-good-production-baselines.md)

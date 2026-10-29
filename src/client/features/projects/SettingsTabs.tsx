@@ -7,6 +7,7 @@ const tabs = [
   { to: "/p/$projectId/settings/spending" as const, label: "Spending" }, // playbook-seam
   { to: "/p/$projectId/settings/seo-checks" as const, label: "SEO checks" }, // playbook-seam
   { to: "/p/$projectId/settings/conversion" as const, label: "Conversion" }, // playbook-seam
+  { to: "/p/$projectId/settings/protection" as const, label: "Protection" }, // playbook-seam
 ];
 
 export function SettingsTabs({ projectId }: { projectId: string }) {

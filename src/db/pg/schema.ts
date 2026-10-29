@@ -31,3 +31,4 @@ export * from "./support.schema";
 export * from "./work.schema";
 export * from "./local-seo.schema";
 export * from "./portfolio.schema";
+export * from "./protection.schema";

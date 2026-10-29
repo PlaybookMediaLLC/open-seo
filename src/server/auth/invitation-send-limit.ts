@@ -20,13 +20,16 @@ async function bumpDailyCounter(key: string, limit: number) {
   return true;
 }
 
-export async function consumeInvitationSendBudget(
+/**
+ * One email against the organization's daily allowance, which every Relay
+ * email shares (invitations, protection test alerts), and against its own
+ * per-recipient cap under `cap.key`.
+ */
+export async function consumeEmailSendBudget(
   organizationId: string,
-  email: string,
+  cap: { key: string; limit: number; message: string },
 ) {
   const day = new Date().toISOString().slice(0, 10);
-  const address = email.trim().toLowerCase();
-
   if (
     !(await bumpDailyCounter(
       `invite-sends:${organizationId}:${day}`,
@@ -35,18 +38,22 @@ export async function consumeInvitationSendBudget(
   ) {
     throw new AppError(
       "RATE_LIMITED",
-      "This organization has reached its daily invitation limit.",
+      "This organization has reached its daily email limit.",
     );
   }
-  if (
-    !(await bumpDailyCounter(
-      `invite-sends:${organizationId}:${address}:${day}`,
-      PER_ADDRESS_DAILY_LIMIT,
-    ))
-  ) {
-    throw new AppError(
-      "RATE_LIMITED",
-      "This address has already received several invitations today.",
-    );
+  if (!(await bumpDailyCounter(`${cap.key}:${day}`, cap.limit))) {
+    throw new AppError("RATE_LIMITED", cap.message);
   }
+}
+
+export async function consumeInvitationSendBudget(
+  organizationId: string,
+  email: string,
+) {
+  const address = email.trim().toLowerCase();
+  await consumeEmailSendBudget(organizationId, {
+    key: `invite-sends:${organizationId}:${address}`,
+    limit: PER_ADDRESS_DAILY_LIMIT,
+    message: "This address has already received several invitations today.",
+  });
 }

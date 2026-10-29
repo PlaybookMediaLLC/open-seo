@@ -10,6 +10,8 @@ data, or sensitive paths.
 
 ## Open
 
+- [ ] `2026-10-28T19:20:00Z` — `claude` — The SQLite base tables in `src/server/features/opportunities/repositories/opportunityRepositoryTestDb.ts` create `projects` and `gsc_connections` without columns the real repositories select (`projects.domain`, `location_code`, `language_code`, `created_at`, `ai_research_keywords`; the GSC account and timestamp columns) and no `ga4_connections`, so 13+ suites repeat the same `ALTER`s and each new one fails with "no such column" first. Add those columns to the base tables once.
+- [ ] `2026-10-28T19:20:00Z` — `claude` — `.github/workflows/postgres-tests-playbook.yml` runs real-SQL suites on Postgres only for the directories it lists, so a new feature's dual-dialect tests silently run on SQLite alone until someone adds its directory. Run every suite that uses `createOpportunityTestDatabase`, or fail CI when such a suite is not listed.
 - [ ] `2026-10-25T17:33:29Z` — `codex` — `pnpm --dir web run format:check` fails on five unchanged files on current `develop`: `content/blogs/two-surfaces-two-timelines.md`, `content/blogs/what-broke-the-99-dollar-ceiling.md`, `src/routes/_marketing/library/keyword-research/index.tsx`, `src/routes/_marketing/pricing.tsx`, and `tests/meta-pixel.test.ts`. Format those files in a dedicated cleanup; security-audit edits pass a targeted check.
 - [ ] `2026-10-26T11:54:25Z` — `codex` — `actionlint .github/workflows/release.yml` reports SC2016 on the single-quoted install hint containing a GitHub expression. GitHub expands the expression before the shell runs; use a step environment variable or a narrow ShellCheck annotation to remove this false positive.
 
