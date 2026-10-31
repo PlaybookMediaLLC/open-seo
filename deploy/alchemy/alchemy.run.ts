@@ -9,7 +9,11 @@ import * as Effect from "effect/Effect";
 import { Redacted } from "effect";
 import { unstable_readConfig } from "wrangler";
 import { z } from "zod";
-import { relayBindings, relayDataEnv } from "./relay-env.ts"; // playbook-seam
+import {
+  relayBindings,
+  relayDataEnv,
+  relayObservability,
+} from "./relay-env.ts"; // playbook-seam
 import {
   emailAccessGate,
   HOSTED_PROD_STAGE,
@@ -438,10 +442,11 @@ export default Alchemy.Stack(
       // CPU allowance the app worker used to carry for them. Configurable
       // CPU limits are a paid-plan feature (see selfHostPlan).
       ...(selfHostPlan ? {} : { limits: { cpuMs: 300_000 } }),
-      observability: {
+      // playbook-seam: Axiom export (deploy/alchemy/relay-env.ts)
+      observability: yield* relayObservability({
         enabled: wrangler.observability?.enabled ?? true,
         traces: { enabled: wrangler.observability?.traces?.enabled ?? false },
-      },
+      }),
       env: {
         ...(resources.DB ? { DB: resources.DB } : {}),
         KV: resources.KV,
@@ -510,10 +515,11 @@ export default Alchemy.Stack(
       // limits are a paid-plan feature; self-host deploys get the plan
       // default instead (see selfHostPlan).
       ...(selfHostPlan ? {} : { limits: { cpuMs: 300_000 } }),
-      observability: {
+      // playbook-seam: Axiom export (deploy/alchemy/relay-env.ts)
+      observability: yield* relayObservability({
         enabled: wrangler.observability?.enabled ?? true,
         traces: { enabled: wrangler.observability?.traces?.enabled ?? false },
-      },
+      }),
       // Hosted prod pins the fetch handler next to its Postgres primary
       // (PlanetScale, AWS us-east-1); each request makes several sequential
       // Hyperdrive round trips. Other stages run on D1 and keep

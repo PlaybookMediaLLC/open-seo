@@ -37,7 +37,11 @@ export default defineConfig(
         plugins: [mcpWidgets()],
         test: {
           environment: "node",
-          include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
+          include: [
+            "src/**/*.test.ts",
+            "scripts/**/*.test.ts",
+            "deploy/**/*.test.ts", // playbook-seam: fork deploy settings
+          ],
           restoreMocks: true,
           clearMocks: true,
           server: {
