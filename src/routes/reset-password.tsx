@@ -7,6 +7,7 @@ import {
   AuthPageShell,
   authRedirectSearchSchema,
 } from "@/client/features/auth/AuthPage";
+import { useLinkToken } from "@/client/features/auth/linkToken"; // playbook-seam
 import { passwordSchema } from "@/client/features/auth/passwordSchema";
 import { getFormError } from "@/client/lib/forms";
 import { authClient } from "@/lib/auth-client";
@@ -93,7 +94,10 @@ function ResetPasswordPage() {
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
   const routeError = getResetPasswordErrorMessage(search.error);
-  const token = search.token;
+  // playbook-seam: the link's token is in the URL fragment
+  // (src/client/features/auth/linkToken.ts); `?token=` is the older link.
+  const token = useLinkToken() ?? search.token;
+  const navigate = Route.useNavigate(); // playbook-seam
   const form = useAppForm({
     defaultValues: {
       password: "",
@@ -120,6 +124,14 @@ function ResetPasswordPage() {
               fields: {},
             },
           });
+          // playbook-seam: the link is first checked on submit now, so a dead
+          // link opens the expired-link screen and its "Request" button.
+          if (result.error.code === "INVALID_TOKEN") {
+            await navigate({
+              search: (previous) => ({ ...previous, error: "invalid_token" }),
+              replace: true,
+            });
+          }
           return;
         }
       } catch {
