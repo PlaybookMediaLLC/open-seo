@@ -39,6 +39,7 @@ import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiPrivacyRegionRouteImport } from './routes/api/privacy-region'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as ApiSignUpStatusRouteImport } from './routes/api/sign-up-status'
+import { Route as ApiVerifyEmailLinkRouteImport } from './routes/api/verify-email-link'
 import { Route as DocsSplatRouteImport } from './routes/docs/$'
 import { Route as MediaNameRouteImport } from './routes/media.$name'
 import { Route as RReportIdRouteImport } from './routes/r/$reportId'
@@ -258,6 +259,11 @@ const ApiSearchRoute = ApiSearchRouteImport.update({
 const ApiSignUpStatusRoute = ApiSignUpStatusRouteImport.update({
   id: '/api/sign-up-status',
   path: '/api/sign-up-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiVerifyEmailLinkRoute = ApiVerifyEmailLinkRouteImport.update({
+  id: '/api/verify-email-link',
+  path: '/api/verify-email-link',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsSplatRoute = DocsSplatRouteImport.update({
@@ -672,6 +678,7 @@ export interface FileRoutesByFullPath {
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
   '/api/sign-up-status': typeof ApiSignUpStatusRoute
+  '/api/verify-email-link': typeof ApiVerifyEmailLinkRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -770,6 +777,7 @@ export interface FileRoutesByTo {
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
   '/api/sign-up-status': typeof ApiSignUpStatusRoute
+  '/api/verify-email-link': typeof ApiVerifyEmailLinkRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -868,6 +876,7 @@ export interface FileRoutesById {
   '/api/privacy-region': typeof ApiPrivacyRegionRoute
   '/api/search': typeof ApiSearchRoute
   '/api/sign-up-status': typeof ApiSignUpStatusRoute
+  '/api/verify-email-link': typeof ApiVerifyEmailLinkRoute
   '/docs/$': typeof DocsSplatRoute
   '/media/$name': typeof MediaNameRoute
   '/r/$reportId': typeof RReportIdRoute
@@ -969,6 +978,7 @@ export interface FileRouteTypes {
     | '/api/privacy-region'
     | '/api/search'
     | '/api/sign-up-status'
+    | '/api/verify-email-link'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1067,6 +1077,7 @@ export interface FileRouteTypes {
     | '/api/privacy-region'
     | '/api/search'
     | '/api/sign-up-status'
+    | '/api/verify-email-link'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1164,6 +1175,7 @@ export interface FileRouteTypes {
     | '/api/privacy-region'
     | '/api/search'
     | '/api/sign-up-status'
+    | '/api/verify-email-link'
     | '/docs/$'
     | '/media/$name'
     | '/r/$reportId'
@@ -1255,6 +1267,7 @@ export interface RootRouteChildren {
   ApiPrivacyRegionRoute: typeof ApiPrivacyRegionRoute
   ApiSearchRoute: typeof ApiSearchRoute
   ApiSignUpStatusRoute: typeof ApiSignUpStatusRoute
+  ApiVerifyEmailLinkRoute: typeof ApiVerifyEmailLinkRoute
   DocsSplatRoute: typeof DocsSplatRoute
   MediaNameRoute: typeof MediaNameRoute
   RReportIdRoute: typeof RReportIdRoute
@@ -1488,6 +1501,13 @@ declare module '@tanstack/react-router' {
       path: '/api/sign-up-status'
       fullPath: '/api/sign-up-status'
       preLoaderRoute: typeof ApiSignUpStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/verify-email-link': {
+      id: '/api/verify-email-link'
+      path: '/api/verify-email-link'
+      fullPath: '/api/verify-email-link'
+      preLoaderRoute: typeof ApiVerifyEmailLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/$': {
@@ -2236,6 +2256,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPrivacyRegionRoute: ApiPrivacyRegionRoute,
   ApiSearchRoute: ApiSearchRoute,
   ApiSignUpStatusRoute: ApiSignUpStatusRoute,
+  ApiVerifyEmailLinkRoute: ApiVerifyEmailLinkRoute,
   DocsSplatRoute: DocsSplatRoute,
   MediaNameRoute: MediaNameRoute,
   RReportIdRoute: RReportIdRoute,

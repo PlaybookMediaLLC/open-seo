@@ -1,5 +1,6 @@
 /* oxlint-disable typescript/no-unsafe-type-assertion -- The lazy query stand-in mirrors postgres.js's PendingQuery surface, which has no constructible type. */
 import type postgres from "postgres";
+import { traceQuery } from "./querySpan"; // playbook-seam
 
 type Sql = ReturnType<typeof postgres>;
 type PendingUnsafe = ReturnType<Sql["unsafe"]>;
@@ -90,20 +91,23 @@ export function withQueryRetries(sql: Sql): Sql {
     const run = () =>
       (sql.unsafe as (...args: unknown[]) => PendingUnsafe)(query, ...rest);
 
-    const attempt = async <T>(
+    const attempt = <T>(
       execute: (pending: PendingUnsafe) => Promise<T> | T,
-    ): Promise<T> => {
-      for (let i = 0; ; i++) {
-        try {
-          return await execute(run());
-        } catch (error) {
-          if (i >= RETRY_DELAYS_MS.length || !isRetryable(error, query)) {
-            throw error;
+    ): Promise<T> =>
+      // playbook-seam: one trace span per query (src/db/pg/querySpan.ts)
+      traceQuery(query, async (span) => {
+        for (let i = 0; ; i++) {
+          try {
+            return await execute(run());
+          } catch (error) {
+            if (i >= RETRY_DELAYS_MS.length || !isRetryable(error, query)) {
+              throw error;
+            }
+            span?.setAttribute("relay.retry_count", i + 1); // playbook-seam
+            await sleep(RETRY_DELAYS_MS[i] + Math.random() * 250);
           }
-          await sleep(RETRY_DELAYS_MS[i] + Math.random() * 250);
         }
-      }
-    };
+      });
 
     // Lazy stand-in for postgres.js's PendingQuery covering the surface
     // drizzle-orm/postgres-js uses (await, .values(), .execute(), .raw()).
@@ -131,6 +135,15 @@ export function withQueryRetries(sql: Sql): Sql {
     get(target, prop, receiver) {
       if (prop === "unsafe") {
         return retryingUnsafe;
+      }
+      // playbook-seam: queries inside a transaction bypass unsafe, so the
+      // transaction gets one span (src/db/pg/querySpan.ts).
+      if (prop === "begin") {
+        const client = target as unknown as {
+          begin: (...args: unknown[]) => Promise<unknown>;
+        };
+        return (...args: unknown[]) =>
+          traceQuery("BEGIN", () => client.begin(...args));
       }
       return Reflect.get(target, prop, receiver) as unknown;
     },

@@ -23,10 +23,13 @@ async function googleRequest(path: string, init: RequestInit = {}) {
       "Google Maps is not configured.",
     );
   const url = new URL(path, "https://tile.googleapis.com");
-  url.searchParams.set("key", apiKey);
+  // playbook-seam: the key goes in a header, because traces record URLs.
+  const headers = new Headers(init.headers);
+  headers.set("X-Goog-Api-Key", apiKey);
   // Never forward browser credentials or Google's error bodies/URLs to clients.
   return fetch(url, {
     ...init,
+    headers,
     redirect: "manual",
     signal: AbortSignal.timeout(10_000),
   });

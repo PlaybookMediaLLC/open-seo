@@ -41,19 +41,17 @@ export async function queryCrux(
   target: { scope: "url" | "origin"; value: string },
   formFactor: FormFactor,
 ) {
-  const response = await fetch(
-    `${QUERY_URL}?key=${encodeURIComponent(apiKey)}`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        [target.scope]: target.value,
-        formFactor: formFactor.toUpperCase(),
-        metrics: METRICS,
-      }),
-      signal: AbortSignal.timeout(15_000),
-    },
-  );
+  const response = await fetch(QUERY_URL, {
+    method: "POST",
+    // A header, not ?key=: traces record outbound URLs.
+    headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({
+      [target.scope]: target.value,
+      formFactor: formFactor.toUpperCase(),
+      metrics: METRICS,
+    }),
+    signal: AbortSignal.timeout(15_000),
+  });
   if (response.status === 404) {
     await response.body?.cancel();
     return null;
@@ -105,19 +103,17 @@ export async function queryCruxHistory(
   target: { scope: "url" | "origin"; value: string },
   formFactor: FormFactor,
 ) {
-  const response = await fetch(
-    `${HISTORY_URL}?key=${encodeURIComponent(apiKey)}`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        [target.scope]: target.value,
-        formFactor: formFactor.toUpperCase(),
-        metrics: METRICS,
-      }),
-      signal: AbortSignal.timeout(15_000),
-    },
-  );
+  const response = await fetch(HISTORY_URL, {
+    method: "POST",
+    // A header, not ?key=: traces record outbound URLs.
+    headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({
+      [target.scope]: target.value,
+      formFactor: formFactor.toUpperCase(),
+      metrics: METRICS,
+    }),
+    signal: AbortSignal.timeout(15_000),
+  });
   if (response.status === 404) {
     await response.body?.cancel();
     return null;

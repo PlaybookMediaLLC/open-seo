@@ -1,6 +1,7 @@
 // oxlint-disable max-lines -- keep upstream auth configuration beside Relay's Google-only and audit seams for upstream sync
 import { env } from "cloudflare:workers";
 import { auditAuthRoute } from "@/server/features/activity/authAudit"; // playbook-seam
+import { linkWithToken } from "@/server/auth/emailLinks"; // playbook-seam
 import { betterAuth } from "better-auth";
 import {
   APIError,
@@ -216,10 +217,10 @@ function createAuth() {
       ...(standalone
         ? { autoSignIn: false }
         : {
-            sendResetPassword: async ({ user, url }) => {
+            sendResetPassword: async ({ user, url, token }) => {
               await sendHostedPasswordResetEmail({
                 email: user.email,
-                resetUrl: url,
+                resetUrl: linkWithToken(url, "/reset-password", token), // playbook-seam: token in the fragment
               });
             },
           }),
@@ -229,11 +230,15 @@ function createAuth() {
         ? undefined
         : {
             sendOnSignUp: true,
-            autoSignInAfterVerification: true,
-            sendVerificationEmail: async ({ user, url }) => {
+            // playbook-seam: a verification link only confirms the email. If
+            // it also signed in, any page could sign a visitor into the
+            // sender's account with /verify-email#token= (login CSRF). Keep
+            // user.changeEmail off: Better Auth's change-email links sign in.
+            autoSignInAfterVerification: false,
+            sendVerificationEmail: async ({ user, url, token }) => {
               await sendHostedVerificationEmail({
                 email: user.email,
-                confirmationUrl: url,
+                confirmationUrl: linkWithToken(url, "/verify-email", token), // playbook-seam: token in the fragment
               });
             },
           },

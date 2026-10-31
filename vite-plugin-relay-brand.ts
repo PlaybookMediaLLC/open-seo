@@ -158,6 +158,21 @@ import type { Plugin } from "vite";
  *   (src/server/features/reports/services/ReportBrandingService.ts).
  * - src/server/mcp/tools/report-template-tools.ts: list_report_templates
  *   returns the organization's brand color.
+ * - deploy/alchemy/alchemy.run.ts: both workers take their observability
+ *   settings from relayObservability, which can export traces and logs to
+ *   Axiom (deploy/alchemy/relay-env.ts).
+ * - vite.config.ts: unit tests also run deploy/**\/*.test.ts.
+ * - src/db/pg/retry.ts: each Postgres query and each transaction runs in a
+ *   trace span (src/db/pg/querySpan.ts).
+ * - src/server/features/local-seo/services/GoogleMapsService.ts: the API key
+ *   goes in the X-Goog-Api-Key header, because traces record URLs.
+ * - src/lib/auth.ts: password reset and verification emails carry the token
+ *   in the URL fragment (src/server/auth/emailLinks.ts), and a verification
+ *   link no longer signs in, which closes login CSRF through that link.
+ * - src/routes/reset-password.tsx and src/routes/verify-email.tsx: read that
+ *   token and post it (src/client/features/auth/linkToken.ts,
+ *   src/server/auth/verifyEmailLink.ts). The reset page shows its
+ *   expired-link screen when the posted token is dead.
  */
 const RELAY = "https://relay.playbookmedia.io";
 

@@ -7,7 +7,7 @@ import type { LegalDocument } from "./LegalPage";
  */
 export const PRIVACY: LegalDocument = {
   title: "Privacy Policy",
-  updated: "October 17, 2026",
+  updated: "October 30, 2026",
   summary: [
     "We collect what we need to run Relay: your Google sign-in details, the data you connect, and what you create.",
     "Search Console and Analytics access is read-only. You can disconnect it at any time.",
@@ -93,7 +93,7 @@ export const PRIVACY: LegalDocument = {
         {
           list: [
             "We use Google Search Console and Google Analytics data only to provide and improve the user-facing features you use in the Service.",
-            "We do not transfer this data to others, except as needed to provide those features (including to an AI client that you connect and ask to read it), to comply with law, or as part of a merger, acquisition or sale of assets with notice to you.",
+            "We do not transfer this data to others, except as needed to provide those features (including to an AI client that you connect and ask to read it), to comply with law, or as part of a merger, acquisition or sale of assets with notice to you. Our hosting provider, Cloudflare, and our monitoring provider, Axiom, process records of the requests that we make to Google APIs. These records can include a property address or ID, but not report data.",
             "We do not use this data for advertising, and we do not sell it.",
             "We do not allow humans to read this data unless you give us explicit permission, it is necessary for security purposes or to comply with law, or the data is aggregated and anonymized for internal operations.",
             "We do not use Google user data to develop, improve or train generalized AI or machine-learning models.",
@@ -117,7 +117,7 @@ export const PRIVACY: LegalDocument = {
         "We share information only in these cases:",
         {
           list: [
-            "**Service providers** that help us run the Service, under contracts that limit their use of it: Cloudflare (hosting, database, security and bot protection), Google (sign-in and the APIs you connect), GitHub (only when you connect a repository), Autumn and Stripe (billing), DataForSEO (keyword, SERP, backlink and AI-answer research, which receives keywords, domains and URLs but not your Google data), OpenRouter with the AI model providers it routes to (only when you use AI features), and Trigger.dev (timing of the scheduled jobs you turn on, which receives project and job identifiers but not your Google data or site content).",
+            "**Service providers** that help us run the Service, under contracts that limit their use of it: Cloudflare (hosting, database, security and bot protection), Google (sign-in and the APIs you connect), GitHub (only when you connect a repository), Autumn and Stripe (billing), DataForSEO (keyword, SERP, backlink and AI-answer research, which receives keywords, domains and URLs but not your Google data), OpenRouter with the AI model providers it routes to (only when you use AI features), Trigger.dev (timing of the scheduled jobs you turn on, which receives project and job identifiers but not your Google data or site content), and Axiom (error and performance monitoring, which receives technical records of a small sample of requests for up to 30 days: page and API addresses, timings, and status and error codes; these can include the address of a Search Console property or the ID of an Analytics property, but not your reports, request bodies, passwords or sign-in tokens).",
             "**People you choose.** Members of your workspace can see its projects and data. Anyone with a report link that you share can see that report.",
             "**AI clients you connect**, as described above.",
             "**Legal reasons.** When we must do so by law, or to protect the rights, safety and security of our users, the public or Playbook Media.",
@@ -131,7 +131,7 @@ export const PRIVACY: LegalDocument = {
       title: "Cookies and similar technologies",
       blocks: [
         "We use cookies that the Service needs to work: a session cookie that keeps you signed in, and security cookies for sign-in and abuse prevention, including Cloudflare Turnstile. We also store a few preferences in your browser, such as layout and filter settings.",
-        "We do not use advertising cookies or cross-site tracking. We do not currently use third-party product analytics. If we start to use product analytics or error monitoring, we will update this policy first.",
+        "We do not use advertising cookies or cross-site tracking. We do not currently use third-party product analytics. If we start to use product analytics, we will update this policy first. Our error and performance monitoring provider, Axiom, receives records from our servers only and sets no cookies.",
       ],
     },
     {

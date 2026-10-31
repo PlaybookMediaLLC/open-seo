@@ -8,6 +8,7 @@ import {
   AuthPageShell,
   authRedirectSearchSchema,
 } from "@/client/features/auth/AuthPage";
+import { useVerifyEmailLink } from "@/client/features/auth/linkToken"; // playbook-seam
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient, useSession } from "@/lib/auth-client";
 import {
@@ -103,7 +104,11 @@ function VerifyEmailPage() {
   const search = Route.useSearch();
   const redirectTo = normalizeAuthRedirect(search.redirect);
   const isHostedMode = isHostedClientAuthMode();
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending: isSessionPending } = useSession();
+  // playbook-seam: the link's token is in the URL fragment, and this posts
+  // it (src/client/features/auth/linkToken.ts).
+  const isLinkPending = useVerifyEmailLink(redirectTo);
+  const isPending = isLinkPending || isSessionPending;
   const bypassEmailVerification = isEmailVerificationBypassed();
   const errorMessage = getVerificationErrorMessage(search.error);
   const verificationIssueType = search.error
