@@ -67,14 +67,14 @@ These URLs still reach traces, by design:
 
 ## Set up
 
-1. In Axiom, create two datasets: `relay-traces` and `relay-logs`.
-2. In Axiom, create an API token that can only ingest into these two datasets. Give read access to the datasets only to the people who operate Relay. Keep the retention short (30 days or less).
+1. In Axiom, create two datasets: `relay-traces-production` and `relay-logs-production` (kind Events, 30-day retention). Both exist in the Solomon AI organization.
+2. In Axiom, create an API token (`relay-otel-production-ingest`) that can only ingest into these two datasets. Give read access to the datasets only to the people who operate Relay. Keep the retention short (30 days or less).
 3. In the Cloudflare dashboard of the Playbook account, go to **Observability** > **Destinations**. Add two destinations:
 
-   | Name           | Type   | OTLP endpoint                    | Headers                                                          |
-   | -------------- | ------ | -------------------------------- | ---------------------------------------------------------------- |
-   | `axiom-traces` | Traces | `https://api.axiom.co/v1/traces` | `Authorization: Bearer <token>`, `X-Axiom-Dataset: relay-traces` |
-   | `axiom-logs`   | Logs   | `https://api.axiom.co/v1/logs`   | `Authorization: Bearer <token>`, `X-Axiom-Dataset: relay-logs`   |
+   | Name           | Type   | OTLP endpoint                    | Headers                                                                     |
+   | -------------- | ------ | -------------------------------- | --------------------------------------------------------------------------- |
+   | `axiom-traces` | Traces | `https://api.axiom.co/v1/traces` | `Authorization: Bearer <token>`, `X-Axiom-Dataset: relay-traces-production` |
+   | `axiom-logs`   | Logs   | `https://api.axiom.co/v1/logs`   | `Authorization: Bearer <token>`, `X-Axiom-Dataset: relay-logs-production`   |
 
    The names are case-sensitive. The token stays in Cloudflare. Do not put it in `ENV_PLAYBOOK` or in the repository.
 
@@ -82,7 +82,7 @@ These URLs still reach traces, by design:
 5. Run the **Deploy (Playbook Media)** workflow.
 6. Make sure that it works:
    1. In **Observability** > **Destinations**, each destination shows "Last: n minutes ago", not "Error" or "Never run".
-   2. In Axiom, run `['relay-traces'] | take 10`. Data can take several minutes to arrive. At 1%, a quiet hour can have no traces. To test, set `OTEL_SAMPLING_RATE=1`, deploy, check, then set it back.
+   2. In Axiom, run `['relay-traces-production'] | take 10`. Data can take several minutes to arrive. At 1%, a quiet hour can have no traces. To test, set `OTEL_SAMPLING_RATE=1`, deploy, check, then set it back.
    3. Open one trace. Find `service.name`, `cloudflare.ray_id` and `cloudflare.script_version.id`.
    4. Start a site audit. Find one trace that has spans from both workers.
    5. Find a `pg_query` span. It has `db.operation.name` and `db.query.text`.
@@ -118,12 +118,12 @@ Put alerts on unsampled data. A 1% sample is too small and too uneven to alert o
 
 Use Axiom to investigate, not to alert. These queries find patterns in the sample. Cloudflare's documentation does not list the field names of the exported logs. After the first logs arrive, open one request log and put its field names in place of the `<…>` names.
 
-| Question                | Query (APL)                                                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Which routes fail?      | `['relay-logs'] \| where <outcome> != "ok" or <status> >= 500 \| summarize count() by <route>`                                             |
-| Which routes are slow?  | `['relay-logs'] \| where <route> != "/api/health" \| summarize percentile(<wall time>, 95) by <route>`                                     |
-| Which queries are slow? | `['relay-traces'] \| where name == "pg_query" \| summarize percentile(duration, 95), count() by ['attributes.db.query.text']`              |
-| Which queries fail?     | `['relay-traces'] \| where name == "pg_query" and isnotempty(['attributes.error.type']) \| summarize count() by ['attributes.error.type']` |
+| Question                | Query (APL)                                                                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Which routes fail?      | `['relay-logs-production'] \| where <outcome> != "ok" or <status> >= 500 \| summarize count() by <route>`                                             |
+| Which routes are slow?  | `['relay-logs-production'] \| where <route> != "/api/health" \| summarize percentile(<wall time>, 95) by <route>`                                     |
+| Which queries are slow? | `['relay-traces-production'] \| where name == "pg_query" \| summarize percentile(duration, 95), count() by ['attributes.db.query.text']`              |
+| Which queries fail?     | `['relay-traces-production'] \| where name == "pg_query" and isnotempty(['attributes.error.type']) \| summarize count() by ['attributes.error.type']` |
 
 Each count is about 1% of the real number. Confirm the trace field paths on the first traces too: Axiom can put an attribute that it does not know under `attributes.custom`.
 
